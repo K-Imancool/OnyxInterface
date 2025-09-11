@@ -9,7 +9,37 @@ DataBaseReader::DataBaseReader(const QString& pathToDb)
 {
     QSqlDatabase someDb = QSqlDatabase::addDatabase("QSQLITE", "etoBasa");
 
-    someDb.setDatabaseName(pathToDb);
+    qDebug() << "Исходный путь:" << pathToDb;
+
+    // Преобразуем относительный путь в абсолютный
+    QFileInfo fileInfo(pathToDb);
+    QString absolutePath;
+
+    if (fileInfo.isRelative()) {
+        // Если путь относительный, используем папку с исполняемым файлом
+        QString appDir = QCoreApplication::applicationDirPath();
+        qDebug() << "Папка приложения:" << appDir;
+        absolutePath = appDir + "/" + pathToDb;
+        qDebug() << "Относительный путь преобразован в абсолютный:" << absolutePath;
+    } else {
+        absolutePath = fileInfo.absoluteFilePath();
+        qDebug() << "Путь уже абсолютный:" << absolutePath;
+    }
+
+    // Проверяем существование файла
+    QFileInfo finalFileInfo(absolutePath);
+    if (!finalFileInfo.exists()) {
+        QString m_lastError = QString("Файл базы данных не найден: %1").arg(absolutePath);
+        qWarning() << m_lastError;
+    }
+    else {
+        qDebug() << "Файл базы данных найден:" << absolutePath;
+        qDebug() << "Размер файла:" << finalFileInfo.size() << "байт";
+        qDebug() << "Права доступа:" << finalFileInfo.permissions();
+        qDebug() << "Абсолютный путь:" << absolutePath;
+    }
+
+    someDb.setDatabaseName(absolutePath);
 }
 
 void DataBaseReader::slotSendQuery(const QString &queryStr, int valueNumbersAwaited)
