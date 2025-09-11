@@ -233,11 +233,8 @@ void ControlCenter::initSockets()
     if (true) {
         if (m_dbReader.isNull())
             m_dbReader = new DataBaseReader("DataBase/eshfDb.db");
-        // dataBaseSocketInit();
-        programmLoadSocketInit(5);
-            m_dbReader = new DataBaseReader("/home/kikorik/FOTEK/someShadyDB.db");
-        // programmLoadSocketInit(14);
-        programmLoadSocketInit(28);
+//            m_dbReader = new DataBaseReader("/home/kikorik/FOTEK/someShadyDB.db");
+            programmLoadSocketInit(28);
     } else {
         defaultSocketInit();
     }
