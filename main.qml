@@ -1,5 +1,5 @@
 import QtQuick 2.15
-<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
 import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
@@ -129,126 +129,126 @@ Window {
     //         }
     //     }
     // }
-=======
-import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
-import QtQuick.Extras 1.4
-import QtQuick.CuteKeyboard 1.0
+//=======
+//import QtQuick.Controls 2.15
+//import QtQuick.Window 2.15
+//import QtQuick.Extras 1.4
+//import QtQuick.CuteKeyboard 1.0
 
-import StratifyLabs.UI 2.0
+//import StratifyLabs.UI 2.0
 
-ApplicationWindow {
-    width: 1280
-    height: 800
-    visible: true
+//ApplicationWindow {
+//    width: 1280
+//    height: 800
+//    visible: true
 
-    property int activeIndex: -1
+//    property int activeIndex: -1
 
-    Rectangle {
-            anchors.fill: parent
-            color: "white"
+//    Rectangle {
+//            anchors.fill: parent
+//            color: "white"
 
-            Column {
-                anchors.centerIn: parent
-                spacing: 20
+//            Column {
+//                anchors.centerIn: parent
+//                spacing: 20
 
-                Repeater {
-                                model: 4
-                                delegate: Item {
-                                    width: 1155
-                                    height: (index === activeIndex ? 300 : 100)
+//                Repeater {
+//                                model: 4
+//                                delegate: Item {
+//                                    width: 1155
+//                                    height: (index === activeIndex ? 300 : 100)
 
-                                    property bool expanded: index === activeIndex
+//                                    property bool expanded: index === activeIndex
 
-                                    Canvas {
-                                        id: canvas
-                                        anchors.fill: parent
-                                        onPaint: {
-                                            var ctx = getContext("2d");
-                                            ctx.clearRect(0, 0, width, height);
+//                                    Canvas {
+//                                        id: canvas
+//                                        anchors.fill: parent
+//                                        onPaint: {
+//                                            var ctx = getContext("2d");
+//                                            ctx.clearRect(0, 0, width, height);
 
-                                            var r = 20;
-                                            // Левая половина (жёлтая)
-                                            ctx.beginPath();
-                                            ctx.moveTo(r, 0);
-                                            ctx.lineTo(width/2, 0);
-                                            ctx.lineTo(width/2, height);
-                                            ctx.lineTo(r, height);
-                                            ctx.arcTo(0, height, 0, height - r, r);
-                                            ctx.lineTo(0, r);
-                                            ctx.arcTo(0, 0, r, 0, r);
-                                            ctx.closePath();
-                                            ctx.fillStyle = "#FFF82b";
-                                            ctx.fill();
+//                                            var r = 20;
+//                                            // Левая половина (жёлтая)
+//                                            ctx.beginPath();
+//                                            ctx.moveTo(r, 0);
+//                                            ctx.lineTo(width/2, 0);
+//                                            ctx.lineTo(width/2, height);
+//                                            ctx.lineTo(r, height);
+//                                            ctx.arcTo(0, height, 0, height - r, r);
+//                                            ctx.lineTo(0, r);
+//                                            ctx.arcTo(0, 0, r, 0, r);
+//                                            ctx.closePath();
+//                                            ctx.fillStyle = "#FFF82b";
+//                                            ctx.fill();
 
-                                            // Правая половина (синяя)
-                                            ctx.beginPath();
-                                            ctx.moveTo(width/2, 0);
-                                            ctx.lineTo(width - r, 0);
-                                            ctx.arcTo(width, 0, width, r, r);
-                                            ctx.lineTo(width, height - r);
-                                            ctx.arcTo(width, height, width - r, height, r);
-                                            ctx.lineTo(width/2, height);
-                                            ctx.closePath();
-                                            ctx.fillStyle = "#0B58FF";
-                                            ctx.fill();
+//                                            // Правая половина (синяя)
+//                                            ctx.beginPath();
+//                                            ctx.moveTo(width/2, 0);
+//                                            ctx.lineTo(width - r, 0);
+//                                            ctx.arcTo(width, 0, width, r, r);
+//                                            ctx.lineTo(width, height - r);
+//                                            ctx.arcTo(width, height, width - r, height, r);
+//                                            ctx.lineTo(width/2, height);
+//                                            ctx.closePath();
+//                                            ctx.fillStyle = "#0B58FF";
+//                                            ctx.fill();
 
-                                            // Обводка по всему прямоугольнику
-                                            ctx.beginPath();
-                                            ctx.moveTo(r, 0);
-                                            ctx.lineTo(width - r, 0);
-                                            ctx.arcTo(width, 0, width, r, r);
-                                            ctx.lineTo(width, height - r);
-                                            ctx.arcTo(width, height, width - r, height, r);
-                                            ctx.lineTo(r, height);
-                                            ctx.arcTo(0, height, 0, height - r, r);
-                                            ctx.lineTo(0, r);
-                                            ctx.arcTo(0, 0, r, 0, r);
-                                            ctx.closePath();
-                                            ctx.lineWidth = 1;
-                                            ctx.strokeStyle = "black";
-                                            ctx.stroke();
-                                        }
-                                    }
+//                                            // Обводка по всему прямоугольнику
+//                                            ctx.beginPath();
+//                                            ctx.moveTo(r, 0);
+//                                            ctx.lineTo(width - r, 0);
+//                                            ctx.arcTo(width, 0, width, r, r);
+//                                            ctx.lineTo(width, height - r);
+//                                            ctx.arcTo(width, height, width - r, height, r);
+//                                            ctx.lineTo(r, height);
+//                                            ctx.arcTo(0, height, 0, height - r, r);
+//                                            ctx.lineTo(0, r);
+//                                            ctx.arcTo(0, 0, r, 0, r);
+//                                            ctx.closePath();
+//                                            ctx.lineWidth = 1;
+//                                            ctx.strokeStyle = "black";
+//                                            ctx.stroke();
+//                                        }
+//                                    }
 
-                                    // Текст в левой половине
-                                    Text {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: 0
-                                        width: parent.width / 2
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: expanded ? 36 : 20
-                                        font.bold: true
-                                        color: "black"
-                                        text: expanded ? "Полное Резание" : "Сжато Резание"
-                                        elide: Text.ElideRight
-                                    }
+//                                    // Текст в левой половине
+//                                    Text {
+//                                        anchors.verticalCenter: parent.verticalCenter
+//                                        anchors.left: parent.left
+//                                        anchors.leftMargin: 0
+//                                        width: parent.width / 2
+//                                        horizontalAlignment: Text.AlignHCenter
+//                                        verticalAlignment: Text.AlignVCenter
+//                                        font.pixelSize: expanded ? 36 : 20
+//                                        font.bold: true
+//                                        color: "black"
+//                                        text: expanded ? "Полное Резание" : "Сжато Резание"
+//                                        elide: Text.ElideRight
+//                                    }
 
-                                    // Текст в правой половине
-                                    Text {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        anchors.right: parent.right
-                                        anchors.rightMargin: 0
-                                        width: parent.width / 2
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: expanded ? 36 : 20
-                                        font.bold: true
-                                        color: "white"
-                                        text: expanded ? "Полное Коагуляция" : "Сжато Коагуляция"
-                                        elide: Text.ElideRight
-                                    }
+//                                    // Текст в правой половине
+//                                    Text {
+//                                        anchors.verticalCenter: parent.verticalCenter
+//                                        anchors.right: parent.right
+//                                        anchors.rightMargin: 0
+//                                        width: parent.width / 2
+//                                        horizontalAlignment: Text.AlignHCenter
+//                                        verticalAlignment: Text.AlignVCenter
+//                                        font.pixelSize: expanded ? 36 : 20
+//                                        font.bold: true
+//                                        color: "white"
+//                                        text: expanded ? "Полное Коагуляция" : "Сжато Коагуляция"
+//                                        elide: Text.ElideRight
+//                                    }
 
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: activeIndex = index
-                                        cursorShape: Qt.PointingHandCursor
-                                    }
-                                }
-                            }
-            }
-        }
->>>>>>> Stashed changes
+//                                    MouseArea {
+//                                        anchors.fill: parent
+//                                        onClicked: activeIndex = index
+//                                        cursorShape: Qt.PointingHandCursor
+//                                    }
+//                                }
+//                            }
+//            }
+//        }
+//>>>>>>> Stashed changes
 }

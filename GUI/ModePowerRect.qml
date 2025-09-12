@@ -19,6 +19,45 @@ Rectangle {
         return isCoag ? "blue" : "yellow"
     }
 
+    function changePower(direction) {
+        var changedPower = modePower
+        if (direction === "up") {
+            if (modePower < 20) changedPower += 1
+            else if (modePower < 50) changedPower +=2
+            else if (modePower < 100) changedPower +=5
+            else if (modePower < 200) changedPower +=10
+            else if (modePower < 400) changedPower +=25
+        }
+        if (direction === "down") {
+            if (modePower <= 1) changedPower = 1
+            else if (modePower <= 20) changedPower -= 1
+            else if (modePower <= 50) changedPower -=2
+            else if (modePower <= 100) changedPower -=5
+            else if (modePower <= 200) changedPower -=10
+            else if (modePower <= 400) changedPower -=25
+        }
+        return changedPower
+    }
+
+    // Функция для округления значения до ближайшего допустимого шага
+    function roundToStep(value) {
+        if (value <= 0) return 1
+        
+        if (value <= 20) {
+            return Math.round(value) // шаг 1
+        } else if (value <= 50) {
+            return Math.round(value / 2) * 2 // шаг 2
+        } else if (value <= 100) {
+            return Math.round(value / 5) * 5 // шаг 5
+        } else if (value <= 200) {
+            return Math.round(value / 10) * 10 // шаг 10
+        } else if (value <= 400) {
+            return Math.round(value / 25) * 25 // шаг 25
+        } else {
+            return 1 // шаг 25
+        }
+    }
+
     color: {
         if (modePowerRect.modeId == 1000)
             return "darkgray"
@@ -107,7 +146,7 @@ Rectangle {
         }
         MouseArea {
             anchors.fill: parent
-            onClicked: modePowerRect.newPower(powerSlider.value + 1);
+            onClicked: modePowerRect.newPower(changePower("up"));
         }
     }
     Rectangle {
@@ -135,7 +174,7 @@ Rectangle {
         }
         MouseArea {
             anchors.fill: parent
-            onClicked: modePowerRect.newPower(powerSlider.value - 1);
+            onClicked: modePowerRect.newPower(changePower("down"));
         }
     }
     Slider {
@@ -143,7 +182,12 @@ Rectangle {
         value: modePower
         from: 1
         to: maxPower
-        onValueChanged: modePowerRect.newPower(value);
+        onValueChanged: {
+            var roundedValue = roundToStep(value)
+            if (roundedValue !== modePower) {
+                modePowerRect.newPower(roundedValue)
+            }
+        }
     }
     states: [
         State {
