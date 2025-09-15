@@ -7,6 +7,21 @@
 #include "BackEnd/instrimageprovider.h"
 #include "qqmlcontext.h"
 
+#include <QFile>
+#include <QDir>
+#include <QLoggingCategory>
+#include <QScopedPointer>
+#include <QDateTime>
+#include <QTextStream>
+#include "log_categories.h"
+
+// Умный указатель на файл логирования
+QScopedPointer<QFile>   m_logFile;
+
+// Объявляение обработчика для логов
+void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+
 int main(int argc, char *argv[])
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -17,6 +32,17 @@ int main(int argc, char *argv[])
     qputenv("QT_IM_MODULE", QByteArray("cutekeyboard"));
 
     QGuiApplication app(argc, argv);
+
+
+    // Устанавливаем файл логирования,
+    // внимательно сверьтесь с тем, какой используете путь для файла
+    m_logFile.reset(new QFile("/home/kikorik/OnyxLog/logFile.txt"));
+    // Открываем файл логирования
+    m_logFile.data()->open(QFile::Append | QFile::Text);
+    // Устанавливаем обработчик
+    qInstallMessageHandler(messageHandler);
+    qInfo(logInfo()) << "Включение";
+
 
     NetworkControl::registerNetworkControl();
     UpdateClient::registerUpdateClient();
@@ -46,4 +72,41 @@ int main(int argc, char *argv[])
     engine.load(url);
 
     return app.exec();
+}
+
+// Реализация обработчика
+void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if (type == QtCriticalMsg || type == QtWarningMsg) {
+        if (msg.startsWith("Failed to move cursor") ||
+            msg.startsWith("Could not set cursor") ||
+            msg.startsWith("Could not set DRM") ||
+            msg.startsWith("Could not queue DRM")) return;    // фильтруем ворнинги, чтобы не забивать лог
+    }
+
+    // Открываем поток записи в файл
+    QTextStream out(m_logFile.data());
+    // Записываем дату записи
+    out << QDateTime::currentDateTime().toString("dd-MM-yyyy hh:mm:ss.zzz ");
+    // По типу определяем, к какому уровню относится сообщение
+    switch (type) {
+    case QtInfoMsg:     out << "INF "; break;
+    case QtDebugMsg:    out << "DBG "; break;
+    case QtWarningMsg:  out << "WRN "; break;
+    case QtCriticalMsg: out << "CRT "; break;
+    case QtFatalMsg:    out << "FTL "; break;
+    default: break;
+    }
+    // Записываем в вывод категорию сообщения и само сообщение
+    if (type != QtDebugMsg) {
+        out << context.category << ": "
+            << msg << Qt::endl;
+        out.flush();    // Очищаем буферизированные данные
+    }
+
+    // То же самое выводим в консоль
+    QTextStream debugOut(stdout);
+    debugOut << context.category << ": "
+        << msg << Qt::endl;
+    debugOut.flush();    // Очищаем буферизированные данные
 }
