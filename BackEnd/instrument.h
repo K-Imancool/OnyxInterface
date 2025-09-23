@@ -12,16 +12,22 @@ public:
 
     QString name() const;
 
+    int id() const;
 
-    int Id() const;
+    int hadleType() const;
+
+    void setHandleType(int newHandleType);
+
+    bool isMono() const;
 
 private:
     QString m_coagImagePath;
     QString m_cutImagePath;
-    int m_Id;
+    int m_id;
     int m_legacyNumber;
     QString m_name;
     QString m_description;
+    int m_handleType;
     bool m_isMono;
 };
 

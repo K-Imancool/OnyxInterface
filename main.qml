@@ -13,7 +13,7 @@ Window {
     height: 800
     visible: true
     title: qsTr("Ты волшебник, Гарри!")
-    color: "darkslategray"
+    color: "black"
 
     StatusBar {
         id: statusDummy
@@ -31,8 +31,8 @@ Window {
     SocketContainerV2 {
         id: socketsDummy
         innerModel: theModel
-        width: 980
-        height: 700
+        width: 1080
+        height: 720
         anchors {
             bottom: parent.bottom
             right: parent.right

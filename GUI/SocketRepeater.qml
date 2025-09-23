@@ -13,6 +13,8 @@ Repeater {
     required property int containerHeight
     required property int usedSpacing
 
+    property int collapsedFixedHeight: 85
+
     signal modeDialogRequest(int socketId, int modeIndex, bool isCoag)
     signal instrumDialogRequest(int socketId, int modeIndex, bool isCoag)
 
@@ -29,7 +31,7 @@ Repeater {
             if (itemAt(i).state === "expanded") {
                 expandedCount++
             } else {
-                totalFixedHeight += 60
+                totalFixedHeight += repeatRoot.collapsedFixedHeight
             }
         }
         return expandedCount > 0 ?
@@ -54,7 +56,7 @@ Repeater {
             }
         }
         if (expandedCount > 0) {
-            return 60
+            return repeatRoot.collapsedFixedHeight
         } else {
             return (repeatRoot.containerHeight - (spacersHeight + repeatRoot.containerMargins*2))/count
         }

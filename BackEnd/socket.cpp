@@ -3,28 +3,6 @@
 #include <QtQml/qqml.h>
 
 
-namespace {
-// QStringList sortByExample(const QStringList& toSort, const QStringList& reference)
-// {
-//     //это отстойный по эффективности алгоритм, но применяем мы его только 8 раз на старте. (может как-то отпраллелить)
-//     //если будет мешать - можно вхардкодить
-//     QStringList result = toSort;
-
-//     std::stable_sort(result.begin(), result.end(),
-//                      [&reference](const QString& a, const QString& b) {
-//                          int indexA = reference.indexOf(a);
-//                          int indexB = reference.indexOf(b);
-
-//                          if (indexA != -1 && indexB != -1) return indexA < indexB;
-//                          if (indexA != -1) return true;
-//                          if (indexB != -1) return false;
-//                          return false;
-//                      });
-
-//     return result;
-// }
-}
-
 SOCKET::SOCKET(SOCKET::SocType type) :
     m_socketType(type),
     m_socketStatus(S_ENABLED),
@@ -307,4 +285,14 @@ void SOCKET::setCutModes(const QMap<int, SurgModePtr > &newCutModes,
     if (m_cutHalf.isNull())
         return;
     m_cutHalf->setModes(newCutModes, order);
+}
+
+int SOCKET::pedal() const
+{
+    return m_pedal.pedalType();
+}
+
+void SOCKET::setPedal(int type)
+{
+    m_pedal.setPedType(type);
 }

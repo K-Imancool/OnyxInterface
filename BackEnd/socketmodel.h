@@ -22,6 +22,7 @@ public:
         SocketDisplayMode,
         SocketName,
         SocketPolarity,
+        SocketPedal,
         CoagModeIndex,
         CoagModeId,
         CoagModeName,

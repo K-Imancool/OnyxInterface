@@ -12,6 +12,7 @@ DISTFILES += \
     $$PWD/MenuLoader.qml \
     $$PWD/ModeEditor.qml \
     $$PWD/ModePowerRect.qml \
+    $$PWD/Pedal.qml \
     $$PWD/PowerRect.qml \
     $$PWD/ProgItemList.qml \
     $$PWD/SocketRepeater.qml \

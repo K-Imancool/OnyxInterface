@@ -1,32 +1,27 @@
 #ifndef PEDAL_H
 #define PEDAL_H
-#include <QtQml/qqml.h>
-#include <QObject>
-#include "BackEnd/socket.h"
+#include <QString>
 
-class PEDAL : public QObject
+class Pedal
 {
-    Q_OBJECT
-    Q_PROPERTY(SOCKET* bindedSocket READ bindedSocket WRITE setBindedSocket NOTIFY bindedSocketChanged)
-    QML_ELEMENT
 public:
-    enum pedType {  NO_PED,
+    enum PedalType : int {  NO_PED,
                     DOUBLE_PED,
-                    SINGLE_PED };
-explicit PEDAL(pedType pedId, QObject *parent = nullptr);
-SOCKET* bindedSocket() const;
+                    SINGLE_PED,
+                    INSTR_BUTTON_BI,
+                    INSTR_BUTTON_MONO,
+                    PED_COUNT
+                    };
+    Pedal(PedalType pedType = NO_PED);
 
-public slots:
-void setBindedSocket(SOCKET* bindedSocket);
-
-signals:
-void bindedSocketChanged(SOCKET* bindedSocket);
-void pedalInfoUpdated(const QByteArray &data);
+    int pedalType() const;
+    void setPedType(int newPedType);
 
 private:
-SOCKET* m_bindedSocket;
-pedType m_pedId;
-QByteArray pedSettings();
+    PedalType m_pedType;
+    //может быть будем использовать сишные конструкции для image провайдера
+    QString m_name;
+
 };
 
 #endif // PEDAL_H

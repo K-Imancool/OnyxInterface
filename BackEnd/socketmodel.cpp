@@ -68,6 +68,8 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         return socketItem.socketName();
     case SocketPolarity:
         return socketItem.socketType();
+    case SocketPedal:
+        return socketItem.pedal();
     case CoagModeIndex:
         return socketItem.coagModeIndex();
     case CoagModeId:
@@ -297,7 +299,7 @@ QStringList SocketModel::instrumNamesIds(int socketId, int modeIndex, bool isCoa
     for (const auto&[key, item] : compatible) {
         const auto instIter = m_instrumMap.find(item.id);
         if (instIter != m_instrumMap.end())
-            names.append(QString("%1").arg(instIter->second->Id()));
+            names.append(QString("%1").arg(instIter->second->id()));
     }
     return names;
 }

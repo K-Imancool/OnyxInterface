@@ -66,8 +66,16 @@ Rectangle {
             font.pixelSize: 24
             font.bold: true
             horizontalAlignment: Qt.AlignHCenter
-            verticalAlignment: Qt.AlignVCenter
+            verticalAlignment: Qt.AlignTop
         }
+        Pedal {
+            id: pedalRect
+            width: fontMetrics.advanceWidth("MONO 22")
+            height: parent.height > width ? width : parent.height
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
         FontMetrics {
             id: fontMetrics
             font: socketNameLabel.font

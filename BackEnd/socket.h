@@ -9,6 +9,7 @@
 
 #include "surgicalmode.h"
 #include "halfsocket.h"
+#include "pedal.h"
 
 /**
  * @brief Класс описывающий один электрический сокет.
@@ -41,12 +42,6 @@ public:
     enum SocDisplayMode : int {   S_COLLAPSED = 0, /*!< свёрнут  */
                             S_EXPANDED, /*!< развёрнут */
                         };
-
-    /*! Перечисление возможных типоа режима */
-    enum ModeType { NONE = 0, /*!< Никакой - для режима-заглушки,  */
-                    CUT, /*!< Режущий */
-                    COAG /*!< Коагулирующий */
-    };
 
     SOCKET(SOCKET::SocType = MONOPOLAR_1);
 
@@ -242,6 +237,9 @@ public:
     int displayMode() const;
     void setDisplayMode(SocDisplayMode newDisplayMode);
 
+    int pedal() const;
+    void setPedal(int);
+
 private:
     HalfSockPtr m_cutHalf = nullptr;
     HalfSockPtr m_coagHalf = nullptr;
@@ -254,6 +252,7 @@ private:
     SocType m_socketType;
     SocStatus m_socketStatus;
     SocDisplayMode m_displayMode;
+    Pedal m_pedal;
 
     QString m_socketName;
 };

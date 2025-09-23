@@ -20,5 +20,6 @@
         <file>ProgItemList.qml</file>
         <file>MainMenu.qml</file>
         <file>MenuLoader.qml</file>
+        <file>Pedal.qml</file>
     </qresource>
 </RCC>
