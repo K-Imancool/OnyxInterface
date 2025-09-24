@@ -13,10 +13,18 @@
 #include <QScopedPointer>
 #include <QDateTime>
 #include <QTextStream>
-#include "log_categories.h"
+#include "BackEnd/loggingcategories.h"
+#include "BackEnd/linkstm.h"
+#include "BackEnd/jsonstorage.h"
 
 // Умный указатель на файл логирования
 QScopedPointer<QFile>   m_logFile;
+
+// Класс для связи с stm по uart
+LinkStm* m_linkStm;
+
+// Класс для сохранения всяких настроечных штук
+JsonStorage* m_savedJson;
 
 // Объявляение обработчика для логов
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
@@ -70,6 +78,21 @@ int main(int argc, char *argv[])
     //этот вызов для загрузки элемента pullToRefresshHandler
     engine.addImportPath("qrc:/");
     engine.load(url);
+
+    // Сохраняемые значения лежат в json-файле
+    QVariantMap* initMap = new QVariantMap();
+    initMap->insert("boot", 0);
+    m_savedJson = new JsonStorage(nullptr, initMap);
+    QJsonValue boot;
+    m_savedJson->read("boot", &boot);
+
+    // Класс для связи с stm по uart
+    m_linkStm = new LinkStm();
+    // Откуда грузиться stm
+    m_linkStm->setBoot(static_cast<LinkStm::BootChoice>(boot.toInt()));
+    // Привязываем сигналы
+//    QObject::connect(m_linkStm, &LinkStm::recieveData, this, &MainWindow::testDisplay);
+//    QObject::connect(m_linkStm, &LinkStm::error, this, &MainWindow::displayUartError);
 
     return app.exec();
 }
