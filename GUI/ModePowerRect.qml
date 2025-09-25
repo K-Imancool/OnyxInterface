@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 
-Rectangle {
+Canvas {
     id: modePowerRect
 
     property bool isCoag
@@ -58,10 +58,62 @@ Rectangle {
         }
     }
 
-    color: {
-        if (modePowerRect.modeId == 1000)
-            return "darkgray"
-        return isCoag ? "blue" : "yellow"
+    onPaint: {
+        var ctx = getContext("2d");
+        ctx.clearRect(0, 0, width, height);
+
+        var radius = 20;
+        var x = 0;
+        var y = 0;
+        var w = width;
+        var h = height;
+
+        ctx.beginPath();
+
+        if (isCoag) {
+            if (parent.parent.state === "expanded") {
+                // Правый сокет расширен - закруглен только нижний правый угол
+                ctx.moveTo(x, y);
+                ctx.lineTo(w, y);
+                ctx.lineTo(w, h - radius);
+                ctx.arcTo(w, h, w - radius, h, radius);
+                ctx.lineTo(x, h);
+                ctx.lineTo(x, y);
+            }
+            else {
+                // Правый сокет сжат - закруглены правые углы
+                ctx.moveTo(x, y);
+                ctx.lineTo(w - radius, y);
+                ctx.arcTo(w, y, w, radius, radius);
+                ctx.lineTo(w, h - radius);
+                ctx.arcTo(w, h, w - radius, h, radius);
+                ctx.lineTo(x, h);
+                ctx.lineTo(x, y);
+            }
+        } else {
+            if (parent.parent.state === "expanded") {
+                // Левый сокет расширен - закруглен только нижний левый угол
+                ctx.moveTo(x, y);
+                ctx.lineTo(w, y);
+                ctx.lineTo(w, h);
+                ctx.lineTo(x + radius, h);
+                ctx.arcTo(x, h, x, h - radius, radius);
+            }
+            else {
+                // Левый сокет сжат - закруглены левые углы
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(w, y);
+                ctx.lineTo(w, h);
+                ctx.lineTo(x + radius, h);
+                ctx.arcTo(x, h, x, h - radius, radius);
+                ctx.lineTo(x, radius);
+                ctx.arcTo(x, y, x + radius, y, radius);
+            }
+        }
+
+        ctx.closePath();
+        ctx.fillStyle = colorFromId();
+        ctx.fill();
     }
 
     Connections {
@@ -71,8 +123,6 @@ Rectangle {
             console.log(isCoag, modePowerRect.color, modePowerRect.modeId)
         }
     }
-
-    radius: 8
 
     Rectangle {
         id: mode

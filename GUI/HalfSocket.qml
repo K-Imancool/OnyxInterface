@@ -17,7 +17,7 @@ Rectangle {
     signal instrumEditDialogRequest()
     signal newPower(int power)
 
-    color: "black"
+    color: "transparent"
 
     InstrumRect {
         id: instrumRect

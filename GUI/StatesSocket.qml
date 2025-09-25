@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 
 Rectangle {
     id: socketRoot
+    color: "transparent"
     // property color middleColor: "black"
 
     property string title
