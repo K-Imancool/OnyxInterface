@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
 
     // Класс для связи с stm по uart
     m_linkStm = new LinkStm();
+    qDebug(logInfo()) << "new LinkStm";
     // Откуда грузиться stm
     m_linkStm->setBoot(static_cast<LinkStm::BootChoice>(boot.toInt()));
     // Привязываем сигналы

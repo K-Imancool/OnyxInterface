@@ -20,6 +20,7 @@ LinkStm::LinkStm(QObject *parent)
     m_uartTimer = new QTimer(this);
     connect(m_uartTimer, &QTimer::timeout, [this]() {sendCommand();});
     m_uartTimer->start(1000);
+    qDebug(logInfo()) << "start Uart Timer";
 
     connect(m_uart, &UartToQmlBridge::uartRecieve, this, &LinkStm::unpackRxCommand);
 
@@ -402,11 +403,11 @@ void LinkStm::sendCommand()
     if (!m_uart->writeData(txPacket)) {
         m_state = STATE_TX_ERR;
         txStr = "!Tx ERROR";
-//        qDebug() << "Tx ERR!";
+        qDebug() << "Tx ERR!";
     }
     else {
         txStr = getHexStr(txPacket);
-//        qDebug() << "Tx: " << getHexStr(txPacket);
+        qDebug() << "Tx: " << getHexStr(txPacket);
     }
     emit reportTx(txStr);
     m_waitAnswer = true;

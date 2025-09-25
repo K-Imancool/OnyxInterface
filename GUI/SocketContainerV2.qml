@@ -3,7 +3,7 @@ import QtQuick.Layouts 1.15
 
 Rectangle {
     property var innerModel
-    color: "black"
+    color: "darkgrey"
     ColumnLayout {
         id: layout
         anchors.fill: parent
