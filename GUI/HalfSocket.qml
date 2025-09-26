@@ -84,15 +84,43 @@ Rectangle {
         }
     ]
     transitions: [
-        Transition {
-            from: "collapsed"
-            to: "expanded"
-            NumberAnimation { duration: 100; easing.type: Easing.InQuad }
-        },
-        Transition {
-            from: "expanded"
-            to: "collapsed"
-            NumberAnimation { duration: 100; easing.type: Easing.InQuad }
-        }
+//        Transition {
+//            from: "collapsed"
+//            to: "expanded"
+//            SequentialAnimation {
+//                // Плавное появление InstrumRect
+//                PropertyAnimation {
+//                    target: instrumRect
+//                    properties: "visible"
+//                    duration: 0
+//                }
+//                // Плавное изменение высоты InstrumRect
+//                NumberAnimation {
+//                    target: instrumRect
+//                    properties: "height"
+//                    duration: 400
+//                    easing.type: Easing.OutQuart
+//                }
+//            }
+//        },
+//        Transition {
+//            from: "expanded"
+//            to: "collapsed"
+//            SequentialAnimation {
+//                // Плавное изменение высоты InstrumRect
+//                NumberAnimation {
+//                    target: instrumRect
+//                    properties: "height"
+//                    duration: 350
+//                    easing.type: Easing.InQuart
+//                }
+//                // Скрытие InstrumRect
+//                PropertyAnimation {
+//                    target: instrumRect
+//                    properties: "visible"
+//                    duration: 0
+//                }
+//            }
+//        }
     ]
 }

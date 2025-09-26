@@ -12,10 +12,12 @@ DISTFILES += \
     $$PWD/MenuLoader.qml \
     $$PWD/ModeEditor.qml \
     $$PWD/ModePowerRect.qml \
+    $$PWD/NeutralEl.qml \
     $$PWD/Pedal.qml \
     $$PWD/PowerRect.qml \
     $$PWD/ProgItemList.qml \
     $$PWD/SocketRepeater.qml \
     $$PWD/StatesSocket.qml \
     $$PWD/SocketContainerV2.qml \
-    $$PWD/StatusBar.qml
+    $$PWD/StatusBar.qml \
+    $$PWD/NeutralEl.qml

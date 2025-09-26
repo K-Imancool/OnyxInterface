@@ -21,5 +21,6 @@
         <file>MainMenu.qml</file>
         <file>MenuLoader.qml</file>
         <file>Pedal.qml</file>
+        <file>NeutralEl.qml</file>
     </qresource>
 </RCC>

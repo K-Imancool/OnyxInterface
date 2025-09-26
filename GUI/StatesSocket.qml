@@ -33,6 +33,20 @@ Rectangle {
     state: "expanded"
     // state: "collapsed"
 
+    // MouseArea для всего сокета - переход в expanded
+   MouseArea {
+       id: socketMouseArea
+       anchors.fill: parent
+       onClicked: {
+           if (socketRoot.state === "collapsed") {
+               socketRoot.state = "expanded"
+               socketRoot.socketExpandRequest()
+           }
+       }
+       // Не перехватываем события от дочерних элементов
+       propagateComposedEvents: true
+   }
+
     HalfSocket {
         id: leftRect
         isCoag: false
@@ -43,6 +57,18 @@ Rectangle {
         maxPower:   socketRoot.cutMaxPower
         instrumId:  socketRoot.cutInstrumId
         instrumName: socketRoot.cutInstrumName
+
+        // Перехватываем события от HalfSocket
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if (socketRoot.state === "collapsed") {
+                    socketRoot.state = "expanded"
+                    socketRoot.socketExpandRequest()
+                }
+                mouse.accepted = true // Останавливаем распространение события
+            }
+        }
     }
     HalfSocket {
         id: rightRect
@@ -54,6 +80,18 @@ Rectangle {
         maxPower:   socketRoot.coagMaxPower
         instrumId:  socketRoot.coagInstrumId
         instrumName: socketRoot.coagInstrumName
+
+        // Перехватываем события от HalfSocket
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if (socketRoot.state === "collapsed") {
+                    socketRoot.state = "expanded"
+                    socketRoot.socketExpandRequest()
+                }
+                mouse.accepted = true // Останавливаем распространение события
+            }
+        }
     }
     Rectangle {
         id: middleRect
@@ -81,14 +119,15 @@ Rectangle {
             id: fontMetrics
             font: socketNameLabel.font
         }
+        // MouseArea для middleRect - переход в collapsed
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                if (socketRoot.state === "collapsed") {
-                    socketRoot.socketExpandRequest()
-                } else {
+                if (socketRoot.state === "expanded") {
+                    socketRoot.state = "collapsed"
                     socketRoot.socketCollapseRequest()
                 }
+                mouse.accepted = true // Останавливаем распространение события
             }
         }
     }
@@ -195,15 +234,48 @@ Rectangle {
     ]
     // Переходы между состояниями (опционально)
     transitions: [
-        Transition {
-            from: "collapsed"
-            to: "expanded"
-            NumberAnimation {  duration: 100; easing.type: Easing.InQuad }
-        },
-        Transition {
-            from: "expanded"
-            to: "collapsed"
-            NumberAnimation { duration: 100; easing.type: Easing.InQuad }
-        }
+//        Transition {
+//            from: "collapsed"
+//            to: "expanded"
+//            ParallelAnimation {
+//                // Основная анимация высоты с более плавным easing
+//                NumberAnimation {
+//                    properties: "height"
+//                    duration: 400
+//                    easing.type: Easing.OutQuart
+//                }
+//                // Плавная анимация позиционирования
+//                AnchorAnimation {
+//                    duration: 400
+//                    easing.type: Easing.OutQuart
+//                }
+//                // Плавная анимация свойств
+//                PropertyAnimation {
+//                    properties: "width,color"
+//                    duration: 400
+//                    easing.type: Easing.OutQuart
+//                }
+//            }
+//        },
+//        Transition {
+//            from: "expanded"
+//            to: "collapsed"
+//            ParallelAnimation {
+//                NumberAnimation {
+//                    properties: "height"
+//                    duration: 350
+//                    easing.type: Easing.InQuart
+//                }
+//                AnchorAnimation {
+//                    duration: 350
+//                    easing.type: Easing.InQuart
+//                }
+//                PropertyAnimation {
+//                    properties: "width,color"
+//                    duration: 350
+//                    easing.type: Easing.InQuart
+//                }
+//            }
+//        }
     ]
 }

@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtGraphicalEffects 1.15
 
 Canvas {
     id: modePowerRect
@@ -116,6 +117,21 @@ Canvas {
         ctx.fill();
     }
 
+//    // Поведенческие анимации для плавных переходов
+//    Behavior on height {
+//        NumberAnimation {
+//            duration: 400
+//            easing.type: Easing.OutQuart
+//        }
+//    }
+
+//    Behavior on width {
+//        NumberAnimation {
+//            duration: 400
+//            easing.type: Easing.OutQuart
+//        }
+//    }
+
     Connections {
         target: modePowerRect
         function onModeIdChanged() {
@@ -130,7 +146,7 @@ Canvas {
         Label {
             id: modeLabel
             text: modeName
-            font.pixelSize: 22
+            font.pixelSize: 33
             font.bold: true
             wrapMode: Text.Wrap
             height: 60
@@ -139,6 +155,13 @@ Canvas {
             anchors {
                 margins: 10
                 fill: parent
+            }
+
+            Behavior on font.pixelSize {
+                NumberAnimation {
+                    duration: 400
+                    easing.type: Easing.OutQuart
+                }
             }
         }
         MouseArea {
@@ -157,7 +180,7 @@ Canvas {
             visible: (modeId != 1000)
             width: fontMetrics.advanceWidth("999")
             height: 31
-            font.pixelSize: 30
+            font.pixelSize: 40
             font.bold: true
             color: isCoag ? "white" : "black"
             verticalAlignment: Qt.AlignVCenter
@@ -165,6 +188,24 @@ Canvas {
                 margins: 10
                 fill: parent
             }
+            // Поведенческая анимация для размера шрифта
+            Behavior on font.pixelSize {
+                NumberAnimation {
+                    duration: 300
+                    easing.type: Easing.OutCube
+                }
+            }
+
+//            DropShadow {
+//                anchors.fill: powerLabel
+//                horizontalOffset: 2
+//                verticalOffset: 2
+//                radius: 4
+//                samples: 9
+//                color: "#80000000"  // Полупрозрачный черный
+//                source: powerLabel
+//            }
+
         }
         FontMetrics {
             id: fontMetrics
@@ -176,7 +217,8 @@ Canvas {
         width: 60
         height: 60
         color: "transparent"
-        radius: 8
+        radius: 10
+        opacity: 1
         border {
             color: modePowerRect.isCoag ? "white" : "color"
             width: 2
@@ -204,7 +246,8 @@ Canvas {
         width: 60
         height: 60
         color: "transparent"
-        radius: 8
+        radius: 10
+        opacity: 1
         border {
             color: modePowerRect.isCoag ? "white" : "color"
             width: 2
@@ -230,6 +273,7 @@ Canvas {
     Slider {
         id: powerSlider
         value: modePower
+        opacity: 1
         from: 1
         to: maxPower
         onValueChanged: {
@@ -349,16 +393,123 @@ Canvas {
             }
         }
     ]
-    transitions: [
-        Transition {
-            from: "collapsed"
-            to: "expanded"
-            NumberAnimation {  duration: 100; easing.type: Easing.InQuad }
-        },
-        Transition {
-            from: "expanded"
-            to: "collapsed"
-            NumberAnimation { duration: 100; easing.type: Easing.InQuad }
-        }
-    ]
+//    transitions: [
+//        Transition {
+//            from: "collapsed"
+//            to: "expanded"
+//            SequentialAnimation {
+//                // Этап 1: Плавное изменение размеров шрифта
+//                ParallelAnimation {
+//                    NumberAnimation {
+//                        target: powerLabel
+//                        properties: "font.pixelSize"
+//                        duration: 300
+//                        easing.type: Easing.OutQuart
+//                    }
+//                    NumberAnimation {
+//                        target: modeLabel
+//                        properties: "font.pixelSize"
+//                        duration: 300
+//                        easing.type: Easing.OutQuart
+//                    }
+//                    NumberAnimation {
+//                        target: power
+//                        properties: "anchors.topMargin"
+//                        duration: 300
+//                        easing.type: Easing.OutQuart
+//                    }
+//                }
+//                // Этап 2: Плавное появление кнопок
+//                ParallelAnimation {
+//                    PropertyAnimation {
+//                        target: powerPlusButton
+//                        properties: "visible,opacity"
+//                        duration: 200
+//                        easing.type: Easing.OutQuad
+//                    }
+//                    PropertyAnimation {
+//                        target: powerMinusButton
+//                        properties: "visible,opacity"
+//                        duration: 200
+//                        easing.type: Easing.OutQuad
+//                    }
+//                    PropertyAnimation {
+//                        target: powerSlider
+//                        properties: "visible,opacity"
+//                        duration: 200
+//                        easing.type: Easing.OutQuad
+//                    }
+//                }
+//                // Этап 3: Плавное позиционирование
+//                AnchorAnimation {
+//                    duration: 250
+//                    easing.type: Easing.OutQuart
+//                }
+//            }
+//        },
+//        Transition {
+//            from: "expanded"
+//            to: "collapsed"
+//            SequentialAnimation {
+//                // Этап 1: Плавное скрытие кнопок
+//                ParallelAnimation {
+//                    PropertyAnimation {
+//                        target: powerPlusButton
+//                        properties: "opacity"
+//                        from: 1
+//                        to: 0
+//                        duration: 150
+//                        easing.type: Easing.InQuad
+//                    }
+//                    PropertyAnimation {
+//                        target: powerMinusButton
+//                        properties: "opacity"
+//                        from: 1
+//                        to: 0
+//                        duration: 150
+//                        easing.type: Easing.InQuad
+//                    }
+//                    PropertyAnimation {
+//                        target: powerSlider
+//                        properties: "opacity"
+//                        from: 1
+//                        to: 0
+//                        duration: 150
+//                        easing.type: Easing.InQuad
+//                    }
+//                }
+//                // Этап 2: Скрытие элементов
+//                PropertyAnimation {
+//                    targets: [powerPlusButton, powerMinusButton, powerSlider]
+//                    properties: "visible"
+//                    duration: 0
+//                }
+//                // Этап 3: Плавное изменение размеров
+//                ParallelAnimation {
+//                    NumberAnimation {
+//                        target: powerLabel
+//                        properties: "font.pixelSize"
+//                        duration: 350
+//                        easing.type: Easing.InQuart
+//                    }
+//                    NumberAnimation {
+//                        target: modeLabel
+//                        properties: "font.pixelSize"
+//                        duration: 350
+//                        easing.type: Easing.InQuart
+//                    }
+//                    NumberAnimation {
+//                        target: power
+//                        properties: "anchors.topMargin"
+//                        duration: 350
+//                        easing.type: Easing.InQuart
+//                    }
+//                    AnchorAnimation {
+//                        duration: 350
+//                        easing.type: Easing.InQuart
+//                    }
+//                }
+//            }
+//            }
+//    ]
 }

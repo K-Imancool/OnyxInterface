@@ -15,91 +15,248 @@ Window {
     title: qsTr("Ты волшебник, Гарри!")
     color: "black"
 
-    StatusBar {
-        id: statusDummy
-        //я искал панграммы для русского и хорошо так посмеялся с эфы
-        text: qsTr("В бою с шипящими змеями — эфой и гадюкой — маленький, цепкий, храбрый ёж съел их")
-        anchors {
-            bottom: socketsDummy.top
-            right: parent.right
-            left: parent.left
-            top: parent.top
-            margins: 10
-        }
-    }
+//    Rectangle {
+//        id: leftPanel
+//        width: 85
+//        color: "gray"
+//        anchors {
+//            bottomMargin: parent.bottom
+//            topMargin: parent.top
+//            leftMargin: parent.left
+//        }
+//    }
+
+    // Свойства для управления панелями
+    property bool leftPanelExpanded: false
+    property bool rightPanelExpanded: false
+
+
+//    Drawer {
+//        id: leftDrawer
+//        width: 0.5 * container.width
+//        height: container.height
+
+//        // Loader
+//        // SettingsMain {
+//        MenuLoader {
+//            id: menuLoad
+//            anchors.fill: parent
+//        }
+//    }
+
 
     SocketContainerV2 {
         id: socketsDummy
         innerModel: theModel
-        width: 1080
-        height: 720
+        width: parent.width - 170
+        height: parent.height
         anchors {
-            bottom: parent.bottom
-            right: parent.right
-            margins: 10
+            horizontalCenter: parent.horizontalCenter
+//            bottom: parent.bottom
+//            top: parent.top
+//            leftMargin: 85
+//            rightMargin: 85
         }
-    }
-    Rectangle {
-        id: argonDummy
-        radius: 8
-        color: "lightgray"
-        anchors {
-            left: parent.left
-            right: socketsDummy.left
-            leftMargin: 10
-            rightMargin: 10
-            bottomMargin: 10
-            topMargin: 0
-            top: socketsDummy.top
-            bottom: neutralDummy.top
-        }
-        border {
-            color: "black"
-            width: 1
-        }
-    }
-    Rectangle {
-        id: neutralDummy
-        height: .25 * socketsDummy.height
-        radius: 8
-        color: "green"
-        anchors {
-            left: parent.left
-            right: socketsDummy.left
-            bottom: parent.bottom
-            margins: 10
-        }
-        border {
-            color: "black"
-            width: 1
+
+        StatusBar {
+            id: statusDummy
+            //я искал панграммы для русского и хорошо так посмеялся с эфы
+            text: qsTr("В бою с шипящими змеями — эфой и гадюкой — маленький, цепкий, храбрый ёж съел их")
+            width: parent.width
+            anchors {
+                top: parent.top
+            }
         }
     }
 
-    Drawer {
-        id: leftDrawer
-        width: 0.8 * container.width
+    // Левая панель - перекрывает центральный контейнер
+    Rectangle {
+        id: leftPanel
+        width: leftPanelExpanded ? container.width / 2 : 85
         height: container.height
+        color: "#2c2c2c"
+        x: leftPanelExpanded ? 0 : 0  // ✅ Всегда видима
+        z: 10
 
-        // Loader
-        // SettingsMain {
-        MenuLoader {
-            id: menuLoad
-            anchors.fill: parent
+        // В развернутом состоянии - полные блоки
+        Rectangle {
+            id: argonDummy
+            radius: 8
+            color: "lightgray"
+            height: 100
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                margins: 10
+            }
+            border {
+                color: "black"
+                width: 1
+            }
+            visible: leftPanelExpanded
+
+            Text {
+                anchors.centerIn: parent
+                text: "Argon"
+                font.pixelSize: 16
+                color: "black"
+            }
+        }
+
+//        Rectangle {
+//            id: neutralDummy
+//            height: 100
+//            radius: 8
+//            color: "green"
+//            anchors {
+//                left: parent.left
+//                right: parent.right
+//                bottom: parent.bottom
+//                margins: 10
+//            }
+//            border {
+//                color: "black"
+//                width: 1
+//            }
+//            visible: leftPanelExpanded
+
+//            Text {
+//                anchors.centerIn: parent
+//                text: "Neutral"
+//                font.pixelSize: 16
+//                color: "white"
+//            }
+//        }
+
+        // В свернутом состоянии - маленькие кнопки
+        Rectangle {
+            id: argonButton
+            width: parent.width
+            height: 100
+            radius: 5
+            color: "lightgray"
+            anchors {
+                top: parent.top
+                horizontalCenter: parent.horizontalCenter
+                topMargin: 20
+            }
+            border {
+                color: "black"
+                width: 1
+            }
+            visible: !leftPanelExpanded
+
+            Text {
+                anchors.centerIn: parent
+                text: "A"
+                font.pixelSize: 12
+                color: "black"
+            }
+        }
+
+        // NeutralEl компонент
+        NeutralEl {
+            id: neutralEl
+            height: leftPanelExpanded ? 100 : 30
+            anchors {
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+                margins: leftPanelExpanded ? 10 : 5
+            }
+
+            // Передаем параметры
+            neutralConnected: container.neutralConnected
+            showControls: leftPanelExpanded
+
+            // Обработчики сигналов
+            onNeutralTypeChanged: {
+                console.log("Neutral type changed to:", newType)
+            }
+
+            onNeutralSizeChanged: {
+                console.log("Neutral size changed to:", newSize)
+            }
         }
     }
 
-    Connections {
-        target: statusDummy
-        function onDrawerCalled() {
-            leftDrawer.open()
+    // Правая панель - перекрывает центральный контейнер
+    Rectangle {
+        id: rightPanel
+        width: rightPanelExpanded ? container.width / 2 : 85
+        height: container.height
+        color: "#2c2c2c"
+        x: rightPanelExpanded ? container.width - width : container.width - 85
+        z: 10  // Поверх центрального контейнера
+
+        Behavior on x {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        Behavior on width {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        // Содержимое правой панели
+        Rectangle {
+            id: pedal
+            width: 60
         }
     }
-    Connections {
-        target: menuLoad
-        function onCloseMe() {
-            leftDrawer.close()
+
+    // Область для свайпов
+    MouseArea {
+        id: swipeArea
+        anchors.fill: parent
+        z: 5  // Между панелями и центральным контейнером
+
+        property real startX: 0
+
+        onPressed: {
+            startX = mouse.x
+        }
+
+        onReleased: {
+            var deltaX = mouse.x - startX
+            var threshold = 50
+
+            if (Math.abs(deltaX) > threshold) {
+                if (deltaX > 0 && startX < 100) {
+                    // Свайп вправо от левого края
+                    leftPanelExpanded = true
+                } else if (deltaX < 0 && startX > container.width - 100) {
+                    // Свайп влево от правого края
+                    rightPanelExpanded = true
+                } else if (deltaX < 0 && leftPanelExpanded) {
+                    // Свайп влево для закрытия левой панели
+                    leftPanelExpanded = false
+                } else if (deltaX > 0 && rightPanelExpanded) {
+                    // Свайп вправо для закрытия правой панели
+                    rightPanelExpanded = false
+                }
+            }
         }
     }
+
+//    Connections {
+//        target: statusDummy
+//        function onDrawerCalled() {
+//            leftDrawer.open()
+//        }
+//    }
+//    Connections {
+//        target: menuLoad
+//        function onCloseMe() {
+//            leftDrawer.close()
+//        }
+//    }
 
     // InputPanel {
     //     id: inputPanel
