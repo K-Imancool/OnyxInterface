@@ -24,6 +24,7 @@ Rectangle {
         isCoag: halfSocketRoot.isCoag
         instrumName: halfSocketRoot.instrumName
         instrumId: halfSocketRoot.instrumId
+        modeId: halfSocketRoot.modeId
         anchors {
             top: parent.top
             left: parent.left
@@ -78,7 +79,8 @@ Rectangle {
             name: "expanded"
             PropertyChanges {
                 target: instrumRect;
-                visible: (halfSocketRoot.modeId != 1000)
+                visible: true
+//                visible: (halfSocketRoot.modeId != 1000)
                 height: halfSocketRoot.height * .4
             }
         }

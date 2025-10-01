@@ -8,6 +8,7 @@ Rectangle {
     property bool isCoag
     property string instrumName/*: "Биполярный лапороскопический инструмент"*/
     property int instrumId
+    property int modeId: 0
 
     signal instrumEditDialogRequest()
 
@@ -53,6 +54,7 @@ Rectangle {
             ctx.fillStyle = "black";
             ctx.fill();
         }
+        
         Image {
             id: instrImage
             asynchronous: true
@@ -60,8 +62,7 @@ Rectangle {
             height: 120
             fillMode: Image.PreserveAspectFit
             source: "image://instrums/miniInstr" + (instrumId+1)
-//            fillMode: Image.PreserveAspectFit
-//            anchors.fill: parent
+            visible: (modeId != 1000)
             anchors {
                 top: parent.top
                 topMargin: 10
@@ -81,6 +82,7 @@ Rectangle {
             color: "white"
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
+            visible: (modeId != 1000)
             anchors.left: isCoag ? parent.left : instrImage.right
             anchors.right: isCoag ? instrImage.left : parent.right
             anchors.bottom: parent.bottom

@@ -24,8 +24,6 @@ Repeater {
         var spacersHeight = (count) * repeatRoot.usedSpacing;
         for (var i = 0; i < count; i++) {
             if (!(itemAt(i) instanceof StatesSocket)) {
-                console.log("oops")
-                // console.log("Object type:", getObjectType(itemAt(i)));
                 continue
             }
             if (itemAt(i).state === "expanded") {
@@ -45,10 +43,8 @@ Repeater {
         var totalFixedHeight = 0
         var expandedCount = 0
         var spacersHeight = (count) * repeatRoot.usedSpacing;
-        // console.log(count, "col")
         for (var i = 0; i < count; i++) {
             if (!(itemAt(i) instanceof StatesSocket)) {
-                // console.log("Object type:", getObjectType(itemAt(i)));
                 continue
             }
             if (itemAt(i).state === "expanded") {

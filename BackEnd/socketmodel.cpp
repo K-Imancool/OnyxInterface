@@ -11,7 +11,8 @@ SocketModel::SocketModel(QObject *parent)
                                                     const QVector<int> &roles) {
         if (!roles.contains(SocketDisplayMode))
             return;
-        if (topLeft.data(SocketDisplayMode).toString() == "expanded")
+        QString displayMode = topLeft.data(SocketDisplayMode).toString();
+        if (displayMode == "expanded")
             socketCollapser(topLeft.row());
     });
 }

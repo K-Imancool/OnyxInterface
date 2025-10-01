@@ -192,7 +192,7 @@ Canvas {
             Behavior on font.pixelSize {
                 NumberAnimation {
                     duration: 300
-                    easing.type: Easing.OutCube
+                    easing.type: Easing.OutCubic
                 }
             }
 
@@ -292,12 +292,12 @@ Canvas {
             PropertyChanges {
                 target: powerLabel;
                 horizontalAlignment: isCoag ? Text.AlignLeft : Text.AlignRight
-                font.pixelSize: 34
+                font.pixelSize: 50
             }
             PropertyChanges {
                 target: modeLabel;
                 horizontalAlignment: isCoag ? Text.AlignRight : Text.AlignLeft
-                font.pixelSize: 20
+                font.pixelSize: 25
             }
             PropertyChanges {
                 target: power;
@@ -346,7 +346,7 @@ Canvas {
             PropertyChanges {
                 target: powerLabel;
                 horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: 50
+                font.pixelSize: 60
             }
             PropertyChanges {
                 target: modeLabel;
@@ -364,18 +364,18 @@ Canvas {
             AnchorChanges {
                 target: powerPlusButton
                 anchors.right: modePowerRect.right
-                anchors.bottom: modePowerRect.bottom
+                anchors.verticalCenter: power.verticalCenter
             }
             AnchorChanges {
                 target: powerMinusButton
                 anchors.left: modePowerRect.left
-                anchors.bottom: modePowerRect.bottom
+                anchors.verticalCenter: power.verticalCenter
             }
             AnchorChanges {
                 target: powerSlider
                 anchors.left: powerMinusButton.right
                 anchors.right: powerPlusButton.left
-                anchors.verticalCenter: powerPlusButton.verticalCenter
+                anchors.bottom: modePowerRect.bottom
             }
             AnchorChanges {
                 target: mode

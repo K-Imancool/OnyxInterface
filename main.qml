@@ -50,6 +50,7 @@ Window {
         innerModel: theModel
         width: parent.width - 170
         height: parent.height
+        z: 1  // Ниже панелей, но выше MouseArea
         anchors {
             horizontalCenter: parent.horizontalCenter
 //            bottom: parent.bottom
@@ -211,36 +212,59 @@ Window {
         }
     }
 
-    // Область для свайпов
+    // Область для свайпов и закрытия панелей
     MouseArea {
         id: swipeArea
         anchors.fill: parent
-        z: 5  // Между панелями и центральным контейнером
+        z: leftPanelExpanded || rightPanelExpanded ? 2 : 0  // Выше сокетов при открытых панелях
+
+        // Не перехватываем события, если клик не по краям
+        acceptedButtons: Qt.LeftButton
+        propagateComposedEvents: true
 
         property real startX: 0
+        property bool isSwipeGesture: false
 
         onPressed: {
             startX = mouse.x
+            isSwipeGesture = false
+
+            // Проверяем, что клик по краю экрана ИЛИ панель уже открыта
+            if (mouse.x < 100 || mouse.x > container.width - 100 || 
+                leftPanelExpanded || rightPanelExpanded) {
+                isSwipeGesture = true
+            }
         }
 
         onReleased: {
+            if (!isSwipeGesture) {
+                mouse.accepted = false // Позволяем событию пройти дальше
+                return
+            }
+
             var deltaX = mouse.x - startX
             var threshold = 50
 
             if (Math.abs(deltaX) > threshold) {
                 if (deltaX > 0 && startX < 100) {
-                    // Свайп вправо от левого края
                     leftPanelExpanded = true
                 } else if (deltaX < 0 && startX > container.width - 100) {
-                    // Свайп влево от правого края
                     rightPanelExpanded = true
                 } else if (deltaX < 0 && leftPanelExpanded) {
-                    // Свайп влево для закрытия левой панели
                     leftPanelExpanded = false
                 } else if (deltaX > 0 && rightPanelExpanded) {
-                    // Свайп вправо для закрытия правой панели
                     rightPanelExpanded = false
                 }
+            }
+        }
+
+        onClicked: {
+            // Закрываем панели при клике вне их области
+            if (leftPanelExpanded && mouse.x > leftPanel.width) {
+                leftPanelExpanded = false
+            }
+            if (rightPanelExpanded && mouse.x < rightPanel.x) {
+                rightPanelExpanded = false
             }
         }
     }

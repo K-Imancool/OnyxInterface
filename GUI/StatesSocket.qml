@@ -30,8 +30,15 @@ Rectangle {
     signal socketExpandRequest()
     signal socketCollapseRequest()
 
-    state: "expanded"
-    // state: "collapsed"
+    state: model.socketdisplaymode
+    
+    // Принудительно обновляем state при изменении модели
+    property string currentModelState: model.socketdisplaymode
+    onCurrentModelStateChanged: {
+        if (state !== currentModelState) {
+            state = currentModelState
+        }
+    }
 
     // MouseArea для всего сокета - переход в expanded
    MouseArea {
@@ -45,6 +52,8 @@ Rectangle {
        }
        // Не перехватываем события от дочерних элементов
        propagateComposedEvents: true
+       // Не перехватываем события, если сокет уже развернут
+       enabled: socketRoot.state === "collapsed"
    }
 
     HalfSocket {
@@ -58,7 +67,7 @@ Rectangle {
         instrumId:  socketRoot.cutInstrumId
         instrumName: socketRoot.cutInstrumName
 
-        // Перехватываем события от HalfSocket
+        // Перехватываем события от HalfSocket только для разворачивания
         MouseArea {
             anchors.fill: parent
             onClicked: {
@@ -68,6 +77,8 @@ Rectangle {
                 }
                 mouse.accepted = true // Останавливаем распространение события
             }
+            // Не перехватываем события, если сокет уже развернут
+            enabled: socketRoot.state === "collapsed"
         }
     }
     HalfSocket {
@@ -81,7 +92,7 @@ Rectangle {
         instrumId:  socketRoot.coagInstrumId
         instrumName: socketRoot.coagInstrumName
 
-        // Перехватываем события от HalfSocket
+        // Перехватываем события от HalfSocket только для разворачивания
         MouseArea {
             anchors.fill: parent
             onClicked: {
@@ -91,6 +102,8 @@ Rectangle {
                 }
                 mouse.accepted = true // Останавливаем распространение события
             }
+            // Не перехватываем события, если сокет уже развернут
+            enabled: socketRoot.state === "collapsed"
         }
     }
     Rectangle {
