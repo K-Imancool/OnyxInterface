@@ -15,20 +15,18 @@ Window {
     title: qsTr("Ты волшебник, Гарри!")
     color: "black"
 
-//    Rectangle {
-//        id: leftPanel
-//        width: 85
-//        color: "gray"
-//        anchors {
-//            bottomMargin: parent.bottom
-//            topMargin: parent.top
-//            leftMargin: parent.left
-//        }
-//    }
 
     // Свойства для управления панелями
     property bool leftPanelExpanded: false
     property bool rightPanelExpanded: false
+    
+    // Свойство для нейтрального электрода
+    property bool neutralConnected: false
+    
+    // Отладка изменений состояния панелей
+    onRightPanelExpandedChanged: {
+        console.log("Right panel expanded changed to:", rightPanelExpanded)
+    }
 
 
 //    Drawer {
@@ -44,37 +42,39 @@ Window {
 //        }
 //    }
 
+    StatusBar {
+        id: statusDummy
+        //я искал панграммы для русского и хорошо так посмеялся с эфы
+        text: qsTr("В бою с шипящими змеями — эфой и гадюкой — маленький, цепкий, храбрый ёж съел их")
+        width: parent.width
+        height: 85
+        anchors {
+            top: parent.top
+        }
+    }
 
     SocketContainerV2 {
         id: socketsDummy
         innerModel: theModel
         width: parent.width - 170
-        height: parent.height
+//        height: parent.height - 85
         z: 1  // Ниже панелей, но выше MouseArea
         anchors {
             horizontalCenter: parent.horizontalCenter
-//            bottom: parent.bottom
-//            top: parent.top
+            bottom: parent.bottom
+            top: statusDummy.bottom
 //            leftMargin: 85
 //            rightMargin: 85
         }
 
-        StatusBar {
-            id: statusDummy
-            //я искал панграммы для русского и хорошо так посмеялся с эфы
-            text: qsTr("В бою с шипящими змеями — эфой и гадюкой — маленький, цепкий, храбрый ёж съел их")
-            width: parent.width
-            anchors {
-                top: parent.top
-            }
-        }
     }
 
     // Левая панель - перекрывает центральный контейнер
     Rectangle {
         id: leftPanel
         width: leftPanelExpanded ? container.width / 2 : 85
-        height: container.height
+        height: socketsDummy.height
+        anchors.bottom: socketsDummy.bottom
         color: "#2c2c2c"
         x: leftPanelExpanded ? 0 : 0  // ✅ Всегда видима
         z: 10
@@ -105,31 +105,6 @@ Window {
             }
         }
 
-//        Rectangle {
-//            id: neutralDummy
-//            height: 100
-//            radius: 8
-//            color: "green"
-//            anchors {
-//                left: parent.left
-//                right: parent.right
-//                bottom: parent.bottom
-//                margins: 10
-//            }
-//            border {
-//                color: "black"
-//                width: 1
-//            }
-//            visible: leftPanelExpanded
-
-//            Text {
-//                anchors.centerIn: parent
-//                text: "Neutral"
-//                font.pixelSize: 16
-//                color: "white"
-//            }
-//        }
-
         // В свернутом состоянии - маленькие кнопки
         Rectangle {
             id: argonButton
@@ -159,7 +134,7 @@ Window {
         // NeutralEl компонент
         NeutralEl {
             id: neutralEl
-            height: leftPanelExpanded ? 100 : 30
+            height: leftPanelExpanded ? 100 : 85
             anchors {
                 left: parent.left
                 right: parent.right
@@ -186,30 +161,13 @@ Window {
     Rectangle {
         id: rightPanel
         width: rightPanelExpanded ? container.width / 2 : 85
-        height: container.height
+        height: socketsDummy.height
         color: "#2c2c2c"
-        x: rightPanelExpanded ? container.width - width : container.width - 85
+        anchors.bottom: socketsDummy.bottom
+        x: container.width - width
         z: 10  // Поверх центрального контейнера
+        
 
-        Behavior on x {
-            NumberAnimation {
-                duration: 300
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        Behavior on width {
-            NumberAnimation {
-                duration: 300
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        // Содержимое правой панели
-        Rectangle {
-            id: pedal
-            width: 60
-        }
     }
 
     // Область для свайпов и закрытия панелей
@@ -218,47 +176,62 @@ Window {
         anchors.fill: parent
         z: leftPanelExpanded || rightPanelExpanded ? 2 : 0  // Выше сокетов при открытых панелях
 
-        // Не перехватываем события, если клик не по краям
-        acceptedButtons: Qt.LeftButton
-        propagateComposedEvents: true
-
         property real startX: 0
         property bool isSwipeGesture: false
+        property real startTime: 0
 
         onPressed: {
             startX = mouse.x
+            startTime = Date.now()
             isSwipeGesture = false
 
-            // Проверяем, что клик по краю экрана ИЛИ панель уже открыта
-            if (mouse.x < 100 || mouse.x > container.width - 100 || 
-                leftPanelExpanded || rightPanelExpanded) {
+            // Проверяем области для свайпа:
+            // - Левая область для открытия левой панели
+            // - Правая область для открытия правой панели  
+            // - Любое место, если панель уже открыта
+            if ((mouse.x < 100) ||
+               (mouse.x > container.width - 100) ||
+               (leftPanelExpanded && (mouse.x < container.width / 2)) ||
+               (rightPanelExpanded && (mouse.x > container.width / 2))) {
                 isSwipeGesture = true
             }
         }
 
         onReleased: {
             if (!isSwipeGesture) {
-                mouse.accepted = false // Позволяем событию пройти дальше
                 return
             }
 
             var deltaX = mouse.x - startX
-            var threshold = 50
+            var threshold = 50 // Уменьшил порог для лучшей чувствительности
+            var swipeThreshold = Math.abs(deltaX)
 
-            if (Math.abs(deltaX) > threshold) {
-                if (deltaX > 0 && startX < 100) {
-                    leftPanelExpanded = true
-                } else if (deltaX < 0 && startX > container.width - 100) {
-                    rightPanelExpanded = true
-                } else if (deltaX < 0 && leftPanelExpanded) {
+            // Длинное нажатие определяем как свайп
+            if (swipeThreshold > threshold) {
+                // Закрытие панелей имеет приоритет
+                if (leftPanelExpanded && deltaX < -threshold) {
                     leftPanelExpanded = false
-                } else if (deltaX > 0 && rightPanelExpanded) {
-                    rightPanelExpanded = false
+                } else if (rightPanelExpanded && deltaX > threshold) {
+                    rightPanelExpanded = false  
+                }
+                // Открытие панелей
+                else if (!leftPanelExpanded && !rightPanelExpanded && startX < 100 && deltaX > threshold) {
+                    leftPanelExpanded = true
+                } else if (!leftPanelExpanded && !rightPanelExpanded && startX > container.width - 100 && deltaX < -threshold) {
+                    rightPanelExpanded = true
                 }
             }
         }
 
         onClicked: {
+            var currentTime = Date.now()
+            var gestureDuration = currentTime - startTime
+
+            // Игнорируем клики, которые являются частью свайпа (быстрые и с большим смещением)
+            if (gestureDuration < 300 && Math.abs(mouse.x - startX) > 50) {
+                return
+            }
+            
             // Закрываем панели при клике вне их области
             if (leftPanelExpanded && mouse.x > leftPanel.width) {
                 leftPanelExpanded = false
@@ -267,6 +240,7 @@ Window {
                 rightPanelExpanded = false
             }
         }
+        
     }
 
 //    Connections {
