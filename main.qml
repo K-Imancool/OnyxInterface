@@ -167,7 +167,143 @@ Window {
         x: container.width - width
         z: 10  // Поверх центрального контейнера
         
+        // 4 объекта pedal, привязанные к положению сокетов
+        Repeater {
+            model: 4
+            delegate: Pedal {
+                id: pedalDelegate
+                property int socketIndex: index
 
+                // Находим целевой сокет и подписываемся на его сигнал
+                Component.onCompleted: {
+                    // Используем Timer для задержки
+                    searchTimer.start()
+                }
+
+                // Timer для задержки поиска сокета
+                Timer {
+                    id: searchTimer
+                    interval: 100  // 100 мс задержки
+                    repeat: false
+                    onTriggered: {
+                        findAndConnectToSocket()
+                    }
+                }
+
+                // Функция для поиска сокета и подключения к сигналу
+                function findAndConnectToSocket() {
+                    try {
+                        var repeater = null
+                        
+                        // Пробуем разные способы доступа
+                        if (socketsDummy.repeat) {
+                            repeater = socketsDummy.repeat
+                        } else if (socketsDummy.children.length > 0) {
+                            var layout = socketsDummy.children[0]
+                            
+                            // Ищем SocketRepeater в layout
+                            for (var j = 0; j < layout.children.length; j++) {
+                                var child = layout.children[j]
+                                if (child && typeof child.itemAt === 'function') {
+                                    repeater = child
+                                    break
+                                }
+                            }
+                        }
+                        
+                        if (!repeater) {
+                            retrySearch()
+                            return
+                        }
+                        
+                        if (repeater.count > socketIndex) {
+                            var socket = repeater.itemAt(socketIndex)
+                            if (socket) {
+                                // Подписываемся на сигнал
+                                socket.absolutePositionChanged.connect(function(socketId, absoluteY) {
+                                    if (socketId === socketIndex) {
+                                        updatePosition(absoluteY)
+                                    }
+                                })
+                                
+                                // Получаем начальную позицию сокета
+                                var initialAbsoluteY = socket.mapToItem(null, 0, 0).y
+                                updatePosition(initialAbsoluteY)
+                            } else {
+                                retrySearch()
+                            }
+                        } else {
+                            // Попробуем найти сокет напрямую в layout
+                            var layout = socketsDummy.children[0]
+                            var socketFound = false
+                            
+                            for (var k = 0; k < layout.children.length; k++) {
+                                var child = layout.children[k]
+                                if (child && child.socketId === socketIndex) {
+                                    // Подписываемся на сигнал
+                                    child.absolutePositionChanged.connect(function(socketId, absoluteY) {
+                                        if (socketId === socketIndex) {
+                                            updatePosition(absoluteY)
+                                        }
+                                    })
+                                    
+                                    // Получаем начальную позицию сокета
+                                    var initialAbsoluteY = child.mapToItem(null, 0, 0).y
+                                    updatePosition(initialAbsoluteY)
+                                    
+                                    socketFound = true
+                                    break
+                                }
+                            }
+                            
+                            if (!socketFound) {
+                                retrySearch()
+                            }
+                        }
+                    } catch (error) {
+                        retrySearch()
+                    }
+                }
+
+                // Функция для повторной попытки поиска
+                function retrySearch() {
+                    Qt.callLater(function() {
+                        findAndConnectToSocket()
+                    })
+                }
+
+                // Функция для обновления позиции педали
+                function updatePosition(absoluteY) {
+                    try {
+                        var panelAbsoluteY = rightPanel.mapToItem(null, 0, 0).y
+                        pedalDelegate.y = absoluteY - panelAbsoluteY
+                    } catch (error) {
+                        // Ошибка при обновлении позиции педали
+                    }
+                }
+
+                // Размеры педали
+                width: 60
+                height: 60
+                anchors.right: parent.right
+                anchors.rightMargin: 10
+
+                // Стилизация
+                color: "darkgray"
+                border.color: "white"
+                border.width: 2
+                radius: 5
+
+                // Текст с номером педали
+                Text {
+                    anchors.centerIn: parent
+                    text: (socketIndex + 1).toString()
+                    color: "white"
+                    font.pixelSize: 16
+                    font.bold: true
+                }
+            }
+        }
     }
 
     // Область для свайпов и закрытия панелей
@@ -242,168 +378,4 @@ Window {
         }
         
     }
-
-//    Connections {
-//        target: statusDummy
-//        function onDrawerCalled() {
-//            leftDrawer.open()
-//        }
-//    }
-//    Connections {
-//        target: menuLoad
-//        function onCloseMe() {
-//            leftDrawer.close()
-//        }
-//    }
-
-    // InputPanel {
-    //     id: inputPanel
-    //     z: 99
-    //     y: root.height
-    //     availableLanguageLayouts: ["Ru","En"]
-    //     anchors.left: parent.left
-    //     anchors.right: parent.right
-    //     states: State {
-    //         name: "visible"
-    //         when: Qt.inputMethod.visible
-    //         PropertyChanges {
-    //             target: inputPanel
-    //             y: root.height - inputPanel.height
-    //         }
-    //     }
-    //     transitions: Transition {
-    //         from: ""
-    //         to: "visible"
-    //         reversible: true
-    //         ParallelAnimation {
-    //             NumberAnimation {
-    //                 properties: "y"
-    //                 duration: 150
-    //                 easing.type: Easing.InOutQuad
-    //             }
-    //         }
-    //     }
-    // }
-//=======
-//import QtQuick.Controls 2.15
-//import QtQuick.Window 2.15
-//import QtQuick.Extras 1.4
-//import QtQuick.CuteKeyboard 1.0
-
-//import StratifyLabs.UI 2.0
-
-//ApplicationWindow {
-//    width: 1280
-//    height: 800
-//    visible: true
-
-//    property int activeIndex: -1
-
-//    Rectangle {
-//            anchors.fill: parent
-//            color: "white"
-
-//            Column {
-//                anchors.centerIn: parent
-//                spacing: 20
-
-//                Repeater {
-//                                model: 4
-//                                delegate: Item {
-//                                    width: 1155
-//                                    height: (index === activeIndex ? 300 : 100)
-
-//                                    property bool expanded: index === activeIndex
-
-//                                    Canvas {
-//                                        id: canvas
-//                                        anchors.fill: parent
-//                                        onPaint: {
-//                                            var ctx = getContext("2d");
-//                                            ctx.clearRect(0, 0, width, height);
-
-//                                            var r = 20;
-//                                            // Левая половина (жёлтая)
-//                                            ctx.beginPath();
-//                                            ctx.moveTo(r, 0);
-//                                            ctx.lineTo(width/2, 0);
-//                                            ctx.lineTo(width/2, height);
-//                                            ctx.lineTo(r, height);
-//                                            ctx.arcTo(0, height, 0, height - r, r);
-//                                            ctx.lineTo(0, r);
-//                                            ctx.arcTo(0, 0, r, 0, r);
-//                                            ctx.closePath();
-//                                            ctx.fillStyle = "#FFF82b";
-//                                            ctx.fill();
-
-//                                            // Правая половина (синяя)
-//                                            ctx.beginPath();
-//                                            ctx.moveTo(width/2, 0);
-//                                            ctx.lineTo(width - r, 0);
-//                                            ctx.arcTo(width, 0, width, r, r);
-//                                            ctx.lineTo(width, height - r);
-//                                            ctx.arcTo(width, height, width - r, height, r);
-//                                            ctx.lineTo(width/2, height);
-//                                            ctx.closePath();
-//                                            ctx.fillStyle = "#0B58FF";
-//                                            ctx.fill();
-
-//                                            // Обводка по всему прямоугольнику
-//                                            ctx.beginPath();
-//                                            ctx.moveTo(r, 0);
-//                                            ctx.lineTo(width - r, 0);
-//                                            ctx.arcTo(width, 0, width, r, r);
-//                                            ctx.lineTo(width, height - r);
-//                                            ctx.arcTo(width, height, width - r, height, r);
-//                                            ctx.lineTo(r, height);
-//                                            ctx.arcTo(0, height, 0, height - r, r);
-//                                            ctx.lineTo(0, r);
-//                                            ctx.arcTo(0, 0, r, 0, r);
-//                                            ctx.closePath();
-//                                            ctx.lineWidth = 1;
-//                                            ctx.strokeStyle = "black";
-//                                            ctx.stroke();
-//                                        }
-//                                    }
-
-//                                    // Текст в левой половине
-//                                    Text {
-//                                        anchors.verticalCenter: parent.verticalCenter
-//                                        anchors.left: parent.left
-//                                        anchors.leftMargin: 0
-//                                        width: parent.width / 2
-//                                        horizontalAlignment: Text.AlignHCenter
-//                                        verticalAlignment: Text.AlignVCenter
-//                                        font.pixelSize: expanded ? 36 : 20
-//                                        font.bold: true
-//                                        color: "black"
-//                                        text: expanded ? "Полное Резание" : "Сжато Резание"
-//                                        elide: Text.ElideRight
-//                                    }
-
-//                                    // Текст в правой половине
-//                                    Text {
-//                                        anchors.verticalCenter: parent.verticalCenter
-//                                        anchors.right: parent.right
-//                                        anchors.rightMargin: 0
-//                                        width: parent.width / 2
-//                                        horizontalAlignment: Text.AlignHCenter
-//                                        verticalAlignment: Text.AlignVCenter
-//                                        font.pixelSize: expanded ? 36 : 20
-//                                        font.bold: true
-//                                        color: "white"
-//                                        text: expanded ? "Полное Коагуляция" : "Сжато Коагуляция"
-//                                        elide: Text.ElideRight
-//                                    }
-
-//                                    MouseArea {
-//                                        anchors.fill: parent
-//                                        onClicked: activeIndex = index
-//                                        cursorShape: Qt.PointingHandCursor
-//                                    }
-//                                }
-//                            }
-//            }
-//        }
-//>>>>>>> Stashed changes
 }

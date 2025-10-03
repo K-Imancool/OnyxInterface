@@ -29,6 +29,7 @@ Rectangle {
     signal newPower(int socketId, int pwr, bool isCoag)
     signal socketExpandRequest()
     signal socketCollapseRequest()
+    signal absolutePositionChanged(int socketId, real absoluteY)  // Новый сигнал
 
     state: model.socketdisplaymode
     
@@ -38,6 +39,27 @@ Rectangle {
         if (state !== currentModelState) {
             state = currentModelState
         }
+    }
+
+    // Логирование абсолютного положения по высоте при изменении позиции
+    onYChanged: {
+        var absY = mapToItem(null, 0, 0).y
+        absolutePositionChanged(socketId, absY)
+    }
+    
+    onHeightChanged: {
+        var absY = mapToItem(null, 0, 0).y
+        absolutePositionChanged(socketId, absY)
+    }
+    
+    onStateChanged: {
+        var absY = mapToItem(null, 0, 0).y
+        absolutePositionChanged(socketId, absY)
+    }
+    
+    Component.onCompleted: {
+        var absY = mapToItem(null, 0, 0).y
+        absolutePositionChanged(socketId, absY)
     }
 
     // MouseArea для всего сокета - переход в expanded
