@@ -7,6 +7,7 @@ CONFIG += c++17
 LIBS += -lm
 
 HEADERS += \
+    $$PWD/EshfProgStringBuilder.h \
     $$PWD/Structures.h \
     $$PWD/controlcenter.h \
     $$PWD/HttpUploadController.h \
@@ -33,10 +34,10 @@ HEADERS += \
     $$PWD/surgicalmode.h \
     $$PWD/uartqmlbridge.h \
     $$PWD/userprogloader.h \
-    $$PWD/userprogsloadmodel.h \
     $$PWD/systemmonitor.h 
 
 SOURCES += \
+    $$PWD/EshfProgStringBuilder.cpp \
     $$PWD/controlcenter.cpp \
     $$PWD/HttpUploadController.cpp \
     $$PWD/databasereader.cpp \
@@ -53,7 +54,6 @@ SOURCES += \
     $$PWD/periphhandler.cpp \
     $$PWD/proghandle.cpp \
     $$PWD/progloader.cpp \
-    $$PWD/progloaderbase.cpp \
     $$PWD/recomprogloader.cpp \
     $$PWD/socket.cpp \
     $$PWD/socketmodeeditor.cpp \
@@ -62,7 +62,6 @@ SOURCES += \
     $$PWD/surgicalmode.cpp \
     $$PWD/uartqmlbridge.cpp \
     $$PWD/userprogloader.cpp \
-    $$PWD/userprogsloadmodel.cpp \
     $$PWD/systemmonitor.cpp 
 
 RESOURCES += \

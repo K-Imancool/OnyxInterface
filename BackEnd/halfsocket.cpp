@@ -7,28 +7,6 @@
 #include <QDebug>
 #include <QVector>
 
-namespace {
-// QStringList sortByExample(const QStringList& toSort, const QStringList& reference)
-// {
-//     //это отстойный по эффективности алгоритм, но применяем мы его только 8 раз на старте. (может как-то отпраллелить)
-//     //если будет мешать - можно вхардкодить
-//     QStringList result = toSort;
-
-//     std::stable_sort(result.begin(), result.end(),
-//                      [&reference](const QString& a, const QString& b) {
-//                          int indexA = reference.indexOf(a);
-//                          int indexB = reference.indexOf(b);
-
-//                          if (indexA != -1 && indexB != -1) return indexA < indexB;
-//                          if (indexA != -1) return true;
-//                          if (indexB != -1) return false;
-//                          return false;
-//                      });
-
-//     return result;
-// }
-}
-
 HalfSocket::HalfSocket(bool isCoag, int state)
     : m_isCoag(isCoag),
       m_state(state)
@@ -195,4 +173,35 @@ int HalfSocket::modeCount()
     if (m_modes.size())
         return m_modes.size() - 1;
     return 0;
+}
+
+HalfSocket::HalfSocket(const HalfSocket &other)
+{
+    if (&other == this) {
+        return;
+    }
+    m_modeIndex = other.m_modeIndex;
+    m_modeNames = other.m_modeNames;
+    m_isCoag = other.m_isCoag;
+    m_state = other.m_state;
+    for (auto modeIter = other.m_modes.constBegin(); modeIter != other.m_modes.constEnd(); ++modeIter) {
+        //создаём копию режима и новый шаредптр уже на копию
+        m_modes.insert(modeIter.key(), SurgModePtr::create(*modeIter.value()));
+    }
+}
+
+HalfSocket &HalfSocket::operator=(const HalfSocket &other)
+{
+    if (&other == this) {
+        return *this;
+    }
+    m_modeIndex = other.m_modeIndex;
+    m_modeNames = other.m_modeNames;
+    m_isCoag = other.m_isCoag;
+    m_state = other.m_state;
+    for (auto modeIter = other.m_modes.constBegin(); modeIter != other.m_modes.constEnd(); ++modeIter) {
+        //создаём копию режима и новый шаредптр уже на копию
+        m_modes.insert(modeIter.key(), SurgModePtr::create(*modeIter.value()));
+    }
+    return *this;
 }

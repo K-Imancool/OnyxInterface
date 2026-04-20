@@ -23,6 +23,8 @@ class SOCKET
 
 public:
     SOCKET(Onyx::SocType = Onyx::MONOPOLAR_1);
+    SOCKET(const SOCKET& other);
+    SOCKET& operator= (const SOCKET& other);
 
     /**
      * @brief Возвращает внутренний индекс текущего коаг режима

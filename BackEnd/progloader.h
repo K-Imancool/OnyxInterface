@@ -1,15 +1,17 @@
 #ifndef PROGLOADER_H
 #define PROGLOADER_H
 
-#include <QObject>
-#include <QPointer>
-#include <map>
 // #include <array>
 
 #include "BackEnd/progloaderbase.h"
 #include "instrument.h"
 #include "databasereader.h"
 #include "socketmodel.h"
+#include "Structures.h"
+
+#include <QObject>
+#include <QPointer>
+#include <map>
 // #include "userprogsloadmodel.h"
 // bi1CutInstr = "0", bi1CutMode = "1000", bi1CutPower = "1";
 
@@ -37,10 +39,7 @@ public slots:
 	
 signals:
 	
-public:
-	
-	bool readPreviousSocketSettings();
-	
+public:	
 	void defaultSocketInit(bool clear = true);
 	// void removeSubProg(int index);
 	/**
@@ -75,22 +74,26 @@ public:
 	
 	std::map<int, QString> getCategories();
 	
-	// std::map<int, QString> getUserProgList();
-	// QMap<int, QString> getUserProgList();
-	
-	// void saveUserProg(const QString& name);
 	void saveUserProg(const QString& scopeName,
 	                    const QString& progName);
 	
+
+	///формально ничего не мешает удалить/переименовать рекоменд прогу
 	void deleteUserProg(int id);
 	void deleteAllUserProgs();
+
+	void renameUserProg(int id, const QString& name);
+
+	void deleteUserScope(int id);
+
+	void renameUserScope(int id, const QString& name);
 	
 	/**
 	 * @brief Загружает последнее сохранённое состояние из БД
 	 */
 	bool loadCurrentState();
 	
-	std::map<int, std::map<int, Onyx::InstrInfo>> getConstraints(const QList<int> &idList);
+	std::map<int, std::map<int, Onyx::InstrInfo>> getConstraints(const std::vector<int> &idList);
 	
 	void setSocketModelPtr(QSharedPointer<SocketModel> newSocketModelPtr);
 
@@ -98,16 +101,24 @@ public:
 	
 	void setCurLoaderType(progType newCurLoaderType);
 
-public slots:
-	// bool loadUserProg(int userProgId);
-	
 private:
-	// std::map<int, QString> getProgList(bool isUser = false);
+	QList<QStringList> prepSaveState();
 	std::map<int, InstrPtr> getInstrums();
 	void saveProg(const QString& name = "");
-	
+	ProgLoaderBase* getLoader(progType type);
+	std::vector<int> getAllowedInstrs(int progId, const QVariantList& progItem);
+	std::vector<int> getAllowedModes(int progId, const QVariantList &progItem);
+	void fillHalfSocket(int halfSocket,
+	                    int socketNumber,
+	                    SockPtr socket,
+	                    const QVariantList& progItem,
+	                    const QStringList& modeNamesList,
+	                    const std::vector<int>& allowedModesId,
+	                    const std::map<int, std::map<int, Onyx::InstrInfo>>& instrumConstraints);
+
 	QSharedPointer<DataBaseReader> m_dbReaderPtr;
 	QSharedPointer<SocketModel> m_socketModelPtr;
+	progType m_curLoaderType = ptRecom;	
 
 	// std::map<int, QSharedPointer<ProgLoaderBase>> m_loaders;
 	// QPointer<ProgLoaderBase> loader = nullptr;

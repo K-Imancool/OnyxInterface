@@ -12,7 +12,8 @@ class ProgLoaderBase : public QObject
 {
 	Q_OBJECT
 public:
-	explicit ProgLoaderBase(QObject *parent = nullptr);
+	explicit ProgLoaderBase(QObject *parent = nullptr)
+	    : QObject{parent} {};
 
 	virtual std::map<int, QString> getPrograms(int scopeID) = 0;
 	virtual std::map<int, QString> getCategories() = 0;

@@ -1,23 +1,6 @@
 #include "socketmodel.h"
 #include <QQmlEngine>
 #include <QTimer>
-// #include <algorithm>
-
-namespace {
-template<typename Key, typename Value>
-void uniteMaps(
-    std::map<Key, Value>& destination,
-    const std::map<Key, Value>& source) {
-    for (const auto& [key, value] : source) {
-        auto it = destination.find(key);
-        if (it != destination.end()) {
-            continue;
-        } else {
-            destination[key] = value;
-        }
-    }
-}
-}
 
 SocketModel::SocketModel(QObject *parent)
     : QAbstractListModel{parent}
@@ -55,7 +38,7 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
     if (index.row() >= m_socketNames.size())
         return QVariant();
 
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr)
         return QVariant();
 
     const auto socketIter = m_itemsMapPtr->find(index.row());
@@ -163,20 +146,6 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         }
         return res;
     }
-    case CoagInstrIdList:
-    {
-        QStringList res;
-        std::map<int, Onyx::InstrInfo> all;
-        int lim = socketItem.coagModeCount();
-        for (int mode = 0; mode < lim; ++mode) {
-            const auto& modePtr = socketItem.getMode(mode, true);
-            uniteMaps(all, modePtr->InstrConstraints() );
-        }
-        for (const auto& [key, item] : all) {
-            res.append(QString::number(item.id));
-        }
-        return res;
-    }
     case CoagModeInstrNum:
     {
         if (socketItem.curCoagMode().isNull()
@@ -187,6 +156,7 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         // Если выбран пункт "НЕ ВЫБРАН" (ID = 1000), возвращаем 1000
         if (instrId == 1000)
             return 1000;
+        }
         
         auto iter = m_instrMapPtr->find(instrId);
         if (iter != m_instrMapPtr->end())
@@ -198,8 +168,9 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         return QVariant();
         //тут можно возращеть строку с именем или даже целиком с нужным ImageProvider
     case CoagModeInstrIndex:
-        if (socketItem.curCoagMode().isNull())
+        if (socketItem.curCoagMode().isNull()) {
             return -1;
+        }
         return socketItem.curCoagMode()->selectedInstrIndex();
 
     case CutModeIndex:
@@ -209,16 +180,19 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
     case CutModeIdList:
         return socketItem.cutModeNamesIds();
     case CutModeNum:
-        if (socketItem.curCutMode().isNull())
+        if (socketItem.curCutMode().isNull()) {
             return 0;
+        }
         return socketItem.curCutMode()->num();
     case CutModeBrief:
-        if (socketItem.curCutMode().isNull())
+        if (socketItem.curCutMode().isNull()) {
             return QString();
+        }
         return socketItem.curCutMode()->brief();
     case CutModeDescript:
-        if (socketItem.curCutMode().isNull())
+        if (socketItem.curCutMode().isNull()) {
             return QString();
+        }
         return socketItem.curCutMode()->descript();
     case CutModeName:
         return socketItem.cutModeName();
@@ -238,17 +212,20 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         return socketItem.cutModeNames();
     case CutModeInstrName:
     {
-        if (socketItem.curCutMode().isNull())
+        if (!m_instrMapPtr || socketItem.curCutMode().isNull()) {
             return QString();
+        }
         auto iter = m_instrMapPtr->find(socketItem.curCutMode()->selectedInstrId());
-        if (iter != m_instrMapPtr->end())
+        if (iter != m_instrMapPtr->end()) {
             return iter->second->name();
-        else
+        } else {
             return QString();
+        }
     }
     case CutModeInstrID:
-        if (socketItem.curCutMode().isNull())
+        if (socketItem.curCutMode().isNull()) {
             return -1;
+        }
         return socketItem.curCutMode()->selectedInstrId();
     case CutModeInstrIdList:
     {
@@ -259,50 +236,42 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         }
         return res;
     }
-    case CutInstrIdList:
-    {
-        QStringList res;
-        std::map<int, Onyx::InstrInfo> all;
-        int lim = socketItem.cutModeCount();
-        for (int mode = 0; mode < lim; ++mode) {
-            const auto& modePtr = socketItem.getMode(mode, false);
-            uniteMaps(all,modePtr->InstrConstraints() );
-        }
-        for (const auto& [key, item] : all) {
-            res.append(QString::number(item.id));
-        }
-        return res;
-    }
     case CutModeInstrNum:
     {
         if (socketItem.curCutMode().isNull()
-                || m_instrMapPtr == nullptr)
+                || m_instrMapPtr == nullptr) {
             return -1;
+        }
         
         int instrId = socketItem.curCutMode()->selectedInstrId();
         // Если выбран пункт "НЕ ВЫБРАН" (ID = 1000), возвращаем 1000
         if (instrId == 1000)
             return 1000;
+        }
         
         auto iter = m_instrMapPtr->find(instrId);
-        if (iter != m_instrMapPtr->end())
+        if (iter != m_instrMapPtr->end()) {
             return iter->second->legacyNumber();
-        else
+        } else {
             return -1;
+        }
     }
     case CutModeInstrImage:
         return QVariant();
     case CutModeInstrIndex:
-        if (socketItem.curCutMode().isNull())
+        if (socketItem.curCutMode().isNull()) {
             return -1;
+        }
         return socketItem.curCutMode()->selectedInstrIndex();
     case CoagModeIsEndo:
-        if (socketItem.curCoagMode().isNull())
+        if (socketItem.curCoagMode().isNull()) {
             return false;
+        }
         return socketItem.curCoagMode()->isEndo();
     case CutModeIsEndo:
-        if (socketItem.curCutMode().isNull())
+        if (socketItem.curCutMode().isNull()) {
             return false;
+        }
         return socketItem.curCutMode()->isEndo();
     default:
         return QVariant();
@@ -314,17 +283,21 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
 
 bool SocketModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (!index.isValid())
+    if (!index.isValid()) {
         return false;
+    }
 
-    if (index.row() >= m_socketNames.size())
+    if (index.row() >= m_socketNames.size()) {
         return false;
+    }
 
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return false;
+    }
 
-    if (m_itemsMapPtr->find((index.row())) == m_itemsMapPtr->end())
+    if (m_itemsMapPtr->find((index.row())) == m_itemsMapPtr->end()) {
         return false;
+    }
     auto socketIter = (*m_itemsMapPtr)[(index.row())];
 
     SOCKET& socketItem = *(socketIter);
@@ -338,8 +311,9 @@ bool SocketModel::setData(const QModelIndex &index, const QVariant &value, int r
     }
     case SocketEnabled:
     {
-        if (socketItem.socketStatus() == Onyx::S_OFF)
+        if (socketItem.socketStatus() == Onyx::S_OFF) {
             return false;
+        }
         bool isOk = value.toBool();
         socketItem.setSocketStatus(isOk ? Onyx::S_ENABLED : Onyx::S_DISABLED);
         return true;
@@ -348,16 +322,18 @@ bool SocketModel::setData(const QModelIndex &index, const QVariant &value, int r
     {
         bool isOk = false;
         int mode = value.toInt(&isOk);
-        if (!isOk)
+        if (!isOk) {
             return isOk;
+        }
         return socketItem.setDisplayMode(static_cast<Onyx::SocDisplayMode>(mode));
     }
     case SocketPedal:
     {
         bool isOk = false;
         int ped = value.toInt(&isOk);
-        if (!isOk)
+        if (!isOk) {
             return isOk;
+        }
         return socketItem.setPedal(ped);
     }
     case CoagModeIndex:
@@ -388,12 +364,14 @@ bool SocketModel::setData(const QModelIndex &index, const QVariant &value, int r
 
 QVariantMap SocketModel::modeParam(int socketId, int modeIndeex, bool isCoag) const
 {
-    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return QVariantMap{};
+    }
 
     auto iter = m_itemsMapPtr->find(socketId);
-    if (iter == m_itemsMapPtr->end() || iter->second.isNull())
+    if (iter == m_itemsMapPtr->end() || iter->second.isNull()) {
         return QVariantMap{};
+    }
 
     return iter->second->getMode(modeIndeex, isCoag)->params();
 }
@@ -401,8 +379,9 @@ QVariantMap SocketModel::modeParam(int socketId, int modeIndeex, bool isCoag) co
 void SocketModel::qmlSetData(int row, const QVariant &value, const QString &roleName)
 {
     int role = roleIntByName(roleName);
-    if (role == -1)
+    if (role == -1) {
         return;
+    }
     QModelIndex idx = createIndex(row,0);
 
     if (setData(idx,value,role)) {
@@ -418,23 +397,28 @@ void SocketModel::recalcCollapsed()
 
 QStringList SocketModel::modeNames(int socketID, bool isCoag) const
 {
-    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return QStringList{};
+    }
 
     auto iter = m_itemsMapPtr->find(socketID);
-    if (iter == m_itemsMapPtr->end() || iter->second.isNull())
+    if (iter == m_itemsMapPtr->end() || iter->second.isNull()) {
         return QStringList{};
+    }
     return isCoag ? iter->second->coagModeNames() : iter->second->cutModeNames();
 }
 
 QStringList SocketModel::instrumNames(int socketId, int modeIndex, bool isCoag) const
 {
-    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return QStringList{};
+    }
 
     auto iter = m_itemsMapPtr->find(socketId);
-    if (iter == m_itemsMapPtr->end() || iter->second.isNull())
+
+    if (iter == m_itemsMapPtr->end() || iter->second.isNull()) {
         return {};
+    }
 
     SockPtr sock = iter->second;
     CSurgModePtr mode = sock->getMode(modeIndex, isCoag);
@@ -443,8 +427,9 @@ QStringList SocketModel::instrumNames(int socketId, int modeIndex, bool isCoag) 
     QStringList names;
     for (const auto&[key, item] : compatible) {
         const auto instIter = m_instrMapPtr->find(item.id);
-        if (instIter != m_instrMapPtr->end())
+        if (instIter != m_instrMapPtr->end()) {
             names.append(instIter->second->name());
+        }
     }
     // Добавляем пункт "не выбран" в конец списка
     names.append(QObject::tr("НЕ ВЫБРАН"));
@@ -453,23 +438,27 @@ QStringList SocketModel::instrumNames(int socketId, int modeIndex, bool isCoag) 
 
 QStringList SocketModel::modeNamesIds(int socketID, bool isCoag) const
 {
-    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return QStringList{};
+    }
 
     auto iter = m_itemsMapPtr->find(socketID);
-    if (iter == m_itemsMapPtr->end() || iter->second.isNull())
+    if (iter == m_itemsMapPtr->end() || iter->second.isNull()) {
         return QStringList{};
+    }
     return isCoag ? iter->second->coagModeNamesIds() : iter->second->cutModeNamesIds();
 }
 
 QStringList SocketModel::instrumNamesIds(int socketId, int modeIndex, bool isCoag) const
 {
-    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return QStringList{};
+    }
 
     auto iter = m_itemsMapPtr->find(socketId);
-    if (iter == m_itemsMapPtr->end() || iter->second.isNull())
+    if (iter == m_itemsMapPtr->end() || iter->second.isNull()) {
         return {};
+    }
 
     SockPtr sock = iter->second;
     CSurgModePtr mode = sock->getMode(modeIndex, isCoag);
@@ -478,8 +467,9 @@ QStringList SocketModel::instrumNamesIds(int socketId, int modeIndex, bool isCoa
     QStringList names;
     for (const auto&[key, item] : compatible) {
         const auto instIter = m_instrMapPtr->find(item.id);
-        if (instIter != m_instrMapPtr->end())
+        if (instIter != m_instrMapPtr->end()) {
             names.append(QString("%1").arg(instIter->second->id()));
+        }
     }
     // Добавляем ID для пункта "НЕ ВЫБРАН"
     names.append("1000");
@@ -488,12 +478,14 @@ QStringList SocketModel::instrumNamesIds(int socketId, int modeIndex, bool isCoa
 
 QStringList SocketModel::instrumNamesNums(int socketId, int modeIndex, bool isCoag) const
 {
-    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return QStringList{};
+    }
 
     auto iter = m_itemsMapPtr->find(socketId);
-    if (iter == m_itemsMapPtr->end() || iter->second.isNull())
+    if (iter == m_itemsMapPtr->end() || iter->second.isNull()) {
         return {};
+    }
 
     SockPtr sock = iter->second;
     CSurgModePtr mode = sock->getMode(modeIndex, isCoag);
@@ -502,8 +494,9 @@ QStringList SocketModel::instrumNamesNums(int socketId, int modeIndex, bool isCo
     QStringList nums;
     for (const auto&[key, item] : compatible) {
         const auto instIter = m_instrMapPtr->find(item.id);
-        if (instIter != m_instrMapPtr->end())
+        if (instIter != m_instrMapPtr->end()) {
             nums.append(QString("%1").arg(instIter->second->legacyNumber()));
+        }
     }
     // Добавляем Num для пункта "НЕ ВЫБРАН"
     nums.append("1000");
@@ -512,52 +505,66 @@ QStringList SocketModel::instrumNamesNums(int socketId, int modeIndex, bool isCo
 
 int SocketModel::selectedInstrumIndexByMode(int socketId, int modeIndex, bool isCoag)
 {
-    if (socketId >= m_socketNames.size())
+    if (socketId >= m_socketNames.size()) {
         return -1;
+    }
 
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return -1;
+    }
 
     const auto socketIter = m_itemsMapPtr->find(socketId);
-    if (socketIter == m_itemsMapPtr->end())
+    if (socketIter == m_itemsMapPtr->end()) {
         return -1;
-    if (socketIter->second.isNull())
+    }
+    if (socketIter->second.isNull()) {
         return -1;
+    }
 
     const SOCKET& socketItem = *(socketIter->second);
     CSurgModePtr ptr =  socketItem.getMode(modeIndex, isCoag);
-    if (ptr.isNull())
+    if (ptr.isNull()) {
         return -1;
+    }
     return ptr->selectedInstrIndex();
 }
 
 
 int SocketModel::selectedInstrumIdByMode(int socketId, int modeIndex, bool isCoag)
 {
-    if (socketId >= m_socketNames.size())
+    if (socketId >= m_socketNames.size()) {
         return -1;
+    }
 
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return -1;
+    }
 
     const auto socketIter = m_itemsMapPtr->find(socketId);
-    if (socketIter == m_itemsMapPtr->end())
+    if (socketIter == m_itemsMapPtr->end()) {
         return -1;
-    if (socketIter->second.isNull())
+    }
+    if (socketIter->second.isNull()) {
         return -1;
+    }
 
     const SOCKET& socketItem = *(socketIter->second);
     CSurgModePtr ptr =  socketItem.getMode(modeIndex, isCoag);
-    if (ptr.isNull())
+    if (ptr.isNull()) {
         return -1;
+    }
     return ptr->selectedInstrId();
 }
 
 InstrPtr SocketModel::getInstrumentById(int id) const
 {
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
+        return nullptr;
+    }
     auto iter = m_instrMapPtr->find(id);
-    if (iter != m_instrMapPtr->cend())
+    if (iter != m_instrMapPtr->cend()) {
         return iter->second;
+    }
     return nullptr;
 }
 
@@ -571,8 +578,9 @@ void SocketModel::copyCurrentList()
 
 void SocketModel::slotRemoveSubProg()
 {
-    if (m_itemsMapVect.size() > 1)
+    if (m_itemsMapVect.size() > 1) {
         removeSubProg(m_subProgIdx);
+    }
 }
 
 
@@ -602,13 +610,12 @@ void SocketModel::startActivation(int socketId, bool isCut)
 
 void SocketModel::stopActivation()
 {
-//    qDebug() << "SocketModel::stopActivation() called";
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return ;
+    }
     for (auto& item : *m_itemsMapPtr) {
         if (item.second->socketStatus() == Onyx::S_ACTIVE_CUT
             || item.second->socketStatus() == Onyx::S_ACTIVE_COAG) {
-//            qDebug() << "Stopping activation for socket" << item.first;
             qmlSetData(item.first, Onyx::S_ENABLED, "socketstatus");
         }
     }
@@ -616,12 +623,14 @@ void SocketModel::stopActivation()
 
 bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMap &param)
 {
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return false;
+    }
 
     auto iter = m_itemsMapPtr->find(socketId);
-    if (iter == m_itemsMapPtr->end() || iter->second.isNull())
+    if (iter == m_itemsMapPtr->end() || iter->second.isNull()) {
         return false;
+    }
 
     QModelIndex idx = createIndex(socketId, 0);
 
@@ -658,10 +667,16 @@ bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMa
         if (!coagMode.isNull() && coagMode->isEndo()) {
             int endoCut = coagPower / 10;
             int endoCoag = coagPower % 10;
-            if (endoCut < 1) endoCut = 1;
-            else if (endoCut > ENDO_MAX) endoCut = ENDO_MAX;
-            if (endoCoag < 1) endoCoag = 1;
-            else if (endoCoag > ENDO_MAX) endoCoag = ENDO_MAX;
+            if (endoCut < 1) {
+                endoCut = 1;
+            } else if (endoCut > ENDO_MAX) {
+                endoCut = ENDO_MAX;
+            }
+            if (endoCoag < 1) {
+                endoCoag = 1;
+            } else if (endoCoag > ENDO_MAX) {
+                endoCoag = ENDO_MAX;
+            }
             coagPower = endoCut * 10 + endoCoag;
         }
 
@@ -676,8 +691,9 @@ bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMa
             roles.append(CoagModeInstrNum);  // Добавляем Num для обновления изображения
             res = true;
         }
-        if (res)
+        if (res) {
             emit dataChanged(idx, idx, roles);
+        }
         return res;
     } else {
         if (iter->second->setCutModeIndex(modeIndex)) {
@@ -700,10 +716,16 @@ bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMa
         if (!cutMode.isNull() && cutMode->isEndo()) {
             int endoCut = cutPower / 10;
             int endoCoag = cutPower % 10;
-            if (endoCut < 1) endoCut = 1;
-            else if (endoCut > ENDO_MAX) endoCut = ENDO_MAX;
-            if (endoCoag < 1) endoCoag = 1;
-            else if (endoCoag > ENDO_MAX) endoCoag = ENDO_MAX;
+            if (endoCut < 1) {
+                endoCut = 1;
+            } else if (endoCut > ENDO_MAX) {
+                endoCut = ENDO_MAX;
+            }
+            if (endoCoag < 1) {
+                endoCoag = 1;
+            } else if (endoCoag > ENDO_MAX) {
+                endoCoag = ENDO_MAX;
+            }
             cutPower = endoCut * 10 + endoCoag;
         }
 
@@ -718,8 +740,9 @@ bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMa
             roles.append(CutModeInstrNum);  // Добавляем Num для обновления изображения
             res = true;
         }
-        if (res)
+        if (res) {
             emit dataChanged(idx, idx, roles);
+        }
         return res;
     }
     return false;
@@ -729,8 +752,9 @@ SockPtr SocketModel::socketByName(const QString &socket) const
 {
     SockPtr itemPtr = nullptr;
 
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return itemPtr;
+    }
 
     for (auto& item : (*m_itemsMapPtr)) {
         if (item.second->socketName() == socket) {
@@ -743,34 +767,38 @@ SockPtr SocketModel::socketByName(const QString &socket) const
 
 SockPtr SocketModel::socketById(int id) const
 {
-    if (m_itemsMapPtr == nullptr)
+    if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr){
         return nullptr;
+    }
 
     auto iter = m_itemsMapPtr->find(id);
-    if (iter == m_itemsMapPtr->end())
+    if (iter == m_itemsMapPtr->end()) {
         return nullptr;
+    }
     return iter->second;
 }
 
 void SocketModel::expandSocket(int socketId)
 {
     if ( !m_itemsMapPtr
-         || m_itemsMapPtr->find(socketId) == m_itemsMapPtr->end() )
+         || m_itemsMapPtr->find(socketId) == m_itemsMapPtr->end() ) {
         return;
+    }
     //нам тут достаточно отправить команду на разворот -
     // при сигнале о развороте сокета свернутся остальные
     qmlSetData(socketId, Onyx::S_EXPANDED, "socketdisplaymode");
 }
 
-void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMapVect, const std::vector<std::map<int, InstrPtr> > &instrMapVect, bool add)
+void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMapVect,
+                const std::vector<std::map<int, InstrPtr> > &instrMapVect, bool add)
 {
-    if (itemsMapVect.size() != instrMapVect.size()) //размеры не совпали, разбираться не хочу - бежим
+    if (itemsMapVect.size() != instrMapVect.size()) { //размеры не совпали, разбираться не хочу - бежим
         return;
+    }
 
     beginResetModel();
 
     if (!add) {
-        // m_subProgCount = 0;
         m_subProgIdx = 0;
         m_instrMapVect.clear();
         m_itemsMapVect.clear();
@@ -782,8 +810,10 @@ void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMap
 
     for (size_t i = 0; i < size; ++i) {
         addList(itemsMapVect.at(i), instrMapVect.at(i));
-        if (m_itemsMapVect.size() == 5)
-            return;
+        m_subProgIdx = m_itemsMapVect.size() - 1;
+        if (m_itemsMapVect.size() == 4) {
+            break;
+        }
     }
 
     m_itemsMapPtr = &(m_itemsMapVect.at(m_subProgIdx));
@@ -791,8 +821,9 @@ void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMap
     m_socketNames.clear();
     for (int i = Onyx::BIPOLAR_1; i <= Onyx::MONOPOLAR_2; ++i) {
         const auto iter = m_itemsMapPtr->find(i - 1);
-        if (iter == m_itemsMapPtr->cend())
+        if (iter == m_itemsMapPtr->cend()) {
             continue;
+        }
         m_socketNames.append(iter->second->socketName());
     }
 
@@ -804,9 +835,25 @@ void SocketModel::removeSubProg(int index)
 {
     if (m_itemsMapVect.size() == 1
         || index < 0
-        || static_cast<size_t>(index) >= m_itemsMapVect.size())
+        || static_cast<size_t>(index) >= m_itemsMapVect.size()) {
         return;
+    }
+    //сначала вычисляем новый индекс подстраницы
 
+    int tmpIndex = 0;
+    bool needIdxUpd = false;
+
+    if (index == m_itemsMapVect.size() - 1) {// удаляем последнюю
+        tmpIndex = index - 1;
+    } else { //непоследнюю (для юзер индекс останется как был)
+        tmpIndex = index + 1;
+        needIdxUpd = true;
+    }
+
+    //переходим на какую-то страницу безопасную
+    setSubProgIdx(tmpIndex);
+
+    //безопасно удаляем утраницу
     auto itemIter = m_itemsMapVect.begin();
     itemIter += index;
     m_itemsMapVect.erase(itemIter);
@@ -815,20 +862,20 @@ void SocketModel::removeSubProg(int index)
     instrIter += index;
     m_instrMapVect.erase(instrIter);
 
-    size_t tmpIdx = m_itemsMapVect.size();
-
-    while (tmpIdx >= m_itemsMapVect.size())
-        --tmpIdx;
+    //обновляем число страниц
     emit subProgCountChanged();
-    setSubProgIdx(tmpIdx);
+    if (needIdxUpd) {
+        m_subProgIdx--;
+        emit subProgIdxChanged();
+    }
 }
+
 
 void SocketModel::addList(const std::map<int, SockPtr> &itemsMap,
                           const std::map<int, InstrPtr> &instrMap)
 {
     m_itemsMapVect.push_back(itemsMap);
     m_instrMapVect.push_back(instrMap);
-    m_subProgIdx = m_itemsMapVect.size() - 1;
 }
 
 QHash<int, QByteArray> SocketModel::roleNames() const
@@ -849,8 +896,10 @@ int SocketModel::subProgCount() const
 void SocketModel::setSubProgIdx(int newIndex)
 {
     if (newIndex < 0
-        || static_cast<size_t>(newIndex) >= m_itemsMapVect.size())
-        return;
+        || static_cast<size_t>(newIndex) >= m_itemsMapVect.size()) {
+
+            newIndex = m_itemsMapVect.size() - 1;
+    }
 
     beginResetModel();
     m_subProgIdx = newIndex;
@@ -859,8 +908,9 @@ void SocketModel::setSubProgIdx(int newIndex)
 
     for (int i = Onyx::BIPOLAR_1; i <= Onyx::MONOPOLAR_2; ++i) {
         const auto iter = m_itemsMapPtr->find(i - 1);
-        if (iter == m_itemsMapPtr->cend())
+        if (iter == m_itemsMapPtr->cend()) {
             continue;
+        }
         m_socketNames.append(iter->second->socketName());
     }
     endResetModel();
@@ -873,8 +923,9 @@ int SocketModel::roleIntByName(const QString &name)
     const QHash<int, QByteArray>& hash = m_roles;
     QByteArray nameArr = name.toLower().toUtf8();
     for (auto iter = hash.begin(); iter != hash.end(); ++iter) {
-        if (iter.value() == nameArr)
+        if (iter.value() == nameArr) {
             return iter.key();
+        }
     }
     return -1;
 }
@@ -882,8 +933,9 @@ int SocketModel::roleIntByName(const QString &name)
 void SocketModel::socketCollapser(int expandedSocket)
 {
     for (size_t i = 0; i < m_itemsMapPtr->size(); ++i) {
-        if (i == static_cast<size_t>(expandedSocket))
+        if (i == static_cast<size_t>(expandedSocket)) {
             continue;
+        }
         qmlSetData(i, 0, "socketdisplaymode");
     }
 }
@@ -891,15 +943,15 @@ void SocketModel::socketCollapser(int expandedSocket)
 void SocketModel::pedalRemover(int socketToSkip, int pedalToRemove)
 {
     for (size_t i = 0; i < m_itemsMapPtr->size(); ++i) {
-        if (i == static_cast<size_t>(socketToSkip))
+        if (i == static_cast<size_t>(socketToSkip)) {
             continue;
+        }
         //тут не надо изменять все сокеты - переназначенная педаль могла быть в одном сокетет только
         if (m_itemsMapPtr->at(i)->pedal() == pedalToRemove
             && pedalToRemove != Onyx::INSTR_BUTTON_MONO) {
             qmlSetData(i, 0, "socketpedal");
             // break;
         }
-        ///TODO завершению должны бы отдавать в uart новые настройки педали
     }
 }
 
@@ -917,42 +969,29 @@ void SocketModel::populateRoles()
     }
 }
 
-std::vector<SocketStrings> SocketModel::getDatabaseText()
+std::vector<std::map<int, SockPtr> > SocketModel::getSocketsCopy()
 {
-    std::vector<SocketStrings> progDesc;
-    progDesc.resize(m_subProgCount);
-    for (int i = 0; i < m_itemsMapVect.size(); ++i) {
-        SocketStrings& listDesc = progDesc[i];
-        const auto& list = m_itemsMapVect.at(i);
-        const auto& instrList = m_instrMapVect.at(i);
-        for (int j = 0; j < list.size(); ++j) {
-            const auto& socket = list.at(j);
-            auto& socketDescCut = listDesc.at(2*j);
-            auto& socketDescCoag = listDesc.at(2*j + 1);
-            //instrNum, modeNum, power
-            socketDescCut.at(0) = QString::number(socket->curCutMode()
-                                                    ? socket->curCutMode()->selectedInstrId()
-                                                    : 0);
-            QStringList сutModes = socket->cutModeNamesIds();
-            QStringList cutInstrums;
-            for (int i = 0; i < сutModes.size(); ++i) {
-                cutInstrums.append(instrumNamesIds(j, i, false));
-            }
-            cutInstrums.removeDuplicates();
-            int curCutId = socket->cutModeId();
-            cutInstrums.removeOne(QString::number(curCutId));
-            cutInstrums.prepend(QString::number(curCutId));
-
-            socketDescCut.at(1) = cutInstrums.join(',');
-            socketDescCut.at(2) = QString::number(socket->cutModePower());
-
-            socketDescCoag.at(0) = QString::number(socket->curCoagMode()
-                                                    ? socket->curCoagMode()->selectedInstrId()
-                                                    : 0);
-            socketDescCoag.at(1) = QString::number(socket->coagModeNum());
-            socketDescCoag.at(2) = QString::number(socket->coagModePower());
-
+    std::vector<std::map<int, SockPtr>> sockMap;
+    //получаем именно копию мар и её данных без привязок к данным в модели
+    for (const auto& socketPtrMap : m_itemsMapVect) {
+        sockMap.emplace_back();
+        auto& curMap = sockMap.back();
+        for (const auto& sock : socketPtrMap) {
+            curMap.insert({sock.first, SockPtr::create(*sock.second)});
         }
     }
-    return progDesc;
+    return sockMap;
+}
+
+std::vector<std::map<int, InstrPtr> > SocketModel::getInstrCopy()
+{
+    std::vector<std::map<int, InstrPtr>> instrMap;
+    for (const auto& instrMapPtr : m_instrMapVect) {
+        instrMap.emplace_back();
+        auto& curInstr = instrMap.back();
+        for (const auto& instr : instrMapPtr) {
+            curInstr.insert({instr.first, InstrPtr::create(*instr.second)});
+        }
+    }
+    return instrMap;
 }

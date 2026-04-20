@@ -5,22 +5,13 @@
 #include <QObject>
 #include <QSharedPointer>
 #include <map>
+#include <QMutex>
 #include "instrument.h"
 
 #include "socket.h"
 
 constexpr int ENDO_MAX = 3;
 
-// struct SocketStrings {
-//     std::array<QString, 3> bi1Cut  = {"0","1000","1"};
-//     std::array<QString, 3> bi1Coag = {"0","1000","1"};
-//     std::array<QString, 3> bi2Cut  = {"0","1000","1"};
-//     std::array<QString, 3> bi2Coag = {"0","1000","1"};
-//     std::array<QString, 3> mono1Cut  = {"0","1000","1"};
-//     std::array<QString, 3> mono1Coag = {"0","1000","1"};
-//     std::array<QString, 3> mono2Cut  = {"0","1000","1"};
-//     std::array<QString, 3> mono2Coag = {"0","1000","1"};
-// };
 using SocketStrings = std::array<std::array<QString, 3>, 8>; //instrId, modeId, power
 
 class SocketModel : public QAbstractListModel
@@ -54,7 +45,6 @@ public:
         CoagModeInstrIndex,
         CoagModeInstrID,
         CoagModeInstrIdList,
-        CoagInstrIdList, //это список для всего сокета, а выше для конкретного режима
         CoagModeInstrNum,
         CoagModeIsEndo,
         CoagModesNames,
@@ -73,7 +63,6 @@ public:
         CutModeInstrIndex,
         CutModeInstrID,
         CutModeInstrIdList,
-        CutInstrIdList,
         CutModeInstrNum,
         CutModeIsEndo,
         CutModesNames,
@@ -130,6 +119,21 @@ public:
     int subProgIdx() const;
     int subProgCount() const;
     void setSubProgIdx(int newIndex);
+
+    /**
+     * @brief getSocketsCopy возвращает копию данных лежащих в модели
+     * @details да, и указатели тоже на копии объектов, так надо
+     * @return
+     */
+    std::vector<std::map<int, SockPtr >> getSocketsCopy();
+
+    /**
+     * @brief getInstrCopy возвращает копию данных лежащих в модели
+     * @details да, и указатели тоже на копии объектов, так надо
+     * @return
+     */
+    std::vector<std::map<int, InstrPtr >> getInstrCopy();
+
 signals:
     void subProgIdxChanged();
     void subProgCountChanged();
@@ -159,6 +163,7 @@ private:
     void populateRoles();
     std::vector<SocketStrings> getDatabaseText();
 
+
 //поля
 private:
     std::map<int, SockPtr>* m_itemsMapPtr = nullptr;
@@ -172,7 +177,6 @@ private:
 
     QStringList m_socketNames;
     QHash<int, QByteArray> m_roles;
-    int m_subProgCount;
 };
 
 #endif // SOCKETMODEL_H

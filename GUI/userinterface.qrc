@@ -35,7 +35,6 @@
         <file>PeripheryDrawer.qml</file>
         <file>PeripheryPanel.qml</file>
         <file>NeutralButton.qml</file>
-        <file>UserProgsSelector.qml</file>
         <file>VideoPlayer.qml</file>
         <file>SystemMonitor.qml</file>
         <file>SecretKeysWindow.qml</file>

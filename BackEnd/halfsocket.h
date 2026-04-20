@@ -12,6 +12,8 @@ class HalfSocket
 {
 public:
     HalfSocket(bool isCoag, int state = 1);
+    HalfSocket(const HalfSocket& other);
+    HalfSocket& operator=(const HalfSocket& other);
 
 public:
     // /*! Перечисление возможных состояний сокета */
@@ -134,12 +136,11 @@ private:
     int getModeIndex(const QString& name) const;
     int getModeIndex(int id) const;
 
-    CSurgModePtr m_curMode;
+    CSurgModePtr m_curMode = nullptr;
     int m_modeIndex = 0;
 
     QStringList m_modeNames;
     QMap<int, SurgModePtr> m_modes;
-    // QMap<int, SurgModePtr> m_modesSorted;
 
     bool m_isCoag;
     int m_state;

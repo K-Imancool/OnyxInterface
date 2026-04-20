@@ -84,6 +84,8 @@ public:
     explicit SurgicalMode()  :
         SurgicalMode("NoMode", false, 1, 1, 0, {}, 0, "", "", false) {}
 
+    //конструктор копирования тут дефолтный т.к. все поля тривиально коп
+
     int maximumPower() const;
     int currentPower() const;
     const QString &modeName() const;

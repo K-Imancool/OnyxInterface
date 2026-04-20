@@ -130,7 +130,7 @@ Rectangle {
 
     Connections {
         target: progSelector
-        function onTypeChosen (addType) {
+        function onProgLoaderSelected (addType) {
             socketContainer.progAddRequest(addType)
         }
     }

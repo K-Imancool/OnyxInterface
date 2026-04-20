@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.15
 Dialog {
     id: addTypeSelector
 
-    signal typeChosen(int buttonType)
+    signal progLoaderSelected(int buttonType)
     parent: Overlay.overlay
     anchors.centerIn: parent
 
@@ -36,7 +36,7 @@ Dialog {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                addTypeSelector.typeChosen(someRect.buttonType)
+                addTypeSelector.progLoaderSelected(someRect.buttonType)
                 addTypeSelector.close()
             }
         }
