@@ -1,5 +1,6 @@
 #include "recomprogloader.h"
 #include "onyxapp.h"
+#include <QDebug>
 
 
 RecomProgLoader::RecomProgLoader(QObject *parent)
@@ -17,12 +18,14 @@ std::map<int, QString> RecomProgLoader::getPrograms(int scopeID)
 {
 	//захардкодили, но это нужно знать
 	bool isMyselfArgon = false;
+	qDebug() << "[RecomProgLoader] getPrograms scopeID=" << scopeID;
 
 	QString queryCondition = "Scope_ID = %1 AND (Argon = 0 OR Argon = %2)";
 
 	QList<QVariantList> progListVariant = m_dbReader->slotSendSelectQuery(QStringList{"Progs"},
 	                                                                      QStringList{"Name_RU","id", "Prog_NUM", "Subprog_RU"},
 	                                                                      queryCondition.arg(scopeID).arg(isMyselfArgon ? 2 : 1));
+	qDebug() << "[RecomProgLoader] rows from Progs=" << progListVariant.size();
 
 	std::map<int, QString> progList;
 	for (const auto& item : progListVariant) {
@@ -32,6 +35,7 @@ std::map<int, QString> RecomProgLoader::getPrograms(int scopeID)
 		QString name = item.at(isMainProg ? 0 : 3).toString();
 		progList.insert_or_assign(id, name);
 	}
+	qDebug() << "[RecomProgLoader] resulting programs count=" << static_cast<int>(progList.size());
 	return progList;
 }
 

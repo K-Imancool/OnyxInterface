@@ -156,7 +156,6 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         // Если выбран пункт "НЕ ВЫБРАН" (ID = 1000), возвращаем 1000
         if (instrId == 1000)
             return 1000;
-        }
         
         auto iter = m_instrMapPtr->find(instrId);
         if (iter != m_instrMapPtr->end())
@@ -247,7 +246,6 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         // Если выбран пункт "НЕ ВЫБРАН" (ID = 1000), возвращаем 1000
         if (instrId == 1000)
             return 1000;
-        }
         
         auto iter = m_instrMapPtr->find(instrId);
         if (iter != m_instrMapPtr->end()) {
@@ -816,6 +814,12 @@ void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMap
         }
     }
 
+    // Для полной загрузки программы показываем первую подпрограмму,
+    // иначе пользователь может попадать на последнюю (часто пустую) страницу.
+    if (!add && !m_itemsMapVect.empty()) {
+        m_subProgIdx = 0;
+    }
+
     m_itemsMapPtr = &(m_itemsMapVect.at(m_subProgIdx));
     m_instrMapPtr = &(m_instrMapVect.at(m_subProgIdx));
     m_socketNames.clear();
@@ -829,6 +833,7 @@ void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMap
 
     endResetModel();
     emit subProgCountChanged();
+    emit subProgIdxChanged();
 }
 
 void SocketModel::removeSubProg(int index)

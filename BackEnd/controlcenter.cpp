@@ -78,15 +78,22 @@ void ControlCenter::makeHandleConnections()
 	        m_socketModel.data(), &SocketModel::slotRemoveSubProg);
 
 	connect(m_handle, &ProgHandle::signalRecomProgChosen,
-	        m_progLoader, &ProgLoader::programmLoadSocketInit);
+	        this, [this] (int progId, bool clear) {
+		qDebug() << "[ControlCenter] signalRecomProgChosen received progId=" << progId
+		         << " clear=" << clear;
+		const bool ok = m_progLoader->programmLoadSocketInit(progId, clear);
+		qDebug() << "[ControlCenter] programmLoadSocketInit result=" << ok;
+	});
 
 	connect(m_handle, &ProgHandle::signalScopeRequest,
 	        this, [this] (int id) {
+		qDebug() << "[ControlCenter] signalScopeRequest received scopeId=" << id;
 		m_handle->setProgList(m_progLoader->getProgs(id));
 	});
 
 	connect(m_handle, &ProgHandle::updateScopes,
 	        this, [this] (bool isRecom) {
+		qDebug() << "[ControlCenter] updateScopes isRecom=" << isRecom;
 		m_progLoader->setCurLoaderType(isRecom ? ProgLoader::ptRecom : ProgLoader::ptUser);
 		m_handle->setScopeList(m_progLoader->getCategories());
 		m_handle->setProgList(m_progLoader->getProgs(-1));

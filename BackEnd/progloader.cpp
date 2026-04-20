@@ -207,7 +207,7 @@ QString makeDbStringInstr( const QModelIndex& idx,
     return list.join(',');
 }
 
-    const QString queryConditionRecom = "Prog_ID = %1";
+    const QString queryConditionRecom = "Prog_ID = %1 AND Num >= 0 AND Num < 4";
     const QString queryConditionUser = "User_ID = %1";
     const QStringList fields = {"id", "Num", "Prog_ID", /* 0 1 2*/
                           "Bi1Cut_INSTR", "Bi1Cut_MODE", "Bi1Cut_POWER", /* 3 4 5*/
@@ -256,7 +256,7 @@ QString makeDbStringInstr( const QModelIndex& idx,
                                        "Mono2Coag_INSTR, Mono2Coag_MODE, Mono2Coag_POWER, "
                                        "Pedal_1, Pedal_2, OutEnabled_MASK"
                                        ") VALUES ("
-                                       "1000, %28, 1000, "
+                                       "%28, 1000, "
                                        "'%1', '%2', %3, "
                                        "'%4', '%5', %6, "
                                        "'%7', '%8', %9, "
@@ -291,6 +291,7 @@ QString makeDbStringInstr( const QModelIndex& idx,
                                          "'%22', '%23', %24, "
                                          "%25, %26, %27"
                                          ")");
+    const QString queryConditionModes = "BI_MONO = %1 AND CUT_COAG = %2 AND id IN (%3)";
 
 }
 
@@ -344,260 +345,305 @@ void ProgLoader::slotSaveCurrentState()
 
 void ProgLoader::defaultSocketInit(bool clear)
 {
-	std::vector<std::map<int, SockPtr>> socketMapVector;
-	std::vector<std::map<int, InstrPtr >> instrMapVector;
-	std::map<int, std::map<int, InstrInfo>>  instrumConstraints;
-	QList<QVariantList> progListVariant;
-	std::vector<int> allowedModesId;
-	std::vector<int> allowedInstrId;
+    std::vector<std::map<int, SockPtr>> socketMapVector;
+    std::vector<std::map<int, InstrPtr >> instrMapVector;
+    std::map<int, std::map<int, InstrInfo>>  instrumConstraints;
+    QList<QVariantList> progListVariant;
+    std::vector<int> allowedModesId;
+    std::vector<int> allowedInstrId;
 
-	// Создаём пустую запись с дефолтными значениями
-	QVariantList dummyProgItem;
-	dummyProgItem << 0 << 0 << 0;  // id, Num, Prog_ID
+    // Создаём пустую запись с дефолтными значениями
+    QVariantList dummyProgItem;
+    dummyProgItem << 0 << 0 << 0;  // id, Num, Prog_ID
 
-	// Добавляем пустые строки для всех полей инструментов/режимов/мощностей (24 поля)
-	for (int i = 0; i < 24; ++i) {
-		dummyProgItem << "";
-	}
+    // Добавляем пустые строки для всех полей инструментов/режимов/мощностей (24 поля)
+    for (int i = 0; i < 24; ++i) {
+        dummyProgItem << "";
+    }
 
-	// Добавляем дефолтные значения для педалей и маски
-	dummyProgItem << 0 << 0 << 255;  // Pedal_1, Pedal_2, OutEnabled_MASK (все сокеты разрешены)
+    // Добавляем дефолтные значения для педалей и маски
+    dummyProgItem << 0 << 0 << 255;  // Pedal_1, Pedal_2, OutEnabled_MASK (все сокеты разрешены)
 
-	progListVariant.append(dummyProgItem);
-	// qDebug() << "progId = 0: Created dummy program item with" << dummyProgItem.size() << "fields";
-	// Получаем все режимы из БД
-	QList<QVariantList> allModes = m_dbReaderPtr->slotSendSelectQuery(
-	                                   QStringList{"Modes"},
-	                                   QStringList{"id"},
-	                                   "");
-	allowedModesId.reserve(allModes.size());
-	for (const auto& item : allModes) {
-		allowedModesId.push_back(item.at(0).toInt());
-	}
+    progListVariant.append(dummyProgItem);
+    // qDebug() << "progId = 0: Created dummy program item with" << dummyProgItem.size() << "fields";
+    // Получаем все режимы из БД
+    QList<QVariantList> allModes = m_dbReaderPtr->slotSendSelectQuery(
+                                       QStringList{"Modes"},
+                                       QStringList{"id"},
+                                       "");
+    allowedModesId.reserve(allModes.size());
+    for (const auto& item : allModes) {
+        allowedModesId.push_back(item.at(0).toInt());
+    }
 
-	// Получаем все инструменты из БД
-	QList<QVariantList> allInstr = m_dbReaderPtr->slotSendSelectQuery(
-	                                   QStringList{"Instruments"},
-	                                   QStringList{"id"},
-	                                   "");
-	for (const auto& item : allInstr)
-		allowedInstrId.push_back(item.at(0).toInt());
+    // Получаем все инструменты из БД
+    QList<QVariantList> allInstr = m_dbReaderPtr->slotSendSelectQuery(
+                                       QStringList{"Instruments"},
+                                       QStringList{"id"},
+                                       "");
+    for (const auto& item : allInstr)
+        allowedInstrId.push_back(item.at(0).toInt());
 
-	// qDebug() << "progId = 0: Loading ALL modes (" << allowedModesId.size() << ") and instruments (" << allowedInstrId.size() << ")";
+    // qDebug() << "progId = 0: Loading ALL modes (" << allowedModesId.size() << ") and instruments (" << allowedInstrId.size() << ")";
 
-	//Шаг4---------------------------------------------------------
-	QString queryConditionModes = "BI_MONO = %1 AND CUT_COAG = %2 AND id IN (%3)";
-	instrumConstraints = getConstraints(allowedModesId);
+    //Шаг4---------------------------------------------------------
+    QString queryConditionModes = "BI_MONO = %1 AND CUT_COAG = %2 AND id IN (%3)";
+    instrumConstraints = getConstraints(allowedModesId);
 
-	//Шаг 6--------------------------------------------------------
-	QList<QVariantList> modeNamesListV = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
-	                                                                        QStringList{"Name_RU","id"},
-	                                                                        "");
-	QStringList modeNamesList;
-	modeNamesList.reserve(modeNamesListV.size());
-	for (const auto& iter : modeNamesListV) {
-		modeNamesList.append(iter.at(0).toString());
-	}
+    //Шаг 6--------------------------------------------------------
+    QList<QVariantList> modeNamesListV = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
+                                                                            QStringList{"Name_RU","id"},
+                                                                            "");
+    QStringList modeNamesList;
+    modeNamesList.reserve(modeNamesListV.size());
+    for (const auto& iter : modeNamesListV) {
+        modeNamesList.append(iter.at(0).toString());
+    }
 
-	for (const auto& progItem : progListVariant) {
-		socketMapVector.push_back(std::map<int, SockPtr>());
-		std::map<int, SockPtr>& socketMap = socketMapVector[socketMapVector.size() - 1];
-		for (int i = 0; i < 4; ++i) {
-			Onyx::SocType type = Onyx::SocType(i+1);
-			SockPtr socket = SockPtr::create(type);
-			socketMap[i] = socket;
+    for (const auto& progItem : progListVariant) {
+        socketMapVector.push_back(std::map<int, SockPtr>());
+        std::map<int, SockPtr>& socketMap = socketMapVector[socketMapVector.size() - 1];
+        for (int i = 0; i < 4; ++i) {
+            Onyx::SocType type = Onyx::SocType(i+1);
+            SockPtr socket = SockPtr::create(type);
+            socketMap[i] = socket;
 
-			socket->setSocketName(makeSocketName(type));
+            socket->setSocketName(makeSocketName(type));
 
-			for (int halfSocket = 0; halfSocket < 2; ++halfSocket ) {
-				bool isCoag = (halfSocket == 0);
-				QMap<int, SurgModePtr> modes;
-				QList<QVariantList> modesList = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
-				                                                                   QStringList{"MaxPower","Name_RU", "id", "Num", "Brief_RU", "Descript_RU", "ENDO_REG"},
-				                                                                   queryConditionModes
-				                                                                   .arg(socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1)
-				                                                                   .arg(halfSocket)
-				                                                                   .arg(makeCommaSeparatedNumbers(allowedModesId)));
+            for (int halfSocket = 0; halfSocket < 2; ++halfSocket ) {
+                bool isCoag = (halfSocket == 0);
+                QMap<int, SurgModePtr> modes;
+                QList<QVariantList> modesList = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
+                                                                                   QStringList{"MaxPower","Name_RU", "id", "Num", "Brief_RU", "Descript_RU", "ENDO_REG"},
+                                                                                   queryConditionModes
+                                                                                   .arg(socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1)
+                                                                                   .arg(halfSocket)
+                                                                                   .arg(makeCommaSeparatedNumbers(allowedModesId)));
 
-				// Сортируем по Num (index 3)
-				std::sort(modesList.begin(), modesList.end(),
-				          [](const QVariantList& a, const QVariantList& b) {
-					return a.at(3).toInt() < b.at(3).toInt();
-				});
+                // Сортируем по Num (index 3)
+                std::sort(modesList.begin(), modesList.end(),
+                          [](const QVariantList& a, const QVariantList& b) {
+                    return a.at(3).toInt() < b.at(3).toInt();
+                });
 
-				std::vector<int> instIdLst;
-				std::vector<int> modeIdLst;
+                std::vector<int> instIdLst;
+                std::vector<int> modeIdLst;
 
-				// Используем все инструменты и режимы
-				instIdLst = allowedInstrId;
-				for (const auto& mode : modesList) {
-					modeIdLst.push_back(mode.at(2).toInt());
-				}
+                // Используем все инструменты и режимы
+                instIdLst = allowedInstrId;
+                for (const auto& mode : modesList) {
+                    modeIdLst.push_back(mode.at(2).toInt());
+                }
 
-				makeModes(modes,
-				          modesList,
-				          instrumConstraints,
-				          progItem,
-				          i,
-				          isCoag,
-				          instIdLst);  // Передаём фильтр инструментов
+                makeModes(modes,
+                          modesList,
+                          instrumConstraints,
+                          progItem,
+                          i,
+                          isCoag,
+                          instIdLst);  // Передаём фильтр инструментов
 
-				// Исключаем режим "Термошов" (ID=7) для сокета БИ2 (i=0)
-				if (i == 0 && modes.contains(7)) {
-					modes.remove(7);
-				}
+                // Исключаем режим "Термошов" (ID=7) для сокета БИ2 (i=0)
+                if (i == 0 && modes.contains(7)) {
+                    modes.remove(7);
+                }
 
-				isCoag ? socket->setCoagModes(modes, modeNamesList)
-				       : socket->setCutModes(modes, modeNamesList);
+                isCoag ? socket->setCoagModes(modes, modeNamesList)
+                       : socket->setCutModes(modes, modeNamesList);
 
-				int firstInstrId;
-				int firstModeId;
-				int defaultPower;
+                int firstInstrId;
+                int firstModeId;
+                int defaultPower;
 
-				firstInstrId = 0;
-				firstModeId = 1000;
-				defaultPower = 1;
+                firstInstrId = 0;
+                firstModeId = 1000;
+                defaultPower = 1;
 
-				socket->setModeId(firstModeId, isCoag);
-				socket->setInstrumId(firstInstrId, isCoag);
+                socket->setModeId(firstModeId, isCoag);
+                socket->setInstrumId(firstInstrId, isCoag);
 
-				// Проверка для эндоскопических режимов: если мощность = 1, устанавливаем 11
-				auto mode = isCoag ? socket->curCoagMode() : socket->curCutMode();
-				if (!mode.isNull() && mode->isEndo()) {
-					int endoCut = defaultPower / 10;  // Целочисленное деление вместо floor
-					int endoCoag = defaultPower % 10;
-					if (endoCut < 1) endoCut = 1;
-					else if (endoCut > ENDO_MAX) endoCut = ENDO_MAX;
-					if (endoCoag < 1) endoCoag = 1;
-					else if (endoCoag > ENDO_MAX) endoCoag = ENDO_MAX;
-					defaultPower = endoCut * 10 + endoCoag;
-				}
+                // Проверка для эндоскопических режимов: если мощность = 1, устанавливаем 11
+                auto mode = isCoag ? socket->curCoagMode() : socket->curCutMode();
+                if (!mode.isNull() && mode->isEndo()) {
+                    int endoCut = defaultPower / 10;  // Целочисленное деление вместо floor
+                    int endoCoag = defaultPower % 10;
+                    if (endoCut < 1) endoCut = 1;
+                    else if (endoCut > ENDO_MAX) endoCut = ENDO_MAX;
+                    if (endoCoag < 1) endoCoag = 1;
+                    else if (endoCoag > ENDO_MAX) endoCoag = ENDO_MAX;
+                    defaultPower = endoCut * 10 + endoCoag;
+                }
 
-				isCoag ? socket->setCoagModePower(defaultPower)
-				        : socket->setCutModePower(defaultPower);
-			}
-			//МОНО2 КОАГ = 1, БИ1РЕЗ 8
-			bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) - 1 );
-			bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) );
-			bool allowSock = cutEna || coagEna;
-			socket->setAllowed(allowSock);
-			socket->setDisplayMode(Onyx::S_COLLAPSED);
-		}
-		instrMapVector.push_back(getInstrums());
-	}
-	m_socketModelPtr->loadProgs(socketMapVector, instrMapVector, !clear);
+                isCoag ? socket->setCoagModePower(defaultPower)
+                        : socket->setCutModePower(defaultPower);
+            }
+            //МОНО2 КОАГ = 1, БИ1РЕЗ 8
+            bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) - 1 );
+            bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) );
+            bool allowSock = cutEna || coagEna;
+            socket->setAllowed(allowSock);
+            socket->setDisplayMode(Onyx::S_COLLAPSED);
+        }
+        instrMapVector.push_back(getInstrums());
+
+        if (clear) {
+            qDebug() << "[ProgLoader] clear=true, using only first valid list row";
+            break;
+        }
+    }
+    m_socketModelPtr->loadProgs(socketMapVector, instrMapVector, !clear);
 }
 
 bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
 {
-	//начинаем прорабатывать прогрузку несекольких экранов
-	std::vector<std::map<int, SockPtr>> socketMapVector;
-	std::vector<std::map<int, InstrPtr >> instrMapVector;
-	std::map<int, std::map<int, InstrInfo>>  instrumConstraints;
+	qDebug() << "[ProgLoader] programmLoadSocketInit progId=" << progId
+	         << " clear=" << clear;
+    //начинаем прорабатывать прогрузку несекольких экранов
+    std::vector<std::map<int, SockPtr>> socketMapVector;
+    std::vector<std::map<int, InstrPtr >> instrMapVector;
+    std::map<int, std::map<int, InstrInfo>>  instrumConstraints;
 
-	QList<QVariantList> progListVariant;
+    QList<QVariantList> progListVariant;
 
-	// Если progId = 0, создаём фиктивную запись программы
-	progListVariant = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Lists"},
-	                                                     fields,
-	                                                     queryConditionRecom.arg(progId));
-	if (progListVariant.size() == 0)
-		return false;
-
-	//Шаг5---------------------------------------------------------
-	//тут какой-то затуп с базой на каких-то прогах, разрешено всего несколько инструментов
-	//при этом для выбранных режимов эти инструменты не разрешены
-	// for (auto iterItem = instrumConstraints.begin(); iterItem != instrumConstraints.end(); ++iterItem) {
-	//     std::map<int, InstrInfo>& item = iterItem->second;
-	//     filterMapByKey<InstrInfo>(item, allowedInstrId);
-	// }
-
-	//Шаг 6--------------------------------------------------------
-	QList<QVariantList> modeNamesListV = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
-	                                                                        QStringList{"Name_RU","id"},
-	                                                                        "");
-	QStringList modeNamesList;
-	for (const auto& iter : modeNamesListV) {
-		modeNamesList.append(iter.at(0).toString());
+    // Если progId = 0, создаём фиктивную запись программы
+    progListVariant = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Lists"},
+                                                         fields,
+                                                         queryConditionRecom.arg(progId));
+	qDebug() << "[ProgLoader] Lists rows for progId" << progId << "=" << progListVariant.size();
+    if (progListVariant.size() == 0) {
+		qDebug() << "[ProgLoader] no rows in Lists for progId=" << progId;
+        return false;
 	}
 
-	for (const auto& progItem : qAsConst(progListVariant)) {
-		//ограничения для каждого листа
-		if (progItem.at(1).toInt() < 0
-		        || progItem.at(1).toInt() >= 4) {
-			continue;
-		}
-		//Шаг2---------------------------------------------------------
-		std::vector<int> allowedModesId = getAllowedModes(progId, progItem);
+    //Шаг5---------------------------------------------------------
+    //тут какой-то затуп с базой на каких-то прогах, разрешено всего несколько инструментов
+    //при этом для выбранных режимов эти инструменты не разрешены
+    // for (auto iterItem = instrumConstraints.begin(); iterItem != instrumConstraints.end(); ++iterItem) {
+    //     std::map<int, InstrInfo>& item = iterItem->second;
+    //     filterMapByKey<InstrInfo>(item, allowedInstrId);
+    // }
 
-		//Шаг3---------------------------------------------------------
-		std::vector<int> allowedInstrId = getAllowedInstrs(progId, progItem);
+    //Шаг 6--------------------------------------------------------
+    QList<QVariantList> modeNamesListV = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
+                                                                            QStringList{"Name_RU","id"},
+                                                                            "");
+    QStringList modeNamesList;
+    for (const auto& iter : modeNamesListV) {
+        modeNamesList.append(iter.at(0).toString());
+    }
 
-		//Шаг4---------------------------------------------------------
+    for (const auto& progItem : qAsConst(progListVariant)) {
+        qDebug() << "[ProgLoader] row id=" << progItem.at(0).toInt()
+                 << " num=" << progItem.at(1).toInt()
+                 << " progId=" << progItem.at(2).toInt()
+                 << " bi1CutModeRaw=" << progItem.at(4).toString()
+                 << " bi1CoagModeRaw=" << progItem.at(7).toString()
+                 << " mono1CutModeRaw=" << progItem.at(16).toString()
+                 << " mono1CoagModeRaw=" << progItem.at(19).toString()
+                 << " outMask=" << progItem.at(29).toInt();
+        //ограничения для каждого листа
+        if (progItem.at(1).toInt() < 0
+                || progItem.at(1).toInt() >= 4) {
+			qDebug() << "[ProgLoader] skipped row due to invalid Num="
+			         << progItem.at(1).toInt()
+			         << " rowId=" << progItem.at(0).toInt()
+			         << " progIdField=" << progItem.at(2).toInt();
+            continue;
+        }
+        //Шаг2---------------------------------------------------------
+        std::vector<int> allowedModesId = getAllowedModes(progId, progItem);
+        qDebug() << "[ProgLoader] row" << progItem.at(0).toInt()
+                 << " allowedModesId.size=" << static_cast<int>(allowedModesId.size());
 
-		instrumConstraints = getConstraints(allowedModesId);
+        //Шаг3---------------------------------------------------------
+        std::vector<int> allowedInstrId = getAllowedInstrs(progId, progItem);
+        qDebug() << "[ProgLoader] row" << progItem.at(0).toInt()
+                 << " allowedInstrId.size=" << static_cast<int>(allowedInstrId.size());
 
-		//-------------------------------------------------------------
-		socketMapVector.push_back(std::map<int, SockPtr>());
-		std::map<int, SockPtr>& socketMap = socketMapVector.back();
+        //Шаг4---------------------------------------------------------
 
-		for (int i = 0; i < 4; ++i) {
-			Onyx::SocType type = Onyx::SocType(i+1);
-			SockPtr socket = SockPtr::create(type);
-			socketMap[i] = socket;
+        instrumConstraints = getConstraints(allowedModesId);
 
-			socket->setSocketName(makeSocketName(type));
+        //-------------------------------------------------------------
+        socketMapVector.push_back(std::map<int, SockPtr>());
+        std::map<int, SockPtr>& socketMap = socketMapVector.back();
 
-			for (int halfSocket = 0; halfSocket < 2; ++halfSocket ) {
-				fillHalfSocket(halfSocket,
-				                i,
-				                socket,
-				                progItem,
-				                modeNamesList,
-				                allowedModesId,
-				                instrumConstraints);
-			}
-			bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) - 1 );
-			bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) );
+        for (int i = 0; i < 4; ++i) {
+            Onyx::SocType type = Onyx::SocType(i+1);
+            SockPtr socket = SockPtr::create(type);
+            socketMap[i] = socket;
 
-			int monoPedSocket = progItem.at(27).toInt();
-			if (i == monoPedSocket) {
-				socket->setPedal(Onyx::SINGLE_PED);
-			}
-			int doubePedSocket = progItem.at(27).toInt();
-			if (i == doubePedSocket) {
-				socket->setPedal(Onyx::SINGLE_PED);
-			}
+            socket->setSocketName(makeSocketName(type));
 
-			bool allowSock = cutEna || coagEna;
-			socket->setAllowed(allowSock);
-			socket->setDisplayMode(Onyx::S_COLLAPSED);
-		}
-		instrMapVector.push_back(getInstrums());
+            for (int halfSocket = 0; halfSocket < 2; ++halfSocket ) {
+                fillHalfSocket(halfSocket,
+                                i,
+                                socket,
+                                progItem,
+                                modeNamesList,
+                                allowedModesId,
+                                instrumConstraints);
+            }
+            bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) - 1 );
+            bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) );
+
+            int monoPedSocket = progItem.at(27).toInt();
+            if (i == monoPedSocket) {
+                socket->setPedal(Onyx::SINGLE_PED);
+            }
+            int doublePedSocket = progItem.at(28).toInt();
+            if (i == doublePedSocket) {
+                socket->setPedal(Onyx::DOUBLE_PED);
+            }
+
+            bool allowSock = cutEna || coagEna;
+            socket->setAllowed(allowSock);
+            socket->setDisplayMode(Onyx::S_COLLAPSED);
+        }
+        instrMapVector.push_back(getInstrums());
+
+        if (clear) {
+            qDebug() << "[ProgLoader] clear=true, stop after first valid page";
+            break;
+        }
+    }
+
+    if (socketMapVector.empty())
+	{
+		qDebug() << "[ProgLoader] socketMapVector is empty after processing rows";
+        return false;
 	}
 
-	if (socketMapVector.empty())
-		return false;
+    m_socketModelPtr->loadProgs(socketMapVector, instrMapVector, !clear);
+	qDebug() << "[ProgLoader] loadProgs completed pages=" << socketMapVector.size();
+	qDebug() << "[ProgLoader] model subProgCount=" << m_socketModelPtr->subProgCount()
+	         << " subProgIdx=" << m_socketModelPtr->subProgIdx();
 
-	m_socketModelPtr->loadProgs(socketMapVector, instrMapVector, !clear);
-
-	if (progId != 1000) {
-		slotSaveCurrentState();
-	}
-	return (true);
+    if (progId != 1000) {
+		qDebug() << "[ProgLoader] triggering slotSaveCurrentState after load";
+        slotSaveCurrentState();
+    }
+    return (true);
 }
 
 std::map<int, QString> ProgLoader::getProgs(int scopeID)
 {
 	//захардкодили, но это нужно знать
 	const std::unique_ptr<ProgLoaderBase> loader{getLoader(m_curLoaderType)};
-	return loader->getPrograms(scopeID);
+	auto progs = loader->getPrograms(scopeID);
+	qDebug() << "[ProgLoader] getProgs scopeID=" << scopeID
+	         << " loaderType=" << m_curLoaderType
+	         << " count=" << static_cast<int>(progs.size());
+	return progs;
 }
 
 std::map<int, QString> ProgLoader::getCategories()
 {
 	const std::unique_ptr<ProgLoaderBase> loader{getLoader(m_curLoaderType)};
-	return loader->getCategories();
+	auto scopes = loader->getCategories();
+	qDebug() << "[ProgLoader] getCategories loaderType=" << m_curLoaderType
+	         << " count=" << static_cast<int>(scopes.size());
+	return scopes;
 }
 
 void ProgLoader::deleteUserProg(int id)
@@ -616,7 +662,7 @@ void ProgLoader::renameUserProg(int id, const QString &name)
 	                      "SET "
 	                      "Name_RU = %1,"
 	                      "Name_ES = %1,"
-	                      "Name_EN = %1,"
+	                      "Name_EN = %1 "
 	                      "WHERE id = %2";
 
 	m_dbReaderPtr->executeUpdateQuery(query.arg(name).arg(id));
@@ -624,34 +670,40 @@ void ProgLoader::renameUserProg(int id, const QString &name)
 
 void ProgLoader::deleteUserScope(int id)
 {
-	const QString removeScopeQuery = "DELETE FROM Scopes WHERE id = %1";
-	m_dbReaderPtr->executeUpdateQuery(removeScopeQuery.arg(id));
+    const QString removeScopeQuery = "DELETE FROM Scopes WHERE id = %1";
+    m_dbReaderPtr->executeUpdateQuery(removeScopeQuery.arg(id));
 
-	const QString queryCondition = "Scope_ID = %1";
-	QList<QVariantList> progListVariant =
-	        m_dbReaderPtr->slotSendSelectQuery(QStringList{"Progs"},
-	                                          QStringList{"id"},
-	                                          queryCondition.arg(id));
-	QStringList progIds;
-	progIds.reserve(progListVariant.size());
-	for (const auto& item : progListVariant) {
-		progIds.append(QString::number(item.at(0).toInt()));
-	}
+    const QString queryCondition = "Scope_ID = %1";
+    QList<QVariantList> progListVariant =
+            m_dbReaderPtr->slotSendSelectQuery(QStringList{"Progs"},
+                                              QStringList{"id"},
+                                              queryCondition.arg(id));
+    QStringList progIds;
+    progIds.reserve(progListVariant.size());
+    for (const auto& item : progListVariant) {
+        progIds.append(QString::number(item.at(0).toInt()));
+    }
 
-	const QString removeProgsQuery = "DELETE FROM Progs WHERE Scope_ID = %1";
-	m_dbReaderPtr->executeUpdateQuery(removeProgsQuery.arg(id));
+    const QString removeProgsQuery = "DELETE FROM Progs WHERE Scope_ID = %1";
+    m_dbReaderPtr->executeUpdateQuery(removeProgsQuery.arg(id));
 
-	const QString removeListsQuery = "DELETE FROM Lists WHERE Prog_ID IN (%1)";
-	m_dbReaderPtr->executeUpdateQuery(removeScopeQuery.arg(progIds.join(", ")));
+    const QString removeListsQuery = "DELETE FROM Lists WHERE Prog_ID IN (%1)";
+    if (!progIds.isEmpty()) {
+        m_dbReaderPtr->executeUpdateQuery(removeListsQuery.arg(progIds.join(", ")));
+    }
 
-    if (socketMapVector.empty())
-        return false;
+}
 
-    m_socketModelPtr->loadProgs(socketMapVector, instrMapVector, !clear);
-    if (progId != 1000)
-        slotSaveCurrentState();
-    m_currentLoadedProgId = progId;
-    return (true);
+void ProgLoader::renameUserScope(int id, const QString &name)
+{
+    const QString query = "UPDATE Scopes "
+                          "SET "
+                          "Name_RU = %1,"
+                          "Name_ES = %1,"
+                          "Name_EN = %1 "
+                          "WHERE id = %2";
+
+    m_dbReaderPtr->executeUpdateQuery(query.arg(name).arg(id));
 }
 
 bool ProgLoader::freeSettingsSocketInit(bool clear)
@@ -725,9 +777,10 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
                     return a.at(3).toInt() < b.at(3).toInt();
                 });
             
-            QList<int> allModesId;
+            std::vector<int> allModesId;
+            allModesId.reserve(modesList.size());
             for (const auto& mode : modesList) {
-                allModesId.append(mode.at(2).toInt());
+                allModesId.push_back(mode.at(2).toInt());
             }
             
             std::map<int, std::map<int, Onyx::InstrInfo>> instrumConstraints = getConstraints(allModesId);
@@ -778,18 +831,6 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
     return true;
 }
 
-void ProgLoader::renameUserScope(int id, const QString &name)
-{
-	const QString query = "UPDATE Scopes "
-	                      "SET "
-	                      "Name_RU = %1,"
-	                      "Name_ES = %1,"
-	                      "Name_EN = %1,"
-	                      "WHERE id = %2";
-
-	m_dbReaderPtr->executeUpdateQuery(query.arg(name).arg(id));
-}
-
 std::map<int, std::map<int, Onyx::InstrInfo> > ProgLoader::getConstraints(const std::vector<int>& idList)
 {
 	std::map<int, std::map<int, Onyx::InstrInfo> > result;
@@ -835,112 +876,112 @@ std::map<int, InstrPtr > ProgLoader::getInstrums()
 
 void ProgLoader::saveUserProg(const QString &scopeName, const QString &progName)
 {
-	if (m_socketModelPtr == nullptr
-	        || m_socketModelPtr->itemsMap() == nullptr) {
-		// qWarning() << "Cannot save state: socket model not initialized";
-		return;
-	}
+    if (m_socketModelPtr == nullptr
+            || m_socketModelPtr->itemsMap() == nullptr) {
+        // qWarning() << "Cannot save state: socket model not initialized";
+        return;
+    }
 
-	int idToUse = -1;
-	int biggestKnownId = -1;
+    int idToUse = -1;
+    int biggestKnownId = -1;
 
-	auto getScopeId = [this](const QString& name, int& bigId) -> int {
-		int res = -1;
-		const std::unique_ptr<ProgLoaderBase> loader{getLoader(ptUser)};
+    auto getScopeId = [this](const QString& name, int& bigId) -> int {
+        int res = -1;
+        const std::unique_ptr<ProgLoaderBase> loader{getLoader(ptUser)};
 
-		auto list = loader->getCategories();
-		for (const auto& item : list) {
-			if (item.second == name) {
-				res = item.first;
-				break;
-			}
-		}
-		if (!list.empty()) {
-			bigId = list.rbegin()->first;
-		}
-		return res;
-	};
+        auto list = loader->getCategories();
+        for (const auto& item : list) {
+            if (item.second == name) {
+                res = item.first;
+                break;
+            }
+        }
+        if (!list.empty()) {
+            bigId = list.rbegin()->first;
+        }
+        return res;
+    };
 
-	int scopeId = getScopeId(scopeName, biggestKnownId);
+    int scopeId = getScopeId(scopeName, biggestKnownId);
 
-	if (scopeId == -1) {
-		//тут добавить новый скоуп
-		const   QString insertUserProgNameQuery = QString(
-		                                              "INSERT INTO Scopes "
-		                                              "(id, Num, Name_RU, Name_EN, Name_ES)"
-		                                              " VALUES "
-		                                              "(%1, %1, '%2', '%2', '%2')");
-		int id = biggestKnownId > 1000 ? biggestKnownId + 1 : 1001;
-		if (!m_dbReaderPtr->executeUpdateQuery(insertUserProgNameQuery
-		                                       .arg(id)
-		                                       .arg(scopeName))) {
-			qDebug() << "Failed to add new SCOPE";
-			return;
-		} else {
-			m_dbReaderPtr->commit();
-			scopeId = id;
-		}
-	}
+    if (scopeId == -1) {
+        //тут добавить новый скоуп
+        const   QString insertUserProgNameQuery = QString(
+                                                      "INSERT INTO Scopes "
+                                                      "(id, Num, Name_RU, Name_EN, Name_ES)"
+                                                      " VALUES "
+                                                      "(%1, %1, '%2', '%2', '%2')");
+        int id = biggestKnownId > 1000 ? biggestKnownId + 1 : 1001;
+        if (!m_dbReaderPtr->executeUpdateQuery(insertUserProgNameQuery
+                                               .arg(id)
+                                               .arg(scopeName))) {
+            qDebug() << "Failed to add new SCOPE";
+            return;
+        } else {
+            m_dbReaderPtr->commit();
+            scopeId = id;
+        }
+    }
 
-	const  QString insertUserProgNameQuery = QString(
-	                                             "INSERT INTO Progs "
-	                                             "(Prog_NUM, Argon, Name_RU, Name_EN, Name_ES, Scope_ID, Sub_NUM)"
-	                                             " VALUES "
-	                                             "(0, 0, '%1', '%1', '%1', %2, 0)");
+    const  QString insertUserProgNameQuery = QString(
+                                                 "INSERT INTO Progs "
+                                                 "(Prog_NUM, Argon, Name_RU, Name_EN, Name_ES, Scope_ID, Sub_NUM)"
+                                                 " VALUES "
+                                                 "(0, 0, '%1', '%1', '%1', %2, 0)");
 
-	if (!m_dbReaderPtr->executeUpdateQuery(insertUserProgNameQuery
-	                                       .arg(progName)
-	                                       .arg(scopeId))) {
-		qDebug() << "Failed to add Prog";
-	} else {
-		m_dbReaderPtr->commit();
-	}
+    if (!m_dbReaderPtr->executeUpdateQuery(insertUserProgNameQuery
+                                           .arg(progName)
+                                           .arg(scopeId))) {
+        qDebug() << "Failed to add Prog";
+    } else {
+        m_dbReaderPtr->commit();
+    }
 
-	QList<QVariantList> progListVariant = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Progs"},
-	                                                                         QStringList{"id", "Name_RU"},
-	                                                                         QString("Scope_ID = %1").arg(scopeId));
-	if (progListVariant.isEmpty()) {
-		qDebug() << "нету таких прог";
-		return;
-	}
-	if (progListVariant.size() >= 1) {
-		int min = INT_MIN;
-		for (const auto& item : progListVariant) {
-			if (item.at(1).toString() != progName)
-				continue;
-			if (item.at(0).toInt() > min) {
-				min = item.at(0).toInt();
-				idToUse = min;
-			}
-		}
-	}
-	if (idToUse == -1) {
-		qDebug() << "idToUse == -1";
-		return;
-	}
-	int pageCount = m_socketModelPtr->subProgCount();
-	QList<QStringList> listsStr = prepSaveState();
+    QList<QVariantList> progListVariant = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Progs"},
+                                                                             QStringList{"id", "Name_RU"},
+                                                                             QString("Scope_ID = %1").arg(scopeId));
+    if (progListVariant.isEmpty()) {
+        qDebug() << "нету таких прог";
+        return;
+    }
+    if (progListVariant.size() >= 1) {
+        int min = INT_MIN;
+        for (const auto& item : progListVariant) {
+            if (item.at(1).toString() != progName)
+                continue;
+            if (item.at(0).toInt() > min) {
+                min = item.at(0).toInt();
+                idToUse = min;
+            }
+        }
+    }
+    if (idToUse == -1) {
+        qDebug() << "idToUse == -1";
+        return;
+    }
+    int pageCount = m_socketModelPtr->subProgCount();
+    QList<QStringList> listsStr = prepSaveState();
 
-	for (int i = 0; i < pageCount; ++i) {
-		const auto& curList = listsStr.at(i);
+    for (int i = 0; i < pageCount; ++i) {
+        const auto& curList = listsStr.at(i);
 
-		QString query = insertUserProgQuery
-		                // QString query = saveCurQuery
-		                .arg(curList.at(0)).arg(curList.at(1)).arg(curList.at(2)) //mono1 cut
-		                .arg(curList.at(3)).arg(curList.at(4)).arg(curList.at(5)) //mono1 coag
-		                .arg(curList.at(6)).arg(curList.at(7)).arg(curList.at(8)) //mono2 cut
-		                .arg(curList.at(9)).arg(curList.at(10)).arg(curList.at(11)) //mono2 coag
-		                .arg(curList.at(12)).arg(curList.at(13)).arg(curList.at(14)) //bi1 cut
-		                .arg(curList.at(15)).arg(curList.at(16)).arg(curList.at(17)) //bi1 coag
-		                .arg(curList.at(18)).arg(curList.at(19)).arg(curList.at(20)) //bi2 cut
-		                .arg(curList.at(21)).arg(curList.at(22)).arg(curList.at(23)) //bi2 coag
-		                .arg(curList.at(24)).arg(curList.at(25)).arg(curList.at(26)) //pedals and outmask
-		                .arg(i + 1).arg(idToUse);
+        QString query = insertUserProgQuery
+                        // QString query = saveCurQuery
+                        .arg(curList.at(0)).arg(curList.at(1)).arg(curList.at(2)) //mono1 cut
+                        .arg(curList.at(3)).arg(curList.at(4)).arg(curList.at(5)) //mono1 coag
+                        .arg(curList.at(6)).arg(curList.at(7)).arg(curList.at(8)) //mono2 cut
+                        .arg(curList.at(9)).arg(curList.at(10)).arg(curList.at(11)) //mono2 coag
+                        .arg(curList.at(12)).arg(curList.at(13)).arg(curList.at(14)) //bi1 cut
+                        .arg(curList.at(15)).arg(curList.at(16)).arg(curList.at(17)) //bi1 coag
+                        .arg(curList.at(18)).arg(curList.at(19)).arg(curList.at(20)) //bi2 cut
+                        .arg(curList.at(21)).arg(curList.at(22)).arg(curList.at(23)) //bi2 coag
+                        .arg(curList.at(24)).arg(curList.at(25)).arg(curList.at(26)) //pedals and outmask
+                        .arg(i + 1).arg(idToUse);
 
-		if (!m_dbReaderPtr->executeUpdateQuery(query)) {
-			// qDebug() << "Failed to save current state";
-		}
-	}
+        if (!m_dbReaderPtr->executeUpdateQuery(query)) {
+            // qDebug() << "Failed to save current state";
+        }
+    }
 }
 
 ProgLoaderBase *ProgLoader::getLoader(progType type)
@@ -995,7 +1036,7 @@ std::vector<int> ProgLoader::getAllowedModes(int progId, const QVariantList& pro
 		QList<QVariantList> allowedModes
 		        = m_dbReaderPtr->slotSendSelectQuery(QStringList{"EnableModes"},
 		                                             QStringList{"Mode_ID"},
-		                                             QString("Prog_ID = %1").arg(progItem.at(0).toUInt()));
+		                                             QString("Prog_ID = %1").arg(progId));
 		// QString("List_ID = %1").arg(progItem.at(0).toUInt()));
 		allowedModesId.reserve(allowedModes.size());
 		for (const auto& item : allowedModes) {
