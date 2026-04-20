@@ -122,12 +122,9 @@ private:
 
 	// std::map<int, QSharedPointer<ProgLoaderBase>> m_loaders;
 	// QPointer<ProgLoaderBase> loader = nullptr;
-	progType m_curLoaderType = ptRecom;
 	int m_currentLoadedProgId = -1;
 	QString m_currentLoadedProgName;
 	int m_currentLoadedScopeId = -1;
-
-	ProgLoaderBase* getLoader(progType type);
 };
 
 #endif // PROGLOADER_H

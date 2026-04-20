@@ -41,7 +41,7 @@ ProgHandle::ProgHandle(QObject *parent)
 
 void ProgHandle::loadRecommendedProg(int recomProgIdx, bool clear)
 {
-	if (recomProgIdx >= m_progs.size())
+    if ((int)recomProgIdx >= m_progs.size())
 		return;
 	auto iter = m_progs.begin();
 	for (int a = 0; a < recomProgIdx; a++) {
@@ -86,7 +86,7 @@ void ProgHandle::deleteProgRequest(int index)
 	if (m_isRecomProgs) {
 		return;
 	}
-	if (m_progs.size() <= index) {
+    if ((int)m_progs.size() <= index) {
 		return;
 	}
 	auto iter = m_progs.begin();
@@ -102,7 +102,7 @@ void ProgHandle::renameProgRequest(int index, const QString &name)
 	if (m_isRecomProgs) {
 		return;
 	}
-	if (m_progs.size() <= index) {
+    if ((int)m_progs.size() <= index) {
 		return;
 	}
 	auto iter = m_progs.begin();
@@ -151,7 +151,7 @@ int ProgHandle::scopeIdx() const
 
 void ProgHandle::setScopeIdx(int newScopeIdx)
 {
-	if (m_scopes.size() <= newScopeIdx)
+    if ((int)m_scopes.size() <= newScopeIdx)
 		return;
 	// if (m_scopeIdx == newScopeIdx)
 	//     return;
@@ -195,7 +195,7 @@ void ProgHandle::deleteScopeRequest(int index)
 	if (m_isRecomProgs) {
 		return;
 	}
-	if (m_scopes.size() <= index) {
+    if ((int)m_scopes.size() <= index) {
 		return;
 	}
 	auto iter = m_scopes.begin();
@@ -211,7 +211,7 @@ void ProgHandle::renameScopeRequest(int index, const QString &name)
 	if (m_isRecomProgs) {
 		return;
 	}
-	if (m_scopes.size() <= index) {
+    if ((int)m_scopes.size() <= index) {
 		return;
 	}
 	auto iter = m_scopes.begin();
