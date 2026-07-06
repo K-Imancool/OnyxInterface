@@ -42,25 +42,7 @@ Popup {
         radius: 20
         border.color: "white"
         border.width: 3
-        
-        // Пульсирующая анимация
-        SequentialAnimation on opacity {
-            running: activationPopup.visible
-            loops: Animation.Infinite
-            
-            NumberAnimation {
-                from: 0.8
-                to: 1.0
-                duration: 600
-                easing.type: Easing.InOutSine
-            }
-            NumberAnimation {
-                from: 1.0
-                to: 0.8
-                duration: 600
-                easing.type: Easing.InOutSine
-            }
-        }
+        opacity: 1.0
     }
     
     contentItem: Item {
