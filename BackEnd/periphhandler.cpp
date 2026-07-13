@@ -9,7 +9,7 @@ PeriphHandler::PeriphHandler(QObject *parent)
     m_autoStStopTissue(false),
     m_neutralElConnected(false),
     m_neutralElDivided(true),
-    m_neutralSize(0),  // По умолчанию Small
+    m_neutralSize(2),  // По умолчанию Large (взрослый)
     m_autoSSmode(0),
     m_argonFlowRate(80),
     m_argonRealRate(0),

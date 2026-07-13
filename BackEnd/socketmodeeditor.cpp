@@ -17,7 +17,7 @@ void SocketModeEditor::initialize(int socket, int mode, bool isCoag)
     m_socketID = socket;
     m_modeNames = m_model->modeNames(socket, isCoag);
     m_modeNameIds = m_model->modeNamesIds(socket, isCoag);
-    // m_modeNameNums = m_model->
+    m_modeNameNums = m_model->modeNamesNums(socket, isCoag);
 
     const int modelModeIndex = m_model->index(socket, 0).data(
                                    m_isCoag ? SocketModel::CoagModeIndex
@@ -184,16 +184,7 @@ QStringList SocketModeEditor::modeNamesIds() const
 
 QStringList SocketModeEditor::modeNamesNums() const
 {
-    QStringList nums;
-    nums.reserve(m_modeNames.size());
-
-    for (int i = 0; i < m_modeNames.size(); ++i) {
-        const QVariantMap modeParams = m_model->modeParam(m_socketID, i, m_isCoag);
-        const int modeNum = modeParams.value("num", 0).toInt();
-        nums.append(QString::number(modeNum));
-    }
-
-    return nums;
+    return m_modeNameNums;
 }
 
 

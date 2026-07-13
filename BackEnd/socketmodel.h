@@ -90,6 +90,7 @@ public:
     QStringList modeNames(int socketID, bool isCoag) const;
     QStringList instrumNames(int socketId, int modeIndex, bool isCoag) const;
     QStringList modeNamesIds(int socketID, bool isCoag) const;
+    QStringList modeNamesNums(int socketID, bool isCoag) const;
     QStringList instrumNamesIds(int socketId, int modeIndex, bool isCoag) const;
     QStringList instrumNamesNums(int socketId, int modeIndex, bool isCoag) const;
     int selectedInstrumIndexByMode(int socketId, int modeIndex, bool isCoag);

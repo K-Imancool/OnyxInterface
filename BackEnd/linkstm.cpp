@@ -121,7 +121,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
 
     m_rxCommand.data.clear();
 
-//    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
+    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
     if (m_debugUart)
         emit sigDebugOverlayLine(QStringLiteral("Rx: %1").arg(getHexStr(rxPacket)));
 //    emit sigReportRx(getHexStr(rxPacket), m_uart->transmitDelay());
@@ -161,17 +161,22 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
         m_state = STATE_RX_LEN_ERR;
         return;
     }
+
+//    qDebug() << "Rx destuffed buffer: " << getHexStr(destuffedBuffer);  // DEBUG
+
     // Длина буфера
     int packetLen = (destuffedBuffer.at(0) & UART_LEN)*2 + 4;
     if (packetLen != destuffedBuffer.size()) {
-        QString errStr("length: destuf ");
-        errStr.append(QString::number(destuffedBuffer.at(0)));
-        errStr.append(" rxCom ");
-        errStr.append(QString::number(m_rxCommand.data.size()));
-//        qDebug() << errStr;                     // DEBUG
+        QString errStr("заявленная длина: ");
+        errStr.append(QString::number(packetLen));
+        errStr.append(" байт, реальная: ");
+        errStr.append(QString::number(destuffedBuffer.size()));
+        qDebug() << errStr;                     // DEBUG
         m_state = STATE_RX_LEN_ERR;
         return;
     }
+
+
     //Проверка CRC
     if (calculateCrc16(destuffedBuffer, destuffedBuffer.size()) != 0) {
         m_state = STATE_RX_CRC_ERR;
@@ -462,7 +467,7 @@ void LinkStm::sendCommand()
         m_uartTimer->setInterval(3000);  // Стирание банка около 6 сек, перезагрузка 3-4 сек
         break;
     case SoftData:
-        m_uartTimer->setInterval(200);
+        m_uartTimer->setInterval(100);
         break;
     default:
         m_uartTimer->setInterval(m_uartRate);
@@ -482,7 +487,7 @@ void LinkStm::sendCommand()
    }
    else {
         txStr = getHexStr(txPacket);
-//        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
+        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
         if (m_debugUart)
             emit sigDebugOverlayLine(QStringLiteral("Tx: %1").arg(getHexStr(txPacket)));
         if (m_txCommand.com == ReadyToPowerOff) {

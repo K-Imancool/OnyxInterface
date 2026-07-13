@@ -35,6 +35,10 @@ Popup {
     property var autoModeBaseline: [0, 0, 0, 0]
     property int autoDelayBaseline: 0
     property int socketAutoModeState: 0
+    property bool editorDataReady: false
+    property int preparedSocId: -1
+    property int preparedModeIndex: -1
+    property bool preparedIsCoag: false
     readonly property color fotekBlue: "#264093"
     readonly property color fotekOrange: "#faa731"
     readonly property int screenMargin: 20
@@ -418,12 +422,36 @@ Popup {
         centerView = "power"
     }
 
-    onOpened: {
-        openingInProgress = true
-        internalIndexChange = true
+    function editorParamsMatch() {
+        return editorDataReady
+               && preparedSocId === socId
+               && preparedModeIndex === modeIndex
+               && preparedIsCoag === isCoag
+    }
+
+    function prepareEditorData() {
+        if (socId < 0 || modeIndex < 0)
+            return
+        if (editorParamsMatch())
+            return
+
         modeEditor.initialize(socId, modeIndex, isCoag)
         updateModeModel()
         updateInstrModel()
+        preparedSocId = socId
+        preparedModeIndex = modeIndex
+        preparedIsCoag = isCoag
+        editorDataReady = true
+    }
+
+    onAboutToShow: prepareEditorData()
+
+    onClosed: editorDataReady = false
+
+    onOpened: {
+        openingInProgress = true
+        internalIndexChange = true
+        prepareEditorData()
         committedModeIndex = modeEditor.currentModeIndex
         committedInstrIndex = modeEditor.currentInstrIndex
         centerView = "power"

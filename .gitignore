@@ -55,3 +55,9 @@ compile_commands.json
 *_qmlcache.qrc
 
 DOCS_ModeEditor_Flow.md
+
+rk3566-firefly-roc-pc-rtc.dtb
+
+rk3566-firefly-roc-pc.dtb
+
+rk3566-firefly-roc-pc.dts

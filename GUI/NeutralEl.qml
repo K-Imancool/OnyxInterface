@@ -9,13 +9,15 @@ Rectangle {
     property bool hasInteractiveContent: true
 
     // Свойства компонента
-    property int neutralSize: periphHandle ? periphHandle.neutralSize : 0      // 0 = Small, 1 = Medium, 2 = Large
+    property int neutralSize: periphHandle ? periphHandle.neutralSize : 2      // 0 = Small, 1 = Medium, 2 = Large
     // property bool neutralDivided: true  // НЭ разделённый или нет
     property bool neutralDivided: periphHandle ? periphHandle.neutralElDivided : true  // НЭ разделённый или нет - привязка к ControlCenter
 
     // property bool neutralConnected: false  // Передается снаружи
     property bool neutralConnected: periphHandle.neutralElConnected  // Передается снаружи
     property bool showControls: false      // Показывать ли кнопки управления
+
+    readonly property string neIconsBasePath: "file:///home/kikorik/FOTEK/Images/ne/"
 
     // Сигналы для синхронизации с PeriphHandler
     // Используем другие имена, чтобы не конфликтовать с автоматическими сигналами свойств
@@ -25,12 +27,16 @@ Rectangle {
     component MassSelectionBut: Rectangle {
         id: rootCustomBut
         required property int type
-        property string iconText
+        property string line1Text: ""
+        property string powerValueText: ""
+        property string iconSource: ""
         property bool pressed: mouseArea.pressed
+
+        readonly property real labelFontSize: Math.min(height / 4, width / 12)
         
         signal clicked()
         
-        height: parent.height * .27
+        height: parent.height * .30
         width: parent.width * .7  // Уменьшена ширина, чтобы не перекрывать кнопки типа слева
         radius: 10
         
@@ -47,18 +53,64 @@ Rectangle {
             opacity: rootCustomBut.pressed ? 0.2 : 0
             radius: rootCustomBut.radius
         }
+
+        Image {
+            id: iconImage
+            anchors {
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+                rightMargin: 8
+                topMargin: 6
+                bottomMargin: 6
+            }
+            source: rootCustomBut.iconSource
+            fillMode: Image.PreserveAspectFit
+            visible: rootCustomBut.iconSource !== ""
+        }
         
-        Text {
-            anchors.fill: parent
-            anchors.margins: 5
-            text: iconText
-            textFormat: Text.StyledText  // Поддержка HTML-разметки
-            font.pixelSize: Math.min(parent.height / 4, parent.width / 12)  // Адаптивный размер шрифта
-            color: "#2c2c2c"
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            wrapMode: Text.WordWrap  // Перенос текста
-            lineHeight: 1.3  // Увеличенный межстрочный интервал (1.0 = нормальный, 1.3 = +30%)
+        Column {
+            id: textColumn
+            anchors {
+                left: parent.left
+                right: iconImage.left
+                verticalCenter: parent.verticalCenter
+                leftMargin: 8
+                rightMargin: 8
+            }
+            spacing: 0
+
+            Text {
+                width: textColumn.width
+                text: rootCustomBut.line1Text
+                textFormat: Text.StyledText
+                font.pixelSize: rootCustomBut.labelFontSize
+                color: "#2c2c2c"
+                horizontalAlignment: Text.AlignLeft
+                lineHeight: 1.2
+                lineHeightMode: Text.ProportionalHeight
+            }
+
+            Text {
+                width: textColumn.width
+                text: qsTr("Макс. мощность")
+                font.pixelSize: rootCustomBut.labelFontSize
+                color: "#2c2c2c"
+                horizontalAlignment: Text.AlignLeft
+                lineHeight: 1.2
+                lineHeightMode: Text.ProportionalHeight
+            }
+
+            Text {
+                width: textColumn.width
+                text: "<b>" + rootCustomBut.powerValueText + "</b>"
+                textFormat: Text.StyledText
+                font.pixelSize: rootCustomBut.labelFontSize
+                color: "#2c2c2c"
+                horizontalAlignment: Text.AlignHCenter
+                lineHeight: 1.2
+                lineHeightMode: Text.ProportionalHeight
+            }
         }
         
         MouseArea {
@@ -134,6 +186,47 @@ Rectangle {
         border.width: 2
         visible: showControls
 
+        Canvas {
+            id: selectionConnector
+            anchors.fill: parent
+            z: 0
+
+            readonly property int connectorLineWidth: 5
+            readonly property Item typeButton: neutralDivided ? buttonDivided : buttonNotDivided
+            readonly property Item massButton: neutralSize === 0 ? smallNeutralSize
+                                                   : neutralSize === 1 ? mediumNeutralSize
+                                                   : largeNeutralSize
+            readonly property real geometryRevision: typeButton.x + typeButton.y + typeButton.width + typeButton.height
+                                                   + massButton.x + massButton.y + massButton.width + massButton.height
+                                                   + neutralSize + (neutralDivided ? 1 : 0)
+
+            onGeometryRevisionChanged: requestPaint()
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+            Component.onCompleted: requestPaint()
+
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.reset()
+
+                var start = mapFromItem(typeButton, typeButton.width, typeButton.height / 2)
+                var end = mapFromItem(massButton, 0, massButton.height / 2)
+                var cornerX = start.x + (end.x - start.x) / 2
+
+                ctx.strokeStyle = fotekBlue
+                ctx.lineWidth = connectorLineWidth
+                ctx.lineCap = "butt"
+                ctx.lineJoin = "miter"
+
+                ctx.beginPath()
+                ctx.moveTo(start.x, start.y)
+                ctx.lineTo(cornerX, start.y)
+                ctx.lineTo(cornerX, end.y)
+                ctx.lineTo(end.x, end.y)
+                ctx.stroke()
+            }
+        }
+
         NeutralButton {
             id: buttonDivided
             height: parent.height * .45
@@ -166,11 +259,12 @@ Rectangle {
                 bottomMargin: 10
             }
         }
-        // Кнопка выбора размера Small (< 5кг)
         MassSelectionBut {
-            id: smallNeutralSize
-            type: 0
-            iconText: qsTr("Младенец: &lt; <b>5</b> кг<br>Макс. мощность <b>50</b>")
+            id: largeNeutralSize
+            type: 2
+            line1Text: qsTr("<b>Взрослый</b>: &gt; 15 кг")
+            powerValueText: "400"
+            iconSource: neutralEl.neIconsBasePath + "NE_adult.png"
             anchors {
                 top: parent.top
                 right: parent.right
@@ -181,7 +275,9 @@ Rectangle {
         MassSelectionBut {
             id: mediumNeutralSize
             type: 1
-            iconText: qsTr("Ребёнок: <b>5-15</b> кг<br>Макс. мощность <b>75</b>")
+            line1Text: qsTr("<b>Ребёнок</b>: 5-15 кг")
+            powerValueText: "75"
+            iconSource: neutralEl.neIconsBasePath + "NE_kid.png"
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
@@ -189,9 +285,11 @@ Rectangle {
             }
         }
         MassSelectionBut {
-            id: largeNeutralSize
-            type: 2
-            iconText: qsTr("Взрослый: &gt; <b>15</b> кг<br>Макс. мощность <b>400</b>")
+            id: smallNeutralSize
+            type: 0
+            line1Text: qsTr("<b>Младенец</b>: &lt; 5 кг")
+            powerValueText: "50"
+            iconSource: neutralEl.neIconsBasePath + "NE_baby.png"
             anchors {
                 bottom: parent.bottom
                 right: parent.right
