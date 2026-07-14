@@ -272,6 +272,7 @@ Rectangle {
             socketEditor.modeIndex = mod
             socketEditor.isCoag = iscoag
             periphHandle.enableActivation = false;
+            socketEditor.prepareEditorData()
             socketEditor.open()
         }
     }

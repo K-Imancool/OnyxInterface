@@ -169,6 +169,7 @@ private:
     int m_socketID;
     QStringList m_modeNames;
     QStringList m_modeNameIds;
+    QStringList m_modeNameNums;
     QStringList m_instrList;
     QStringList m_instrListIds;
     QStringList m_instrListNums;

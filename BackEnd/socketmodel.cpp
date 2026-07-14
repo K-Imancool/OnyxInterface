@@ -652,6 +652,28 @@ QStringList SocketModel::modeNamesIds(int socketID, bool isCoag) const
     return isCoag ? iter->second->coagModeNamesIds() : iter->second->cutModeNamesIds();
 }
 
+QStringList SocketModel::modeNamesNums(int socketID, bool isCoag) const
+{
+    const auto resolved = resolveSocket(socketID);
+    if (!resolved.itemsMap || !resolved.instrMap) {
+        return QStringList{};
+    }
+    auto iter = resolved.itemsMap->find(resolved.socketId);
+    if (iter == resolved.itemsMap->end() || iter->second.isNull()) {
+        return QStringList{};
+    }
+
+    const SockPtr sock = iter->second;
+    const QStringList names = isCoag ? sock->coagModeNames() : sock->cutModeNames();
+    QStringList nums;
+    nums.reserve(names.size());
+    for (int i = 0; i < names.size(); ++i) {
+        const CSurgModePtr mode = sock->getMode(i, isCoag);
+        nums.append(mode.isNull() ? QStringLiteral("0") : QString::number(mode->num()));
+    }
+    return nums;
+}
+
 QStringList SocketModel::instrumNamesIds(int socketId, int modeIndex, bool isCoag) const
 {
     const auto resolved = resolveSocket(socketId);
