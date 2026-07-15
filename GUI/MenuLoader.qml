@@ -38,6 +38,53 @@ Item {
         })
     }
 
+    function reloadCurrentScreen() {
+        var src = loaderSourceString()
+        if (!src || src.indexOf("MainMenu.qml") >= 0)
+            return
+
+        hideKeyboardAndDropFocus()
+
+        if (src.indexOf("ServiceMenu.qml") >= 0) {
+            navigateToWithProperties(src, {
+                "accessLevel": serviceMenuAccessLevel
+            })
+            return
+        }
+        if (src.indexOf("AboutScreen.qml") >= 0) {
+            navigateToWithProperties(src, {
+                "serialNumber": savedJsonString("serialNumber"),
+                "deviceType": savedJsonString("deviceType"),
+                "featureNotes": savedJsonString("featureNotes")
+            })
+            return
+        }
+        if (src.indexOf("ProgItemList.qml") >= 0 && menuLoader.item) {
+            var listItem = menuLoader.item
+            menuLoader.setSource(src, {
+                "recommended": listItem.recommended,
+                "editable": listItem.editable,
+                "loadClear": listItem.loadClear !== undefined ? listItem.loadClear : false
+            })
+            Qt.callLater(function() {
+                hideKeyboardAndDropFocus()
+                if (menuLoader.item && menuLoader.item.forceActiveFocus) {
+                    menuLoader.item.forceActiveFocus()
+                }
+            })
+            return
+        }
+
+        menuLoader.source = ""
+        menuLoader.source = src
+        Qt.callLater(function() {
+            hideKeyboardAndDropFocus()
+            if (menuLoader.item && menuLoader.item.forceActiveFocus) {
+                menuLoader.item.forceActiveFocus()
+            }
+        })
+    }
+
     function savedJsonString(key) {
         if (typeof savedJson === "undefined" || !savedJson) {
             return ""

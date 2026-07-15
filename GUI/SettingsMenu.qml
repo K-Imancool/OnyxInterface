@@ -351,7 +351,7 @@ Item {
             }
         }
 
-        onPressed: flagButton.chosen()
+        onClicked: flagButton.chosen()
     }
 
     Component {

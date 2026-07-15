@@ -86,14 +86,14 @@ Rectangle {
                 textFormat: Text.StyledText
                 font.pixelSize: rootCustomBut.labelFontSize
                 color: "#2c2c2c"
-                horizontalAlignment: Text.AlignLeft
+                horizontalAlignment: Text.AlignHCenter
                 lineHeight: 1.2
                 lineHeightMode: Text.ProportionalHeight
             }
 
             Text {
                 width: textColumn.width
-                text: qsTr("Макс. мощность")
+                text: qsTr("Ограничение\nмощности")
                 font.pixelSize: rootCustomBut.labelFontSize
                 color: "#2c2c2c"
                 horizontalAlignment: Text.AlignLeft
@@ -262,7 +262,8 @@ Rectangle {
         MassSelectionBut {
             id: largeNeutralSize
             type: 2
-            line1Text: qsTr("<b>Взрослый</b>: &gt; 15 кг")
+            line1Text: qsTr("&gt; 15 кг")
+//            line1Text: qsTr("<b>Взрослый</b>: &gt; 15 кг")
             powerValueText: "400"
             iconSource: neutralEl.neIconsBasePath + "NE_adult.png"
             anchors {
@@ -275,7 +276,8 @@ Rectangle {
         MassSelectionBut {
             id: mediumNeutralSize
             type: 1
-            line1Text: qsTr("<b>Ребёнок</b>: 5-15 кг")
+            line1Text: qsTr("5-15 кг")
+//            line1Text: qsTr("<b>Ребёнок</b>: 5-15 кг")
             powerValueText: "75"
             iconSource: neutralEl.neIconsBasePath + "NE_kid.png"
             anchors {
@@ -287,7 +289,8 @@ Rectangle {
         MassSelectionBut {
             id: smallNeutralSize
             type: 0
-            line1Text: qsTr("<b>Младенец</b>: &lt; 5 кг")
+            line1Text: qsTr("&lt; 5 кг")
+//            line1Text: qsTr("<b>Младенец</b>: &lt; 5 кг")
             powerValueText: "50"
             iconSource: neutralEl.neIconsBasePath + "NE_baby.png"
             anchors {

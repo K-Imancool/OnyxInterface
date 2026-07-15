@@ -216,6 +216,32 @@ Window {
         persistLanguage()
     }
 
+    function restoreMenuScreenAfterLanguageChange(preservedStartupScreen, preservedMenuSource) {
+        if (preservedStartupScreen === "settingsMenu" || preservedStartupScreen === "serviceMenu") {
+            if (startupScreen !== preservedStartupScreen) {
+                showStartupScreen(preservedStartupScreen)
+            }
+            var startupMenu = startupContentLoader.item
+            if (startupMenu && startupMenu.reloadCurrentScreen) {
+                startupMenu.reloadCurrentScreen()
+            }
+            return
+        }
+
+        if (!preservedMenuSource || preservedMenuSource.indexOf("MainMenu.qml") >= 0) {
+            return
+        }
+        if (!leftDrawer.drawerActive) {
+            return
+        }
+
+        if (menuLoad.loaderSourceString() !== preservedMenuSource) {
+            menuLoad.navigateTo(preservedMenuSource)
+        } else if (menuLoad.reloadCurrentScreen) {
+            menuLoad.reloadCurrentScreen()
+        }
+    }
+
     function persistCurrentProgramInfo() {
         savedJson.saveString("lastProgramDisplayName", currentProgramDisplayTitle)
         savedJson.saveString("lastProgramName", container.currentProgName)
@@ -343,6 +369,10 @@ Window {
     onStartupScreenChanged: activationEnable()
     onStartupInfoVisibleChanged: activationEnable()
     onLanguageChanged: {
+        var preservedStartupScreen = startupFlowVisible ? startupScreen : ""
+        var preservedMenuSource = (!startupFlowVisible && leftDrawer.drawerActive)
+                ? menuLoad.loaderSourceString() : ""
+
         var normalized = normalizedLanguage(container.language)
         if (normalized !== container.language) {
             container.language = normalized
@@ -361,6 +391,10 @@ Window {
         }
         if (keyboardLoader.item)
             keyboardLoader.item.syncKeyboardLocales()
+
+        Qt.callLater(function() {
+            container.restoreMenuScreenAfterLanguageChange(preservedStartupScreen, preservedMenuSource)
+        })
     }
 
    StatusBar {
