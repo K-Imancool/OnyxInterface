@@ -40,17 +40,25 @@ Rectangle {
     property bool coagHasAvailableModes: true
 
     signal socketEditorRequest(int socketId, bool isCoag)
+    signal fullSocketEditorRequest(int socketId)
     signal dimmedSocketClicked(int socketId)
 
     readonly property string coagModeNameForDisplay: {
         var _ = _coagAutoDisplayRev
         var a = periphHandle.autoMode(socketId)
         var base = coagModeName
-        if (coagModeId === 5) {
+        if (coagModeId === 5 ||
+                coagModeId === 6 ||
+                coagModeId === 27 ||
+                coagModeId === 61 ||
+                coagModeId === 62 ||
+                coagModeId === 63 ||
+                coagModeId === 64) {
             if (a === 1)
                 return base + qsTr(" АВТОСТОП")
             if (a === 2)
-                return base + qsTr(" АВТОСТАРТ/СТОП")
+                return base + qsTr(" АВТО-СТ-СТОП")
+//            return base + qsTr(" АВТОСТАРТ/СТОП")
         }
         if (coagModeId === 21 && socketId >= 2 && socketId <= 3 && a === 1)
             return base + qsTr(" АВТОСТОП")
@@ -147,6 +155,16 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         z: 2
+    }
+
+    MouseArea {
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: 48
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        z: 4
+        enabled: socketRoot.allowEditing
+        onClicked: socketRoot.fullSocketEditorRequest(socketRoot.socketId)
     }
 
     Rectangle {

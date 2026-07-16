@@ -16,6 +16,7 @@ Repeater {
     property var activationOverlay: null
 
     signal socketEditorRequest(int socketId, int modeIndex, bool isCoag)
+    signal fullSocketEditorRequest(int socketId)
 
     function isEndoSocketDimmed(socketIndex) {
         if (!theModel || !theModel.endoProgramView) {
@@ -126,6 +127,9 @@ Repeater {
             }
             function onDimmedSocketClicked(socketid) {
                 repeatRoot.switchEndoPageByDimmedSocket(socketid)
+            }
+            function onFullSocketEditorRequest(socketid) {
+                repeatRoot.fullSocketEditorRequest(socketid)
             }
         }
     }

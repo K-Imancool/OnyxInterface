@@ -51,6 +51,7 @@ Window {
                                           | argonDrawer.opened
                                           | neutralDrawer.opened
                                           | socketsDummy.socketEditorOpened
+                                          | socketsDummy.fullSocketEditorOpened
                                           | startupFlowVisible
                                           | powerOffShutdownPending
                                           | powerOffConfirmDialog.opened)
@@ -216,30 +217,33 @@ Window {
         persistLanguage()
     }
 
-    function restoreMenuScreenAfterLanguageChange(preservedStartupScreen, preservedMenuSource) {
+    // Пока true — игнорируем closeMe/return из меню (смена языка не должна закрывать drawer)
+    property bool suppressMenuNavigationForLanguageChange: false
+
+    function keepLeftDrawerOpen() {
+        slideMenuAnimation.stop()
+        leftDrawer.opened = true
+        leftDrawer.x = 0
+    }
+
+    function restoreMenuScreenAfterLanguageChange(preservedStartupScreen, preservedMenuSource, preservedDrawerOpen) {
         if (preservedStartupScreen === "settingsMenu" || preservedStartupScreen === "serviceMenu") {
             if (startupScreen !== preservedStartupScreen) {
                 showStartupScreen(preservedStartupScreen)
             }
-            var startupMenu = startupContentLoader.item
-            if (startupMenu && startupMenu.reloadCurrentScreen) {
-                startupMenu.reloadCurrentScreen()
+            // qsTr уже обновлён через retranslate(); разрушающий reload не нужен
+            return
+        }
+
+        if (!preservedDrawerOpen) {
+            return
+        }
+        if (preservedMenuSource && preservedMenuSource.indexOf("MainMenu.qml") < 0) {
+            if (menuLoad.loaderSourceString() !== preservedMenuSource) {
+                menuLoad.navigateTo(preservedMenuSource)
             }
-            return
         }
-
-        if (!preservedMenuSource || preservedMenuSource.indexOf("MainMenu.qml") >= 0) {
-            return
-        }
-        if (!leftDrawer.drawerActive) {
-            return
-        }
-
-        if (menuLoad.loaderSourceString() !== preservedMenuSource) {
-            menuLoad.navigateTo(preservedMenuSource)
-        } else if (menuLoad.reloadCurrentScreen) {
-            menuLoad.reloadCurrentScreen()
-        }
+        keepLeftDrawerOpen()
     }
 
     function persistCurrentProgramInfo() {
@@ -370,8 +374,10 @@ Window {
     onStartupInfoVisibleChanged: activationEnable()
     onLanguageChanged: {
         var preservedStartupScreen = startupFlowVisible ? startupScreen : ""
-        var preservedMenuSource = (!startupFlowVisible && leftDrawer.drawerActive)
-                ? menuLoad.loaderSourceString() : ""
+        var preservedDrawerOpen = !startupFlowVisible && leftDrawer.opened
+        var preservedMenuSource = preservedDrawerOpen ? menuLoad.loaderSourceString() : ""
+
+        suppressMenuNavigationForLanguageChange = true
 
         var normalized = normalizedLanguage(container.language)
         if (normalized !== container.language) {
@@ -379,21 +385,35 @@ Window {
             return
         }
         persistLanguage()
+        var languageApplied = true
         if (typeof translationController !== "undefined" && translationController) {
             if (!translationController.setLanguage(normalized)) {
-                container.language = "ru"
-                return
+                languageApplied = false
+                if (container.language !== "ru") {
+                    container.language = "ru"
+                    return
+                }
+            } else {
+                // Имена режимов/инструментов читаются из БД при загрузке программы,
+                // поэтому пересобираем модель сокетов из сохранённого состояния
+                recomHandle.saveCurrentState()
+                recomHandle.loadLastSettings()
             }
-            // Имена режимов/инструментов читаются из БД при загрузке программы,
-            // поэтому пересобираем модель сокетов из сохранённого состояния
-            recomHandle.saveCurrentState()
-            recomHandle.loadLastSettings()
         }
-        if (keyboardLoader.item)
+        if (languageApplied && keyboardLoader.item)
             keyboardLoader.item.syncKeyboardLocales()
 
+        // Сразу оставляем drawer открытым — loadLastSettings / retranslate не должны его схлопнуть
+        if (preservedDrawerOpen) {
+            keepLeftDrawerOpen()
+        }
+
         Qt.callLater(function() {
-            container.restoreMenuScreenAfterLanguageChange(preservedStartupScreen, preservedMenuSource)
+            if (languageApplied) {
+                container.restoreMenuScreenAfterLanguageChange(
+                            preservedStartupScreen, preservedMenuSource, preservedDrawerOpen)
+            }
+            container.suppressMenuNavigationForLanguageChange = false
         })
     }
 
@@ -1005,6 +1025,9 @@ Window {
         function onSocketEditorOpenedChanged() {
             container.activationEnable()
         }
+        function onFullSocketEditorOpenedChanged() {
+            container.activationEnable()
+        }
     }
 
     Connections {
@@ -1227,6 +1250,10 @@ Window {
     Connections {
         target: menuLoad
         function onCloseMe() {
+            if (container.suppressMenuNavigationForLanguageChange) {
+                container.keepLeftDrawerOpen()
+                return
+            }
             leftDrawer.close()
         }
         function onProgramSelected(scopeName, progName) {

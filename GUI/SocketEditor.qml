@@ -241,7 +241,13 @@ Popup {
     }
 
     function isBiCoagMode() {
-        return currentModeId() === 5
+        return currentModeId() === 5 ||
+                currentModeId() === 6 ||
+                currentModeId() === 27 ||
+                currentModeId() === 61 ||
+                currentModeId() === 62 ||
+                currentModeId() === 63 ||
+                currentModeId() === 64
     }
 
     function captureAutoModeBaseline() {

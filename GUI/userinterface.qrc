@@ -4,6 +4,12 @@
         <file>DummySocket.qml</file>
         <file>StatusBar.qml</file>
         <file>SocketEditor.qml</file>
+        <file>FullSocketEditor.qml</file>
+        <file>FullSocketSidePanel.qml</file>
+        <file>FullSocketModeButton.qml</file>
+        <file>FullSocketInstrButton.qml</file>
+        <file>FullSocketPowerRow.qml</file>
+        <file>FullSocketStepHint.qml</file>
         <file>EndoChart.qml</file>
         <file>SocketView.qml</file>
         <file>HalfSocket.qml</file>

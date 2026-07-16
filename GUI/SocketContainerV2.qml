@@ -8,6 +8,7 @@ Rectangle {
     signal progAddRequest(int type)
     property var innerModel
     property alias socketEditorOpened: socketEditor.opened
+    property alias fullSocketEditorOpened: fullSocketEditor.opened
     color: "gray"
 
     function updateActivationOverlayGeometry() {
@@ -161,6 +162,10 @@ Rectangle {
     SocketEditor {
         id: socketEditor
     }
+
+    FullSocketEditor {
+        id: fullSocketEditor
+    }
     ProgAdditionPop {
         id: progSelector
         width: socketContainer.width
@@ -264,6 +269,12 @@ Rectangle {
             periphHandle.enableActivation = true;
         }
     }
+    Connections {
+        target: fullSocketEditor
+        function onClosed() {
+            periphHandle.enableActivation = true;
+        }
+    }
 
     Connections {
         target: repeat
@@ -274,6 +285,11 @@ Rectangle {
             periphHandle.enableActivation = false;
             socketEditor.prepareEditorData()
             socketEditor.open()
+        }
+        function onFullSocketEditorRequest(soc) {
+            fullSocketEditor.socId = soc
+            periphHandle.enableActivation = false
+            fullSocketEditor.open()
         }
     }
 }

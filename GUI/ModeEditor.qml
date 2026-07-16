@@ -7,6 +7,8 @@ Popup {
     property int socId
     property int modeIndex
     property bool isCoag
+    property bool deferCommit: false
+    property bool dialogAccepted: false
     readonly property var modeEditor: Editor
 
     id: root
@@ -51,6 +53,8 @@ Popup {
         }
         modeListView.innerModel = combinedModel
     }
+
+    onAboutToShow: dialogAccepted = false
 
     onOpened: {
         modeEditor.initialize(socId, modeIndex, isCoag)
@@ -118,7 +122,9 @@ Popup {
                 }
                 width: 72
                 onClicked: {
-                    modeEditor.rollBack()
+                    root.dialogAccepted = false
+                    if (!root.deferCommit)
+                        modeEditor.rollBack()
                     root.close()
                 }
 
@@ -342,7 +348,9 @@ Popup {
             labelPixelSize: 30
             labelColor: root.fotekBlue
             onClicked: {
-                modeEditor.rollBack()
+                root.dialogAccepted = false
+                if (!root.deferCommit)
+                    modeEditor.rollBack()
                 root.close()
             }
         }
@@ -368,7 +376,9 @@ Popup {
             labelPixelSize: 30
             labelColor: "white"
             onClicked: {
-                modeEditor.commitChanges()
+                root.dialogAccepted = true
+                if (!root.deferCommit)
+                    modeEditor.commitChanges()
                 root.close()
             }
         }

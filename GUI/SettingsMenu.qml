@@ -8,7 +8,6 @@ Item {
     signal returnButtonPressed()
     signal additionalSettingsButtonPressed()
     signal infoButtonPressed()
-    signal languageButtonPressed()
 
     property int volumeLevel: 7
 

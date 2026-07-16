@@ -121,7 +121,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
 
     m_rxCommand.data.clear();
 
-    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
+//    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
     if (m_debugUart)
         emit sigDebugOverlayLine(QStringLiteral("Rx: %1").arg(getHexStr(rxPacket)));
 //    emit sigReportRx(getHexStr(rxPacket), m_uart->transmitDelay());
@@ -171,7 +171,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
         errStr.append(QString::number(packetLen));
         errStr.append(" байт, реальная: ");
         errStr.append(QString::number(destuffedBuffer.size()));
-        qDebug() << errStr;                     // DEBUG
+//        qDebug() << errStr;                     // DEBUG
         m_state = STATE_RX_LEN_ERR;
         return;
     }
@@ -204,7 +204,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
     // Повторяем команду, если ответ не подходящий
     else {
         m_state = STATE_RX_ERR;
-        qDebug() << "не тот ответ от stm";      // DEBUG
+//        qDebug() << "не тот ответ от stm";      // DEBUG
         if (m_fwUpdateSessionActive && !m_fwUpdateAwaitingBoot) {
             if (!m_fwRxErrStreakTimer.isValid()) {
                 m_fwRxErrStreakTimer.start();
@@ -487,7 +487,7 @@ void LinkStm::sendCommand()
    }
    else {
         txStr = getHexStr(txPacket);
-        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
+//        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
         if (m_debugUart)
             emit sigDebugOverlayLine(QStringLiteral("Tx: %1").arg(getHexStr(txPacket)));
         if (m_txCommand.com == ReadyToPowerOff) {

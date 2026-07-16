@@ -7,6 +7,8 @@ Popup {
     property int socId: -1
     property int modeIndex: -1
     property bool isCoag: false
+    property bool deferCommit: false
+    property bool dialogAccepted: false
     readonly property var modeEditor: Editor
     property string imageNameTemplate
     
@@ -44,6 +46,8 @@ Popup {
         
         instrumListView.innerModel = combinedModel
     }
+
+    onAboutToShow: dialogAccepted = false
 
     onOpened: {
         // Запрещаем активацию при открытии popup
@@ -145,7 +149,9 @@ Popup {
                     color: "white"
                 }
                 onClicked: {
-                    modeEditor.rollBack()
+                    root.dialogAccepted = false
+                    if (!root.deferCommit)
+                        modeEditor.rollBack()
                     root.close()
                 }
             }
@@ -254,7 +260,9 @@ Popup {
             labelPixelSize: 34
             labelColor: "white"
             onClicked: {
-                modeEditor.rollBack()
+                root.dialogAccepted = false
+                if (!root.deferCommit)
+                    modeEditor.rollBack()
                 root.close()
             }
         }
@@ -283,8 +291,10 @@ Popup {
             labelPixelSize: 34
             labelColor: "lightgreen"
             onClicked: {
-                modeEditor.commitChanges()
-                root.close();
+                root.dialogAccepted = true
+                if (!root.deferCommit)
+                    modeEditor.commitChanges()
+                root.close()
             }
         }
 

@@ -38,53 +38,6 @@ Item {
         })
     }
 
-    function reloadCurrentScreen() {
-        var src = loaderSourceString()
-        if (!src || src.indexOf("MainMenu.qml") >= 0)
-            return
-
-        hideKeyboardAndDropFocus()
-
-        if (src.indexOf("ServiceMenu.qml") >= 0) {
-            navigateToWithProperties(src, {
-                "accessLevel": serviceMenuAccessLevel
-            })
-            return
-        }
-        if (src.indexOf("AboutScreen.qml") >= 0) {
-            navigateToWithProperties(src, {
-                "serialNumber": savedJsonString("serialNumber"),
-                "deviceType": savedJsonString("deviceType"),
-                "featureNotes": savedJsonString("featureNotes")
-            })
-            return
-        }
-        if (src.indexOf("ProgItemList.qml") >= 0 && menuLoader.item) {
-            var listItem = menuLoader.item
-            menuLoader.setSource(src, {
-                "recommended": listItem.recommended,
-                "editable": listItem.editable,
-                "loadClear": listItem.loadClear !== undefined ? listItem.loadClear : false
-            })
-            Qt.callLater(function() {
-                hideKeyboardAndDropFocus()
-                if (menuLoader.item && menuLoader.item.forceActiveFocus) {
-                    menuLoader.item.forceActiveFocus()
-                }
-            })
-            return
-        }
-
-        menuLoader.source = ""
-        menuLoader.source = src
-        Qt.callLater(function() {
-            hideKeyboardAndDropFocus()
-            if (menuLoader.item && menuLoader.item.forceActiveFocus) {
-                menuLoader.item.forceActiveFocus()
-            }
-        })
-    }
-
     function savedJsonString(key) {
         if (typeof savedJson === "undefined" || !savedJson) {
             return ""
@@ -196,9 +149,6 @@ Item {
                     if (menuLoader.item.userButtonPressed) {
                         menuLoader.item.userButtonPressed.disconnect()
                     }
-                    if (menuLoader.item.languageButtonPressed) {
-                        menuLoader.item.languageButtonPressed.disconnect()
-                    }
                     if (menuLoader.item.infoButtonPressed) {
                         menuLoader.item.infoButtonPressed.disconnect()
                     }
@@ -279,17 +229,6 @@ Item {
                     if (menuLoader.item.infoButtonPressed) {
                         menuLoader.item.infoButtonPressed.connect(function() {
                             navigateTo("qrc:/StartupInfoScreen.qml")
-                        })
-                    }
-                    if (menuLoader.item.languageButtonPressed) {
-                        menuLoader.item.languageButtonPressed.connect(function() {
-                            if (typeof container !== "undefined" && container.language !== undefined) {
-                                if (typeof translationController !== "undefined" && translationController) {
-                                    container.language = translationController.nextLanguage(container.language)
-                                } else {
-                                    container.language = container.language === "en" ? "ru" : "en"
-                                }
-                            }
                         })
                     }
                     if (menuLoader.item.serialNumberButtonPressed) {
@@ -425,6 +364,10 @@ Item {
         ignoreUnknownSignals: true
         enabled: loaderSourceBaseName() !== "MainMenu.qml"
         function onReturnButtonPressed() {
+            if (typeof container !== "undefined"
+                    && container.suppressMenuNavigationForLanguageChange) {
+                return
+            }
             var base = loaderSourceBaseName()
             if (isServiceMenuChildScreenBaseName(base)) {
                 navigateToServiceMenu(serviceMenuAccessLevel)
