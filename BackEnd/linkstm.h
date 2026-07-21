@@ -322,6 +322,8 @@ private:
     bool m_fwUpdateAwaitingBoot = false;
     /// Пока ждём ReadyToUpdate после StartUpdate — не подменять m_txCommand на Allright.
     bool m_fwUpdateAwaitingReady = false;
+    /// Пока ждём Start после GoApp — не подменять m_txCommand и не брать команды из очереди.
+    bool m_fwUpdateAwaitingGoApp = false;
     int m_softSize;
     int m_transferredSize;
     QList<HexString> m_hexList;

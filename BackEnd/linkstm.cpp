@@ -205,7 +205,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
     else {
         m_state = STATE_RX_ERR;
 //        qDebug() << "не тот ответ от stm";      // DEBUG
-        if (m_fwUpdateSessionActive && !m_fwUpdateAwaitingBoot) {
+        if ((m_fwUpdateSessionActive || m_fwUpdateAwaitingGoApp) && !m_fwUpdateAwaitingBoot) {
             if (!m_fwRxErrStreakTimer.isValid()) {
                 m_fwRxErrStreakTimer.start();
             } else if (m_fwRxErrStreakTimer.elapsed() >= 4000) {
@@ -229,7 +229,9 @@ bool LinkStm::checkRxCommand()
 
     switch (m_txCommand.com) {
     case CurrentVersion:
-        return m_rxCommand.com == Version ? true : false;
+        return m_rxCommand.com == Version
+                || m_rxCommand.com == ErrGenComm
+                || m_rxCommand.com == ErrArgComm ? true : false;
     case Erase:
         return m_rxCommand.com == Erased ? true : false;
     case StartUpdate:
@@ -238,6 +240,8 @@ bool LinkStm::checkRxCommand()
         return m_rxCommand.com == BootAck ? true : false;
     case UpdateFinish:
         return m_rxCommand.com == UpdateResult ? true : false;
+    case GoApp:
+        return m_rxCommand.com == Start ? true : false;
     case SoftData:
         if (m_rxCommand.com != SoftDataAck || m_rxCommand.data.size() < 4)
             return false;
@@ -301,20 +305,20 @@ void LinkStm::sendCommand()
     if (m_state == STATE_OK) {
         readRxCommand();                    // Читаем ответ
 
-        if (m_readyToPowerOffPending && !m_fwUpdateSessionActive) {
+        if (m_readyToPowerOffPending && !m_fwUpdateSessionActive && !m_fwUpdateAwaitingGoApp) {
             m_txCommand.com = ReadyToPowerOff;
             m_txCommand.data = m_readyToPowerOffData;
             m_readyToPowerOffData.clear();
             m_txCommand.mc = MC_COM;
             m_readyToPowerOffPending = false;
             m_comState = SPECIAL;
-            qDebug() << "txCom: " << m_txCommand.com << ": " << QString::number(m_txCommand.com, 16);
+//            qDebug() << "txCom: " << m_txCommand.com << ": " << QString::number(m_txCommand.com, 16);
 
         } else if (!m_neutralResistPollEnabled && !m_txCommandList.isEmpty()
-            && !m_fwUpdateSessionActive) {   // Какую-то спец команду надо передать
+            && !m_fwUpdateSessionActive && !m_fwUpdateAwaitingGoApp) {   // Какую-то спец команду надо передать
             m_txCommand = m_txCommandList.takeFirst();
             m_comState = SPECIAL;
-            qDebug() << "txCom: " << m_txCommand.com << ": " << QString::number(m_txCommand.com, 16);
+//            qDebug() << "txCom: " << m_txCommand.com << ": " << QString::number(m_txCommand.com, 16);
 
         }
 
@@ -368,10 +372,12 @@ void LinkStm::sendCommand()
         }
 
         //__________________Команда по умолчанию_________________
-        if (m_comState == IDLE && !m_fwUpdateAwaitingBoot && !m_fwUpdateAwaitingReady) {
+        if (m_comState == IDLE && !m_fwUpdateAwaitingBoot && !m_fwUpdateAwaitingReady
+            && !m_fwUpdateAwaitingGoApp) {
             if (m_neutralResistPollEnabled) {
                 m_txCommand.com = AckNeutralResist;
                 m_txCommand.data.clear();
+                m_txCommand.mc = MC_COM;
             } else {
                 if (m_unitState.pedalKnob == PRESS_NONE
                     || m_unitState.pedalKnob == PRESS_WRONG) {
@@ -395,12 +401,19 @@ void LinkStm::sendCommand()
                 m_txCommand.com |= m_neutralElDivided ? (1 << 1) : 0;
                 m_txCommand.com |= m_enableActivation ? 0 : 1;  // Запрет активации
                 m_txCommand.data.clear();
+                m_txCommand.mc = MC_COM;
             }
         }
 
         //______________Обновление________________
         if (m_comState == UPDATING) {
             if (m_rxCommand.com == Start) {        // После перезагрузки МК
+                if (m_fwUpdateAwaitingGoApp) {
+                    m_fwUpdateAwaitingGoApp = false;
+                    m_mc = MC_COM;
+                    m_txCommand.mc = MC_COM;
+                    emit sigUpdateProgress(-1);
+                }
                 setTxCommandBoot();
             }
             else if ((m_lastCommand.com == StartUpdate) ||
@@ -447,6 +460,7 @@ void LinkStm::sendCommand()
             else if (m_lastCommand.com == UpdateFinish) {
                 m_txCommand.com = GoApp;                // После обновления надо перейти в основную прошивку
                 m_txCommand.data.clear();
+                m_fwUpdateAwaitingGoApp = true;
                 m_comState = IDLE;
             }
         } // updating
@@ -796,10 +810,10 @@ LinkStm::ActiveSocket LinkStm::determineSocket(const PedalKnobPressed &pedalKnob
 bool LinkStm::checkCommandList(const UartTx &newTxCommand)
 {
     for (auto command : m_txCommandList) {
-        if (command.com == newTxCommand.com) {
-            if (command.data == newTxCommand.data) {
+        if (command.com == newTxCommand.com
+            && command.mc == newTxCommand.mc
+            && command.data == newTxCommand.data) {
                 return false;
-            }
         }
     }
     return true;
@@ -850,6 +864,7 @@ void LinkStm::updateTransfer(QList<HexString> hexList, QString versionStr)
     txCom.mc = m_mc;
     m_fwUpdateAwaitingBoot = true;
     m_fwUpdateAwaitingReady = false;
+    m_fwUpdateAwaitingGoApp = false;
     m_txCommand = txCom;
     m_versionStr = versionStr;
     qDebug() << "goBoot before startUpdate";
@@ -861,6 +876,7 @@ void LinkStm::abortFirmwareUpdate(const QString &message)
     m_fwRxErrStreakTimer.invalidate();
     m_fwUpdateAwaitingBoot = false;
     m_fwUpdateAwaitingReady = false;
+    m_fwUpdateAwaitingGoApp = false;
     m_hexList.clear();
     m_softSize = 0;
     m_transferredSize = 0;
@@ -987,9 +1003,6 @@ void LinkStm::mcVersRequest()
     verCommand.com = CurrentVersion;
 
     // Ставим в очередь
-    verCommand.mc = MC_COM;
-    if (checkCommandList(verCommand))
-        m_txCommandList.append(verCommand);
 
     verCommand.mc = MC_ARG;
     if (checkCommandList(verCommand))
@@ -999,6 +1012,9 @@ void LinkStm::mcVersRequest()
     if (checkCommandList(verCommand))
         m_txCommandList.append(verCommand);
 
+    verCommand.mc = MC_COM;
+    if (checkCommandList(verCommand))
+        m_txCommandList.append(verCommand);
     // Заглушка
 //    McVersions comVer, argVer, genVer, raskVer, nelVer;
 //    comVer.mc = MC_COM;
