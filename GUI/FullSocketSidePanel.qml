@@ -8,88 +8,24 @@ Item {
     property bool isCoagSide: false
     property var sideState: ({})
 
+    readonly property int autoRowHeight: editorRoot ? editorRoot.modeRowHeight : 100
+
     ColumnLayout {
         anchors.fill: parent
-        spacing: 10
-
-        Label {
-            Layout.fillWidth: true
-            visible: editorRoot.modeSelectedInSide(isCoagSide) && sideState.isEndo
-            text: qsTr("Эффект коагуляции")
-            horizontalAlignment: Text.AlignHCenter
-            color: editorRoot.uiMidGray
-            font.pixelSize: 20
-            font.bold: true
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 64
-            spacing: 10
-            visible: editorRoot.modeSelectedInSide(isCoagSide) && sideState.isEndo
-
-            Button {
-                Layout.preferredWidth: editorRoot.powerStepButtonWidth
-                Layout.fillHeight: true
-                text: qsTr("−")
-                flat: true
-                background: Rectangle {
-                    radius: 16
-                    color: "white"
-                    border.width: 2
-                    border.color: editorRoot.fotekOrange
-                }
-                contentItem: Text {
-                    text: parent.text
-                    color: editorRoot.fotekBlue
-                    font.pixelSize: 42
-                    font.bold: true
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                onPressed: editorRoot.setEndoPower(isCoagSide, editorRoot.endoCutEffect(isCoagSide), editorRoot.endoCoagEffect(isCoagSide) - 1)
-            }
-            Label {
-                Layout.preferredWidth: 80
-                text: editorRoot.endoCoagEffect(isCoagSide)
-                font.pixelSize: 42
-                font.bold: true
-                horizontalAlignment: Text.AlignHCenter
-                color: editorRoot.fotekBlue
-            }
-            Button {
-                Layout.preferredWidth: editorRoot.powerStepButtonWidth
-                Layout.fillHeight: true
-                text: qsTr("+")
-                flat: true
-                background: Rectangle {
-                    radius: 16
-                    color: "white"
-                    border.width: 2
-                    border.color: editorRoot.fotekOrange
-                }
-                contentItem: Text {
-                    text: parent.text
-                    color: editorRoot.fotekBlue
-                    font.pixelSize: 42
-                    font.bold: true
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-                onPressed: editorRoot.setEndoPower(isCoagSide, editorRoot.endoCutEffect(isCoagSide), editorRoot.endoCoagEffect(isCoagSide) + 1)
-            }
-        }
+        spacing: 12
 
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 10
             visible: isCoagSide && editorRoot.modeSelectedInSide(true)
                      && ((editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true))
                          || (editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true)))
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 64
+                Layout.preferredHeight: sidePanelRoot.autoRowHeight
+                Layout.minimumHeight: sidePanelRoot.autoRowHeight
+                Layout.maximumHeight: sidePanelRoot.autoRowHeight
                 spacing: 8
                 visible: editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true)
 
@@ -107,7 +43,7 @@ Item {
                     contentItem: Text {
                         text: parent.text
                         color: editorRoot.socketAutoModeState === 1 ? "black" : editorRoot.autoBtnOffText
-                        font.pixelSize: 20
+                        font.pixelSize: 26
                         font.bold: true
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -129,7 +65,7 @@ Item {
                     contentItem: Text {
                         text: parent.text
                         color: editorRoot.socketAutoModeState === 2 ? "black" : editorRoot.autoBtnOffText
-                        font.pixelSize: 18
+                        font.pixelSize: 26
                         font.bold: true
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -140,7 +76,9 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 64
+                Layout.preferredHeight: sidePanelRoot.autoRowHeight
+                Layout.minimumHeight: sidePanelRoot.autoRowHeight
+                Layout.maximumHeight: sidePanelRoot.autoRowHeight
                 spacing: 8
                 visible: editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true)
 
@@ -158,7 +96,7 @@ Item {
                     contentItem: Text {
                         text: parent.text
                         color: editorRoot.socketAutoModeState === 1 ? "black" : editorRoot.autoBtnOffText
-                        font.pixelSize: 20
+                        font.pixelSize: 26
                         font.bold: true
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -173,22 +111,24 @@ Item {
                 visible: editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true) && editorRoot.socketAutoModeState === 2
                 horizontalAlignment: Text.AlignHCenter
                 color: editorRoot.uiMidGray
-                font.pixelSize: 18
+                font.pixelSize: 22
                 font.bold: true
             }
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 56
+                Layout.preferredHeight: sidePanelRoot.autoRowHeight - 15
+                Layout.minimumHeight: sidePanelRoot.autoRowHeight - 15
+                Layout.maximumHeight: sidePanelRoot.autoRowHeight - 15
                 spacing: 6
                 visible: editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true) && editorRoot.socketAutoModeState === 2
 
                 Repeater {
                     model: [
-                        { label: qsTr("0 сек"), ms: 0 },
-                        { label: qsTr("0.5 сек"), ms: 500 },
-                        { label: qsTr("1.0 сек"), ms: 1000 },
-                        { label: qsTr("1.5 сек"), ms: 1500 }
+                        { label: qsTr("0\nсек"), ms: 0 },
+                        { label: qsTr("0.5\nсек"), ms: 500 },
+                        { label: qsTr("1.0\nсек"), ms: 1000 },
+                        { label: qsTr("1.5\nсек"), ms: 1500 }
                     ]
                     delegate: Button {
                         Layout.fillWidth: true
@@ -204,7 +144,7 @@ Item {
                         contentItem: Text {
                             text: parent.text
                             color: periphHandle.autoDelayMs === modelData.ms ? "black" : editorRoot.autoBtnOffText
-                            font.pixelSize: 16
+                            font.pixelSize: 26
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
@@ -218,10 +158,10 @@ Item {
         Label {
             Layout.fillWidth: true
             visible: editorRoot.modeSelectedInSide(isCoagSide) && sideState.isEndo
-            text: editorRoot.endoPulseRateText(sideState.modeName)
+            text: editorRoot.endoPulseRateText(sideState.modeId)
             horizontalAlignment: Text.AlignHCenter
             color: "black"
-            font.pixelSize: 18
+            font.pixelSize: 24
             font.bold: true
         }
 

@@ -4,442 +4,556 @@ import QtQuick.Layouts 1.15
 import BackEnd 1.0
 
 Popup {
-    property int socId: -1
-    property int modeIndex: -1
-    property bool isCoag: false
-    property bool deferCommit: false
-    property bool dialogAccepted: false
-    readonly property var modeEditor: Editor
-    property string imageNameTemplate
-    
     id: root
     modal: true
     parent: Overlay.overlay
-    width: parent.width
-    height: parent.height
+    width: parent ? parent.width : 0
+    height: parent ? parent.height : 0
     x: 0
     y: 0
-    
+    padding: 0
+
+    property int socId: -1
+    property int modeIndex: -1
+    property int instrIndex: -1
+    property bool isCoag: false
+    property bool deferCommit: false
+    property bool dialogAccepted: false
+    property bool openingInProgress: false
+    readonly property var modeEditor: Editor
+
+    readonly property color fotekBlue: "#264093"
+    readonly property color uiMidGray: "#5A6478"
+    readonly property int screenMargin: 20
+    readonly property color previewBorderColor: "#C7CEDA"
+    readonly property color listSelectedBackground: isCoag ? "#0B4FB3" : "#F4D13D"
+    readonly property color listSelectedText: isCoag ? "white" : "black"
+    readonly property string instrImagePrefix: isCoag ? "coaginstr" : "cutinstr"
+    readonly property int recommendedButtonHeight: 90
+    readonly property int recommendedEndoButtonHeight: 110
+
     property var itemIdArr: []
     property var itemNameArr: []
     property var itemNumArr: []
+
+    property int currentInstrNum: {
+        var idx = modeEditor.currentInstrIndex
+        if (idx < 0 || idx >= itemNumArr.length)
+            return 0
+        return itemNumArr[idx]
+    }
+
+    readonly property bool instrumentSelected: {
+        var idx = modeEditor.currentInstrIndex
+        if (idx < 0 || idx >= itemNumArr.length)
+            return false
+        return parseInt(itemNumArr[idx]) !== 1000
+    }
+
+    background: Rectangle {
+        color: "#F3F5F9"
+    }
+
     ListModel {
         id: combinedModel
     }
-    
-    //т.к. при прямом присвоение ломается бандинг,
-    // то нужна функция, перезадающая модель
+
+    function selectedInstrTitle() {
+        var idx = modeEditor.currentInstrIndex
+        if (idx >= 0 && idx < itemNameArr.length)
+            return itemNameArr[idx]
+        return ""
+    }
+
+    function modeTitleText() {
+        var mode = modeEditor.currentMode
+        if (mode && mode.name !== undefined && mode.name !== null)
+            return mode.name
+        return ""
+    }
+
+    function instrBriefText() {
+        var brief = modeEditor.instrBrief
+        var title = selectedInstrTitle()
+        if (!brief || brief === title)
+            return ""
+        return brief
+    }
+
     function updateModel() {
         combinedModel.clear()
-        
+
         if (itemIdArr.length !== itemNameArr.length || itemIdArr.length !== itemNumArr.length) {
             console.warn("Lists from C++ have different lengths!")
             return
         }
         for (var i = 0; i < itemIdArr.length; i++) {
             combinedModel.append({
-                itemId: itemNumArr[i],  // Используем Num вместо ID для изображений
-                itemName: itemNameArr[i],
-                // rowIndex: i
-            })
+                                     itemId: itemNumArr[i],
+                                     itemName: itemNameArr[i],
+                                 })
         }
-        
         instrumListView.innerModel = combinedModel
+    }
+
+    function closeWithoutCommit() {
+        dialogAccepted = false
+        if (!deferCommit)
+            modeEditor.rollBack()
+        root.close()
+    }
+
+    function commitAndClose() {
+        dialogAccepted = true
+        if (!deferCommit)
+            modeEditor.commitChanges()
+        root.close()
+    }
+
+    function acceptAndClose() {
+        if (!modeEditor.hasChanges) {
+            closeWithoutCommit()
+            return
+        }
+        commitAndClose()
+    }
+
+    function deselectInstrument() {
+        if (openingInProgress)
+            return
+        var idx = itemNameArr.length - 1
+        if (idx < 0)
+            return
+        instrumListView.selectIndex(idx)
     }
 
     onAboutToShow: dialogAccepted = false
 
     onOpened: {
-        // Запрещаем активацию при открытии popup
-        // control.enableActivation = false
-        
-        modeEditor.initialize(socId, modeIndex, isCoag)
+        openingInProgress = true
+
+        if (deferCommit) {
+            // FullSocketEditor already keeps live (possibly uncommitted) mode in Editor.
+            // Do not re-initialize from the committed model — that would show the old mode's instruments.
+            if (modeIndex >= 0 && modeEditor.currentModeIndex !== modeIndex)
+                modeEditor.currentModeIndex = modeIndex
+        } else {
+            modeEditor.initialize(socId, modeIndex, isCoag)
+            if (modeIndex >= 0 && modeEditor.currentModeIndex !== modeIndex)
+                modeEditor.currentModeIndex = modeIndex
+        }
 
         itemNameArr = modeEditor.instrList
         itemIdArr = modeEditor.instrListIds()
         itemNumArr = modeEditor.instrListNums()
         updateModel()
-        //кринж, но т.к. вызывается переназначение свойств
-        //и триггерятся сигналы
-        var bla = modeEditor.currentInstrIndex
-        modeEditor.currentInstrIndex = bla
-    }
-    
-    Rectangle {
-        id: back
-        anchors.fill: parent
-        color: "transparent"
 
-        GradientBack {
-            id: gradientBack
-            anchors.fill: parent
-            startColor: isCoag ? "#000066" : "#443300"
-            stopColor: isCoag ? "#0000aa" : "#665500"
-            beamColor: isCoag ? "#5078FF" : "#B4963C"
-        }
+        var idx = instrIndex
+        if (idx < 0 || idx >= itemNameArr.length)
+            idx = modeEditor.currentInstrIndex
+        if (idx < 0 || idx >= itemNameArr.length)
+            idx = itemNameArr.length > 0 ? itemNameArr.length - 1 : 0
+        modeEditor.currentInstrIndex = idx
+        instrumListView.curIndex = idx
+
+        Qt.callLater(function() {
+            instrumListView.curIndex = modeEditor.currentInstrIndex
+            instrumListView.positionSelectedItem()
+            Qt.callLater(function() {
+                instrumListView.positionSelectedItem()
+                openingInProgress = false
+            })
+        })
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        color: "#F3F5F9"
 
         Rectangle {
             id: header
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 100
-            color: "transparent"
+            height: 78
+            color: isCoag ? "#0B4FB3" : "#F4D13D"
 
             Label {
-                id: titleLable
-                text: qsTr("Выбор инструмента для выхода %1")
-                        .arg(modeEditor.socketName)
+                anchors {
+                    left: parent.left
+                    right: closeButton.left
+                    verticalCenter: parent.verticalCenter
+                    leftMargin: root.screenMargin
+                    rightMargin: 12
+                }
+                text: !isCoag
+                      ? qsTr("Выберите инструмент РЕЗАНИЯ для выхода %1").arg(modeEditor.socketName)
+                      : qsTr("Выберите инструмент КОАГУЛЯЦИИ для выхода %1").arg(modeEditor.socketName)
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
                 wrapMode: Text.WordWrap
-                font.pixelSize: 28
-                font.bold: true
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-                height: parent.height / 2
-                width: parent.width * 0.8
-                color: "white"
-            }
-            Rectangle {
-                id: titleLowerRect
-                color: isCoag ? "blue" : "yellow"
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                height: parent.height / 2
-                width: titleLableLower.contentWidth + 50
-            }
-
-            Label {
-                id: titleLableLower
-                text: qsTr("РЕЖИМ: %1")
-                        .arg(modeEditor.currentMode.name)
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                wrapMode: Text.WordWrap
-                font.pixelSize: 28
+                font.pixelSize: 34
                 font.bold: true
                 color: isCoag ? "white" : "black"
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                height: parent.height / 2
-                width: parent.width * 0.8
             }
 
             Button {
-                id: cancelButton
+                id: closeButton
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
                     right: parent.right
-                    left: titleLable.right
+                    rightMargin: root.screenMargin
                 }
+                width: 68
+                onPressed: closeWithoutCommit()
+
                 background: Rectangle {
                     color: "transparent"
-                    radius: 8
                 }
-                Text {
-                    id: cancelText
+
+                contentItem: Text {
                     text: qsTr("X")
                     font.pixelSize: 34
                     font.bold: true
-                    anchors.fill: parent
-                    horizontalAlignment: Qt.AlignHCenter
-                    verticalAlignment: Qt.AlignVCenter
+                    color: isCoag ? "white" : "black"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+        }
+
+        RowLayout {
+            anchors.top: header.bottom
+            anchors.bottom: footer.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: 16
+            spacing: 9
+
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: 425
+                color: "transparent"
+
+                Button {
+                    id: instrScrollUp
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 56
+                    text: qsTr("▲")
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        radius: 18
+                        color: "white"
+                        border.color: root.fotekBlue
+                        border.width: 1
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: root.fotekBlue
+                        font.pixelSize: 24
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onPressed: instrumListView.scrollUp()
+                }
+
+                ItemList {
+                    id: instrumListView
+                    anchors.top: instrScrollUp.bottom
+                    anchors.topMargin: 10
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: instrScrollDown.top
+                    anchors.bottomMargin: 10
+                    curIndex: modeEditor.currentInstrIndex
+                    imageSourceTemplate: "image://instruments/" + root.instrImagePrefix + "%1"
+                    selectedBackgroundColor: root.listSelectedBackground
+                    selectedTextColor: root.listSelectedText
+                    unselectedTextColor: root.fotekBlue
+                    itemBackgroundColor: "transparent"
+                    selectedBorderColor: "transparent"
+                    itemBorderColor: "transparent"
+                    selectedBorderWidth: 0
+                    itemBorderWidth: 0
+                    itemCornerRadius: 8
+                    keepSelectedItemAtTop: true
+                    selectedItemRowsAbove: 2
+                    noAutoScrollItemId: 1000
+                    itemFontPixelSize: 22
+                }
+
+                Button {
+                    id: instrScrollDown
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    height: 56
+                    text: qsTr("▼")
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        radius: 18
+                        color: "white"
+                        border.color: root.fotekBlue
+                        border.width: 1
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: root.fotekBlue
+                        font.pixelSize: 24
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onPressed: instrumListView.scrollDown()
+                }
+            }
+
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: 1
+                color: "#C7CEDA"
+            }
+
+            ColumnLayout {
+                id: previewPanel
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 8
+
+                Label {
+                    Layout.fillWidth: true
+                    text: qsTr("РЕЖИМ: %1").arg(modeTitleText())
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 24
+                    font.bold: true
+                    color: uiMidGray
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    visible: selectedInstrTitle().length > 0
+                    text: selectedInstrTitle()
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 32
+                    font.bold: true
+                    color: fotekBlue
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    visible: root.instrumentSelected
+                    radius: 20
                     color: "white"
-                }
-                onClicked: {
-                    root.dialogAccepted = false
-                    if (!root.deferCommit)
-                        modeEditor.rollBack()
-                    root.close()
+                    border.width: 1
+                    border.color: previewBorderColor
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        spacing: 6
+
+                        Image {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.minimumHeight: 280
+                            Layout.preferredHeight: 320
+                            Layout.alignment: Qt.AlignHCenter
+                            fillMode: Image.PreserveAspectFit
+                            asynchronous: true
+                            source: root.instrumentSelected
+                                    ? ("image://instruments/instrum" + "%1").arg(currentInstrNum)
+                                    : ""
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            Layout.maximumHeight: instrBriefText().length > 0 ? 120 : 0
+                            visible: instrBriefText().length > 0
+                            text: instrBriefText()
+                            color: root.fotekBlue
+                            font.pixelSize: 24
+                            wrapMode: Text.WordWrap
+                            elide: Text.ElideRight
+                            maximumLineCount: 4
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignTop
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: false
+                            text: qsTr("Рекомендуемый уровень")
+                            horizontalAlignment: Text.AlignHCenter
+                            color: uiMidGray
+                            font.pixelSize: 24
+                            font.bold: true
+                            wrapMode: Text.WordWrap
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: false
+                            Layout.preferredHeight: modeEditor.isEndo
+                                                    ? recommendedEndoButtonHeight
+                                                    : recommendedButtonHeight
+                            Layout.minimumHeight: modeEditor.isEndo
+                                                    ? recommendedEndoButtonHeight
+                                                    : recommendedButtonHeight
+                            spacing: 8
+
+                            PowerRect {
+                                id: lowPowerButton
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: modeEditor.isEndo
+                                                        ? recommendedEndoButtonHeight
+                                                        : recommendedButtonHeight
+                                Layout.minimumHeight: modeEditor.isEndo
+                                                        ? recommendedEndoButtonHeight
+                                                        : recommendedButtonHeight
+                                borderColor: "#A5D6A7"
+                                idleFillColor: "#F3F5F9"
+                                idleTextColor: root.fotekBlue
+                                power: modeEditor.lowPowerBound
+                                selected: modeEditor.currentPower === power
+                                isEndo: modeEditor.isEndo
+                            }
+                            PowerRect {
+                                id: midPowerButton
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: modeEditor.isEndo
+                                                        ? recommendedEndoButtonHeight
+                                                        : recommendedButtonHeight
+                                Layout.minimumHeight: modeEditor.isEndo
+                                                        ? recommendedEndoButtonHeight
+                                                        : recommendedButtonHeight
+                                borderColor: "#78D87C"
+                                idleFillColor: "#F3F5F9"
+                                idleTextColor: root.fotekBlue
+                                power: modeEditor.midPowerBound
+                                selected: modeEditor.currentPower === power
+                                isEndo: modeEditor.isEndo
+                            }
+                            PowerRect {
+                                id: highPowerButton
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: modeEditor.isEndo
+                                                        ? recommendedEndoButtonHeight
+                                                        : recommendedButtonHeight
+                                Layout.minimumHeight: modeEditor.isEndo
+                                                        ? recommendedEndoButtonHeight
+                                                        : recommendedButtonHeight
+                                borderColor: "#51D456"
+                                idleFillColor: "#F3F5F9"
+                                idleTextColor: root.fotekBlue
+                                power: modeEditor.highPowerBound
+                                selected: modeEditor.currentPower === power
+                                isEndo: modeEditor.isEndo
+                            }
+                        }
+                    }
                 }
             }
         }
 
         Rectangle {
-            id: instrumList
+            id: footer
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 86
             color: "transparent"
-            anchors {
-                left: parent.left
-                bottom: parent.bottom
-                top: header.bottom
-            }
-            width: .3 * parent.width
-            ItemList {
-                id: instrumListView
-                curIndex: modeEditor.currentInstrIndex
-                anchors {
-                    top: parent.top
-                    bottom: footer.top
-                    left: parent.left
-                    right: parent.right
-                }
-                imageSourceTemplate: "image://instruments/minstr%1"
-            }
-            Rectangle {
-                id: footer
-                height: 100
-                color: "transparent"
-                anchors {
-                    bottom: parent.bottom
-                    left: parent.left
-                    right: parent.right
-                }
-                Button {
-                    id: downButton
-                    width: instrumList.width * .4
-                    anchors {
-                        top: parent.top
-                        bottom: parent.bottom
-                        left: parent.left
-                    }
-                    background: Rectangle {
-                        color: "transparent"
-                        radius: 8
-                    }
-                    Text {
-                        id: downText
-                        text: qsTr("▼")
-                        font.pixelSize: 34
-                        font.bold: true
-                        anchors.fill: parent
-                        horizontalAlignment: Qt.AlignHCenter
-                        verticalAlignment: Qt.AlignVCenter
-                        color: "white"
-                    }
-                    onClicked: {
-                        instrumListView.scrollDown()
-                    }
-                }
-                Button {
-                    id: upButton
-                    width: downButton.width
-                    anchors {
-                        top: parent.top
-                        bottom: parent.bottom
-                        left: downButton.right
-                        leftMargin: 20
-                    }
-                    background: Rectangle {
-                        color: "transparent"
-                        radius: 8
-                    }
-                    Text {
-                        id: upText
-                        text: qsTr("▲")
-                        font.pixelSize: 34
-                        font.bold: true
-                        anchors.fill: parent
-                        horizontalAlignment: Qt.AlignHCenter
-                        verticalAlignment: Qt.AlignVCenter
-                        color: "white"
-                    }
-                    onClicked: {
-                        instrumListView.scrollUp()
-                    }
-                }
-            }
-        }
 
-        DialogActionButton {
-            id: declineButton
-            width: parent.width * .2
-            height: parent.height * .1
-            anchors {
-                bottom: parent.bottom
-                bottomMargin: 10
-                left: instrumList.right
-                leftMargin: 20
-            }
-            text: qsTr("ОТМЕНА")
-            secondaryColor: "transparent"
-            secondaryBorderWidth: 3
-            secondaryBorderColor: "white"
-            cornerRadius: 8
-            labelPixelSize: 34
-            labelColor: "white"
-            onClicked: {
-                root.dialogAccepted = false
-                if (!root.deferCommit)
-                    modeEditor.rollBack()
-                root.close()
-            }
-        }
-
-        DialogActionButton {
-            id: acceptButton
-            width: parent.width * .2
-            height: parent.height * .1
-
-            //именно эдитор знает дейсвительно ли есть изменения
-            //именно эдитор занимается их обработкой и внесением в модель
-            visible: modeEditor.hasChanges
-            anchors {
-                bottom: parent.bottom
-                bottomMargin: 10
-                left: declineButton.right
-                leftMargin: 80
-            }
-            text: qsTr("ПРИНЯТЬ")
-            primary: true
-            primaryEnabledColor: "transparent"
-            primaryDisabledColor: "transparent"
-            primaryBorderWidth: 3
-            primaryBorderColor: "lightgreen"
-            cornerRadius: 8
-            labelPixelSize: 34
-            labelColor: "lightgreen"
-            onClicked: {
-                root.dialogAccepted = true
-                if (!root.deferCommit)
-                    modeEditor.commitChanges()
-                root.close()
-            }
-        }
-
-        Rectangle {
-            id: instrumPreview
-            anchors {
-                top: header.bottom
-                bottom: acceptButton.top
-                right: parent.right
-                left: instrumList.right
-            }
-            color: "transparent"
-            Image {
-                id: previewImage
-                fillMode: Image.PreserveAspectFit
-                asynchronous: true
-                source: {
-                    if (modeEditor.currentInstrIndex >= 0 && modeEditor.currentInstrIndex < itemNumArr.length) {
-                        return ("image://instruments/instrum%1").arg(itemNumArr[modeEditor.currentInstrIndex])
-                    }
-                    return ""
-                }
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: instrBriefText.top
-                    top: parent.top
-                    margins: 10
-                }
-            }
-            
-            Text {
-                id: instrBriefText
-                text: modeEditor.instrBrief
-                color: "white"
-                font.pixelSize: 30
-                font.bold: true
-                wrapMode: Text.WordWrap
-                horizontalAlignment: Text.AlignHCenter
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: buttonRow.top
-                    margins: 10
-                }
-            }
-            
-            Rectangle {
-                id: buttonRow
-                height: 100
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: recommendText.top
-                }
-                color: "transparent"
-                RowLayout {
-                    id:lay
-                    anchors.fill: parent
-                    spacing: 5
-                    property int pwr
-
-                    PowerRect {
-                        id: but1
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignCenter
-                        Layout.margins: 10
-                        borderColor: "darkcyan"
-                        power: modeEditor.lowPowerBound
-                        selected: (modeEditor.currentPower === power)
-                        isEndo: modeEditor.isEndo
-                    }
-                    PowerRect {
-                        id: but2
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignCenter
-                        Layout.margins: 10
-                        borderColor: "lightgreen"
-                        power: modeEditor.midPowerBound
-                        selected: (modeEditor.currentPower === power)
-                        isEndo: modeEditor.isEndo
-                    }
-                    PowerRect {
-                        id: but3
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignCenter
-                        Layout.margins: 10
-                        borderColor: "gold"
-                        power: modeEditor.highPowerBound
-                        selected: (modeEditor.currentPower === power)
-                        isEndo: modeEditor.isEndo
-                    }
-                }
+            DialogActionButton {
+                anchors.left: parent.left
+                anchors.leftMargin: root.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: 195
+                height: 62
+                text: qsTr("ОТМЕНА")
+                secondaryColor: "white"
+                secondaryBorderWidth: 2
+                secondaryBorderColor: root.fotekBlue
+                cornerRadius: 20
+                labelPixelSize: 30
+                labelColor: root.fotekBlue
+                onPressed: closeWithoutCommit()
             }
 
-            Text {
-                id: recommendText
-                text: qsTr("Выберите рекомендуемую мощность")
-                anchors.bottom: parent.bottom
+            DialogActionButton {
                 anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottomMargin: 10
-                font.pixelSize: 20
-                font.bold: true
-                color: "white"
+                anchors.verticalCenter: parent.verticalCenter
+                width: 520
+                height: 62
+                visible: root.instrumentSelected
+                text: qsTr("Другой инструмент")
+                secondaryColor: "white"
+                secondaryBorderWidth: 2
+                secondaryBorderColor: root.fotekBlue
+                cornerRadius: 20
+                labelPixelSize: 30
+                labelColor: root.fotekBlue
+                onPressed: deselectInstrument()
+            }
+
+            DialogActionButton {
+                anchors.right: parent.right
+                anchors.rightMargin: root.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: 195
+                height: 62
+                text: qsTr("ПРИНЯТЬ")
+                primary: true
+                enabled: true
+                primaryEnabledColor: modeEditor.hasChanges ? root.fotekBlue : "#26409370"
+                primaryDisabledColor: "#26409370"
+                primaryBorderWidth: 1
+                primaryBorderColor: "#1E3274"
+                cornerRadius: 20
+                labelPixelSize: 30
+                labelColor: "white"
+                onPressed: acceptAndClose()
             }
         }
     }
 
     Connections {
-        target: but3
+        target: highPowerButton
         function onPowerChosen() {
-            modeEditor.updateParameter("currentpower", but3.power)
+            modeEditor.updateParameter("currentpower", highPowerButton.power)
         }
     }
     Connections {
-        target: but2
+        target: midPowerButton
         function onPowerChosen() {
-            modeEditor.updateParameter("currentpower", but2.power)
+            modeEditor.updateParameter("currentpower", midPowerButton.power)
         }
-        //мощность на кнопке меняется при инициализации
-        //и мы по умолчанию устанавливаем в диалоге среднюю мощность
         function onPowerChanged() {
-            modeEditor.updateParameter("currentpower", but2.power)
+            modeEditor.updateParameter("currentpower", midPowerButton.power)
         }
     }
     Connections {
-        target: but1
+        target: lowPowerButton
         function onPowerChosen() {
-            modeEditor.updateParameter("currentpower", but1.power)
+            modeEditor.updateParameter("currentpower", lowPowerButton.power)
         }
-        //мощность на кнопке меняется при инициализации
-        //если средней мощности нет, по умолчанию устанавливаем в диалоге минимальную
         function onPowerChanged() {
-            if (modeEditor.midPowerBound === 0) {
-                modeEditor.updateParameter("currentpower", but1.power)
-            }
+            if (modeEditor.midPowerBound === 0)
+                modeEditor.updateParameter("currentpower", lowPowerButton.power)
         }
     }
 
     Connections {
         target: instrumListView
         function onNewIndexSelected(index) {
+            if (openingInProgress)
+                return
             modeEditor.currentInstrIndex = index
         }
     }

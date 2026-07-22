@@ -10,8 +10,8 @@ Rectangle {
     property int socketId
     property int cutInstrumNum
     property int coagInstrumNum
-    property string cutInstrumName: qsTr("не выбран")
-    property string coagInstrumName: qsTr("не выбран")
+    property string cutInstrumName: qsTr("Другой инструмент")
+    property string coagInstrumName: qsTr("Другой инструмент")
     property int socketDispMode: 3
 
     signal cutEditDialogRequest()

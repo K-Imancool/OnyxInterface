@@ -163,8 +163,22 @@ Rectangle {
         id: socketEditor
     }
 
+    ModeEditor {
+        id: modePickerPopup
+        deferCommit: true
+        onClosed: fullSocketEditor.handleSubEditorClosed(dialogAccepted)
+    }
+
+    InstrumEditor {
+        id: instrPickerPopup
+        deferCommit: true
+        onClosed: fullSocketEditor.handleSubEditorClosed(dialogAccepted)
+    }
+
     FullSocketEditor {
         id: fullSocketEditor
+        modePicker: modePickerPopup
+        instrPicker: instrPickerPopup
     }
     ProgAdditionPop {
         id: progSelector

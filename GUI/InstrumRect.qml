@@ -76,7 +76,7 @@ Rectangle {
         }
 
         Label {
-            text: (instrumNum != 1000) ? instrumName : qsTr("инструмент не выбран")
+            text: (instrumNum != 1000) ? instrumName : qsTr("Другой инструмент")
             font.pixelSize: 20
             font.bold: true
             wrapMode: Text.Wrap

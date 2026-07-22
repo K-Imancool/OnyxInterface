@@ -161,6 +161,17 @@ signals:
     void currentPowerChang();
 
 private:
+    struct ModeCacheEntry {
+        QVariantMap parameters;
+        QStringList instrList;
+        QStringList instrListIds;
+        QStringList instrListNums;
+        int selectedInstrIndex = -1;
+    };
+
+    void preloadModeCache();
+    bool hasCachedModeData(int modeIndex) const;
+
     bool checkChanges();
     QVariantMap fetchModeParameters(int modeIndex);
     bool isParamsEqual(const QVariantMap& a, const QVariantMap& b) const;
@@ -191,5 +202,6 @@ private:
     int m_instrID;
     QString m_modeDescript;
     QString m_modeBrief;
+    QVector<ModeCacheEntry> m_modeCache;
 };
 #endif // SOCKETMODEEDITOR_H

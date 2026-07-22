@@ -13,7 +13,7 @@ Rectangle {
     property int socketId
     property string socketName: ""
     property int instrumNum
-    property string instrumName: qsTr("не выбран")
+    property string instrumName: qsTr("Другой инструмент")
     property bool isEndo: false
     property bool hasAvailableModes: true
 

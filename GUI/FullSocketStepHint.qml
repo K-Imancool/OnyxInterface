@@ -11,48 +11,44 @@ Item {
     implicitHeight: rowHeight
     implicitWidth: 170
 
-    Row {
-        anchors.centerIn: parent
+    Column {
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
         spacing: 6
 
-        Text {
-            text: qsTr("←")
-            anchors.verticalCenter: parent.verticalCenter
-            font.pixelSize: 28
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: line1
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: 22
+            font.bold: true
+            color: textColor
+        }
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: line2
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: 22
             font.bold: true
             color: textColor
         }
 
-        Column {
-            spacing: 2
-            anchors.verticalCenter: parent.verticalCenter
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 14
 
-            Label {
-                width: implicitWidth
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: line1
-                horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: 22
+            Text {
+                text: qsTr("←")
+                font.pixelSize: 28
                 font.bold: true
                 color: textColor
             }
-            Label {
-                width: implicitWidth
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: line2
-                horizontalAlignment: Text.AlignHCenter
-                font.pixelSize: 22
+            Text {
+                text: qsTr("→")
+                font.pixelSize: 28
                 font.bold: true
                 color: textColor
             }
-        }
-
-        Text {
-            text: qsTr("→")
-            anchors.verticalCenter: parent.verticalCenter
-            font.pixelSize: 28
-            font.bold: true
-            color: textColor
         }
     }
 }

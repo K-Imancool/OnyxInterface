@@ -33,19 +33,19 @@ Rectangle {
         property bool pressed: mouseArea.pressed
 
         readonly property real labelFontSize: Math.min(height / 4, width / 12)
-        
+
         signal clicked()
-        
+
         height: parent.height * .30
         width: parent.width * .7  // Уменьшена ширина, чтобы не перекрывать кнопки типа слева
         radius: 10
-        
+
         color: neutralSize === type ? fotekOrange : "lightgray"
         border {
             color: neutralSize === type ? fotekBlue : "transparent"
             width: neutralSize === type ? 5 : 0
         }
-        
+
         Rectangle {
             id: darker
             anchors.fill: parent
@@ -68,51 +68,86 @@ Rectangle {
             fillMode: Image.PreserveAspectFit
             visible: rootCustomBut.iconSource !== ""
         }
-        
-        Column {
-            id: textColumn
-            anchors {
-                left: parent.left
-                right: iconImage.left
-                verticalCenter: parent.verticalCenter
-                leftMargin: 8
-                rightMargin: 8
-            }
-            spacing: 0
+
+//        Column {
+//            id: textColumn
+//            anchors {
+//                left: parent.left
+//                right: iconImage.left
+//                verticalCenter: parent.verticalCenter
+//                leftMargin: 8
+//                rightMargin: 8
+//            }
+//            spacing: 0
 
             Text {
-                width: textColumn.width
-                text: rootCustomBut.line1Text
+//                width: textColumn.width
+                text: qsTr("Пациент:")
+                textFormat: Text.StyledText
+                font.pixelSize: rootCustomBut.labelFontSize
+                color: "#2c2c2c"
+                horizontalAlignment: Text.AlignHCenter
+                lineHeight: 1.0
+                lineHeightMode: Text.ProportionalHeight
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    margins: 8
+                }
+            }
+
+            Text {
+//                width: textColumn.width
+                text: "<b>" + rootCustomBut.line1Text + "</b>"
                 textFormat: Text.StyledText
                 font.pixelSize: rootCustomBut.labelFontSize
                 color: "#2c2c2c"
                 horizontalAlignment: Text.AlignHCenter
                 lineHeight: 1.2
                 lineHeightMode: Text.ProportionalHeight
+                anchors {
+                    right: parent.right
+                    top: parent.top
+                    topMargin: 8
+                    rightMargin: 70
+                }
             }
 
             Text {
-                width: textColumn.width
-                text: qsTr("Ограничение\nмощности")
+//                width: textColumn.width
+                text: qsTr("Максимальная\nмощность:")
                 font.pixelSize: rootCustomBut.labelFontSize
                 color: "#2c2c2c"
                 horizontalAlignment: Text.AlignLeft
-                lineHeight: 1.2
+                lineHeight: 1.0
                 lineHeightMode: Text.ProportionalHeight
+                visible: rootCustomBut.type != 2
+                anchors {
+                    left: parent.left
+                    bottom: parent.bottom
+                    margins: 8
+                }
             }
 
             Text {
-                width: textColumn.width
+//                width: textColumn.width
                 text: "<b>" + rootCustomBut.powerValueText + "</b>"
                 textFormat: Text.StyledText
                 font.pixelSize: rootCustomBut.labelFontSize
                 color: "#2c2c2c"
                 horizontalAlignment: Text.AlignHCenter
-                lineHeight: 1.2
+                lineHeight: 1.0
                 lineHeightMode: Text.ProportionalHeight
+                visible: rootCustomBut.type != 2
+                anchors {
+                    right: parent.right
+                    bottom: parent.bottom
+                    bottomMargin: 8
+                    rightMargin: 70
+                }
             }
-        }
-        
+//        }
+
         MouseArea {
             id: mouseArea
             anchors.fill: parent

@@ -4,24 +4,32 @@ import QtQuick.Layouts 1.15
 import BackEnd 1.0
 
 Popup {
+    id: root
+    modal: true
+    parent: Overlay.overlay
+    width: parent ? parent.width : 0
+    height: parent ? parent.height : 0
+    x: 0
+    y: 0
+    padding: 0
+
     property int socId
     property int modeIndex
     property bool isCoag
     property bool deferCommit: false
     property bool dialogAccepted: false
+    property bool openingInProgress: false
     readonly property var modeEditor: Editor
 
-    id: root
-    modal: true
-    parent: Overlay.overlay
-    width: parent.width
-    height: parent.height
-    x: 0
-    y: 0
-
     readonly property color fotekBlue: "#264093"
-    readonly property color fotekOrange: "#faa731"
-    readonly property int screenMargin: 34
+    readonly property color uiMidGray: "#5A6478"
+    readonly property int screenMargin: 20
+    readonly property int previewImageSize: 110
+    readonly property int briefFontSize: 26
+    readonly property int briefVerticalMargin: 10
+    readonly property color previewBorderColor: "#C7CEDA"
+    readonly property color listSelectedBackground: isCoag ? "#0B4FB3" : "#F4D13D"
+    readonly property color listSelectedText: isCoag ? "white" : "black"
 
     property var itemIdArr: []
     property var itemNameArr: []
@@ -29,13 +37,49 @@ Popup {
     property string imagePrefix: (socId <= 1) ? "bimode" : "monomode"
 
     property int currentModeNum: {
-        if (modeIndex < 0 || modeIndex >= itemNumArr.length)
+        var idx = modeEditor.currentModeIndex
+        if (idx < 0 || idx >= itemNumArr.length)
             return 0
-        return itemNumArr[modeIndex]
+        return itemNumArr[idx]
+    }
+
+    background: Rectangle {
+        color: "#F3F5F9"
     }
 
     ListModel {
         id: combinedModel
+    }
+
+    function selectedModeTitle() {
+        var idx = modeEditor.currentModeIndex
+        if (idx >= 0 && idx < itemNameArr.length)
+            return itemNameArr[idx]
+        var mode = modeEditor.currentMode
+        if (mode && mode.name !== undefined && mode.name !== null)
+            return mode.name
+        return ""
+    }
+
+    readonly property bool modeSelected: {
+        var idx = modeEditor.currentModeIndex
+        if (idx < 0)
+            return false
+        if (itemNameArr.length > 0 && idx === itemNameArr.length - 1)
+            return false
+        var mode = modeEditor.currentMode
+        if (mode && mode.id !== undefined && mode.id !== null)
+            return parseInt(mode.id) !== 1000
+        return true
+    }
+
+    function deselectMode() {
+        if (openingInProgress)
+            return
+        var idx = itemNameArr.length - 1
+        if (idx < 0)
+            return
+        modeListView.selectIndex(idx)
     }
 
     function updateModel() {
@@ -47,16 +91,39 @@ Popup {
         }
         for (var i = 0; i < itemIdArr.length; i++) {
             combinedModel.append({
-                itemId: itemNumArr[i],
-                itemName: itemNameArr[i],
-            })
+                                     itemId: itemNumArr[i],
+                                     itemName: itemNameArr[i],
+                                 })
         }
         modeListView.innerModel = combinedModel
+    }
+
+    function closeWithoutCommit() {
+        dialogAccepted = false
+        if (!deferCommit)
+            modeEditor.rollBack()
+        root.close()
+    }
+
+    function commitAndClose() {
+        dialogAccepted = true
+        if (!deferCommit)
+            modeEditor.commitChanges()
+        root.close()
+    }
+
+    function acceptAndClose() {
+        if (!modeEditor.hasChanges) {
+            closeWithoutCommit()
+            return
+        }
+        commitAndClose()
     }
 
     onAboutToShow: dialogAccepted = false
 
     onOpened: {
+        openingInProgress = true
         modeEditor.initialize(socId, modeIndex, isCoag)
 
         itemNameArr = modeEditor.modeNames
@@ -64,12 +131,29 @@ Popup {
         itemNumArr = modeEditor.modeNamesNums()
 
         updateModel()
-        modeEditor.currentModeIndex = root.modeIndex
-        modeListView.curIndex = modeEditor.currentModeIndex
+
+        var idx = root.modeIndex
+        if (idx < 0 || idx >= itemNameArr.length)
+            idx = modeEditor.currentModeIndex
+        if (idx < 0 || idx >= itemNameArr.length)
+            idx = 0
+
+        modeEditor.currentModeIndex = idx
+        // Explicit sync: model rebuild resets ListView.currentIndex and used to break
+        // the curIndex binding, leaving highlight on item 0 while descriptions stayed correct.
+        modeListView.curIndex = idx
+
+        Qt.callLater(function() {
+            modeListView.curIndex = modeEditor.currentModeIndex
+            modeListView.positionSelectedItem()
+            Qt.callLater(function() {
+                modeListView.positionSelectedItem()
+                openingInProgress = false
+            })
+        })
     }
 
     Rectangle {
-        id: back
         anchors.fill: parent
         color: "#F3F5F9"
 
@@ -78,308 +162,320 @@ Popup {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 100
-            color: "transparent"
+            height: 78
+            color: isCoag ? "#0B4FB3" : "#F4D13D"
 
-            Rectangle {
-                id: titleCard
+            Label {
                 anchors {
                     left: parent.left
-                    right: cancelButton.left
+                    right: closeButton.left
                     verticalCenter: parent.verticalCenter
                     leftMargin: root.screenMargin
-                    rightMargin: 16
+                    rightMargin: 12
                 }
-                height: 72
-                radius: 18
-                color: "white"
-                border.width: 2
-                border.color: root.fotekOrange
-
-                Label {
-                    id: titleLable
-                    anchors.fill: parent
-                    anchors.margins: 12
-                    text: !isCoag
-                          ? qsTr("Выбор режима РЕЗАНИЯ для выхода %1").arg(modeEditor.socketName)
-                          : qsTr("Выбор режима КОАГУЛЯЦИИ для выхода %1").arg(modeEditor.socketName)
-                    horizontalAlignment: Qt.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: 26
-                    font.bold: true
-                    color: root.fotekBlue
-                }
+                text: !isCoag
+                      ? qsTr("Выберите режим РЕЗАНИЯ для выхода %1").arg(modeEditor.socketName)
+                      : qsTr("Выберите режим КОАГУЛЯЦИИ для выхода %1").arg(modeEditor.socketName)
+                horizontalAlignment: Qt.AlignHCenter
+                verticalAlignment: Qt.AlignVCenter
+                wrapMode: Text.WordWrap
+                font.pixelSize: 34
+                font.bold: true
+                color: isCoag ? "white" : "black"
             }
 
             Button {
-                id: cancelButton
+                id: closeButton
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
                     right: parent.right
                     rightMargin: root.screenMargin
                 }
-                width: 72
-                onClicked: {
-                    root.dialogAccepted = false
-                    if (!root.deferCommit)
-                        modeEditor.rollBack()
-                    root.close()
-                }
+                width: 68
+                onPressed: closeWithoutCommit()
 
                 background: Rectangle {
-                    radius: 18
-                    color: "white"
-                    border.width: 1
-                    border.color: root.fotekBlue
+                    color: "transparent"
                 }
 
                 contentItem: Text {
                     text: qsTr("X")
-                    font.pixelSize: 30
+                    font.pixelSize: 34
                     font.bold: true
-                    color: root.fotekBlue
+                    color: isCoag ? "white" : "black"
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
             }
         }
 
-        Rectangle {
-            id: modeList
-            color: "transparent"
-            anchors {
-                left: parent.left
-                bottom: parent.bottom
-                top: header.bottom
-            }
-            width: 0.3 * parent.width
+        RowLayout {
+            anchors.top: header.bottom
+            anchors.bottom: footer.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: 16
+            spacing: 9
 
-            ItemList {
-                id: modeListView
-                curIndex: modeEditor.currentModeIndex
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: 320
                 color: "transparent"
-                itemFontPixelSize: 22
-                itemCornerRadius: 24
-                selectedBackgroundColor: "white"
-                selectedTextColor: root.fotekBlue
-                unselectedTextColor: root.fotekBlue
-                itemBackgroundColor: "white"
-                selectedBorderColor: root.fotekOrange
-                itemBorderColor: "#C7CEDA"
-                selectedBorderWidth: 2
-                itemBorderWidth: 1
-                anchors {
-                    top: parent.top
-                    bottom: footer.top
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: root.screenMargin
-                    rightMargin: 8
+
+                Button {
+                    id: modeScrollUp
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 56
+                    text: qsTr("▲")
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        radius: 18
+                        color: "white"
+                        border.color: root.fotekBlue
+                        border.width: 1
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: root.fotekBlue
+                        font.pixelSize: 24
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onPressed: modeListView.scrollUp()
                 }
-                imageSourceTemplate: "image://modes/" + imagePrefix + "%1"
+
+                ItemList {
+                    id: modeListView
+                    anchors.top: modeScrollUp.bottom
+                    anchors.topMargin: 10
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: modeScrollDown.top
+                    anchors.bottomMargin: 10
+                    curIndex: modeEditor.currentModeIndex
+                    imageSourceTemplate: "image://modes/" + imagePrefix + "%1"
+                    selectedBackgroundColor: root.listSelectedBackground
+                    selectedTextColor: root.listSelectedText
+                    unselectedTextColor: root.fotekBlue
+                    itemBackgroundColor: "transparent"
+                    selectedBorderColor: "transparent"
+                    itemBorderColor: "transparent"
+                    selectedBorderWidth: 0
+                    itemBorderWidth: 0
+                    itemCornerRadius: 8
+                    keepSelectedItemAtTop: true
+                    selectedItemRowsAbove: 2
+                    noAutoScrollItemId: 1000
+                    itemFontPixelSize: 22
+                }
+
+                Button {
+                    id: modeScrollDown
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    height: 56
+                    text: qsTr("▼")
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        radius: 18
+                        color: "white"
+                        border.color: root.fotekBlue
+                        border.width: 1
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: root.fotekBlue
+                        font.pixelSize: 24
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onPressed: modeListView.scrollDown()
+                }
             }
 
-            RowLayout {
-                id: footer
-                height: 80
-                anchors {
-                    bottom: parent.bottom
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: root.screenMargin
-                    rightMargin: 8
-                    bottomMargin: 8
-                }
-                spacing: 16
+            Rectangle {
+                Layout.fillHeight: true
+                Layout.preferredWidth: 1
+                color: "#C7CEDA"
+            }
 
-                Button {
-                    id: downButton
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    onClicked: modeListView.scrollDown()
+            ColumnLayout {
+                id: previewPanel
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 12
 
-                    background: Rectangle {
-                        radius: 18
-                        color: "white"
-                        border.width: 1
-                        border.color: root.fotekBlue
-                    }
-
-                    contentItem: Text {
-                        text: qsTr("▼")
-                        font.pixelSize: 28
-                        font.bold: true
-                        color: root.fotekBlue
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                readonly property int briefAreaWidth: {
+                    var w = previewPanel.width - previewImageSize - 12
+                    return w > 10 ? w : 10
                 }
 
-                Button {
-                    id: upButton
+                Label {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    onClicked: modeListView.scrollUp()
+                    visible: selectedModeTitle().length > 0
+                    text: root.modeSelected ? selectedModeTitle() : qsTr("РЕЖИМ НЕ ВЫБРАН\n\n(ВЫКЛЮЧЕН)")
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 32
+                    font.bold: true
+                    color: fotekBlue
+                }
 
-                    background: Rectangle {
-                        radius: 18
+                RowLayout {
+                    id: briefRow
+                    Layout.fillWidth: true
+                    visible: root.modeSelected
+                    Layout.preferredHeight: Math.max(previewImageSize, briefRect.briefContentHeight)
+                    spacing: 12
+
+                    Rectangle {
+                        id: briefRect
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.max(previewImageSize, briefContentHeight)
+                        Layout.minimumHeight: previewImageSize
+                        Layout.alignment: Qt.AlignTop
+                        radius: 20
                         color: "white"
                         border.width: 1
-                        border.color: root.fotekBlue
+                        border.color: previewBorderColor
+
+                        readonly property int briefTextWidth: {
+                            var inner = width - 2 * briefVerticalMargin
+                            if (inner > 1)
+                                return inner
+                            var fallback = previewPanel.briefAreaWidth - 2 * briefVerticalMargin
+                            return fallback > 1 ? fallback : 1
+                        }
+
+                        readonly property int briefContentHeight:
+                            Math.ceil(briefMeasure.paintedHeight) + 2 * briefVerticalMargin + 4
+
+                        Text {
+                            id: briefMeasure
+                            visible: false
+                            width: briefRect.briefTextWidth
+                            text: modeEditor.modeBrief
+                            font.pixelSize: briefFontSize
+                            font.bold: true
+                            wrapMode: Text.WordWrap
+                        }
+
+                        Text {
+                            width: briefRect.briefTextWidth
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: parent.top
+                            anchors.topMargin: briefVerticalMargin
+                            text: modeEditor.modeBrief
+                            color: root.fotekBlue
+                            font.pixelSize: briefFontSize
+                            font.bold: true
+                            wrapMode: Text.WordWrap
+                        }
                     }
 
-                    contentItem: Text {
-                        text: qsTr("▲")
-                        font.pixelSize: 28
-                        font.bold: true
+                    Rectangle {
+                        Layout.preferredWidth: previewImageSize
+                        Layout.preferredHeight: previewImageSize
+                        Layout.alignment: Qt.AlignTop
+                        radius: 20
+                        color: "white"
+                        border.width: 1
+                        border.color: previewBorderColor
+
+                        Image {
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            fillMode: Image.PreserveAspectFit
+                            asynchronous: true
+                            source: ("image://modes/" + imagePrefix + "%1").arg(currentModeNum)
+                        }
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    visible: root.modeSelected
+                    radius: 20
+                    color: "white"
+                    border.width: 1
+                    border.color: previewBorderColor
+
+                    Label {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        text: modeEditor.modeDescript
                         color: root.fotekBlue
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
+                        font.pixelSize: 24
+                        wrapMode: Text.WordWrap
                     }
                 }
             }
         }
 
         Rectangle {
-            id: instrumPreview
-            anchors {
-                top: header.bottom
-                bottom: declineButton.top
-                right: parent.right
-                left: modeList.right
-                rightMargin: root.screenMargin
-            }
+            id: footer
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: 86
             color: "transparent"
 
-            Rectangle {
-                id: briefRect
-                height: previewImage.height
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: previewImageFrame.left
-                    topMargin: 12
-                    rightMargin: 12
-                }
-                radius: 24
-                color: "white"
-                border.width: 2
-                border.color: root.fotekOrange
-
-                Label {
-                    id: briefText
-                    anchors.fill: parent
-                    anchors.margins: 14
-                    text: modeEditor.modeBrief
-                    color: root.fotekBlue
-                    font.pixelSize: 22
-                    font.bold: true
-                    wrapMode: Text.WordWrap
-                }
+            DialogActionButton {
+                anchors.left: parent.left
+                anchors.leftMargin: root.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: 195
+                height: 62
+                text: qsTr("ОТМЕНА")
+                secondaryColor: "white"
+                secondaryBorderWidth: 2
+                secondaryBorderColor: root.fotekBlue
+                cornerRadius: 20
+                labelPixelSize: 30
+                labelColor: root.fotekBlue
+                onPressed: closeWithoutCommit()
             }
 
-            Rectangle {
-                id: previewImageFrame
-                width: 150
-                height: width
-                radius: 24
-                color: "white"
-                border.width: 1
-                border.color: "#C7CEDA"
-                anchors {
-                    right: parent.right
-                    top: parent.top
-                    topMargin: 12
-                }
-
-                Image {
-                    id: previewImage
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    fillMode: Image.PreserveAspectFit
-                    asynchronous: true
-                    source: ("image://modes/" + imagePrefix + "%1").arg(currentModeNum)
-                }
+            DialogActionButton {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                width: 420
+                height: 62
+                visible: root.modeSelected
+                text: qsTr("ВЫКЛЮЧИТЬ РЕЖИМ")
+                secondaryColor: "white"
+                secondaryBorderWidth: 2
+                secondaryBorderColor: root.fotekBlue
+                cornerRadius: 20
+                labelPixelSize: 30
+                labelColor: root.fotekBlue
+                onPressed: deselectMode()
             }
 
-            Rectangle {
-                id: descriptRect
-                anchors {
-                    left: parent.left
-                    top: previewImageFrame.bottom
-                    bottom: parent.bottom
-                    topMargin: 12
-                }
-                width: parent.width
-                radius: 24
-                color: "white"
-                border.width: 1
-                border.color: "#C7CEDA"
-
-                Label {
-                    id: descriptText
-                    anchors.fill: parent
-                    anchors.margins: 16
-                    text: modeEditor.modeDescript
-                    color: root.fotekBlue
-                    font.pixelSize: 24
-                    wrapMode: Text.WordWrap
-                }
-            }
-        }
-
-        DialogActionButton {
-            id: declineButton
-            width: parent.width * 0.2
-            height: parent.height * 0.15
-            anchors {
-                bottom: parent.bottom
-                bottomMargin: root.screenMargin
-                left: modeList.right
-                leftMargin: 20
-            }
-            text: qsTr("ОТМЕНА")
-            secondaryColor: "white"
-            secondaryBorderWidth: 2
-            secondaryBorderColor: root.fotekBlue
-            cornerRadius: 20
-            labelPixelSize: 30
-            labelColor: root.fotekBlue
-            onClicked: {
-                root.dialogAccepted = false
-                if (!root.deferCommit)
-                    modeEditor.rollBack()
-                root.close()
-            }
-        }
-
-        DialogActionButton {
-            id: acceptButton
-            width: parent.width * 0.2
-            height: parent.height * 0.15
-            visible: modeEditor.hasChanges
-            anchors {
-                bottom: parent.bottom
-                bottomMargin: root.screenMargin
-                left: declineButton.right
-                leftMargin: 24
-            }
-            text: qsTr("ПРИНЯТЬ")
-            primary: true
-            primaryEnabledColor: root.fotekBlue
-            primaryDisabledColor: "#26409370"
-            primaryBorderWidth: 1
-            primaryBorderColor: "#1E3274"
-            cornerRadius: 20
-            labelPixelSize: 30
-            labelColor: "white"
-            onClicked: {
-                root.dialogAccepted = true
-                if (!root.deferCommit)
-                    modeEditor.commitChanges()
-                root.close()
+            DialogActionButton {
+                anchors.right: parent.right
+                anchors.rightMargin: root.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: 195
+                height: 62
+                text: qsTr("ПРИНЯТЬ")
+                primary: true
+                enabled: true
+                primaryEnabledColor: modeEditor.hasChanges ? root.fotekBlue : "#26409370"
+                primaryDisabledColor: "#26409370"
+                primaryBorderWidth: 1
+                primaryBorderColor: "#1E3274"
+                cornerRadius: 20
+                labelPixelSize: 30
+                labelColor: "white"
+                onPressed: acceptAndClose()
             }
         }
     }
@@ -387,6 +483,8 @@ Popup {
     Connections {
         target: modeListView
         function onNewIndexSelected(index) {
+            if (openingInProgress)
+                return
             modeEditor.currentModeIndex = index
         }
     }

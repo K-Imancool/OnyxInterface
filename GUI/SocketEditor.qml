@@ -315,6 +315,11 @@ Popup {
         if (neutralPowerWarningDialog.opened)
             return
 
+        if (!modeEditor.hasChanges) {
+            root.close()
+            return
+        }
+
         if (needsNeutralPowerWarning()) {
             neutralPowerWarningDialog.socketName = modeEditor.socketName
             neutralPowerWarningDialog.maxNeutralPower = neutralMaxPower()
@@ -1432,8 +1437,8 @@ Popup {
                 height: 62
                 text: qsTr("ПРИНЯТЬ")
                 primary: true
-                enabled: modeEditor.hasChanges
-                primaryEnabledColor: root.fotekBlue
+                enabled: true
+                primaryEnabledColor: modeEditor.hasChanges ? root.fotekBlue : "#26409370"
                 primaryDisabledColor: "#26409370"
                 primaryBorderWidth: 1
                 primaryBorderColor: "#1E3274"

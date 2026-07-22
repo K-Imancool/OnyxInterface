@@ -246,7 +246,7 @@ void DeviceLogManager::onActivationStopped(quint8 stopReason)
                     .arg(activation.modeName.isEmpty() ? QStringLiteral("не указан") : activation.modeName)
                     .arg(activation.mode)
                     .arg(activation.power)
-                    .arg(activation.instrument.isEmpty() ? QStringLiteral("не выбран") : activation.instrument)
+                    .arg(activation.instrument.isEmpty() ? QStringLiteral("Другой инструмент") : activation.instrument)
                     .arg(formatDuration(durationMs))
                     .arg(sourceText(activation.autoMode, activation.sourceCode)));
 }

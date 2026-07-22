@@ -25,7 +25,7 @@ Rectangle {
     property int cutModeId
     property int cutMaxPower
     property int cutInstrumNum
-    property string cutInstrumName: qsTr("не выбран")
+    property string cutInstrumName: qsTr("Другой инструмент")
     property bool cutIsEndo: false
     property bool cutHasAvailableModes: true
 
@@ -35,7 +35,7 @@ Rectangle {
     property int _coagAutoDisplayRev: 0
     property int coagMaxPower
     property int coagInstrumNum
-    property string coagInstrumName: qsTr("не выбран")
+    property string coagInstrumName: qsTr("Другой инструмент")
     property bool coagIsEndo: false
     property bool coagHasAvailableModes: true
 
@@ -111,7 +111,7 @@ Rectangle {
             anchors.fill: parent
             onClicked: {
                 if (socketRoot.allowEditing) {
-                    socketRoot.socketEditorRequest(socketRoot.socketId, false)
+                    socketRoot.fullSocketEditorRequest(socketRoot.socketId)
                 } else {
                     socketRoot.dimmedSocketClicked(socketRoot.socketId)
                 }
@@ -139,7 +139,7 @@ Rectangle {
             anchors.fill: parent
             onClicked: {
                 if (socketRoot.allowEditing) {
-                    socketRoot.socketEditorRequest(socketRoot.socketId, true)
+                    socketRoot.fullSocketEditorRequest(socketRoot.socketId)
                 } else {
                     socketRoot.dimmedSocketClicked(socketRoot.socketId)
                 }
@@ -155,16 +155,6 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         z: 2
-    }
-
-    MouseArea {
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: 48
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        z: 4
-        enabled: socketRoot.allowEditing
-        onClicked: socketRoot.fullSocketEditorRequest(socketRoot.socketId)
     }
 
     Rectangle {

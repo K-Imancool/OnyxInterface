@@ -29,6 +29,7 @@ public:
         StopActivation = 0x40,          // Остановка активации
 
         AckNeutralResist = 0x61,        // Запрос сопротивления НЭ
+        OutputLeds = 0x62,              // Включение/выключение подсветки выходов
 //        AckMonoHandleResist = 0x62,     // Запрос сопр. моно держателя                Пока не используются
 //        AckBiHandleResist = 0x63,       // Запрос сопр. би держателя
 //        ReadMono2Id = 0x64,             // Прочитать данные в определителе Моно2
@@ -78,12 +79,13 @@ public:
 
         SpecAnswer = 0x60,
         NeutralResist = 0x61,           // Сопротивление НЭ
-        MonoHandleResist = 0x62,        // Сопротивление моно держателя
-        BiHandleResist = 0x63,          // Сопротивление би держателя
-        DataMono2Id = 0x64,             // Данные из определителя Моно2
-        DataBi2Id = 0x65,               // Данные из определителя Би2
-        ConfirmMono2Id = 0x66,          // Подтверждение записи данных в определитель Моно2
-        ConfirmBi2Id = 0x67,            // Подтверждение записи данных в определитель Би2
+        AckOutputLeds = 0x62,           // Подтверждение включения/выключения подсветки выходов
+//        MonoHandleResist = 0x62,        // Сопротивление моно держателя
+//        BiHandleResist = 0x63,          // Сопротивление би держателя
+//        DataMono2Id = 0x64,             // Данные из определителя Моно2
+//        DataBi2Id = 0x65,               // Данные из определителя Би2
+//        ConfirmMono2Id = 0x66,          // Подтверждение записи данных в определитель Моно2
+//        ConfirmBi2Id = 0x67,            // Подтверждение записи данных в определитель Би2
         WirelessDetected = 0x68,        // Обнаружено беспроводное устройство
         ConfirmAddrWireless = 0x69,     // Подтверждение приёма адреса для беспроводных устройств
         DataWireless = 0x6A,            // Данные от беспроводного устройства
@@ -151,6 +153,18 @@ public:
         MC_NEL = 0x80                     // Модуль нейтральника (4 << 5)
     };
     Q_ENUM(McUnit);
+
+    enum LedColor : quint8 {
+        LED_OFF = 0x00,                   // Подсветка выходов выключена
+        LED_GREEN = 0x01,                 // Зелёный цвет
+        LED_RED = 0x02,                   // Красный цвет
+        LED_BLUE = 0x03,                  // Синий цвет
+        LED_YELLOW = 0x04,                // Жёлтый цвет
+        LED_PURPLE = 0x05,                // Пурпурный цвет
+        LED_CYAN = 0x06,                  // Бирюзовый цвет
+        LED_WHITE = 0x07                  // Белый цвет
+    };
+    Q_ENUM(LedColor);
 
     struct UartTx {
         quint8 com;
@@ -227,7 +241,8 @@ public slots:
     void start();
     /// Загрузка hex из файла (вызов из потока LinkStm)
     void startFirmwareUpdateFromFile(const QString &filePath, const QString &versionStr, int mcUnitRaw);
-    void argonBlow();
+    void argonBlow();                               // Передать команду на продувку
+    void setLedOutput(quint8 out, LedColor color);  // Передать команду на включение/выключение подсветки
     void setVolume(int level);
     void setEnableActivation(bool enable);
     void setNeutralElDivided(bool divided);

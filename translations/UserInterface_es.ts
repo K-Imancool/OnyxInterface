@@ -210,8 +210,8 @@ ef.</translation>
 <context>
     <name>DummySocket</name>
     <message>
-        <source>не выбран</source>
-        <translation>no seleccionado</translation>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
     </message>
 </context>
 <context>
@@ -226,10 +226,171 @@ ef.</translation>
     </message>
 </context>
 <context>
+    <name>FullSocketEditor</name>
+    <message>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
+    </message>
+    <message>
+        <source>Подача импульсов СРЕДНЯЯ</source>
+        <translation>Pulso MEDIO</translation>
+    </message>
+    <message>
+        <source>Подача импульсов РЕДКАЯ</source>
+        <translation>Pulso LENTO</translation>
+    </message>
+    <message>
+        <source>Подача импульсов ЧАСТАЯ</source>
+        <translation>Pulso RÁPIDO</translation>
+    </message>
+    <message>
+        <source>РЕЗАНИЕ</source>
+        <translation>CORTE</translation>
+    </message>
+    <message>
+        <source>ВЫХОД %1</source>
+        <translation>SALIDA %1</translation>
+    </message>
+    <message>
+        <source>ВЫХОД</source>
+        <translation>SALIDA</translation>
+    </message>
+    <message>
+        <source>КОАГУЛЯЦИЯ</source>
+        <translation>COAGULACIÓN</translation>
+    </message>
+    <message>
+        <source>Выберите</source>
+        <translation>Seleccione</translation>
+    </message>
+    <message>
+        <source>режим</source>
+        <translation>modo</translation>
+    </message>
+    <message>
+        <source>инструмент</source>
+        <translation>electrodo</translation>
+    </message>
+    <message>
+        <source>Установите</source>
+        <translation>Ajuste</translation>
+    </message>
+    <message>
+        <source>мощность</source>
+        <translation>potencia</translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCELAR</translation>
+    </message>
+    <message>
+        <source>ПРИНЯТЬ</source>
+        <translation>ACEPTAR</translation>
+    </message>
+</context>
+<context>
+    <name>FullSocketInstrButton</name>
+    <message>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
+    </message>
+</context>
+<context>
+    <name>FullSocketModeButton</name>
+    <message>
+        <source>Выберите режим</source>
+        <translation>SELECCIONA UN MODO</translation>
+    </message>
+</context>
+<context>
+    <name>FullSocketPowerRow</name>
+    <message>
+        <source>−</source>
+        <translation>−</translation>
+    </message>
+    <message>
+        <source>+</source>
+        <translation>+</translation>
+    </message>
+    <message>
+        <source>эффект резания</source>
+        <translation>cort ef.</translation>
+    </message>
+    <message>
+        <source>эффект коагуляции</source>
+        <translation>coag ef.</translation>
+    </message>
+</context>
+<context>
+    <name>FullSocketSidePanel</name>
+    <message>
+        <source>АВТОСТОП</source>
+        <translation>AUTOSTOP</translation>
+    </message>
+    <message>
+        <source>В режиме АВТОСТОП инструмент активируется с помощью педали.
+По завершении коагуляции процесс прекращается автоматически</source>
+        <translation>En el modo de AUTO-STOP, el instrumento se activa mediante un interruptor de pie. El proceso se detiene automáticamente cuando se completa la coagulación.</translation>
+    </message>
+    <message>
+        <source>АВТОСТАРТ/СТОП</source>
+        <translation>AUTO-START-STOP</translation>
+    </message>
+    <message>
+        <source>В режиме АВТОСТАРТ/СТОП активация происходит автоматически без нажатия педали!</source>
+        <translation>¡En el modo AUTO-START-STOP, la activación se produce automáticamente sin ninguna acción del interruptor de pie!</translation>
+    </message>
+    <message>
+        <source>В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.
+По завершении коагуляции процесс прекращается автоматически</source>
+        <translation>En el modo de AUTO-STOP, el instrumento se activa con el interruptor de pie o el botón del mango. El proceso se detiene automáticamente cuando se completa la coagulación.</translation>
+    </message>
+    <message>
+        <source>Задержка автозапуска</source>
+        <translation>Retardo de autoarranque</translation>
+    </message>
+    <message>
+        <source>0
+сек</source>
+        <translation>0
+s</translation>
+    </message>
+    <message>
+        <source>0.5
+сек</source>
+        <translation>0.5
+s</translation>
+    </message>
+    <message>
+        <source>1.0
+сек</source>
+        <translation>1.0
+s</translation>
+    </message>
+    <message>
+        <source>1.5
+сек</source>
+        <translation>1.5
+s</translation>
+    </message>
+</context>
+<context>
+    <name>FullSocketStepHint</name>
+    <message>
+        <source>←</source>
+        <translation>←</translation>
+    </message>
+    <message>
+        <source>→</source>
+        <translation>→</translation>
+    </message>
+</context>
+
+<context>
     <name>HalfSocket</name>
     <message>
-        <source>не выбран</source>
-        <translation>no seleccionado</translation>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
     </message>
     <message>
         <source>коагуляция</source>
@@ -420,8 +581,12 @@ ef.</translation>
 <context>
     <name>InstrumEditor</name>
     <message>
-        <source>Выбор инструмента для выхода %1</source>
-        <translation>electrodo para la salida %1</translation>
+        <source>Выберите инструмент РЕЗАНИЯ для выхода %1</source>
+        <translation>Seleccione el electrodo de CORTE para la salida %1</translation>
+    </message>
+    <message>
+        <source>Выберите инструмент КОАГУЛЯЦИИ для выхода %1</source>
+        <translation>Seleccione el electrodo de COAGULACIÓN para la salida %1</translation>
     </message>
     <message>
         <source>РЕЖИМ: %1</source>
@@ -444,19 +609,23 @@ ef.</translation>
         <translation>CANCELAR</translation>
     </message>
     <message>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
+    </message>
+    <message>
         <source>ПРИНЯТЬ</source>
         <translation>ACEPTAR</translation>
     </message>
     <message>
-        <source>Выберите рекомендуемую мощность</source>
-        <translation>ESTABLECER VALOR RECOMENDADO</translation>
+        <source>Рекомендуемый уровень</source>
+        <translation>Nivel recomendado</translation>
     </message>
 </context>
 <context>
     <name>InstrumRect</name>
     <message>
-        <source>инструмент не выбран</source>
-        <translation>electrodo no seleccionado</translation>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
     </message>
 </context>
 <context>
@@ -670,12 +839,12 @@ MODO LIBRE</translation>
 <context>
     <name>ModeEditor</name>
     <message>
-        <source>Выбор режима РЕЗАНИЯ для выхода %1</source>
-        <translation>modo de corte para la salida %1</translation>
+        <source>Выберите режим РЕЗАНИЯ для выхода %1</source>
+        <translation>Seleccione el modo de CORTE para la salida %1</translation>
     </message>
     <message>
-        <source>Выбор режима КОАГУЛЯЦИИ для выхода %1</source>
-        <translation>modo de coagulación para la salida %1</translation>
+        <source>Выберите режим КОАГУЛЯЦИИ для выхода %1</source>
+        <translation>Seleccione el modo de COAGULACIÓN para la salida %1</translation>
     </message>
     <message>
         <source>X</source>
@@ -694,8 +863,20 @@ MODO LIBRE</translation>
         <translation>CANCELAR</translation>
     </message>
     <message>
+        <source>ВЫКЛЮЧИТЬ РЕЖИМ</source>
+        <translation>DESACTIVAR MODO</translation>
+    </message>
+    <message>
         <source>ПРИНЯТЬ</source>
         <translation>ACEPTAR</translation>
+    </message>
+    <message>
+        <source>РЕЖИМ НЕ ВЫБРАН
+
+(ВЫКЛЮЧЕН)</source>
+        <translation>MODO NO SELECCIONADO
+
+(DESACTIVADO)</translation>
     </message>
 </context>
 <context>
@@ -1831,12 +2012,8 @@ VACÍO</translation>
 <context>
     <name>SocketModel</name>
     <message>
-        <source>Не выбран</source>
-        <translation>No seleccionado</translation>
-    </message>
-    <message>
-        <source>НЕ ВЫБРАН</source>
-        <translation>NO SELECCIONADO</translation>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
     </message>
 </context>
 <context>
@@ -1944,16 +2121,16 @@ VACÍO</translation>
 <context>
     <name>StatesSocket</name>
     <message>
-        <source>не выбран</source>
-        <translation>no seleccionado</translation>
+        <source>Другой инструмент</source>
+        <translation>Otro electrodo</translation>
     </message>
     <message>
         <source> АВТОСТОП</source>
         <translation> AUTOSTOP</translation>
     </message>
     <message>
-        <source> АВТОСТАРТ/СТОП</source>
-        <translation> AUTO-START-STOP</translation>
+        <source> АВТО-СТ-СТОП</source>
+        <translation> AUTO-ST-STOP</translation>
     </message>
 </context>
 <context>

@@ -22,11 +22,12 @@ Popup {
     readonly property color coagAccent: "#0B4FB3"
     readonly property color uiMidGray: "#5A6478"
     readonly property int screenMargin: 20
-    readonly property int controlButtonHeight: 72
+    readonly property int controlButtonHeight: 90
+    readonly property int endoPowerRowHeight: 124
     readonly property int modeRowHeight: 100
     readonly property int instrRowHeight: 120
     readonly property int panelCornerRadius: 20
-    readonly property int powerStepButtonWidth: 96
+    readonly property int powerStepButtonWidth: 112
     readonly property color autoBtnOnFill: fotekOrange
     readonly property color autoBtnOnBorder: "#1E3274"
     readonly property color autoBtnOffFill: "white"
@@ -46,6 +47,8 @@ Popup {
     property bool pendingSubEditorCoag: false
     property bool powerRepeatIncrease: false
     property bool powerRepeatIsCoag: false
+    property var modePicker
+    property var instrPicker
 
     property var cutLive: ({
                                modeIndex: -1,
@@ -123,7 +126,7 @@ Popup {
             modeId: mode && mode.id !== undefined && mode.id !== null ? parseInt(mode.id) : -1,
             modeNum: modeIdx >= 0 && modeIdx < modeNums.length ? modeNums[modeIdx] : "0",
             instrName: instrIdx >= 0 && instrIdx < modeEditor.instrList.length
-                    ? modeEditor.instrList[instrIdx] : qsTr("не выбран"),
+                    ? modeEditor.instrList[instrIdx] : qsTr("Другой инструмент"),
             instrNum: instrIdx >= 0 && instrIdx < instrNums.length ? instrNums[instrIdx] : "1000",
             isEndo: modeEditor.isEndo,
             maxPower: mode && mode.maxpower !== undefined ? parseInt(mode.maxpower) : 0,
@@ -133,11 +136,27 @@ Popup {
         }
     }
 
+    function normalizeSidePowerIfNeeded(side) {
+        var result = cloneSideState(side)
+        if (result.modeId === 1000 || result.modeId < 0)
+            return result
+        if (parseInt(result.instrNum) !== 1000)
+            return result
+        if (result.power > 0)
+            return result
+        result.power = result.isEndo ? 11 : 1
+        return result
+    }
+
     function copyEditorToSide(isCoag) {
+        var side = captureSideFromEditor()
+        var normalized = normalizeSidePowerIfNeeded(side)
+        if (normalized.power !== side.power)
+            modeEditor.updateParameter("currentpower", normalized.power)
         if (isCoag)
-            coagLive = captureSideFromEditor()
+            coagLive = normalized
         else
-            cutLive = captureSideFromEditor()
+            cutLive = normalized
     }
 
     function safeModeIndex(modeIndex) {
@@ -146,9 +165,12 @@ Popup {
 
     function applySideToEditor(isCoag) {
         var side = sideRef(isCoag)
-        modeEditor.initialize(socId, safeModeIndex(side.modeIndex), isCoag)
-        modeEditor.currentModeIndex = side.modeIndex >= 0 ? side.modeIndex : modeEditor.currentModeIndex
-        modeEditor.currentInstrIndex = side.instrIndex >= 0 ? side.instrIndex : modeEditor.currentInstrIndex
+        var targetMode = safeModeIndex(side.modeIndex)
+        // initialize() may snap to the committed model mode; always re-apply live side after it.
+        modeEditor.initialize(socId, targetMode, isCoag)
+        modeEditor.currentModeIndex = targetMode
+        if (side.instrIndex >= 0)
+            modeEditor.currentInstrIndex = side.instrIndex
         modeEditor.updateParameter("currentpower", side.power)
         if (side.isEndo)
             normalizeEndoPowerForSide(isCoag)
@@ -297,22 +319,33 @@ Popup {
     }
 
     function isBiCoagModeInSide(isCoag) {
-        return sideRef(isCoag).modeId === 5
+        var modeId = sideRef(isCoag).modeId
+        return modeId === 5 ||
+                modeId === 6 ||
+                modeId === 27 ||
+                modeId === 61 ||
+                modeId === 62 ||
+                modeId === 63 ||
+                modeId === 64
     }
 
     function isSoftModeInSide(isCoag) {
         return sideRef(isCoag).modeId === 21
     }
 
-    function endoPulseRateText(modeName) {
-        var match = modeName.match(/-([1-3])\s*$/)
-        if (!match)
+    function endoPulseRateText(modeId) {
+        switch (parseInt(modeId)) {
+        case 13: // ЭНДОНОЖ-1
+        case 16: // ЭНДОПЕТЛЯ-
+            return qsTr("Подача импульсов РЕДКАЯ")
+        case 14: // ЭНДОНОЖ-2
+        case 17: // ЭНДОПЕТЛЯ-2
             return qsTr("Подача импульсов СРЕДНЯЯ")
-        switch (parseInt(match[1])) {
-        case 1: return qsTr("Подача импульсов РЕДКАЯ")
-        case 2: return qsTr("Подача импульсов СРЕДНЯЯ")
-        case 3: return qsTr("Подача импульсов ЧАСТАЯ")
-        default: return qsTr("Подача импульсов СРЕДНЯЯ")
+        case 15: // ЭНДОНОЖ-3
+        case 18: // ЭНДОПЕТЛЯ-3
+            return qsTr("Подача импульсов ЧАСТАЯ")
+        default:
+            return qsTr("Подача импульсов СРЕДНЯЯ")
         }
     }
 
@@ -352,8 +385,13 @@ Popup {
             setSocketAutoMode(0)
             return
         }
+        if (!Overlay.overlay)
+            return
         pendingAutoMode = mode
         autoModeConfirmText = confirmationText
+        autoModeConfirmPopup.parent = Overlay.overlay
+        autoModeConfirmPopup.x = Math.round((Overlay.overlay.width - autoModeConfirmPopup.width) / 2)
+        autoModeConfirmPopup.y = Math.round((Overlay.overlay.height - autoModeConfirmPopup.height) / 2)
         autoModeConfirmPopup.open()
     }
 
@@ -381,12 +419,12 @@ Popup {
             return
 
         modeEditor.initialize(socId, 0, false)
-        cutLive = captureSideFromEditor()
+        cutLive = normalizeSidePowerIfNeeded(captureSideFromEditor())
         cutBaseline = cloneSideState(cutLive)
         socketTitle = modeEditor.socketName
 
         modeEditor.initialize(socId, 0, true)
-        coagLive = captureSideFromEditor()
+        coagLive = normalizeSidePowerIfNeeded(captureSideFromEditor())
         coagBaseline = cloneSideState(coagLive)
 
         activeIsCoag = false
@@ -435,8 +473,19 @@ Popup {
         finishCommitAndClose()
     }
 
+    function acceptEditorAndClose() {
+        if (!root.hasAnyChanges) {
+            root.close()
+            return
+        }
+        attemptCommitAndClose()
+    }
+
     function openModePicker(isCoag) {
+        if (!modePicker)
+            return
         activateSide(isCoag)
+        applySideToEditor(isCoag)
         pendingSubEditorCoag = isCoag
         var side = sideRef(isCoag)
         modePicker.deferCommit = true
@@ -447,12 +496,16 @@ Popup {
     }
 
     function openInstrPicker(isCoag) {
+        if (!instrPicker)
+            return
         activateSide(isCoag)
+        applySideToEditor(isCoag)
         pendingSubEditorCoag = isCoag
         var side = sideRef(isCoag)
         instrPicker.deferCommit = true
         instrPicker.socId = socId
         instrPicker.modeIndex = safeModeIndex(side.modeIndex)
+        instrPicker.instrIndex = side.instrIndex
         instrPicker.isCoag = isCoag
         instrPicker.open()
     }
@@ -550,14 +603,17 @@ Popup {
             anchors.bottom: footer.top
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.margins: 14
-            spacing: 12
+            anchors.leftMargin: 14
+            anchors.rightMargin: 14
+            anchors.bottomMargin: 14
+            anchors.topMargin: 34
+            spacing: 20
 
             GridLayout {
                 Layout.fillWidth: true
                 columns: 3
                 columnSpacing: 10
-                rowSpacing: 12
+                rowSpacing: 20
 
                 FullSocketModeButton {
                     Layout.row: 0
@@ -629,7 +685,7 @@ Popup {
                     Layout.row: 2
                     Layout.column: 0
                     Layout.fillWidth: true
-                    Layout.preferredHeight: controlButtonHeight
+                    Layout.preferredHeight: cutLive.isEndo ? endoPowerRowHeight : controlButtonHeight
                     editorRoot: root
                     isCoagSide: false
                     sideState: cutLive
@@ -639,18 +695,18 @@ Popup {
                     Layout.row: 2
                     Layout.column: 1
                     Layout.preferredWidth: 170
-                    Layout.preferredHeight: controlButtonHeight
+                    Layout.preferredHeight: (cutLive.isEndo || coagLive.isEndo) ? endoPowerRowHeight : controlButtonHeight
                     line1: qsTr("Установите")
                     line2: qsTr("мощность")
                     textColor: uiMidGray
-                    rowHeight: controlButtonHeight
+                    rowHeight: (cutLive.isEndo || coagLive.isEndo) ? endoPowerRowHeight : controlButtonHeight
                 }
 
                 FullSocketPowerRow {
                     Layout.row: 2
                     Layout.column: 2
                     Layout.fillWidth: true
-                    Layout.preferredHeight: controlButtonHeight
+                    Layout.preferredHeight: coagLive.isEndo ? endoPowerRowHeight : controlButtonHeight
                     editorRoot: root
                     isCoagSide: true
                     sideState: coagLive
@@ -697,7 +753,7 @@ Popup {
                 anchors.left: parent.left
                 anchors.leftMargin: root.screenMargin
                 anchors.verticalCenter: parent.verticalCenter
-                width: 180
+                width: 195
                 height: 62
                 text: qsTr("ОТМЕНА")
                 secondaryColor: "white"
@@ -713,33 +769,21 @@ Popup {
                 anchors.right: parent.right
                 anchors.rightMargin: root.screenMargin
                 anchors.verticalCenter: parent.verticalCenter
-                width: 180
+                width: 195
                 height: 62
                 text: qsTr("ПРИНЯТЬ")
                 primary: true
-                enabled: root.hasAnyChanges
-                primaryEnabledColor: root.fotekBlue
+                enabled: true
+                primaryEnabledColor: root.hasAnyChanges ? root.fotekBlue : "#26409370"
                 primaryDisabledColor: "#26409370"
                 primaryBorderWidth: 1
                 primaryBorderColor: "#1E3274"
                 cornerRadius: 20
                 labelPixelSize: 30
                 labelColor: "white"
-                onPressed: attemptCommitAndClose()
+                onPressed: acceptEditorAndClose()
             }
         }
-    }
-
-    ModeEditor {
-        id: modePicker
-        deferCommit: true
-        onClosed: handleSubEditorClosed(dialogAccepted)
-    }
-
-    InstrumEditor {
-        id: instrPicker
-        deferCommit: true
-        onClosed: handleSubEditorClosed(dialogAccepted)
     }
 
     Connections {
@@ -756,11 +800,9 @@ Popup {
 
     Popup {
         id: autoModeConfirmPopup
-        parent: Overlay.overlay
         modal: true
         focus: true
         closePolicy: Popup.NoAutoClose
-        anchors.centerIn: Overlay.overlay
         width: Math.min(root.width * 0.72, 760)
         height: 320
 
@@ -782,7 +824,7 @@ Popup {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 color: root.fotekBlue
-                font.pixelSize: 24
+                font.pixelSize: 28
                 font.bold: true
             }
 

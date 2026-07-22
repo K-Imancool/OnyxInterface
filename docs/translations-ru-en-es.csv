@@ -1,4 +1,4 @@
-﻿№;Контекст;Русский;English;Español
+№;Контекст;Русский;English;Español
 1;AboutScreen;Модуль управления и связи;Communication module;Módulo de comunicación
 2;AboutScreen;Модуль аргоновый;Argon module;Módulo de argón
 3;AboutScreen;Модуль генератора;Generator;GENERADOR
@@ -51,556 +51,640 @@ ef."
 44;DateTimeSettings;НАЗАД;BACK;ATRÁS
 45;DateTimeSettings;ТЕКУЩЕЕ;CURRENT;ACTUAL
 46;DateTimeSettings;СОХРАНИТЬ;SAVE;GUARDAR
-47;DummySocket;не выбран;not selected;no seleccionado
+47;DummySocket;Другой инструмент;Other electrode;Otro electrodo
 48;EndoChart;рез;cut;corte
 49;EndoChart;коаг;coag;coag
-50;HalfSocket;не выбран;not selected;no seleccionado
-51;HalfSocket;коагуляция;coag;coag
-52;HalfSocket;резание;cut;corte
-53;HalfSocket;"эфф.
+50;FullSocketEditor;Другой инструмент;Other electrode;Otro electrodo
+51;FullSocketEditor;Подача импульсов СРЕДНЯЯ;MEDIUM pulse rate;Pulso MEDIO
+52;FullSocketEditor;Подача импульсов РЕДКАЯ;SLOW pulse rate;Pulso LENTO
+53;FullSocketEditor;Подача импульсов ЧАСТАЯ;FAST pulse rate;Pulso RÁPIDO
+54;FullSocketEditor;РЕЗАНИЕ;CUT;CORTE
+55;FullSocketEditor;ВЫХОД %1;OUTPUT %1;SALIDA %1
+56;FullSocketEditor;ВЫХОД;OUTPUT;SALIDA
+57;FullSocketEditor;КОАГУЛЯЦИЯ;COAGULATION;COAGULACIÓN
+58;FullSocketEditor;Выберите;Select;Seleccione
+59;FullSocketEditor;режим;mode;modo
+60;FullSocketEditor;инструмент;electrode;electrodo
+61;FullSocketEditor;Установите;Set;Ajuste
+62;FullSocketEditor;мощность;power;potencia
+63;FullSocketEditor;ОТМЕНА;CANCEL;CANCELAR
+64;FullSocketEditor;ПРИНЯТЬ;ACCEPT;ACEPTAR
+65;FullSocketInstrButton;Другой инструмент;Other electrode;Otro electrodo
+66;FullSocketModeButton;Выберите режим;SELECT A MODE;SELECCIONA UN MODO
+67;FullSocketPowerRow;−;−;−
+68;FullSocketPowerRow;+;+;+
+69;FullSocketPowerRow;эффект резания;cut eff.;cort ef.
+70;FullSocketPowerRow;эффект коагуляции;coag eff.;coag ef.
+71;FullSocketSidePanel;АВТОСТОП;AUTOSTOP;AUTOSTOP
+72;FullSocketSidePanel;"В режиме АВТОСТОП инструмент активируется с помощью педали.
+По завершении коагуляции процесс прекращается автоматически";In AUTO-STOP mode instrument is activated by footswitch. The process stops automatically when coagulation is complete.;En el modo de AUTO-STOP, el instrumento se activa mediante un interruptor de pie. El proceso se detiene automáticamente cuando se completa la coagulación.
+73;FullSocketSidePanel;АВТОСТАРТ/СТОП;AUTO-START-STOP;AUTO-START-STOP
+74;FullSocketSidePanel;В режиме АВТОСТАРТ/СТОП активация происходит автоматически без нажатия педали!;In AUTO-START-STOP mode activation occurs automatically without any footswitch actions!;¡En el modo AUTO-START-STOP, la activación se produce automáticamente sin ninguna acción del interruptor de pie!
+75;FullSocketSidePanel;"В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.
+По завершении коагуляции процесс прекращается автоматически";In AUTO-STOP mode instrument is activated by footswitch or handle button. The process stops automatically when coagulation is complete.;En el modo de AUTO-STOP, el instrumento se activa con el interruptor de pie o el botón del mango. El proceso se detiene automáticamente cuando se completa la coagulación.
+76;FullSocketSidePanel;Задержка автозапуска;Autostart delay;Retardo de autoarranque
+77;FullSocketSidePanel;"0
+сек";"0
+s";"0
+s"
+78;FullSocketSidePanel;"0.5
+сек";"0.5
+s";"0.5
+s"
+79;FullSocketSidePanel;"1.0
+сек";"1.0
+s";"1.0
+s"
+80;FullSocketSidePanel;"1.5
+сек";"1.5
+s";"1.5
+s"
+81;FullSocketStepHint;←;←;←
+82;FullSocketStepHint;→;→;→
+83;HalfSocket;Другой инструмент;Other electrode;Otro electrodo
+84;HalfSocket;коагуляция;coag;coag
+85;HalfSocket;резание;cut;corte
+86;HalfSocket;"эфф.
 рез.";cut eff.;cort ef.
-54;HalfSocket;"эфф.
+87;HalfSocket;"эфф.
 коаг.";coag eff.;coag ef.
-55;HttpUploadController;Не удалось запустить %1;Failed to start %1;No se pudo iniciar %1
-56;HttpUploadController;Timeout команды %1;Command %1 timed out;Tiempo de espera agotado para %1
-57;HttpUploadController;nmcli не найден.;nmcli not found.;nmcli no encontrado.
-58;HttpUploadController;Скрипт управления firewall найден, но не исполняемый: %1;Firewall control script found but not executable: %1;Script de control del firewall encontrado pero no ejecutable: %1
-59;HttpUploadController;Не удалось запустить helper firewall.;Failed to start the firewall helper.;No se pudo iniciar el helper del firewall.
-60;HttpUploadController;Timeout вызова helper firewall.;Firewall helper call timed out.;Tiempo de espera agotado al llamar al helper del firewall.
-61;HttpUploadController;Helper firewall завершился с ошибкой.;Firewall helper finished with an error.;El helper del firewall terminó con un error.
-62;HttpUploadController;Helper firewall завершился с ошибкой: %1;Firewall helper finished with an error: %1;El helper del firewall terminó con un error: %1
-63;HttpUploadController;QR недоступен: не установлен qrencode.;QR unavailable: qrencode is not installed.;QR no disponible: qrencode no está instalado.
-64;HttpUploadController;QR недоступен: ошибка запуска qrencode.;QR unavailable: failed to start qrencode.;QR no disponible: error al iniciar qrencode.
-65;HttpUploadController;Сначала подключите телефон или ноутбук к Wi-Fi %1. Пароль: %2;First connect your phone or laptop to Wi-Fi %1. Password: %2;Primero conecte su teléfono o portátil a la red Wi-Fi %1. Contraseña: %2
-66;HttpUploadController;Адрес загрузки ещё не готов.;Upload address is not ready yet.;La dirección de carga aún no está lista.
-67;HttpUploadController;Если телефон уже подключён к ONYX-TEST, откройте этот QR для страницы загрузки.;If the phone is already connected to ONYX-TEST, open this QR for the upload page.;Si el teléfono ya está conectado a ONYX-TEST, abra este QR para la página de carga.
-68;HttpUploadController;Устройство подключено. Отсканируйте QR для открытия страницы загрузки.;Device connected. Scan the QR to open the upload page.;Dispositivo conectado. Escanee el QR para abrir la página de carga.
-69;HttpUploadController;Wi-Fi интерфейс не найден.;Wi-Fi interface not found.;Interfaz Wi-Fi no encontrada.
-70;HttpUploadController;Запуск точки доступа %1...;Starting access point %1...;Iniciando el punto de acceso %1...
-71;HttpUploadController;Не удалось создать профиль точки доступа.;Failed to create the access point profile.;No se pudo crear el perfil del punto de acceso.
-72;HttpUploadController;Не удалось создать профиль точки доступа: %1;Failed to create the access point profile: %1;No se pudo crear el perfil del punto de acceso: %1
-73;HttpUploadController;Не удалось настроить точку доступа.;Failed to configure the access point.;No se pudo configurar el punto de acceso.
-74;HttpUploadController;Не удалось настроить точку доступа: %1;Failed to configure the access point: %1;No se pudo configurar el punto de acceso: %1
-75;HttpUploadController;Не удалось запустить точку доступа.;Failed to start the access point.;No se pudo iniciar el punto de acceso.
-76;HttpUploadController;Не удалось запустить точку доступа: %1;Failed to start the access point: %1;No se pudo iniciar el punto de acceso: %1
-77;HttpUploadController;Точка доступа %1 активна. Ожидание подключения клиента.;Access point %1 is active. Waiting for a client to connect.;El punto de acceso %1 está activo. Esperando la conexión de un cliente.
-78;HttpUploadController;К точке доступа подключено устройство.;A device is connected to the access point.;Un dispositivo está conectado al punto de acceso.
-79;HttpUploadController;Не удалось занять порт %1: %2;Failed to bind port %1: %2;No se pudo ocupar el puerto %1: %2
-80;HttpUploadController;Получение файла...;Receiving file...;Recibiendo archivo...
-81;HttpUploadController;Получение файла: %1%;Receiving file: %1%;Recibiendo archivo: %1%
-82;HttpUploadController;Ошибка загрузки;Upload error;Error de carga
-83;HttpUploadController;Загрузка завершена;Upload finished;Carga finalizada
-84;HttpUploadController;Некорректная версия интерфейса;Invalid interface version;Versión de interfaz no válida
-85;HttpUploadController;Не удалось удалить старый backup UserInterface.bak;Failed to delete old backup UserInterface.bak;No se pudo eliminar la copia antigua UserInterface.bak
-86;HttpUploadController;Не удалось создать backup UserInterface.bak;Failed to create backup UserInterface.bak;No se pudo crear la copia de seguridad UserInterface.bak
-87;HttpUploadController;Не удалось обновить модуль интерфейса (%1);Failed to update the interface module (%1);No se pudo actualizar el módulo de interfaz (%1)
-88;HttpUploadController;Не удалось выставить права на запуск для UserInterface;Failed to set execute permissions for UserInterface;No se pudieron establecer permisos de ejecución para UserInterface
-89;HttpUploadController;Некорректная версия медиафайлов;Invalid media files version;Versión de archivos multimedia no válida
-90;HttpUploadController;Не удалось обновить медиафайлы;Failed to update media files;No se pudieron actualizar los archivos multimedia
-91;HttpUploadController;Обновление МК недоступно;MCU update unavailable;Actualización del MCU no disponible
-92;HttpUploadController;Не выбрана версия;No version selected;No se ha seleccionado ninguna versión
-93;HttpUploadController;Файл не найден: %1;File not found: %1;Archivo no encontrado: %1
-94;HttpUploadController;Не удалось поставить обновление в очередь;Failed to queue the update;No se pudo poner la actualización en cola
-95;HttpUploadController;Команда перезагрузки после обновления;Reboot command after update;Comando de reinicio tras la actualización
-96;InstrumEditor;Выбор инструмента для выхода %1;electrode for output %1;electrodo para la salida %1
-97;InstrumEditor;РЕЖИМ: %1;MODE: %1;MODO: %1
-98;InstrumEditor;X;X;X
-99;InstrumEditor;▼;▼;▼
-100;InstrumEditor;▲;▲;▲
-101;InstrumEditor;ОТМЕНА;CANCEL;CANCELAR
-102;InstrumEditor;ПРИНЯТЬ;ACCEPT;ACEPTAR
-103;InstrumEditor;Выберите рекомендуемую мощность;SET RECOMMENDED VALUE;ESTABLECER VALOR RECOMENDADO
-104;InstrumRect;инструмент не выбран;electrode not selected;electrodo no seleccionado
-105;ItemList;Редактирование названия;Edit name;Editar nombre
-106;ItemList;Укажите новое имя:;Enter a new name:;Introduzca un nombre nuevo:
-107;ItemList;ОТМЕНА;CANCEL;CANCELAR
-108;ItemList;ПРИНЯТЬ;ACCEPT;ACEPTAR
-109;LinkStm;Не удалось обновить модуль;Failed to update the module;No se pudo actualizar el módulo
-110;LinkStm;Файл прошивки не найден;Firmware file not found;Archivo de firmware no encontrado
-111;LinkStm;Пустой или некорректный hex;Empty or invalid hex;Hex vacío o no válido
-112;LogFileScreen;Январь;January;Enero
-113;LogFileScreen;Февраль;February;Febrero
-114;LogFileScreen;Март;March;Marzo
-115;LogFileScreen;Апрель;April;Abril
-116;LogFileScreen;Май;May;Mayo
-117;LogFileScreen;Июнь;June;Junio
-118;LogFileScreen;Июль;July;Julio
-119;LogFileScreen;Август;August;Agosto
-120;LogFileScreen;Сентябрь;September;Septiembre
-121;LogFileScreen;Октябрь;October;Octubre
-122;LogFileScreen;Ноябрь;November;Noviembre
-123;LogFileScreen;Декабрь;December;Diciembre
-124;LogFileScreen;Пн;Mon;Lun
-125;LogFileScreen;Вт;Tue;Mar
-126;LogFileScreen;Ср;Wed;Mié
-127;LogFileScreen;Чт;Thu;Jue
-128;LogFileScreen;Пт;Fri;Vie
-129;LogFileScreen;Сб;Sat;Sáb
-130;LogFileScreen;Вс;Sun;Dom
-131;LogFileScreen;Журнал недоступен;Log unavailable;Registro no disponible
-132;LogFileScreen;Записей нет;No records;Sin registros
-133;LogFileScreen;Журнал событий (лог-файл);Event log;Registro de eventos
-134;LogFileScreen;Фильтр:;Filter:;Filtro:
-135;LogFileScreen;Ошибки;Errors;Errores
-136;LogFileScreen;Включения;Power-ons;Encendidos
-137;LogFileScreen;Всё;All;Todo
-138;LogFileScreen;Не выбрана;Not selected;No seleccionada
-139;LogFileScreen;Обновить;Refresh;Actualizar
-140;LogFileScreen;Записей: %1;Records: %1;Registros: %1
-141;LogFileScreen;Выбор даты;Select date;Seleccionar fecha
-142;LogFileScreen;Закрыть;Close;Cerrar
-143;LogFileScreen;Выбрано: %1;Selected: %1;Seleccionado: %1
-144;LogFileScreen;Назад;back;atrás
-145;MainMenu;МЕНЮ;MENU;MENÚ
-146;MainMenu;НАЗАД;BACK;ATRÁS
-147;MainMenu;ВИДЕОИНСТРУКЦИИ;VIDEO GUIDES;VIDEOTUTORIALES
-148;MainMenu;"РЕКОМЕНДУЕМЫЕ
+88;HttpUploadController;Не удалось запустить %1;Failed to start %1;No se pudo iniciar %1
+89;HttpUploadController;Timeout команды %1;Command %1 timed out;Tiempo de espera agotado para %1
+90;HttpUploadController;nmcli не найден.;nmcli not found.;nmcli no encontrado.
+91;HttpUploadController;Скрипт управления firewall найден, но не исполняемый: %1;Firewall control script found but not executable: %1;Script de control del firewall encontrado pero no ejecutable: %1
+92;HttpUploadController;Не удалось запустить helper firewall.;Failed to start the firewall helper.;No se pudo iniciar el helper del firewall.
+93;HttpUploadController;Timeout вызова helper firewall.;Firewall helper call timed out.;Tiempo de espera agotado al llamar al helper del firewall.
+94;HttpUploadController;Helper firewall завершился с ошибкой.;Firewall helper finished with an error.;El helper del firewall terminó con un error.
+95;HttpUploadController;Helper firewall завершился с ошибкой: %1;Firewall helper finished with an error: %1;El helper del firewall terminó con un error: %1
+96;HttpUploadController;QR недоступен: не установлен qrencode.;QR unavailable: qrencode is not installed.;QR no disponible: qrencode no está instalado.
+97;HttpUploadController;QR недоступен: ошибка запуска qrencode.;QR unavailable: failed to start qrencode.;QR no disponible: error al iniciar qrencode.
+98;HttpUploadController;Сначала подключите телефон или ноутбук к Wi-Fi %1. Пароль: %2;First connect your phone or laptop to Wi-Fi %1. Password: %2;Primero conecte su teléfono o portátil a la red Wi-Fi %1. Contraseña: %2
+99;HttpUploadController;Адрес загрузки ещё не готов.;Upload address is not ready yet.;La dirección de carga aún no está lista.
+100;HttpUploadController;Если телефон уже подключён к ONYX-TEST, откройте этот QR для страницы загрузки.;If the phone is already connected to ONYX-TEST, open this QR for the upload page.;Si el teléfono ya está conectado a ONYX-TEST, abra este QR para la página de carga.
+101;HttpUploadController;Устройство подключено. Отсканируйте QR для открытия страницы загрузки.;Device connected. Scan the QR to open the upload page.;Dispositivo conectado. Escanee el QR para abrir la página de carga.
+102;HttpUploadController;Wi-Fi интерфейс не найден.;Wi-Fi interface not found.;Interfaz Wi-Fi no encontrada.
+103;HttpUploadController;Запуск точки доступа %1...;Starting access point %1...;Iniciando el punto de acceso %1...
+104;HttpUploadController;Не удалось создать профиль точки доступа.;Failed to create the access point profile.;No se pudo crear el perfil del punto de acceso.
+105;HttpUploadController;Не удалось создать профиль точки доступа: %1;Failed to create the access point profile: %1;No se pudo crear el perfil del punto de acceso: %1
+106;HttpUploadController;Не удалось настроить точку доступа.;Failed to configure the access point.;No se pudo configurar el punto de acceso.
+107;HttpUploadController;Не удалось настроить точку доступа: %1;Failed to configure the access point: %1;No se pudo configurar el punto de acceso: %1
+108;HttpUploadController;Не удалось запустить точку доступа.;Failed to start the access point.;No se pudo iniciar el punto de acceso.
+109;HttpUploadController;Не удалось запустить точку доступа: %1;Failed to start the access point: %1;No se pudo iniciar el punto de acceso: %1
+110;HttpUploadController;Точка доступа %1 активна. Ожидание подключения клиента.;Access point %1 is active. Waiting for a client to connect.;El punto de acceso %1 está activo. Esperando la conexión de un cliente.
+111;HttpUploadController;К точке доступа подключено устройство.;A device is connected to the access point.;Un dispositivo está conectado al punto de acceso.
+112;HttpUploadController;Не удалось занять порт %1: %2;Failed to bind port %1: %2;No se pudo ocupar el puerto %1: %2
+113;HttpUploadController;Получение файла...;Receiving file...;Recibiendo archivo...
+114;HttpUploadController;Получение файла: %1%;Receiving file: %1%;Recibiendo archivo: %1%
+115;HttpUploadController;Ошибка загрузки;Upload error;Error de carga
+116;HttpUploadController;Загрузка завершена;Upload finished;Carga finalizada
+117;HttpUploadController;Некорректная версия интерфейса;Invalid interface version;Versión de interfaz no válida
+118;HttpUploadController;Не удалось удалить старый backup UserInterface.bak;Failed to delete old backup UserInterface.bak;No se pudo eliminar la copia antigua UserInterface.bak
+119;HttpUploadController;Не удалось создать backup UserInterface.bak;Failed to create backup UserInterface.bak;No se pudo crear la copia de seguridad UserInterface.bak
+120;HttpUploadController;Не удалось обновить модуль интерфейса (%1);Failed to update the interface module (%1);No se pudo actualizar el módulo de interfaz (%1)
+121;HttpUploadController;Не удалось выставить права на запуск для UserInterface;Failed to set execute permissions for UserInterface;No se pudieron establecer permisos de ejecución para UserInterface
+122;HttpUploadController;Некорректная версия медиафайлов;Invalid media files version;Versión de archivos multimedia no válida
+123;HttpUploadController;Не удалось обновить медиафайлы;Failed to update media files;No se pudieron actualizar los archivos multimedia
+124;HttpUploadController;Обновление МК недоступно;MCU update unavailable;Actualización del MCU no disponible
+125;HttpUploadController;Не выбрана версия;No version selected;No se ha seleccionado ninguna versión
+126;HttpUploadController;Файл не найден: %1;File not found: %1;Archivo no encontrado: %1
+127;HttpUploadController;Не удалось поставить обновление в очередь;Failed to queue the update;No se pudo poner la actualización en cola
+128;HttpUploadController;Команда перезагрузки после обновления;Reboot command after update;Comando de reinicio tras la actualización
+129;InstrumEditor;Выберите инструмент РЕЗАНИЯ для выхода %1;Select CUT electrode for output %1;Seleccione el electrodo de CORTE para la salida %1
+130;InstrumEditor;Выберите инструмент КОАГУЛЯЦИИ для выхода %1;Select COAGULATION electrode for output %1;Seleccione el electrodo de COAGULACIÓN para la salida %1
+131;InstrumEditor;РЕЖИМ: %1;MODE: %1;MODO: %1
+132;InstrumEditor;X;X;X
+133;InstrumEditor;▼;▼;▼
+134;InstrumEditor;▲;▲;▲
+135;InstrumEditor;ОТМЕНА;CANCEL;CANCELAR
+136;InstrumEditor;Другой инструмент;Other electrode;Otro electrodo
+137;InstrumEditor;ПРИНЯТЬ;ACCEPT;ACEPTAR
+138;InstrumEditor;Рекомендуемый уровень;Recommended level;Nivel recomendado
+139;InstrumRect;Другой инструмент;Other electrode;Otro electrodo
+140;ItemList;Редактирование названия;Edit name;Editar nombre
+141;ItemList;Укажите новое имя:;Enter a new name:;Introduzca un nombre nuevo:
+142;ItemList;ОТМЕНА;CANCEL;CANCELAR
+143;ItemList;ПРИНЯТЬ;ACCEPT;ACEPTAR
+144;LinkStm;Не удалось обновить модуль;Failed to update the module;No se pudo actualizar el módulo
+145;LinkStm;Файл прошивки не найден;Firmware file not found;Archivo de firmware no encontrado
+146;LinkStm;Пустой или некорректный hex;Empty or invalid hex;Hex vacío o no válido
+147;LogFileScreen;Январь;January;Enero
+148;LogFileScreen;Февраль;February;Febrero
+149;LogFileScreen;Март;March;Marzo
+150;LogFileScreen;Апрель;April;Abril
+151;LogFileScreen;Май;May;Mayo
+152;LogFileScreen;Июнь;June;Junio
+153;LogFileScreen;Июль;July;Julio
+154;LogFileScreen;Август;August;Agosto
+155;LogFileScreen;Сентябрь;September;Septiembre
+156;LogFileScreen;Октябрь;October;Octubre
+157;LogFileScreen;Ноябрь;November;Noviembre
+158;LogFileScreen;Декабрь;December;Diciembre
+159;LogFileScreen;Пн;Mon;Lun
+160;LogFileScreen;Вт;Tue;Mar
+161;LogFileScreen;Ср;Wed;Mié
+162;LogFileScreen;Чт;Thu;Jue
+163;LogFileScreen;Пт;Fri;Vie
+164;LogFileScreen;Сб;Sat;Sáb
+165;LogFileScreen;Вс;Sun;Dom
+166;LogFileScreen;Журнал недоступен;Log unavailable;Registro no disponible
+167;LogFileScreen;Записей нет;No records;Sin registros
+168;LogFileScreen;Журнал событий (лог-файл);Event log;Registro de eventos
+169;LogFileScreen;Фильтр:;Filter:;Filtro:
+170;LogFileScreen;Ошибки;Errors;Errores
+171;LogFileScreen;Включения;Power-ons;Encendidos
+172;LogFileScreen;Всё;All;Todo
+173;LogFileScreen;Не выбрана;Not selected;No seleccionada
+174;LogFileScreen;Обновить;Refresh;Actualizar
+175;LogFileScreen;Записей: %1;Records: %1;Registros: %1
+176;LogFileScreen;Выбор даты;Select date;Seleccionar fecha
+177;LogFileScreen;Закрыть;Close;Cerrar
+178;LogFileScreen;Выбрано: %1;Selected: %1;Seleccionado: %1
+179;LogFileScreen;Назад;back;atrás
+180;MainMenu;МЕНЮ;MENU;MENÚ
+181;MainMenu;НАЗАД;BACK;ATRÁS
+182;MainMenu;ВИДЕОИНСТРУКЦИИ;VIDEO GUIDES;VIDEOTUTORIALES
+183;MainMenu;"РЕКОМЕНДУЕМЫЕ
 ПРОГРАММЫ";"RECOMMENDED
 PROGRAMS";"PROGRAMAS
 RECOMENDADOS"
-149;MainMenu;"ПОСЛЕДНИЕ
+184;MainMenu;"ПОСЛЕДНИЕ
 УСТАНОВКИ";"LAST
 SETTINGS";"AJUSTES
 RECIENTES"
-150;MainMenu;"ПРОГРАММЫ
+185;MainMenu;"ПРОГРАММЫ
 ПОЛЬЗОВАТЕЛЯ";"USER
 PROGRAMS";"PROGRAMAS
 DE USUARIO"
-151;MainMenu;"СВОБОДНАЯ
+186;MainMenu;"СВОБОДНАЯ
 УСТАНОВКА";"FREE MODE
 SETTING";"CONFIGURACIÓN DEL
 MODO LIBRE"
-152;ModeEditor;Выбор режима РЕЗАНИЯ для выхода %1;cut mode for output %1;modo de corte para la salida %1
-153;ModeEditor;Выбор режима КОАГУЛЯЦИИ для выхода %1;coagulation mode for output %1;modo de coagulación para la salida %1
-154;ModeEditor;X;X;X
-155;ModeEditor;▼;▼;▼
-156;ModeEditor;▲;▲;▲
-157;ModeEditor;ОТМЕНА;CANCEL;CANCELAR
-158;ModeEditor;ПРИНЯТЬ;ACCEPT;ACEPTAR
-159;ModePowerRect;эффект резания;cut eff.;cort ef.
-160;ModePowerRect;эффект коагуляции;coag eff.;coag ef.
-161;Modes;НЕ ВЫБРАН;MODE DISABLED;MODO DESHABILITADO
-162;NetworkControl;Не удалось подключиться к Wi-Fi;Failed to connect to Wi-Fi;No se pudo conectar a la red Wi-Fi
-163;NetworkControl;Не удалось отключить Wi-Fi;Failed to disconnect Wi-Fi;No se pudo desconectar la red Wi-Fi
-164;NeutralDrawer;СОПРОТИВЛЕНИЕ НЭ;NE RESISTANCE;RESISTENCIA DEL EN
-165;NeutralDrawer;ВЫБОР НЕЙТРАЛЬНОГО ЭЛЕКТРОДА;NEUTRAL ELECTRODE SELECTION;SELECCIÓN DEL ELECTRODO NEUTRO
-166;NeutralDrawer;X;X;X
-167;NeutralEl;"< 5кг
+187;ModeEditor;Выберите режим РЕЗАНИЯ для выхода %1;Select CUT mode for output %1;Seleccione el modo de CORTE para la salida %1
+188;ModeEditor;Выберите режим КОАГУЛЯЦИИ для выхода %1;Select COAGULATION mode for output %1;Seleccione el modo de COAGULACIÓN para la salida %1
+189;ModeEditor;X;X;X
+190;ModeEditor;▼;▼;▼
+191;ModeEditor;▲;▲;▲
+192;ModeEditor;ОТМЕНА;CANCEL;CANCELAR
+193;ModeEditor;ВЫКЛЮЧИТЬ РЕЖИМ;DISABLE MODE;DESACTIVAR MODO
+194;ModeEditor;ПРИНЯТЬ;ACCEPT;ACEPTAR
+195;ModeEditor;"РЕЖИМ НЕ ВЫБРАН
+
+(ВЫКЛЮЧЕН)";"MODE NOT SELECTED
+
+(DISABLED)";"MODO NO SELECCIONADO
+
+(DESACTIVADO)"
+196;ModePowerRect;эффект резания;cut eff.;cort ef.
+197;ModePowerRect;эффект коагуляции;coag eff.;coag ef.
+198;Modes;НЕ ВЫБРАН;MODE DISABLED;MODO DESHABILITADO
+199;NetworkControl;Не удалось подключиться к Wi-Fi;Failed to connect to Wi-Fi;No se pudo conectar a la red Wi-Fi
+200;NetworkControl;Не удалось отключить Wi-Fi;Failed to disconnect Wi-Fi;No se pudo desconectar la red Wi-Fi
+201;NeutralDrawer;СОПРОТИВЛЕНИЕ НЭ;NE RESISTANCE;RESISTENCIA DEL EN
+202;NeutralDrawer;ВЫБОР НЕЙТРАЛЬНОГО ЭЛЕКТРОДА;NEUTRAL ELECTRODE SELECTION;SELECCIÓN DEL ELECTRODO NEUTRO
+203;NeutralDrawer;X;X;X
+204;NeutralPowerWarningDialog;"Опасность перегрева области наложения нейтрального электрода (НЭ)! Мощность выхода %1 превышает безопасный уровень для выбранного НЭ (макс %2).
+ПРОДОЛЖИТЬ с текущим уровнем мощности?
+ИЛИ
+ПОНИЗИТЬ мощность до безопасного уровня?";"Danger of overheating in the neutral electrode (NE) application area! %1 output power exceeds the safety level for the selected NE (max %2).
+CONTINUE with the current power level?
+OR
+REDUCE power to a safe level?";"¡Peligro de sobrecalentamiento en la área de aplicación del electrodo neutro (EN)! El nivel de potencia en modo %1 supera el nivel seguro para el EN seleccionado (máx. %2).
+¿CONTINUAR con el nivel de potencia actual?
+O
+¿REDUCIR la potencia a un nivel seguro?"
+205;NeutralPowerWarningDialog;ПРОДОЛЖИТЬ;CONTINUE;CONTINUAR
+206;NeutralPowerWarningDialog;ПОНИЗИТЬ;REDUCE;REDUCIR
+207;NeutralEl;"< 5кг
 Макс.50";"< 5 kg
 Max. 50";"< 5 kg
 Máx. 50"
-168;NeutralEl;"5-15кг
+208;NeutralEl;"5-15кг
 Макс.75";"5-15 kg
 Max. 75";"5-15 kg
 Máx. 75"
-169;NeutralEl;"> 15кг
+209;NeutralEl;"> 15кг
 Макс.400";"> 15 kg
 Max. 400";"> 15 kg
 Máx. 400"
-170;NeutralEl;"Младенец: &lt; <b>5</b> кг<br>Макс. мощность <b>50</b>";"Infant: &lt; <b>5</b> kg<br>Max. power <b>50</b>";"Lactante: &lt; <b>5</b> kg<br>Potencia máx. <b>50</b>"
-171;NeutralEl;Ребёнок: <b>5-15</b> кг<br>Макс. мощность <b>75</b>;Child: <b>5-15</b> kg<br>Max. power <b>75</b>;Niño: <b>5-15</b> kg<br>Potencia máx. <b>75</b>
-172;NeutralEl;"Взрослый: &gt; <b>15</b> кг<br>Макс. мощность <b>400</b>";"Adult: &gt; <b>15</b> kg<br>Max. power <b>400</b>";"Adulto: &gt; <b>15</b> kg<br>Potencia máx. <b>400</b>"
-173;PedalContainer;выбор педали;Select pedal;Selec. pedal
-174;PedalDrawer;ВЫБЕРИТЕ УСТРОЙСТВО АКТИВАЦИИ;SELECT ACTIVATION DEVICE;SELECCIONE EL DISPOSITIVO DE ACTIVACIÓN
-175;PowerRect;рез-%1 коаг-%2;cut-%1 coag-%2;corte-%1 coag-%2
-176;ProgAdditionPop;"Добавить новый ""Лист"" программы";"Add a new program ""sheet""";"Añadir una nueva ""hoja"" de programa"
-177;ProgAdditionPop;"ДУБЛИРОВАТЬ
+210;NeutralEl;"Младенец: &lt; <b>5</b> кг<br>Макс. мощность <b>50</b>";"Infant: &lt; <b>5</b> kg<br>Max. power <b>50</b>";"Lactante: &lt; <b>5</b> kg<br>Potencia máx. <b>50</b>"
+211;NeutralEl;Ребёнок: <b>5-15</b> кг<br>Макс. мощность <b>75</b>;Child: <b>5-15</b> kg<br>Max. power <b>75</b>;Niño: <b>5-15</b> kg<br>Potencia máx. <b>75</b>
+212;NeutralEl;"Взрослый: &gt; <b>15</b> кг<br>Макс. мощность <b>400</b>";"Adult: &gt; <b>15</b> kg<br>Max. power <b>400</b>";"Adulto: &gt; <b>15</b> kg<br>Potencia máx. <b>400</b>"
+213;PedalContainer;выбор педали;Select pedal;Selec. pedal
+214;PedalDrawer;ВЫБЕРИТЕ УСТРОЙСТВО АКТИВАЦИИ;SELECT ACTIVATION DEVICE;SELECCIONE EL DISPOSITIVO DE ACTIVACIÓN
+215;PowerRect;рез-%1 коаг-%2;cut-%1 coag-%2;corte-%1 coag-%2
+216;ProgAdditionPop;"Добавить новый ""Лист"" программы";"Add a new program ""sheet""";"Añadir una nueva ""hoja"" de programa"
+217;ProgAdditionPop;"ДУБЛИРОВАТЬ
 ТЕКУЩИЙ";"DUPLICATE
 CURRENT";"DUPLICAR
 ACTUAL"
-178;ProgAdditionPop;"ВЫБРАТЬ ИЗ
+218;ProgAdditionPop;"ВЫБРАТЬ ИЗ
 РЕКОМЕНДОВАННЫХ";"CHOOSE FROM
 RECOMMENDED";"ELEGIR DE
 RECOMENDADOS"
-179;ProgAdditionPop;"ДОБАВИТЬ
+219;ProgAdditionPop;"ДОБАВИТЬ
 ПУСТОЙ";"ADD
 EMPTY";"AÑADIR
 VACÍO"
-180;ProgItemList;РЕКОМЕНДУЕМЫЕ ПРОГРАММЫ;RECOMMENDED PROGRAMS;PROGRAMAS RECOMENDADOS
-181;ProgItemList;ПРОГРАММЫ ПОЛЬЗОВАТЕЛЯ;USER PROGRAMS;PROGRAMAS DE USUARIO
-182;ProgItemList;Выберите область;Select an area;Seleccione un área
-183;ProgItemList;▲;▲;▲
-184;ProgItemList;▼;▼;▼
-185;ProgItemList;Выберите программу;SELECT PROGRAM;SELECCIONA UN PROGRAMA
-186;ProgItemList;НАЗАД;BACK;ATRÁS
-187;ProgItemList;Подтверждение удаления;Confirm deletion;Confirmar eliminación
-188;ProgItemList;"Область ""%1"" будет удалена. Продолжить?";"Area ""%1"" will be deleted. Continue?";"El área ""%1"" se eliminará. ¿Continuar?"
-189;ProgItemList;"Программа ""%1"" будет удалена. Продолжить?";"Program ""%1"" will be deleted. Continue?";"El programa ""%1"" se eliminará. ¿Continuar?"
-190;ProgItemList;ОТМЕНА;CANCEL;CANCELAR
-191;ProgItemList;ПРИНЯТЬ;ACCEPT;ACEPTAR
-192;ProgSaveDialog;Сохранение программы;Save program;Guardar programa
-193;ProgSaveDialog;ОТМЕНА;CANCEL;CANCELAR
-194;ProgSaveDialog;ПРИНЯТЬ;ACCEPT;ACEPTAR
-195;ProgSaveDialog;Выберите папку или создайте новую;SELECT A FOLDER;SELECCIONA UNA CARPETA
-196;ProgSaveDialog;Категория;Category;Categoría
-197;ProgSaveDialog;Укажите название программы;ENTER THE PROGRAM NAME;INGRESE EL NOMBRE DEL PROGRAMA
-198;ProgSaveDialog;Название;Name;Nombre
-199;QObject;БИ-СМЕСЬ;BI-BLEND;BI-MEZCLA
-200;QObject;БИ-ТУР;BI-TUR;BI-TUR
-201;QObject;БИ-АРТРО;BI-ARTHRO;BI-ARTRO
-202;QObject;БИ-ГИСТЕРО;BI-HYSTERO;BI-HISTERO
-203;QObject;БИ-КОАГ;BI-COAG;BI-COAG
-204;QObject;БИ-КОАГ-ДИССЕКТ;BI-COAG-DISSECT;BI-COAG-DISECC
-205;QObject;ТЕРМОШОВ;T-SEAM;TERMOSELLADO
-206;QObject;РЕЗАНИЕ;CUT;CORTE
-207;QObject;СМЕСЬ;BLEND;MEZCLA
-208;QObject;СМЕСЬ-1;BLEND-1;MEZCLA-1
-209;QObject;ТУР;TUR;TUR
-210;QObject;ВАП;VAP;VAP
-211;QObject;ЭНДОНОЖ-1;ENDOKNIFE-1;ENDOBISTURÍ-1
-212;QObject;ЭНДОНОЖ-2;ENDOKNIFE-2;ENDOBISTURÍ-2
-213;QObject;ЭНДОНОЖ-3;ENDOKNIFE-3;ENDOBISTURÍ-3
-214;QObject;ЭНДОПЕТЛЯ-;ENDOLOOP-;ENDOASA-
-215;QObject;ЭНДОПЕТЛЯ-2;ENDOLOOP-2;ENDOASA-2
-216;QObject;ЭНДОПЕТЛЯ-3;ENDOLOOP-3;ENDOASA-3
-217;QObject;ФОРС;FORCED;FORZADA
-218;QObject;ФУЛЬГУР;FULGUR;FULGUR
-219;QObject;МЯГКАЯ;SOFT;SUAVE
-220;QObject;СПРЕЙ;SPRAY;SPRAY
-221;QObject;ФУЛЬГУР АРГОН;FULGUR ARGON;FULGUR ARGÓN
-222;QObject;СПРЕЙ АРГОН;SPRAY ARGON;SPRAY ARGÓN
-223;QObject;ФУЛЬГУР ПУЛЬС АРГОН;FULGUR PULSE ARGON;FULGUR PULSO ARGÓN
-224;QObject;СПРЕЙ ПУЛЬС АРГОН;SPRAY PULSE ARGON;SPRAY PULSO ARGÓN
-225;RemoteUpdater;Серийный номер не задан (%1);Serial number is not set (%1);Número de serie no establecido (%1)
-226;RemoteUpdater;Повтор открытия сессии (осталось попыток: %1)…;Retrying session open (attempts left: %1)…;Reintentando abrir la sesión (intentos restantes: %1)…
-227;RemoteUpdater;Открываю сервисную сессию...;Opening service session...;Abriendo sesión de servicio...
-228;RemoteUpdater;Жду готовности порта SSH-туннеля, повтор через 500 мс…;Waiting for SSH tunnel port, retry in 500 ms…;Esperando el puerto del túnel SSH, reintento en 500 ms…
-229;RemoteUpdater;Не удалось открыть сервисную сессию: %1;Failed to open service session: %1;No se pudo abrir la sesión de servicio: %1
-230;RemoteUpdater;Ответ open session не содержит sessionId;Open session response contains no sessionId;La respuesta de open session no contiene sessionId
-231;RemoteUpdater;Сервисная сессия открыта;Service session opened;Sesión de servicio abierta
-232;RemoteUpdater;Таймаут при выходе с экрана обновления (сессия сброшена локально);Timeout while leaving the update screen (session reset locally);Tiempo agotado al salir de la pantalla de actualización (sesión restablecida localmente)
-233;RemoteUpdater;Повтор закрытия сессии (осталось попыток: %1)…;Retrying session close (attempts left: %1)…;Reintentando cerrar la sesión (intentos restantes: %1)…
-234;RemoteUpdater;Закрываю сервисную сессию...;Closing service session...;Cerrando sesión de servicio...
-235;RemoteUpdater;Жду порт туннеля для закрытия сессии, повтор через 500 мс…;Waiting for tunnel port to close session, retry in 500 ms…;Esperando el puerto del túnel para cerrar la sesión, reintento en 500 ms…
-236;RemoteUpdater;Сервер недоступен — сессия сброшена на устройстве (close не доставлен): %1;Server unavailable — session reset on device (close not delivered): %1;Servidor no disponible: la sesión se restableció en el dispositivo (close no entregado): %1
-237;RemoteUpdater;Сервисная сессия закрыта;Service session closed;Sesión de servicio cerrada
-238;RemoteUpdater;Сначала откройте сервисную сессию;Open a service session first;Abra primero una sesión de servicio
-239;RemoteUpdater;Проверяю версии на сервере...;Checking versions on the server...;Comprobando versiones en el servidor...
-240;RemoteUpdater;Ошибка check-version: %1;check-version error: %1;Error de check-version: %1
-241;RemoteUpdater;Доступно обновление ПО;Software update available;Actualización de software disponible
-242;RemoteUpdater;Обновление не требуется;No update required;No se requiere actualización
-243;RemoteUpdater;Создаю задачу обновления...;Creating update job...;Creando tarea de actualización...
-244;RemoteUpdater;Ошибка create update job: %1;create update job error: %1;Error de create update job: %1
-245;RemoteUpdater;Ответ create job не содержит jobId;Create job response contains no jobId;La respuesta de create job no contiene jobId
-246;RemoteUpdater;Задача обновления создана;Update job created;Tarea de actualización creada
-247;RemoteUpdater;Нужны открытая сессия и jobId;An open session and jobId are required;Se requieren una sesión abierta y un jobId
-248;RemoteUpdater;Получаю payload обновления...;Fetching update payload...;Obteniendo el payload de la actualización...
-249;RemoteUpdater;Ошибка получения payload: %1;Failed to fetch payload: %1;Error al obtener el payload: %1
-250;RemoteUpdater;Payload не содержит artifactUrl;Payload contains no artifactUrl;El payload no contiene artifactUrl
-251;RemoteUpdater;Payload получен;Payload received;Payload recibido
-252;RemoteUpdater;SSH-туннель уже активен;SSH tunnel is already active;El túnel SSH ya está activo
-253;RemoteUpdater;Не задан tunnelUserHost (пример: user@10.64.61.2);tunnelUserHost is not set (example: user@10.64.61.2);tunnelUserHost no está establecido (ejemplo: user@10.64.61.2)
-254;RemoteUpdater;SSH process exited with code %1;SSH process exited with code %1;El proceso SSH terminó con código %1
-255;RemoteUpdater;SSH-туннель остановлен (code=%1): %2;SSH tunnel stopped (code=%1): %2;Túnel SSH detenido (code=%1): %2
-256;RemoteUpdater;Ошибка SSH-туннеля: %1;SSH tunnel error: %1;Error del túnel SSH: %1
-257;RemoteUpdater;Не удалось запустить SSH-туннель (нужна key-based auth): %1;Failed to start SSH tunnel (key-based auth required): %1;No se pudo iniciar el túnel SSH (se requiere autenticación por clave): %1
-258;RemoteUpdater;SSH-туннель запущен, apiBaseUrl=%1;SSH tunnel started, apiBaseUrl=%1;Túnel SSH iniciado, apiBaseUrl=%1
-259;RemoteUpdater;SSH-туннель остановлен;SSH tunnel stopped;Túnel SSH detenido
-260;RemoteUpdater;Нельзя запустить мониторинг без активной сессии;Cannot start monitoring without an active session;No se puede iniciar la monitorización sin una sesión activa
-261;RemoteUpdater;Мониторинг команд оператора запущен;Operator command monitoring started;Monitorización de comandos del operador iniciada
-262;RemoteUpdater;Мониторинг команд оператора остановлен;Operator command monitoring stopped;Monitorización de comandos del operador detenida
-263;RemoteUpdater;Detached restart не удался, выполняю restart через exit code;Detached restart failed, restarting via exit code;El reinicio independiente falló, reiniciando mediante código de salida
-264;RemoteUpdater;таймаут или kill;timeout or kill;tiempo agotado o kill
-265;RemoteUpdater;код %1;code %1;código %1
-266;RemoteUpdater;Не удалось остановить сервис (systemctl --user stop Demo1-user.service). %1;Failed to stop the service (systemctl --user stop Demo1-user.service). %1;No se pudo detener el servicio (systemctl --user stop Demo1-user.service). %1
-267;RemoteUpdater;Не удалось запустить shell: %1;Failed to start shell: %1;No se pudo iniciar el shell: %1
-268;RemoteUpdater;Ошибка опроса server job: %1;Server job polling error: %1;Error al consultar la tarea del servidor: %1
-269;RemoteUpdater;next-update-job: отсутствует jobId;next-update-job: jobId missing;next-update-job: falta jobId
-270;RemoteUpdater;Получена команда оператора: запускаю обновление;Operator command received: starting update;Comando del operador recibido: iniciando actualización
-271;RemoteUpdater;Некорректный artifactUrl: %1;Invalid artifactUrl: %1;artifactUrl no válido: %1
-272;RemoteUpdater;Не удалось открыть файл для загрузки: %1;Failed to open file for download: %1;No se pudo abrir el archivo para la descarga: %1
-273;RemoteUpdater;Ошибка загрузки артефакта: %1;Artifact download error: %1;Error al descargar el artefacto: %1
-274;RemoteUpdater;SHA256 не совпадает: expected=%1 actual=%2;SHA256 mismatch: expected=%1 actual=%2;SHA256 no coincide: expected=%1 actual=%2
-275;RemoteUpdater;Не удалось посчитать payloadSha256;Failed to compute payloadSha256;No se pudo calcular payloadSha256
-276;RemoteUpdater;payloadSha256 не совпадает: expected=%1 actual=%2;payloadSha256 mismatch: expected=%1 actual=%2;payloadSha256 no coincide: expected=%1 actual=%2
-277;RemoteUpdater;Не удалось создать директорию распаковки;Failed to create extraction directory;No se pudo crear el directorio de extracción
-278;RemoteUpdater;Не удалось запустить распаковку: %1;Failed to start extraction: %1;No se pudo iniciar la extracción: %1
-279;RemoteUpdater;Ошибка распаковки: %1;Extraction error: %1;Error de extracción: %1
-280;RemoteUpdater;В payload не найден исполняемый файл обновления;No update executable found in payload;No se encontró el ejecutable de actualización en el payload
-281;RemoteUpdater;Не удалось открыть update-manifest.json;Failed to open update-manifest.json;No se pudo abrir update-manifest.json
-282;RemoteUpdater;update-manifest.json должен быть JSON-объектом;update-manifest.json must be a JSON object;update-manifest.json debe ser un objeto JSON
-283;RemoteUpdater;update-manifest.json: deployPaths пуст;update-manifest.json: deployPaths is empty;update-manifest.json: deployPaths está vacío
-284;RemoteUpdater;Некорректный путь в manifest: %1;Invalid path in manifest: %1;Ruta no válida en el manifiesto: %1
-285;RemoteUpdater;Путь из manifest не найден в payload: %1;Manifest path not found in payload: %1;Ruta del manifiesto no encontrada en el payload: %1
-286;RemoteUpdater;Новый бинарник отсутствует: %1;New binary is missing: %1;Falta el nuevo binario: %1
-287;RemoteUpdater;Не удалось создать backup каталог;Failed to create backup directory;No se pudo crear el directorio de copia de seguridad
-288;RemoteUpdater;Manifest найден, но не дал файлов для deploy;Manifest found but yielded no files to deploy;Manifiesto encontrado pero sin archivos para desplegar
-289;RemoteUpdater;Запрещённый путь в payload: %1;Forbidden path in payload: %1;Ruta prohibida en el payload: %1
-290;RemoteUpdater;Симлинки в payload запрещены: %1;Symlinks in payload are forbidden: %1;Los enlaces simbólicos en el payload están prohibidos: %1
-291;RemoteUpdater;Не удалось сделать backup: %1;Failed to make a backup: %1;No se pudo crear la copia de seguridad: %1
-292;RemoteUpdater;Не удалось скопировать файл: %1;Failed to copy file: %1;No se pudo copiar el archivo: %1
-293;RemoteUpdater;Не удалось удалить старый файл: %1;Failed to delete old file: %1;No se pudo eliminar el archivo antiguo: %1
-294;RemoteUpdater;Не удалось заменить файл: %1;Failed to replace file: %1;No se pudo reemplazar el archivo: %1
-295;RemoteUpdater;Не удалось выставить права на запуск для бинарника: %1;Failed to set execute permissions for binary: %1;No se pudieron establecer permisos de ejecución para el binario: %1
-296;RemoteUpdater;Нужны открытая сессия и созданная задача;An open session and a created job are required;Se requieren una sesión abierta y una tarea creada
-297;RemoteUpdater;artifactUrl пуст, получите payload;artifactUrl is empty, fetch the payload;artifactUrl está vacío, obtenga el payload
-298;RemoteUpdater;Запуск обновления...;Starting update...;Iniciando actualización...
-299;RemoteUpdater;Обновление применено;Update applied;Actualización aplicada
-300;RemoteUpdater;UI update deployed;UI update deployed;UI update deployed
-301;RemoteUpdater;Обновление успешно применено;Update applied successfully;Actualización aplicada correctamente
-302;SecretKeysWindow;Эндоскопические функции;Endoscopic features;Funciones endoscópicas
-303;SecretKeysWindow;Аргонусиленная коагуляция;Argon-enhanced coagulation;Coagulación asistida por argón
-304;SecretKeysWindow;Секретные ключи;Secret keys;Claves secretas
-305;SecretKeysWindow;Назад;back;atrás
-306;SecretKeysWindow;Генерация ключа;Key generation;Generación de clave
-307;SecretKeysWindow;Серийный номер:;Serial number:;Número de serie:
-308;SecretKeysWindow;Тип аппарата:;Unit type:;Tipo de equipo:
-309;SecretKeysWindow;Функция:;Feature:;Función:
-310;SecretKeysWindow;Сгенерировать ключ;Generate key;Generar clave
-311;SecretKeysWindow;✓ Ключ сгенерирован успешно!;✓ Key generated successfully!;✓ ¡Clave generada correctamente!
-312;SecretKeysWindow;✗ Введите серийный номер;✗ Enter the serial number;✗ Introduzca el número de serie
-313;SecretKeysWindow;Сгенерированный ключ:;Generated key:;Clave generada:
-314;SecretKeysWindow;Проверка ключа;Key verification;Verificación de clave
-315;SecretKeysWindow;Ключ для проверки:;Key to verify:;Clave a verificar:
-316;SecretKeysWindow;Проверить ключ;Verify key;Verificar clave
-317;SecretKeysWindow;✓ КЛЮЧ ВЕРНЫЙ! Проверка пройдена успешно;✓ KEY IS VALID! Verification passed;✓ ¡CLAVE CORRECTA! Verificación superada
-318;SecretKeysWindow;✗ КЛЮЧ НЕВЕРНЫЙ! Проверка не пройдена;✗ KEY IS INVALID! Verification failed;✗ ¡CLAVE INCORRECTA! Verificación fallida
-319;SecretKeysWindow;✗ Заполните все поля;✗ Fill in all fields;✗ Rellene todos los campos
-320;SecretKeysWindow;ℹ️ Информация:;ℹ️ Information:;ℹ️ Información:
-321;SecretKeysWindow;• Ключи генерируются криптографическим алгоритмом SHA-256;• Keys are generated with the SHA-256 cryptographic algorithm;• Las claves se generan con el algoritmo criptográfico SHA-256
-322;SecretKeysWindow;• Для каждого типа аппарата и функции формируется отдельный 12-значный ключ;• A separate 12-digit key is generated for each unit type and feature;• Se genera una clave distinta de 12 dígitos para cada tipo de equipo y función
-323;SecretKeysWindow;• Соседние номера гарантированно имеют различные ключи;• Adjacent serial numbers are guaranteed to have different keys;• Los números consecutivos tienen garantizadas claves diferentes
-324;SerialNumberSettings;Введите серийный номер в диапазоне 260 000 - 1 000 000;Enter a serial number in the range 260,000 - 1,000,000;Introduzca un número de serie en el rango 260 000 - 1 000 000
-325;SerialNumberSettings;Сохранено;Saved;Guardado
-326;SerialNumberSettings;Не сохранено;Not saved;No guardado
-327;SerialNumberSettings;СЕРИЙНЫЙ НОМЕР И ТИП;Serial number and type;Número de serie y tipo
-328;SerialNumberSettings;Серийный номер;Serial number;Número de serie
-329;SerialNumberSettings;Введите серийный номер;ENTER THE DEVICE SERIAL NUMBER;INGRESE EL NÚMERO DE SERIE DEL DISPOSITIVO
-330;SerialNumberSettings;Тип аппарата;Unit type;Tipo de equipo
-331;SerialNumberSettings;Комментарии;Comments;Comentarios
-332;SerialNumberSettings;Дата производства, особенности;Production date, notes;Fecha de fabricación, particularidades
-333;SerialNumberSettings;Вход без пароля;Login without password;Acceso sin contraseña
-334;SerialNumberSettings;Сохранить;save;guardar
-335;SerialNumberSettings;Назад;back;atrás
-336;ServiceMenu;Сервисное меню;SERVICE SETTINGS;AJUSTES DE SERVICIO
-337;ServiceMenu;СПЕЦ КОМАНДЫ;SPECIAL COMMANDS;COMANDOS ESPECIALES
-338;ServiceMenu;Серийный номер;Serial number;Número de serie
-339;ServiceMenu;Обновление ПО;Software update;Actualización de software
-340;ServiceMenu;Приём файлов по Wi‑Fi;Receive files over Wi‑Fi;Recepción de archivos por Wi‑Fi
-341;ServiceMenu;Настройки WiFi;Wi-Fi settings;Ajustes de Wi-Fi
-342;ServiceMenu;Об аппарате;About the unit;Acerca del equipo
-343;ServiceMenu;Проверка тач-скрина;Touchscreen calibration;Calibración de pantalla táctil
-344;ServiceMenu;Лог обновлений;Update log;Registro de actualizaciones
-345;ServiceMenu;Секретные ключи;Secret keys;Claves secretas
-346;ServiceMenu;Назад;back;atrás
-347;SettingsMenu;Настройки;SETTINGS;AJUSTES
-348;SettingsMenu;Сервисное меню;SERVICE SETTINGS;AJUSTES DE SERVICIO
-349;SettingsMenu;Журнал событий;Event log;Registro de eventos
-350;SettingsMenu;ИНФО;INFO;INFO
-351;SettingsMenu;RU / EN / ES;RU / EN / ES;RU / EN / ES
-352;SettingsMenu;Настройка даты и времени;Date and Time;Fecha y hora
-353;SettingsMenu;Разблокировка эндоскопических функций;Unlock endoscopic features;Desbloquear funciones endoscópicas
-354;SettingsMenu;Разблокировка аргонусиленной коагуляции;Unlock argon-enhanced coagulation;Desbloquear coagulación asistida por argón
-355;SettingsMenu;Назад;back;atrás
-356;SettingsMenu;Для доступа к сервисным функциям введите пароль;Enter the password to access service functions;Introduzca la contraseña para acceder a las funciones de servicio
-357;SettingsMenu;Пароль;Password;Contraseña
-358;SettingsMenu;Неверный пароль;INCORRECT PASSWORD;CONTRASEÑA INCORRECTA
-359;SettingsMenu;ОТМЕНА;CANCEL;CANCELAR
-360;SettingsMenu;ВОЙТИ;LOG IN;ENTRAR
-361;SettingsMenu;Для разблокировки эндоскопических функций введите ключ;Enter the key to unlock endoscopic features;Introduzca la clave para desbloquear las funciones endoscópicas
-362;SettingsMenu;123-456-789-012;123-456-789-012;123-456-789-012
-363;SettingsMenu;Сначала сохраните серийный номер аппарата;Save the device serial number first;Guarde primero el número de serie del equipo
-364;SettingsMenu;РАЗБЛОКИРОВАТЬ;UNLOCK;DESBLOQUEAR
-365;SettingsMenu;Для разблокировки аргонусиленной коагуляции введите ключ;Enter the key to unlock argon-enhanced coagulation;Introduzca la clave para desbloquear la coagulación asistida por argón
-366;SocketContainerV2;удалить;delete;eliminar
-367;SocketContainerV2;Подтверждение удаления;Confirm deletion;Confirmar eliminación
-368;SocketContainerV2;Текущий лист программы будет удалён. Продолжить?;The current program sheet will be deleted. Continue?;La hoja de programa actual se eliminará. ¿Continuar?
-369;SocketContainerV2;ОТМЕНА;CANCEL;CANCELAR
-370;SocketContainerV2;ПРИНЯТЬ;ACCEPT;ACEPTAR
-371;SocketEditor;Подача импульсов СРЕДНЯЯ;MEDIUM pulse rate;Pulso MEDIO
-372;SocketEditor;Подача импульсов РЕДКАЯ;SLOW pulse rate;Pulso LENTO
-373;SocketEditor;Подача импульсов ЧАСТАЯ;FAST pulse rate;Pulso RÁPIDO
-374;SocketEditor;Настройка КОАГУЛЯЦИИ для выхода %1;coagulation mode for output %1;modo de coagulación para la salida %1
-375;SocketEditor;Настройка РЕЗАНИЯ для выхода %1;cut mode for output %1;modo de corte para la salida %1
-376;SocketEditor;X;X;X
-377;SocketEditor;Выберите режим;SELECT A MODE;SELECCIONA UN MODO
-378;SocketEditor;▲;▲;▲
-379;SocketEditor;▼;▼;▼
-380;SocketEditor;Выберите инструмент;electrode;electrodo
-381;SocketEditor;Установите мощность;SET POWER;ESTABLECER POTENCIA
-382;SocketEditor;−;−;−
-383;SocketEditor;+;+;+
-384;SocketEditor;Установите эффект резания;Set cut eff.;Ajuste ef. de corte
-385;SocketEditor;Установите эффект коагуляции;Set coag eff.;Ajuste ef. de coag.
-386;SocketEditor;АВТОСТОП;AUTOSTOP;AUTOSTOP
-387;SocketEditor;"В режиме АВТОСТОП инструмент активируется с помощью педали.
+220;ProgItemList;РЕКОМЕНДУЕМЫЕ ПРОГРАММЫ;RECOMMENDED PROGRAMS;PROGRAMAS RECOMENDADOS
+221;ProgItemList;ПРОГРАММЫ ПОЛЬЗОВАТЕЛЯ;USER PROGRAMS;PROGRAMAS DE USUARIO
+222;ProgItemList;Выберите область;Select an area;Seleccione un área
+223;ProgItemList;▲;▲;▲
+224;ProgItemList;▼;▼;▼
+225;ProgItemList;Выберите программу;SELECT PROGRAM;SELECCIONA UN PROGRAMA
+226;ProgItemList;НАЗАД;BACK;ATRÁS
+227;ProgItemList;Подтверждение удаления;Confirm deletion;Confirmar eliminación
+228;ProgItemList;"Область ""%1"" будет удалена. Продолжить?";"Area ""%1"" will be deleted. Continue?";"El área ""%1"" se eliminará. ¿Continuar?"
+229;ProgItemList;"Программа ""%1"" будет удалена. Продолжить?";"Program ""%1"" will be deleted. Continue?";"El programa ""%1"" se eliminará. ¿Continuar?"
+230;ProgItemList;ОТМЕНА;CANCEL;CANCELAR
+231;ProgItemList;ПРИНЯТЬ;ACCEPT;ACEPTAR
+232;ProgSaveDialog;Сохранение программы;Save program;Guardar programa
+233;ProgSaveDialog;ОТМЕНА;CANCEL;CANCELAR
+234;ProgSaveDialog;ПРИНЯТЬ;ACCEPT;ACEPTAR
+235;ProgSaveDialog;Выберите папку или создайте новую;SELECT A FOLDER;SELECCIONA UNA CARPETA
+236;ProgSaveDialog;Категория;Category;Categoría
+237;ProgSaveDialog;Укажите название программы;ENTER THE PROGRAM NAME;INGRESE EL NOMBRE DEL PROGRAMA
+238;ProgSaveDialog;Название;Name;Nombre
+239;QObject;БИ-СМЕСЬ;BI-BLEND;BI-MEZCLA
+240;QObject;БИ-ТУР;BI-TUR;BI-TUR
+241;QObject;БИ-АРТРО;BI-ARTHRO;BI-ARTRO
+242;QObject;БИ-ГИСТЕРО;BI-HYSTERO;BI-HISTERO
+243;QObject;БИ-КОАГ;BI-COAG;BI-COAG
+244;QObject;БИ-КОАГ-ДИССЕКТ;BI-COAG-DISSECT;BI-COAG-DISECC
+245;QObject;ТЕРМОШОВ;T-SEAM;TERMOSELLADO
+246;QObject;РЕЗАНИЕ;CUT;CORTE
+247;QObject;СМЕСЬ;BLEND;MEZCLA
+248;QObject;СМЕСЬ-1;BLEND-1;MEZCLA-1
+249;QObject;ТУР;TUR;TUR
+250;QObject;ВАП;VAP;VAP
+251;QObject;ЭНДОНОЖ-1;ENDOKNIFE-1;ENDOBISTURÍ-1
+252;QObject;ЭНДОНОЖ-2;ENDOKNIFE-2;ENDOBISTURÍ-2
+253;QObject;ЭНДОНОЖ-3;ENDOKNIFE-3;ENDOBISTURÍ-3
+254;QObject;ЭНДОПЕТЛЯ-;ENDOLOOP-;ENDOASA-
+255;QObject;ЭНДОПЕТЛЯ-2;ENDOLOOP-2;ENDOASA-2
+256;QObject;ЭНДОПЕТЛЯ-3;ENDOLOOP-3;ENDOASA-3
+257;QObject;ФОРС;FORCED;FORZADA
+258;QObject;ФУЛЬГУР;FULGUR;FULGUR
+259;QObject;МЯГКАЯ;SOFT;SUAVE
+260;QObject;СПРЕЙ;SPRAY;SPRAY
+261;QObject;ФУЛЬГУР АРГОН;FULGUR ARGON;FULGUR ARGÓN
+262;QObject;СПРЕЙ АРГОН;SPRAY ARGON;SPRAY ARGÓN
+263;QObject;ФУЛЬГУР ПУЛЬС АРГОН;FULGUR PULSE ARGON;FULGUR PULSO ARGÓN
+264;QObject;СПРЕЙ ПУЛЬС АРГОН;SPRAY PULSE ARGON;SPRAY PULSO ARGÓN
+265;RemoteUpdater;Серийный номер не задан (%1);Serial number is not set (%1);Número de serie no establecido (%1)
+266;RemoteUpdater;Повтор открытия сессии (осталось попыток: %1)…;Retrying session open (attempts left: %1)…;Reintentando abrir la sesión (intentos restantes: %1)…
+267;RemoteUpdater;Открываю сервисную сессию...;Opening service session...;Abriendo sesión de servicio...
+268;RemoteUpdater;Жду готовности порта SSH-туннеля, повтор через 500 мс…;Waiting for SSH tunnel port, retry in 500 ms…;Esperando el puerto del túnel SSH, reintento en 500 ms…
+269;RemoteUpdater;Не удалось открыть сервисную сессию: %1;Failed to open service session: %1;No se pudo abrir la sesión de servicio: %1
+270;RemoteUpdater;Ответ open session не содержит sessionId;Open session response contains no sessionId;La respuesta de open session no contiene sessionId
+271;RemoteUpdater;Сервисная сессия открыта;Service session opened;Sesión de servicio abierta
+272;RemoteUpdater;Таймаут при выходе с экрана обновления (сессия сброшена локально);Timeout while leaving the update screen (session reset locally);Tiempo agotado al salir de la pantalla de actualización (sesión restablecida localmente)
+273;RemoteUpdater;Повтор закрытия сессии (осталось попыток: %1)…;Retrying session close (attempts left: %1)…;Reintentando cerrar la sesión (intentos restantes: %1)…
+274;RemoteUpdater;Закрываю сервисную сессию...;Closing service session...;Cerrando sesión de servicio...
+275;RemoteUpdater;Жду порт туннеля для закрытия сессии, повтор через 500 мс…;Waiting for tunnel port to close session, retry in 500 ms…;Esperando el puerto del túnel para cerrar la sesión, reintento en 500 ms…
+276;RemoteUpdater;Сервер недоступен — сессия сброшена на устройстве (close не доставлен): %1;Server unavailable — session reset on device (close not delivered): %1;Servidor no disponible: la sesión se restableció en el dispositivo (close no entregado): %1
+277;RemoteUpdater;Сервисная сессия закрыта;Service session closed;Sesión de servicio cerrada
+278;RemoteUpdater;Сначала откройте сервисную сессию;Open a service session first;Abra primero una sesión de servicio
+279;RemoteUpdater;Проверяю версии на сервере...;Checking versions on the server...;Comprobando versiones en el servidor...
+280;RemoteUpdater;Ошибка check-version: %1;check-version error: %1;Error de check-version: %1
+281;RemoteUpdater;Доступно обновление ПО;Software update available;Actualización de software disponible
+282;RemoteUpdater;Обновление не требуется;No update required;No se requiere actualización
+283;RemoteUpdater;Создаю задачу обновления...;Creating update job...;Creando tarea de actualización...
+284;RemoteUpdater;Ошибка create update job: %1;create update job error: %1;Error de create update job: %1
+285;RemoteUpdater;Ответ create job не содержит jobId;Create job response contains no jobId;La respuesta de create job no contiene jobId
+286;RemoteUpdater;Задача обновления создана;Update job created;Tarea de actualización creada
+287;RemoteUpdater;Нужны открытая сессия и jobId;An open session and jobId are required;Se requieren una sesión abierta y un jobId
+288;RemoteUpdater;Получаю payload обновления...;Fetching update payload...;Obteniendo el payload de la actualización...
+289;RemoteUpdater;Ошибка получения payload: %1;Failed to fetch payload: %1;Error al obtener el payload: %1
+290;RemoteUpdater;Payload не содержит artifactUrl;Payload contains no artifactUrl;El payload no contiene artifactUrl
+291;RemoteUpdater;Payload получен;Payload received;Payload recibido
+292;RemoteUpdater;SSH-туннель уже активен;SSH tunnel is already active;El túnel SSH ya está activo
+293;RemoteUpdater;Не задан tunnelUserHost (пример: user@10.64.61.2);tunnelUserHost is not set (example: user@10.64.61.2);tunnelUserHost no está establecido (ejemplo: user@10.64.61.2)
+294;RemoteUpdater;SSH process exited with code %1;SSH process exited with code %1;El proceso SSH terminó con código %1
+295;RemoteUpdater;SSH-туннель остановлен (code=%1): %2;SSH tunnel stopped (code=%1): %2;Túnel SSH detenido (code=%1): %2
+296;RemoteUpdater;Ошибка SSH-туннеля: %1;SSH tunnel error: %1;Error del túnel SSH: %1
+297;RemoteUpdater;Не удалось запустить SSH-туннель (нужна key-based auth): %1;Failed to start SSH tunnel (key-based auth required): %1;No se pudo iniciar el túnel SSH (se requiere autenticación por clave): %1
+298;RemoteUpdater;SSH-туннель запущен, apiBaseUrl=%1;SSH tunnel started, apiBaseUrl=%1;Túnel SSH iniciado, apiBaseUrl=%1
+299;RemoteUpdater;SSH-туннель остановлен;SSH tunnel stopped;Túnel SSH detenido
+300;RemoteUpdater;Нельзя запустить мониторинг без активной сессии;Cannot start monitoring without an active session;No se puede iniciar la monitorización sin una sesión activa
+301;RemoteUpdater;Мониторинг команд оператора запущен;Operator command monitoring started;Monitorización de comandos del operador iniciada
+302;RemoteUpdater;Мониторинг команд оператора остановлен;Operator command monitoring stopped;Monitorización de comandos del operador detenida
+303;RemoteUpdater;Detached restart не удался, выполняю restart через exit code;Detached restart failed, restarting via exit code;El reinicio independiente falló, reiniciando mediante código de salida
+304;RemoteUpdater;таймаут или kill;timeout or kill;tiempo agotado o kill
+305;RemoteUpdater;код %1;code %1;código %1
+306;RemoteUpdater;Не удалось остановить сервис (systemctl --user stop Demo1-user.service). %1;Failed to stop the service (systemctl --user stop Demo1-user.service). %1;No se pudo detener el servicio (systemctl --user stop Demo1-user.service). %1
+307;RemoteUpdater;Не удалось запустить shell: %1;Failed to start shell: %1;No se pudo iniciar el shell: %1
+308;RemoteUpdater;Ошибка опроса server job: %1;Server job polling error: %1;Error al consultar la tarea del servidor: %1
+309;RemoteUpdater;next-update-job: отсутствует jobId;next-update-job: jobId missing;next-update-job: falta jobId
+310;RemoteUpdater;Получена команда оператора: запускаю обновление;Operator command received: starting update;Comando del operador recibido: iniciando actualización
+311;RemoteUpdater;Некорректный artifactUrl: %1;Invalid artifactUrl: %1;artifactUrl no válido: %1
+312;RemoteUpdater;Не удалось открыть файл для загрузки: %1;Failed to open file for download: %1;No se pudo abrir el archivo para la descarga: %1
+313;RemoteUpdater;Ошибка загрузки артефакта: %1;Artifact download error: %1;Error al descargar el artefacto: %1
+314;RemoteUpdater;SHA256 не совпадает: expected=%1 actual=%2;SHA256 mismatch: expected=%1 actual=%2;SHA256 no coincide: expected=%1 actual=%2
+315;RemoteUpdater;Не удалось посчитать payloadSha256;Failed to compute payloadSha256;No se pudo calcular payloadSha256
+316;RemoteUpdater;payloadSha256 не совпадает: expected=%1 actual=%2;payloadSha256 mismatch: expected=%1 actual=%2;payloadSha256 no coincide: expected=%1 actual=%2
+317;RemoteUpdater;Не удалось создать директорию распаковки;Failed to create extraction directory;No se pudo crear el directorio de extracción
+318;RemoteUpdater;Не удалось запустить распаковку: %1;Failed to start extraction: %1;No se pudo iniciar la extracción: %1
+319;RemoteUpdater;Ошибка распаковки: %1;Extraction error: %1;Error de extracción: %1
+320;RemoteUpdater;В payload не найден исполняемый файл обновления;No update executable found in payload;No se encontró el ejecutable de actualización en el payload
+321;RemoteUpdater;Не удалось открыть update-manifest.json;Failed to open update-manifest.json;No se pudo abrir update-manifest.json
+322;RemoteUpdater;update-manifest.json должен быть JSON-объектом;update-manifest.json must be a JSON object;update-manifest.json debe ser un objeto JSON
+323;RemoteUpdater;update-manifest.json: deployPaths пуст;update-manifest.json: deployPaths is empty;update-manifest.json: deployPaths está vacío
+324;RemoteUpdater;Некорректный путь в manifest: %1;Invalid path in manifest: %1;Ruta no válida en el manifiesto: %1
+325;RemoteUpdater;Путь из manifest не найден в payload: %1;Manifest path not found in payload: %1;Ruta del manifiesto no encontrada en el payload: %1
+326;RemoteUpdater;Новый бинарник отсутствует: %1;New binary is missing: %1;Falta el nuevo binario: %1
+327;RemoteUpdater;Не удалось создать backup каталог;Failed to create backup directory;No se pudo crear el directorio de copia de seguridad
+328;RemoteUpdater;Manifest найден, но не дал файлов для deploy;Manifest found but yielded no files to deploy;Manifiesto encontrado pero sin archivos para desplegar
+329;RemoteUpdater;Запрещённый путь в payload: %1;Forbidden path in payload: %1;Ruta prohibida en el payload: %1
+330;RemoteUpdater;Симлинки в payload запрещены: %1;Symlinks in payload are forbidden: %1;Los enlaces simbólicos en el payload están prohibidos: %1
+331;RemoteUpdater;Не удалось сделать backup: %1;Failed to make a backup: %1;No se pudo crear la copia de seguridad: %1
+332;RemoteUpdater;Не удалось скопировать файл: %1;Failed to copy file: %1;No se pudo copiar el archivo: %1
+333;RemoteUpdater;Не удалось удалить старый файл: %1;Failed to delete old file: %1;No se pudo eliminar el archivo antiguo: %1
+334;RemoteUpdater;Не удалось заменить файл: %1;Failed to replace file: %1;No se pudo reemplazar el archivo: %1
+335;RemoteUpdater;Не удалось выставить права на запуск для бинарника: %1;Failed to set execute permissions for binary: %1;No se pudieron establecer permisos de ejecución para el binario: %1
+336;RemoteUpdater;Нужны открытая сессия и созданная задача;An open session and a created job are required;Se requieren una sesión abierta y una tarea creada
+337;RemoteUpdater;artifactUrl пуст, получите payload;artifactUrl is empty, fetch the payload;artifactUrl está vacío, obtenga el payload
+338;RemoteUpdater;Запуск обновления...;Starting update...;Iniciando actualización...
+339;RemoteUpdater;Обновление применено;Update applied;Actualización aplicada
+340;RemoteUpdater;UI update deployed;UI update deployed;UI update deployed
+341;RemoteUpdater;Обновление успешно применено;Update applied successfully;Actualización aplicada correctamente
+342;SecretKeysWindow;Эндоскопические функции;Endoscopic features;Funciones endoscópicas
+343;SecretKeysWindow;Аргонусиленная коагуляция;Argon-enhanced coagulation;Coagulación asistida por argón
+344;SecretKeysWindow;Секретные ключи;Secret keys;Claves secretas
+345;SecretKeysWindow;Назад;back;atrás
+346;SecretKeysWindow;Генерация ключа;Key generation;Generación de clave
+347;SecretKeysWindow;Серийный номер:;Serial number:;Número de serie:
+348;SecretKeysWindow;Тип аппарата:;Unit type:;Tipo de equipo:
+349;SecretKeysWindow;Номер ключа:;Key number:;Número de clave:
+350;SecretKeysWindow;Функция:;Feature:;Función:
+351;SecretKeysWindow;Сгенерировать ключ;Generate key;Generar clave
+352;SecretKeysWindow;✓ Ключ сгенерирован успешно!;✓ Key generated successfully!;✓ ¡Clave generada correctamente!
+353;SecretKeysWindow;✗ Введите серийный номер;✗ Enter the serial number;✗ Introduzca el número de serie
+354;SecretKeysWindow;Сгенерированный ключ:;Generated key:;Clave generada:
+355;SecretKeysWindow;Проверка ключа;Key verification;Verificación de clave
+356;SecretKeysWindow;Ключ для проверки:;Key to verify:;Clave a verificar:
+357;SecretKeysWindow;Проверить ключ;Verify key;Verificar clave
+358;SecretKeysWindow;✓ КЛЮЧ ВЕРНЫЙ! Проверка пройдена успешно;✓ KEY IS VALID! Verification passed;✓ ¡CLAVE CORRECTA! Verificación superada
+359;SecretKeysWindow;✗ КЛЮЧ НЕВЕРНЫЙ! Проверка не пройдена;✗ KEY IS INVALID! Verification failed;✗ ¡CLAVE INCORRECTA! Verificación fallida
+360;SecretKeysWindow;✗ Заполните все поля;✗ Fill in all fields;✗ Rellene todos los campos
+361;SecretKeysWindow;ℹ️ Информация:;ℹ️ Information:;ℹ️ Información:
+362;SecretKeysWindow;• Ключи генерируются криптографическим алгоритмом SHA-256;• Keys are generated with the SHA-256 cryptographic algorithm;• Las claves se generan con el algoritmo criptográfico SHA-256
+363;SecretKeysWindow;• Для каждого типа аппарата и номера ключа формируется отдельный 12-значный код;• A separate 12-digit code is generated for each unit type and key number;• Para cada tipo de equipo y número de clave se genera un código de 12 dígitos
+364;SecretKeysWindow;• Соседние номера гарантированно имеют различные ключи;• Adjacent serial numbers are guaranteed to have different keys;• Los números consecutivos tienen garantizadas claves diferentes
+365;SerialNumberSettings;Введите серийный номер в диапазоне 260 000 - 1 000 000;Enter a serial number in the range 260,000 - 1,000,000;Introduzca un número de serie en el rango 260 000 - 1 000 000
+366;SerialNumberSettings;Сохранено;Saved;Guardado
+367;SerialNumberSettings;Не сохранено;Not saved;No guardado
+368;SerialNumberSettings;СЕРИЙНЫЙ НОМЕР И ТИП;Serial number and type;Número de serie y tipo
+369;SerialNumberSettings;Серийный номер;Serial number;Número de serie
+370;SerialNumberSettings;Введите серийный номер;ENTER THE DEVICE SERIAL NUMBER;INGRESE EL NÚMERO DE SERIE DEL DISPOSITIVO
+371;SerialNumberSettings;Тип аппарата;Unit type;Tipo de equipo
+372;SerialNumberSettings;Комментарии;Comments;Comentarios
+373;SerialNumberSettings;Дата производства, особенности;Production date, notes;Fecha de fabricación, particularidades
+374;SerialNumberSettings;Вход без пароля;Login without password;Acceso sin contraseña
+375;SerialNumberSettings;Сохранить;save;guardar
+376;SerialNumberSettings;Назад;back;atrás
+377;ServiceMenu;Сервисное меню;SERVICE SETTINGS;AJUSTES DE SERVICIO
+378;ServiceMenu;СПЕЦ КОМАНДЫ;SPECIAL COMMANDS;COMANDOS ESPECIALES
+379;ServiceMenu;Серийный номер;Serial number;Número de serie
+380;ServiceMenu;Обновление ПО;Software update;Actualización de software
+381;ServiceMenu;Приём файлов по Wi‑Fi;Receive files over Wi‑Fi;Recepción de archivos por Wi‑Fi
+382;ServiceMenu;Настройки WiFi;Wi-Fi settings;Ajustes de Wi-Fi
+383;ServiceMenu;Об аппарате;About the unit;Acerca del equipo
+384;ServiceMenu;Проверка тач-скрина;Touchscreen calibration;Calibración de pantalla táctil
+385;ServiceMenu;Лог обновлений;Update log;Registro de actualizaciones
+386;ServiceMenu;Секретные ключи;Secret keys;Claves secretas
+387;ServiceMenu;Управление опциями;Option management;Gestión de opciones
+388;FeatureOptionsManager;Управление опциями;Option management;Gestión de opciones
+389;FeatureOptionsManager;Назад;back;atrás
+390;FeatureOptionsManager;Ключ №%1: ВКЛ;Key #%1: ON;Clave n.º %1: ACTIVADA
+391;FeatureOptionsManager;Ключ №%1: ВЫКЛ;Key #%1: OFF;Clave n.º %1: DESACTIVADA
+392;FeatureOptionsManager;Все ключи: ВКЛ;All keys: ON;Todas las claves: ACTIVADAS
+393;FeatureOptionsManager;Все ключи: ВЫКЛ;All keys: OFF;Todas las claves: DESACTIVADAS
+394;SettingsMenu;НАСТРОЙКИ;SETTINGS;AJUSTES
+395;SettingsMenu;СВЕДЕНИЯ ОБ АППАРАТЕ;DEVICE INFORMATION;INFORMACIÓN DEL EQUIPO
+396;SettingsMenu;ЯЗЫК;LANGUAGE;IDIOMA
+397;SettingsMenu;ГРОМКОСТЬ;VOLUME;VOLUMEN
+398;SettingsMenu;ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ;ADDITIONAL SETTINGS;AJUSTES ADICIONALES
+399;SettingsMenu;РАЗБЛОКИРОВКА ЭНДОСКОПИИ;UNLOCK ENDOSCOPY;DESBLOQUEAR ENDOSCOPIA
+400;SettingsMenu;НАЗАД;BACK;ATRÁS
+401;SettingsMenu;Для разблокировки эндоскопических функций введите ключ;Enter the key to unlock endoscopic features;Introduzca la clave para desbloquear las funciones endoscópicas
+402;SettingsMenu;123-456-789-012;123-456-789-012;123-456-789-012
+403;SettingsMenu;Сначала сохраните серийный номер аппарата;Save the device serial number first;Guarde primero el número de serie del equipo
+404;SettingsMenu;РАЗБЛОКИРОВАТЬ;UNLOCK;DESBLOQUEAR
+405;AdditionalSettingsMenu;ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ;ADDITIONAL SETTINGS;AJUSTES ADICIONALES
+406;AdditionalSettingsMenu;СЕРВИСНОЕ МЕНЮ;SERVICE MENU;MENÚ DE SERVICIO
+407;AdditionalSettingsMenu;ЖУРНАЛ СОБЫТИЙ;EVENT LOG;REGISTRO DE EVENTOS
+408;AdditionalSettingsMenu;НАСТРОЙКА ДАТЫ И ВРЕМЕНИ;DATE AND TIME;FECHA Y HORA
+409;AdditionalSettingsMenu;НАЗАД;BACK;ATRÁS
+410;AdditionalSettingsMenu;Для доступа к сервисным функциям введите пароль;Enter the password to access service functions;Introduzca la contraseña para acceder a las funciones de servicio
+411;AdditionalSettingsMenu;Пароль;Password;Contraseña
+412;AdditionalSettingsMenu;Неверный пароль;INCORRECT PASSWORD;CONTRASEÑA INCORRECTA
+413;AdditionalSettingsMenu;ОТМЕНА;CANCEL;CANCELAR
+414;AdditionalSettingsMenu;ВОЙТИ;LOG IN;ENTRAR
+415;AdditionalSettingsMenu;АКТИВАЦИЯ ДОПОЛНИТЕЛЬНЫХ ОПЦИЙ;ACTIVATE ADDITIONAL OPTIONS;ACTIVAR OPCIONES ADICIONALES
+416;AdditionalSettingsMenu;Для активации дополнительных опций введите ключ;Enter the key to activate additional options;Introduzca la clave para activar opciones adicionales
+417;AdditionalSettingsMenu;123-456-789-012;123-456-789-012;123-456-789-012
+418;AdditionalSettingsMenu;Контроллер активации недоступен;Activation controller is unavailable;El controlador de activación no está disponible
+419;AdditionalSettingsMenu;Опция №%1 успешно активирована;Option #%1 activated successfully;Opción n.º %1 activada correctamente
+420;AdditionalSettingsMenu;Извините, ключ не верный! Попробуйте ещё раз или обратитесь к производителю;Sorry, the key is invalid! Please try again or contact the manufacturer;Lo sentimos, la clave no es válida. Inténtelo de nuevo o contacte con el fabricante
+421;AdditionalSettingsMenu;АКТИВИРОВАТЬ;ACTIVATE;ACTIVAR
+422;AdditionalSettingsMenu;ЗАКРЫТЬ;CLOSE;CERRAR
+423;AdditionalSettingsMenu;Сначала сохраните серийный номер аппарата;Save the device serial number first;Guarde primero el número de serie del equipo
+424;SocketContainerV2;удалить;delete;eliminar
+425;SocketContainerV2;Подтверждение удаления;Confirm deletion;Confirmar eliminación
+426;SocketContainerV2;Текущий лист программы будет удалён. Продолжить?;The current program sheet will be deleted. Continue?;La hoja de programa actual se eliminará. ¿Continuar?
+427;SocketContainerV2;ОТМЕНА;CANCEL;CANCELAR
+428;SocketContainerV2;ПРИНЯТЬ;ACCEPT;ACEPTAR
+429;SocketEditor;Подача импульсов СРЕДНЯЯ;MEDIUM pulse rate;Pulso MEDIO
+430;SocketEditor;Подача импульсов РЕДКАЯ;SLOW pulse rate;Pulso LENTO
+431;SocketEditor;Подача импульсов ЧАСТАЯ;FAST pulse rate;Pulso RÁPIDO
+432;SocketEditor;Настройка КОАГУЛЯЦИИ для выхода %1;coagulation mode for output %1;modo de coagulación para la salida %1
+433;SocketEditor;Настройка РЕЗАНИЯ для выхода %1;cut mode for output %1;modo de corte para la salida %1
+434;SocketEditor;X;X;X
+435;SocketEditor;Выберите режим;SELECT A MODE;SELECCIONA UN MODO
+436;SocketEditor;▲;▲;▲
+437;SocketEditor;▼;▼;▼
+438;SocketEditor;Выберите инструмент;electrode;electrodo
+439;SocketEditor;Установите мощность;SET POWER;ESTABLECER POTENCIA
+440;SocketEditor;−;−;−
+441;SocketEditor;+;+;+
+442;SocketEditor;Установите эффект резания;Set cut eff.;Ajuste ef. de corte
+443;SocketEditor;Установите эффект коагуляции;Set coag eff.;Ajuste ef. de coag.
+444;SocketEditor;АВТОСТОП;AUTOSTOP;AUTOSTOP
+445;SocketEditor;"В режиме АВТОСТОП инструмент активируется с помощью педали.
 По завершении коагуляции процесс прекращается автоматически";In AUTO-STOP mode instrument is activated by footswitch. The process stops automatically when coagulation is complete.;En el modo de AUTO-STOP, el instrumento se activa mediante un interruptor de pie. El proceso se detiene automáticamente cuando se completa la coagulación.
-388;SocketEditor;АВТОСТАРТ/СТОП;AUTO-START-STOP;AUTO-START-STOP
-389;SocketEditor;В режиме АВТОСТАРТ/СТОП активация происходит автоматически без нажатия педали!;In AUTO-START-STOP mode activation occurs automatically without any footswitch actions!;¡En el modo AUTO-START-STOP, la activación se produce automáticamente sin ninguna acción del interruptor de pie!
-390;SocketEditor;"В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.
+446;SocketEditor;АВТОСТАРТ/СТОП;AUTO-START-STOP;AUTO-START-STOP
+447;SocketEditor;В режиме АВТОСТАРТ/СТОП активация происходит автоматически без нажатия педали!;In AUTO-START-STOP mode activation occurs automatically without any footswitch actions!;¡En el modo AUTO-START-STOP, la activación se produce automáticamente sin ninguna acción del interruptor de pie!
+448;SocketEditor;"В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.
 По завершении коагуляции процесс прекращается автоматически";In AUTO-STOP mode instrument is activated by footswitch or handle button. The process stops automatically when coagulation is complete.;En el modo de AUTO-STOP, el instrumento se activa con el interruptor de pie o el botón del mango. El proceso se detiene automáticamente cuando se completa la coagulación.
-391;SocketEditor;Задержка автозапуска;Autostart delay;Retardo de autoarranque
-392;SocketEditor;0 сек;0 s;0 s
-393;SocketEditor;0.5 сек;0.5 s;0.5 s
-394;SocketEditor;1.0 сек;1.0 s;1.0 s
-395;SocketEditor;1.5 сек;1.5 s;1.5 s
-396;SocketEditor;Рекомендуемый уровень;Recommended level;Nivel recomendado
-397;SocketEditor;ОТМЕНА;CANCEL;CANCELAR
-398;SocketEditor;ПРИНЯТЬ;ACCEPT;ACEPTAR
-399;SocketModel;Не выбран;Not selected;No seleccionado
-400;SocketModel;НЕ ВЫБРАН;NOT SELECTED;NO SELECCIONADO
-401;SocketNames;БИ1;BI1;BI1
-402;SocketNames;БИ2;BI2;BI2
-403;SocketNames;МОНО1;MONO1;MONO1
-404;SocketNames;МОНО2;MONO2;MONO2
-405;SpecialCommands;СПЕЦ КОМАНДЫ;SPECIAL COMMANDS;COMANDOS ESPECIALES
-406;SpecialCommands;Эндоскопия: ВКЛ;Endoscopy: ON;Endoscopia: ON
-407;SpecialCommands;Эндоскопия: ВЫКЛ;Endoscopy: OFF;Endoscopia: OFF
-408;SpecialCommands;Режимы с аргоном: ВКЛ;Argon modes: ON;Modos con argón: ON
-409;SpecialCommands;Режимы с аргоном: ВЫКЛ;Argon modes: OFF;Modos con argón: OFF
-410;SpecialCommands;UART: ВКЛ;UART: ON;UART: ON
-411;SpecialCommands;Вывод UART;UART output;Salida UART
-412;SpecialCommands;ЦП: ВКЛ;CPU: ON;CPU: ON
-413;SpecialCommands;Вывод загрузки ЦП;CPU load display;Indicador de carga de CPU
-414;SpecialCommands;Выкл;Off;Apagado
-415;SpecialCommands;Выход в Linux;Exit to Linux;Salir a Linux
-416;SpecialCommands;Удалить все пользовательские программы;Delete user programs;Eliminar programas de usuario
-417;SpecialCommands;Назад;back;atrás
-418;SpecialCommands;Подтверждение удаления;Confirm deletion;Confirmar eliminación
-419;SpecialCommands;"Удалить все пользовательские программы?
+449;SocketEditor;Задержка автозапуска;Autostart delay;Retardo de autoarranque
+450;SocketEditor;0 сек;0 s;0 s
+451;SocketEditor;0.5 сек;0.5 s;0.5 s
+452;SocketEditor;1.0 сек;1.0 s;1.0 s
+453;SocketEditor;1.5 сек;1.5 s;1.5 s
+454;SocketEditor;Рекомендуемый уровень;Recommended level;Nivel recomendado
+455;SocketEditor;ОТМЕНА;CANCEL;CANCELAR
+456;SocketEditor;ПРИНЯТЬ;ACCEPT;ACEPTAR
+457;SocketModel;Другой инструмент;Other electrode;Otro electrodo
+458;SocketNames;БИ1;BI1;BI1
+459;SocketNames;БИ2;BI2;BI2
+460;SocketNames;МОНО1;MONO1;MONO1
+461;SocketNames;МОНО2;MONO2;MONO2
+462;SpecialCommands;СПЕЦ КОМАНДЫ;SPECIAL COMMANDS;COMANDOS ESPECIALES
+463;SpecialCommands;Режимы с аргоном: ВКЛ;Argon modes: ON;Modos con argón: ON
+464;SpecialCommands;Режимы с аргоном: ВЫКЛ;Argon modes: OFF;Modos con argón: OFF
+465;SpecialCommands;UART: ВКЛ;UART: ON;UART: ON
+466;SpecialCommands;Вывод UART;UART output;Salida UART
+467;SpecialCommands;ЦП: ВКЛ;CPU: ON;CPU: ON
+468;SpecialCommands;Вывод загрузки ЦП;CPU load display;Indicador de carga de CPU
+469;SpecialCommands;Выкл;Off;Apagado
+470;SpecialCommands;Выход в Linux;Exit to Linux;Salir a Linux
+471;SpecialCommands;Удалить все пользовательские программы;Delete user programs;Eliminar programas de usuario
+472;SpecialCommands;Назад;back;atrás
+473;SpecialCommands;Подтверждение удаления;Confirm deletion;Confirmar eliminación
+474;SpecialCommands;"Удалить все пользовательские программы?
 Это действие необратимо.";All user programs will be DELETED! Continue?;¡Todos los programas de usuario serán BORRADOS! ¿Continuar?
-420;StartupInfoScreen;Не указан;Not specified;No especificado
-421;StartupInfoScreen;Информация об аппарате;Unit information;Información del equipo
-422;StartupInfoScreen;Тип аппарата;Unit type;Tipo de equipo
-423;StartupInfoScreen;Серийный номер;Serial number;Número de serie
-424;StartupInfoScreen;Версии ПО;Software versions;Versiones de software
-425;StartupInfoScreen;НАЗАД;BACK;ATRÁS
-426;StatesSocket;не выбран;not selected;no seleccionado
-427;StatesSocket; АВТОСТОП; AUTOSTOP; AUTOSTOP
-428;StatesSocket; АВТОСТАРТ/СТОП; AUTO-START-STOP; AUTO-START-STOP
-429;StmUpdater;Ошибка открытия hex-файла;Failed to open hex file;Error al abrir el archivo hex
-430;StmUpdater;Ошибка чтения hex-файла;Failed to read hex file;Error al leer el archivo hex
-431;StmUpdater;Ошибка контрольной суммы hex-строки;Hex line checksum error;Error de suma de comprobación de la línea hex
-432;StmUpdater;Ошибка символов в hex-файле;Invalid characters in hex file;Caracteres no válidos en el archivo hex
-433;StmUpdater;Ошибка завершения hex-файла;Hex file termination error;Error de finalización del archivo hex
-434;StyledSwitch;Wi-Fi;Wi-Fi;Wi-Fi
-435;TouchScreenTest;Коснитесь экрана для проверки;Touch the screen to test;Comprobación de pantalla táctil
-436;TouchScreenTest;"нажато: %1   отпущено: %2   задержка: %3   движение: %4   залипание: %5
+475;StartupInfoScreen;Не указан;Not specified;No especificado
+476;StartupInfoScreen;Информация об аппарате;Unit information;Información del equipo
+477;StartupInfoScreen;Тип аппарата;Unit type;Tipo de equipo
+478;StartupInfoScreen;Серийный номер;Serial number;Número de serie
+479;StartupInfoScreen;Версии ПО;Software versions;Versiones de software
+480;StartupInfoScreen;НАЗАД;BACK;ATRÁS
+481;StatesSocket;Другой инструмент;Other electrode;Otro electrodo
+482;StatesSocket; АВТОСТОП; AUTOSTOP; AUTOSTOP
+483;StatesSocket; АВТО-СТ-СТОП; AUTO-ST-STOP; AUTO-ST-STOP
+484;StmUpdater;Ошибка открытия hex-файла;Failed to open hex file;Error al abrir el archivo hex
+485;StmUpdater;Ошибка чтения hex-файла;Failed to read hex file;Error al leer el archivo hex
+486;StmUpdater;Ошибка контрольной суммы hex-строки;Hex line checksum error;Error de suma de comprobación de la línea hex
+487;StmUpdater;Ошибка символов в hex-файле;Invalid characters in hex file;Caracteres no válidos en el archivo hex
+488;StmUpdater;Ошибка завершения hex-файла;Hex file termination error;Error de finalización del archivo hex
+489;StyledSwitch;Wi-Fi;Wi-Fi;Wi-Fi
+490;TouchScreenTest;Коснитесь экрана для проверки;Touch the screen to test;Comprobación de pantalla táctil
+491;TouchScreenTest;"нажато: %1   отпущено: %2   задержка: %3   движение: %4   залипание: %5
 Последние события:
 %6";"pressed: %1   released: %2   delay: %3   moves: %4   stuck: %5
 Recent events:
 %6";"pulsado: %1   soltado: %2   retardo: %3   movimiento: %4   bloqueo: %5
 Últimos eventos:
 %6"
-437;TouchScreenTest;%1 мс (20);%1 ms (20);%1 ms (20)
-438;TouchScreenTest;—;—;—
-439;TouchScreenTest;Нажатие: (%1, %2);Press: (%1, %2);Pulsación: (%1, %2)
-440;TouchScreenTest;нажатие (%1, %2);press (%1, %2);pulsación (%1, %2)
-441;TouchScreenTest;Поздний release после сброса: %1 мс;Late release after reset: %1 ms;Liberación tardía tras el restablecimiento: %1 ms
-442;TouchScreenTest;поздний release (%1, %2), %3 ms;late release (%1, %2), %3 ms;liberación tardía (%1, %2), %3 ms
-443;TouchScreenTest;Время удержания: %1 мс;Hold time: %1 ms;Tiempo de pulsación: %1 ms
-444;TouchScreenTest;отпущено (%1, %2), задержка %3 мс;released (%1, %2), delay %3 ms;soltado (%1, %2), retardo %3 ms
-445;TouchScreenTest;Событие отменено системой;Event cancelled by the system;Evento cancelado por el sistema
-446;TouchScreenTest;отменено системой;cancelled by the system;cancelado por el sistema
-447;TouchScreenTest;Подозрение на зависание: %1 мс;Possible freeze: %1 ms;Posible bloqueo: %1 ms
-448;TouchScreenTest;сброс по таймеру %1 ms;timer reset %1 ms;restablecido por temporizador %1 ms
-449;TouchScreenTest;Назад;back;atrás
-450;UartToQmlBridge;Ошибка порта: %1;Port error: %1;Error de puerto: %1
-451;UpdateDialog;Обнаружен файл;File detected;Archivo detectado
-452;UpdateDialog;Версия: ;Version: ;Versión: 
-453;UpdateDialog;Предыдущая Версия: ;Previous version: ;Versión anterior: 
-454;UpdateDialog;Обновить?;Update?;¿Actualizar?
-455;UpdateDialog;Да;Yes;Sí
-456;UpdateDialog;Нет;No;No
-457;VideoPlayer;Ошибка: Неподдерживаемый формат видео;Error: Unsupported video format;Error: formato de vídeo no compatible
-458;VideoPlayer;Ошибка воспроизведения: ;Playback error: ;Error de reproducción: 
-459;VideoPlayer;Загрузка...;Loading...;Cargando...
-460;VideoPlayer;Нажмите ▶ для воспроизведения;Press ▶ to play;Pulse ▶ para reproducir
-461;VideoPlayer;Нет видеофайлов в папке ;No video files in folder ;No hay archivos de vídeo en la carpeta 
-462;VideoPlayer;Нет видео;No video;Sin vídeo
-463;WiFiConnector;Настройки сети;Network settings;Configuración de red
-464;WiFiConnector;Доступные Wi-Fi сети;Available Wi-Fi networks;Redes Wi-Fi disponibles
-465;WiFiConnector;Общие;General;General
-466;WiFiConnector;Wi-Fi;Wi-Fi;Wi-Fi
-467;WiFiConnector;VPN FOTEK;VPN FOTEK;VPN FOTEK
-468;WiFiConnector;Текущий IP-адрес устройства:;Current device IP address:;Dirección IP actual del dispositivo:
-469;WiFiConnector;Отключиться от сети;Disconnect from network;Desconectarse de la red
-470;WiFiConnector;Назад;back;atrás
-471;WiFiPassRequest;ВВЕДИТЕ ПАРОЛЬ;ENTER THE PASSWORD;INTRODUZCA LA CONTRASEÑA
-472;WiFiPassRequest;Подключить;Connect;Conectar
-473;WiFiPassRequest;Отмена;Cancel;Cancelar
-474;WifiFileReceive;Модуль интерфейса;Interface module;Módulo de interfaz
-475;WifiFileReceive;Модуль управления и связи;Communication module;Módulo de comunicación
-476;WifiFileReceive;Модуль аргоновый;Argon module;Módulo de argón
-477;WifiFileReceive;Модуль генератора;Generator;GENERADOR
-478;WifiFileReceive;Медиафайлы;Media files;Archivos multimedia
-479;WifiFileReceive;Приём файлов обновления;Receive update files;Recepción de archivos de actualización
-480;WifiFileReceive;1. Включите приём;1. Enable receiving;1. Active la recepción
-481;WifiFileReceive;2. Подключитесь к Wi‑Fi;2. Connect to Wi‑Fi;2. Conéctese a la red Wi‑Fi
-482;WifiFileReceive;3. Откройте страницу загрузки;3. Open the upload page;3. Abra la página de carga
-483;WifiFileReceive;"Аппарат создаст временную точку доступа ""ONYX-AM"",
+492;TouchScreenTest;%1 мс (20);%1 ms (20);%1 ms (20)
+493;TouchScreenTest;—;—;—
+494;TouchScreenTest;Нажатие: (%1, %2);Press: (%1, %2);Pulsación: (%1, %2)
+495;TouchScreenTest;нажатие (%1, %2);press (%1, %2);pulsación (%1, %2)
+496;TouchScreenTest;Поздний release после сброса: %1 мс;Late release after reset: %1 ms;Liberación tardía tras el restablecimiento: %1 ms
+497;TouchScreenTest;поздний release (%1, %2), %3 ms;late release (%1, %2), %3 ms;liberación tardía (%1, %2), %3 ms
+498;TouchScreenTest;Время удержания: %1 мс;Hold time: %1 ms;Tiempo de pulsación: %1 ms
+499;TouchScreenTest;отпущено (%1, %2), задержка %3 мс;released (%1, %2), delay %3 ms;soltado (%1, %2), retardo %3 ms
+500;TouchScreenTest;Событие отменено системой;Event cancelled by the system;Evento cancelado por el sistema
+501;TouchScreenTest;отменено системой;cancelled by the system;cancelado por el sistema
+502;TouchScreenTest;Подозрение на зависание: %1 мс;Possible freeze: %1 ms;Posible bloqueo: %1 ms
+503;TouchScreenTest;сброс по таймеру %1 ms;timer reset %1 ms;restablecido por temporizador %1 ms
+504;TouchScreenTest;Назад;back;atrás
+505;UartToQmlBridge;Ошибка порта: %1;Port error: %1;Error de puerto: %1
+506;UpdateDialog;Обнаружен файл;File detected;Archivo detectado
+507;UpdateDialog;Версия: ;Version: ;Versión: 
+508;UpdateDialog;Предыдущая Версия: ;Previous version: ;Versión anterior: 
+509;UpdateDialog;Обновить?;Update?;¿Actualizar?
+510;UpdateDialog;Да;Yes;Sí
+511;UpdateDialog;Нет;No;No
+512;VideoPlayer;Ошибка: Неподдерживаемый формат видео;Error: Unsupported video format;Error: formato de vídeo no compatible
+513;VideoPlayer;Ошибка воспроизведения: ;Playback error: ;Error de reproducción: 
+514;VideoPlayer;Загрузка...;Loading...;Cargando...
+515;VideoPlayer;Нажмите ▶ для воспроизведения;Press ▶ to play;Pulse ▶ para reproducir
+516;VideoPlayer;Нет видеофайлов в папке ;No video files in folder ;No hay archivos de vídeo en la carpeta 
+517;VideoPlayer;Нет видео;No video;Sin vídeo
+518;WiFiConnector;Настройки сети;Network settings;Configuración de red
+519;WiFiConnector;Доступные Wi-Fi сети;Available Wi-Fi networks;Redes Wi-Fi disponibles
+520;WiFiConnector;Общие;General;General
+521;WiFiConnector;Wi-Fi;Wi-Fi;Wi-Fi
+522;WiFiConnector;VPN FOTEK;VPN FOTEK;VPN FOTEK
+523;WiFiConnector;Текущий IP-адрес устройства:;Current device IP address:;Dirección IP actual del dispositivo:
+524;WiFiConnector;Отключиться от сети;Disconnect from network;Desconectarse de la red
+525;WiFiConnector;Назад;back;atrás
+526;WiFiPassRequest;ВВЕДИТЕ ПАРОЛЬ;ENTER THE PASSWORD;INTRODUZCA LA CONTRASEÑA
+527;WiFiPassRequest;Подключить;Connect;Conectar
+528;WiFiPassRequest;Отмена;Cancel;Cancelar
+529;WifiFileReceive;Модуль интерфейса;Interface module;Módulo de interfaz
+530;WifiFileReceive;Модуль управления и связи;Communication module;Módulo de comunicación
+531;WifiFileReceive;Модуль аргоновый;Argon module;Módulo de argón
+532;WifiFileReceive;Модуль генератора;Generator;GENERADOR
+533;WifiFileReceive;Медиафайлы;Media files;Archivos multimedia
+534;WifiFileReceive;Приём файлов обновления;Receive update files;Recepción de archivos de actualización
+535;WifiFileReceive;1. Включите приём;1. Enable receiving;1. Active la recepción
+536;WifiFileReceive;2. Подключитесь к Wi‑Fi;2. Connect to Wi‑Fi;2. Conéctese a la red Wi‑Fi
+537;WifiFileReceive;3. Откройте страницу загрузки;3. Open the upload page;3. Abra la página de carga
+538;WifiFileReceive;"Аппарат создаст временную точку доступа ""ONYX-AM"",
 можете подключиться к ней, используя QR-код справа";"The unit will create a temporary access point ""ONYX-AM"",
 you can connect to it using the QR code on the right";"El equipo creará un punto de acceso temporal ""ONYX-AM"",
 puede conectarse a él usando el código QR de la derecha"
-484;WifiFileReceive;"Отсканируйте QR-код или выберите сеть ONYX-AM в списке Wi‑Fi,
+539;WifiFileReceive;"Отсканируйте QR-код или выберите сеть ONYX-AM в списке Wi‑Fi,
 после обнаружения подключения, QR-код изменится";"Scan the QR code or select the ONYX-AM network in the Wi‑Fi list,
 once a connection is detected the QR code will change";"Escanee el código QR o seleccione la red ONYX-AM en la lista de Wi‑Fi,
 cuando se detecte la conexión, el código QR cambiará"
-485;WifiFileReceive;Соединение установлено! Отсканируйте QR-код или откройте адрес вручную в любом браузере;Connection established! Scan the QR code or open the address manually in any browser;¡Conexión establecida! Escanee el código QR o abra la dirección manualmente en cualquier navegador
-486;WifiFileReceive;Адрес загрузки;Upload address;Dirección de carga
-487;WifiFileReceive;Параметры Wi‑Fi;Wi‑Fi parameters;Parámetros de Wi‑Fi
-488;WifiFileReceive; · пароль: ; · password: ; · contraseña: 
-489;WifiFileReceive;Серийный номер: ;Serial number: ;Número de serie: 
-490;WifiFileReceive; · ; · ; · 
-491;WifiFileReceive;Тип аппарата: ;Unit type: ;Tipo de equipo: 
-492;WifiFileReceive; · Wi‑Fi: ; · Wi‑Fi: ; · Wi‑Fi: 
-493;WifiFileReceive;вкл;on;activado
-494;WifiFileReceive;выкл;off;desactivado
-495;WifiFileReceive;Выключить приём;Disable receiving;Desactivar recepción
-496;WifiFileReceive;Включить приём;Enable receiving;Activar recepción
-497;WifiFileReceive;QR появится после включения приёма;QR will appear after receiving is enabled;El QR aparecerá tras activar la recepción
-498;WifiFileReceive;Обнаружен релиз: ;Release detected: ;Versión detectada: 
-499;WifiFileReceive;Компонент;Component;Componente
-500;WifiFileReceive;Обнаружено;Detected;Detectado
-501;WifiFileReceive;Текущая версия;Current version;Versión actual
-502;WifiFileReceive;Загрузка...;Loading...;Cargando...
-503;WifiFileReceive;Последняя загрузка: файлов: ;Last upload: files: ;Última carga: archivos: 
-504;WifiFileReceive;Назад;back;atrás
-505;logUpdate;Журнал обновлений недоступен;Update log unavailable;Registro de actualizaciones no disponible
-506;logUpdate;Записей нет;No records;Sin registros
-507;logUpdate;Лог обновлений;Update log;Registro de actualizaciones
-508;logUpdate;Назад;back;atrás
-509;main;Ты волшебник, Гарри!;You're a wizard, Harry!;¡Eres un mago, Harry!
-510;main;Ошибка связи: передача не выполнена;Communication error: transmission failed;Error de comunicación: transmisión fallida
-511;main;Ошибка связи: нет ответа;Communication error: no response;Error de comunicación: sin respuesta
-512;main;Ошибка связи: неверный ответ;Communication error: invalid response;Error de comunicación: respuesta no válida
-513;main;Ошибка связи: неверная длина пакета;Communication error: invalid packet length;Error de comunicación: longitud de paquete no válida
-514;main;Ошибка связи: CRC не совпадает;Communication error: CRC mismatch;Error de comunicación: CRC no coincide
-515;main;Активация остановлена: холостой ход (автостоп);Activation stopped: idle (autostop);Activación detenida: marcha en vacío (autostop)
-516;main;Активация остановлена: короткое замыкание бранш;Activation stopped: jaw short circuit;Activación detenida: cortocircuito de las mordazas
-517;main;Активация остановлена: обрыв нейтрального электрода;Activation stopped: neutral electrode break;Activación detenida: desconexión del electrodo neutro
-518;main;Активация остановлена: закончился аргон;Activation stopped: argon depleted;Activación detenida: argón agotado
-519;main;Активация остановлена: непроходимость газового тракта;Activation stopped: gas line obstruction;Activación detenida: obstrucción del circuito de gas
-520;main;Активация остановлена: ошибка генератора;Activation stopped: generator error;Activación detenida: error del generador
-521;main;Ошибка: модуль связи не принимает сигналы от МИФ;Error: communication module receives no signals from MIF;Error: el módulo de comunicación no recibe señales del MIF
-522;main;Ошибка: генератор не отвечает;Error: generator not responding;Error: el generador no responde
-523;main;Ошибка: газовый модуль не отвечает;Error: gas module not responding;Error: el módulo de gas no responde
-524;main;Ошибка: не отвечает радиомодуль;Error: radio module not responding;Error: el módulo de radio no responde
-525;main;Ошибка: кнопки или педали зажаты до старта;Error: buttons or pedals held down before start;Error: botones o pedales presionados antes del inicio
-526;main;Ошибка: МК НЭ не отвечает;Error: NE MCU not responding;Error: el MCU del EN no responde
-527;main;Ошибка: МК раскачки не отвечает;Error: driver MCU not responding;Error: el MCU del excitador no responde
-528;main;Ошибка: питание НЭ 5В не соответствует норме;Error: NE 5V supply out of range;Error: alimentación de 5 V del EN fuera de rango
-529;main;Ошибка: питание НЭ 3,3В не соответствует норме;Error: NE 3.3V supply out of range;Error: alimentación de 3,3 V del EN fuera de rango
-530;main;Ошибка: перегрев контроллера НЭ;Error: NE controller overheated;Error: sobrecalentamiento del controlador del EN
-531;main;Ошибка: обновление не выполнено;Error: update not completed;Error: actualización no realizada
-532;main;Ошибка: нет рабочей прошивки МУС;Error: no working MUS firmware;Error: no hay firmware operativo del MUS
-533;main;Критичная ошибка: ИСН при включении;Critical error: ISN at power-on;Error crítico: ISN al encender
-534;main;Критичная ошибка: АЦП1 (напряжение контура);Critical error: ADC1 (circuit voltage);Error crítico: ADC1 (tensión del circuito)
-535;main;Критичная ошибка: АЦП2 (ток контура);Critical error: ADC2 (circuit current);Error crítico: ADC2 (corriente del circuito)
-536;main;Критичная ошибка: АЦП3 (ток генератора);Critical error: ADC3 (generator current);Error crítico: ADC3 (corriente del generador)
-537;main;Критичная ошибка: АЦП4 (напряжение ИСН);Critical error: ADC4 (ISN voltage);Error crítico: ADC4 (tensión del ISN)
-538;main;Критичная ошибка: реле;Critical error: relay;Error crítico: relé
-539;main;Критичная ошибка: ИСН при нормальной работе;Critical error: ISN during normal operation;Error crítico: ISN durante el funcionamiento normal
-540;main;Критичная ошибка: не найден резонанс при калибровке НЭ;Critical error: no resonance found during NE calibration;Error crítico: no se encontró resonancia durante la calibración del EN
-541;main;Критичная ошибка: АЦП схемы НЭ;Critical error: NE circuit ADC;Error crítico: ADC del circuito del EN
-542;main;Ошибка устройства (код 0x;Device error (code 0x;Error del dispositivo (código 0x
-543;main;;;
-544;main;СВОБОДНЫЕ УСТАНОВКИ;FREE MODE SETTINGS;CONFIGURACIÓN DEL MODO LIBRE
-545;main;Последние установки;Last settings;Ajustes recientes
-546;main;Питание будет выключено через %1 секунд;Power will be turned off in %1 seconds;La alimentación se apagará en %1 segundos
-547;main;ОТМЕНА;CANCEL;CANCELAR
-548;main;ВЫКЛЮЧИТЬ;POWER OFF;APAGAR
-549;main;"Внимание! Текущая программа
+540;WifiFileReceive;Соединение установлено! Отсканируйте QR-код или откройте адрес вручную в любом браузере;Connection established! Scan the QR code or open the address manually in any browser;¡Conexión establecida! Escanee el código QR o abra la dirección manualmente en cualquier navegador
+541;WifiFileReceive;Адрес загрузки;Upload address;Dirección de carga
+542;WifiFileReceive;Параметры Wi‑Fi;Wi‑Fi parameters;Parámetros de Wi‑Fi
+543;WifiFileReceive; · пароль: ; · password: ; · contraseña: 
+544;WifiFileReceive;Серийный номер: ;Serial number: ;Número de serie: 
+545;WifiFileReceive; · ; · ; · 
+546;WifiFileReceive;Тип аппарата: ;Unit type: ;Tipo de equipo: 
+547;WifiFileReceive; · Wi‑Fi: ; · Wi‑Fi: ; · Wi‑Fi: 
+548;WifiFileReceive;вкл;on;activado
+549;WifiFileReceive;выкл;off;desactivado
+550;WifiFileReceive;Выключить приём;Disable receiving;Desactivar recepción
+551;WifiFileReceive;Включить приём;Enable receiving;Activar recepción
+552;WifiFileReceive;QR появится после включения приёма;QR will appear after receiving is enabled;El QR aparecerá tras activar la recepción
+553;WifiFileReceive;Обнаружен релиз: ;Release detected: ;Versión detectada: 
+554;WifiFileReceive;Компонент;Component;Componente
+555;WifiFileReceive;Обнаружено;Detected;Detectado
+556;WifiFileReceive;Текущая версия;Current version;Versión actual
+557;WifiFileReceive;Загрузка...;Loading...;Cargando...
+558;WifiFileReceive;Последняя загрузка: файлов: ;Last upload: files: ;Última carga: archivos: 
+559;WifiFileReceive;Назад;back;atrás
+560;logUpdate;Журнал обновлений недоступен;Update log unavailable;Registro de actualizaciones no disponible
+561;logUpdate;Записей нет;No records;Sin registros
+562;logUpdate;Лог обновлений;Update log;Registro de actualizaciones
+563;logUpdate;Назад;back;atrás
+564;main;Ты волшебник, Гарри!;You're a wizard, Harry!;¡Eres un mago, Harry!
+565;main;Ошибка связи: передача не выполнена;Communication error: transmission failed;Error de comunicación: transmisión fallida
+566;main;Ошибка связи: нет ответа;Communication error: no response;Error de comunicación: sin respuesta
+567;main;Ошибка связи: неверный ответ;Communication error: invalid response;Error de comunicación: respuesta no válida
+568;main;Ошибка связи: неверная длина пакета;Communication error: invalid packet length;Error de comunicación: longitud de paquete no válida
+569;main;Ошибка связи: CRC не совпадает;Communication error: CRC mismatch;Error de comunicación: CRC no coincide
+570;main;Активация остановлена: холостой ход (автостоп);Activation stopped: idle (autostop);Activación detenida: marcha en vacío (autostop)
+571;main;Активация остановлена: короткое замыкание бранш;Activation stopped: jaw short circuit;Activación detenida: cortocircuito de las mordazas
+572;main;Активация остановлена: обрыв нейтрального электрода;Activation stopped: neutral electrode break;Activación detenida: desconexión del electrodo neutro
+573;main;Активация остановлена: закончился аргон;Activation stopped: argon depleted;Activación detenida: argón agotado
+574;main;Активация остановлена: непроходимость газового тракта;Activation stopped: gas line obstruction;Activación detenida: obstrucción del circuito de gas
+575;main;Активация остановлена: ошибка генератора;Activation stopped: generator error;Activación detenida: error del generador
+576;main;Ошибка: модуль связи не принимает сигналы от МИФ;Error: communication module receives no signals from MIF;Error: el módulo de comunicación no recibe señales del MIF
+577;main;Ошибка: генератор не отвечает;Error: generator not responding;Error: el generador no responde
+578;main;Ошибка: газовый модуль не отвечает;Error: gas module not responding;Error: el módulo de gas no responde
+579;main;Ошибка: не отвечает радиомодуль;Error: radio module not responding;Error: el módulo de radio no responde
+580;main;Ошибка: кнопки или педали зажаты до старта;Error: buttons or pedals held down before start;Error: botones o pedales presionados antes del inicio
+581;main;Ошибка: МК НЭ не отвечает;Error: NE MCU not responding;Error: el MCU del EN no responde
+582;main;Ошибка: МК раскачки не отвечает;Error: driver MCU not responding;Error: el MCU del excitador no responde
+583;main;Ошибка: питание НЭ 5В не соответствует норме;Error: NE 5V supply out of range;Error: alimentación de 5 V del EN fuera de rango
+584;main;Ошибка: питание НЭ 3,3В не соответствует норме;Error: NE 3.3V supply out of range;Error: alimentación de 3,3 V del EN fuera de rango
+585;main;Ошибка: перегрев контроллера НЭ;Error: NE controller overheated;Error: sobrecalentamiento del controlador del EN
+586;main;Ошибка: обновление не выполнено;Error: update not completed;Error: actualización no realizada
+587;main;Ошибка: нет рабочей прошивки МУС;Error: no working MUS firmware;Error: no hay firmware operativo del MUS
+588;main;Критичная ошибка: ИСН при включении;Critical error: ISN at power-on;Error crítico: ISN al encender
+589;main;Критичная ошибка: АЦП1 (напряжение контура);Critical error: ADC1 (circuit voltage);Error crítico: ADC1 (tensión del circuito)
+590;main;Критичная ошибка: АЦП2 (ток контура);Critical error: ADC2 (circuit current);Error crítico: ADC2 (corriente del circuito)
+591;main;Критичная ошибка: АЦП3 (ток генератора);Critical error: ADC3 (generator current);Error crítico: ADC3 (corriente del generador)
+592;main;Критичная ошибка: АЦП4 (напряжение ИСН);Critical error: ADC4 (ISN voltage);Error crítico: ADC4 (tensión del ISN)
+593;main;Критичная ошибка: реле;Critical error: relay;Error crítico: relé
+594;main;Критичная ошибка: ИСН при нормальной работе;Critical error: ISN during normal operation;Error crítico: ISN durante el funcionamiento normal
+595;main;Критичная ошибка: не найден резонанс при калибровке НЭ;Critical error: no resonance found during NE calibration;Error crítico: no se encontró resonancia durante la calibración del EN
+596;main;Критичная ошибка: АЦП схемы НЭ;Critical error: NE circuit ADC;Error crítico: ADC del circuito del EN
+597;main;Ошибка устройства (код 0x;Device error (code 0x;Error del dispositivo (código 0x
+598;main;;;
+599;main;СВОБОДНЫЕ УСТАНОВКИ;FREE MODE SETTINGS;CONFIGURACIÓN DEL MODO LIBRE
+600;main;Последние установки;Last settings;Ajustes recientes
+601;main;Питание будет выключено через %1 секунд;Power will be turned off in %1 seconds;La alimentación se apagará en %1 segundos
+602;main;ОТМЕНА;CANCEL;CANCELAR
+603;main;ВЫКЛЮЧИТЬ;POWER OFF;APAGAR
+604;main;"Внимание! Текущая программа
 
 %1
 
@@ -613,38 +697,38 @@ will be overwritten";"¡ATENCIÓN! El programa actual
 %1
 
 se sobrescribirá"
-550;main;ПРИНЯТЬ;ACCEPT;ACEPTAR
-551;main;Эндоскопические программы не могут быть использованы совместно с другими программами;Endoscopic programs cannot be used together with other programs;Los programas endoscópicos no pueden usarse junto con otros programas
-552;updateWindow;Неизвестный модуль;Unknown module;Módulo desconocido
-553;updateWindow;Не выбрана версия для обновления;No version selected for update;No se ha seleccionado una versión para actualizar
-554;updateWindow;Модуль интерфейса обновлён до версии ;Interface module updated to version ;Módulo de interfaz actualizado a la versión 
-555;updateWindow;Ошибка обновления модуля интерфейса;Interface module update error;Error al actualizar el módulo de interfaz
-556;updateWindow;Медиафайлы обновлены до версии ;Media files updated to version ;Archivos multimedia actualizados a la versión 
-557;updateWindow;Ошибка обновления медиафайлов;Media files update error;Error al actualizar los archivos multimedia
-558;updateWindow;Запущена передача прошивки модуля связи (;Communication module firmware transfer started (;Transferencia del firmware del módulo de comunicación iniciada (
-559;updateWindow;););)
-560;updateWindow;Ошибка запуска обновления COM;Failed to start COM update;Error al iniciar la actualización de COM
-561;updateWindow;Запущена передача прошивки аргонового модуля (;Argon module firmware transfer started (;Transferencia del firmware del módulo de argón iniciada (
-562;updateWindow;Ошибка запуска обновления ARG;Failed to start ARG update;Error al iniciar la actualización de ARG
-563;updateWindow;Запущена передача прошивки модуля генератора (;Generator module firmware transfer started (;Transferencia del firmware del módulo del generador iniciada (
-564;updateWindow;Ошибка запуска обновления GEN;Failed to start GEN update;Error al iniciar la actualización de GEN
-565;updateWindow;Модуль интерфейса;Interface module;Módulo de interfaz
-566;updateWindow;Модуль управления и связи;Communication module;Módulo de comunicación
-567;updateWindow;Модуль аргоновый;Argon module;Módulo de argón
-568;updateWindow;Модуль генератора;Generator;GENERADOR
-569;updateWindow;Медиафайлы;Media files;Archivos multimedia
-570;updateWindow;Обновление ПО;Software update;Actualización de software
-571;updateWindow;Список версий: текущие на устройстве и найденные в папке releases (поддерживается релизный формат a.b-c.d-e).;Version list: current on the device and found in the releases folder (release format a.b-c.d-e is supported).;Lista de versiones: actuales en el dispositivo y encontradas en la carpeta releases (se admite el formato de versión a.b-c.d-e).
-572;updateWindow;Если выбрана версия релиза a.b-c.d-e, для интерфейса применяется a.b, для медиа — c.d.;If release version a.b-c.d-e is selected, a.b is applied to the interface and c.d to the media.;Si se selecciona la versión a.b-c.d-e, se aplica a.b a la interfaz y c.d a los archivos multimedia.
-573;updateWindow;Модуль;Module;Módulo
-574;updateWindow;Текущая;Current;Actual
-575;updateWindow;В releases;In releases;En releases
-576;updateWindow;нет версий;no versions;sin versiones
-577;updateWindow;Обновить;Refresh;Actualizar
-578;updateWindow;Обновить всё до последних версии;Update everything to the latest versions;Actualizar todo a las últimas versiones
-579;updateWindow;Перезапуск;Restart;Reiniciar
-580;updateWindow;В одном или нескольких модулях отсутствует рабочая прошивка.;One or more modules have no working firmware.;Uno o varios módulos no tienen firmware operativo.
-581;updateWindow;Передача прошивки МК: ;MCU firmware transfer: ;Transferencia de firmware del MCU: 
-582;updateWindow;%;%;%
-583;updateWindow;Изменения вступят в силу после перезагрузки.;Changes will take effect after a restart.;Los cambios surtirán efecto tras el reinicio.
-584;updateWindow;Назад;back;atrás
+605;main;ПРИНЯТЬ;ACCEPT;ACEPTAR
+606;main;Эндоскопические программы не могут быть использованы совместно с другими программами;Endoscopic programs cannot be used together with other programs;Los programas endoscópicos no pueden usarse junto con otros programas
+607;updateWindow;Неизвестный модуль;Unknown module;Módulo desconocido
+608;updateWindow;Не выбрана версия для обновления;No version selected for update;No se ha seleccionado una versión para actualizar
+609;updateWindow;Модуль интерфейса обновлён до версии ;Interface module updated to version ;Módulo de interfaz actualizado a la versión 
+610;updateWindow;Ошибка обновления модуля интерфейса;Interface module update error;Error al actualizar el módulo de interfaz
+611;updateWindow;Медиафайлы обновлены до версии ;Media files updated to version ;Archivos multimedia actualizados a la versión 
+612;updateWindow;Ошибка обновления медиафайлов;Media files update error;Error al actualizar los archivos multimedia
+613;updateWindow;Запущена передача прошивки модуля связи (;Communication module firmware transfer started (;Transferencia del firmware del módulo de comunicación iniciada (
+614;updateWindow;););)
+615;updateWindow;Ошибка запуска обновления COM;Failed to start COM update;Error al iniciar la actualización de COM
+616;updateWindow;Запущена передача прошивки аргонового модуля (;Argon module firmware transfer started (;Transferencia del firmware del módulo de argón iniciada (
+617;updateWindow;Ошибка запуска обновления ARG;Failed to start ARG update;Error al iniciar la actualización de ARG
+618;updateWindow;Запущена передача прошивки модуля генератора (;Generator module firmware transfer started (;Transferencia del firmware del módulo del generador iniciada (
+619;updateWindow;Ошибка запуска обновления GEN;Failed to start GEN update;Error al iniciar la actualización de GEN
+620;updateWindow;Модуль интерфейса;Interface module;Módulo de interfaz
+621;updateWindow;Модуль управления и связи;Communication module;Módulo de comunicación
+622;updateWindow;Модуль аргоновый;Argon module;Módulo de argón
+623;updateWindow;Модуль генератора;Generator;GENERADOR
+624;updateWindow;Медиафайлы;Media files;Archivos multimedia
+625;updateWindow;Обновление ПО;Software update;Actualización de software
+626;updateWindow;Список версий: текущие на устройстве и найденные в папке releases (поддерживается релизный формат a.b-c.d-e).;Version list: current on the device and found in the releases folder (release format a.b-c.d-e is supported).;Lista de versiones: actuales en el dispositivo y encontradas en la carpeta releases (se admite el formato de versión a.b-c.d-e).
+627;updateWindow;Если выбрана версия релиза a.b-c.d-e, для интерфейса применяется a.b, для медиа — c.d.;If release version a.b-c.d-e is selected, a.b is applied to the interface and c.d to the media.;Si se selecciona la versión a.b-c.d-e, se aplica a.b a la interfaz y c.d a los archivos multimedia.
+628;updateWindow;Модуль;Module;Módulo
+629;updateWindow;Текущая;Current;Actual
+630;updateWindow;В releases;In releases;En releases
+631;updateWindow;нет версий;no versions;sin versiones
+632;updateWindow;Обновить;Refresh;Actualizar
+633;updateWindow;Обновить всё до последних версии;Update everything to the latest versions;Actualizar todo a las últimas versiones
+634;updateWindow;Перезапуск;Restart;Reiniciar
+635;updateWindow;В одном или нескольких модулях отсутствует рабочая прошивка.;One or more modules have no working firmware.;Uno o varios módulos no tienen firmware operativo.
+636;updateWindow;Передача прошивки МК: ;MCU firmware transfer: ;Transferencia de firmware del MCU: 
+637;updateWindow;%;%;%
+638;updateWindow;Изменения вступят в силу после перезагрузки.;Changes will take effect after a restart.;Los cambios surtirán efecto tras el reinicio.
+639;updateWindow;Назад;back;atrás

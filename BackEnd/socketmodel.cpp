@@ -302,11 +302,14 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
     {
         if (socketItem.curCoagMode().isNull())
             return "";
-        auto iter = resolved.instrMap->find(socketItem.curCoagMode()->selectedInstrId());
+        const int instrId = socketItem.curCoagMode()->selectedInstrId();
+        if (instrId <= 0 || instrId == 1000)
+            return tr("Другой инструмент");
+        auto iter = resolved.instrMap->find(instrId);
         if (iter != resolved.instrMap->end())
             return iter->second->name();
         else
-            return tr("Не выбран");
+            return tr("Другой инструмент");
     }
     case CoagModeInstrID:
         if (socketItem.curCoagMode().isNull())
@@ -404,11 +407,14 @@ QVariant SocketModel::data(const QModelIndex &index, int role) const
         if (!resolved.instrMap || socketItem.curCutMode().isNull()) {
             return QString();
         }
-        auto iter = resolved.instrMap->find(socketItem.curCutMode()->selectedInstrId());
+        const int instrId = socketItem.curCutMode()->selectedInstrId();
+        if (instrId <= 0 || instrId == 1000)
+            return tr("Другой инструмент");
+        auto iter = resolved.instrMap->find(instrId);
         if (iter != resolved.instrMap->end()) {
             return iter->second->name();
         } else {
-            return QString();
+            return tr("Другой инструмент");
         }
     }
     case CutModeInstrID:
@@ -634,8 +640,8 @@ QStringList SocketModel::instrumNames(int socketId, int modeIndex, bool isCoag) 
             names.append(instIter->second->name());
         }
     }
-    // Добавляем пункт "не выбран" в конец списка
-    names.append(tr("НЕ ВЫБРАН"));
+    // Добавляем пункт выбора произвольного/не из списка инструмента
+    names.append(tr("Другой инструмент"));
     return names;
 }
 

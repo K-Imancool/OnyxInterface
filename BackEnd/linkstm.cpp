@@ -62,6 +62,17 @@ void LinkStm::argonBlow()
     setTxCommand(argonBlowCommand);
 }
 
+void LinkStm::setLedOutput(quint8 out, LedColor color)
+{
+    UartTx ledOutputCommand;
+    ledOutputCommand.com = OutputLeds;
+    ledOutputCommand.mc = MC_COM;
+    ledOutputCommand.data.clear();
+    ledOutputCommand.data.append(out);
+    ledOutputCommand.data.append(static_cast<quint8> color);
+    setTxCommand(ledOutputCommand);
+}
+
 void LinkStm::setVolume(int level)
 {
     const int clamped = qBound(1, level, 7);

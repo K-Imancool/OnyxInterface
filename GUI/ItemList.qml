@@ -9,7 +9,7 @@ Rectangle {
 	id: itemList
 	property alias innerModel: theView.model
 	property string imageSourceTemplate
-	property alias curIndex: theView.currentIndex
+	property int curIndex: -1
 	property bool noImage: false
 	property bool hideNoImageSymbol: false
 	property bool editable: false
@@ -31,6 +31,7 @@ Rectangle {
 	property int listItemSpacing: 10
 	property bool showExpandIndicator: false
 	property int expandIndicatorActiveIndex: -1
+	property bool suppressPositionOnIndexChange: false
 
 	signal newIndexSelected(int newIndex)
 	signal deleteItem(int index)
@@ -39,14 +40,35 @@ Rectangle {
 
 	color: "transparent"
 
+	Timer {
+		id: repositionTimer
+		interval: 0
+		onTriggered: itemList.positionSelectedItem()
+	}
+
+	onCurIndexChanged: {
+		if (theView.currentIndex !== curIndex && curIndex >= -1) {
+			suppressPositionOnIndexChange = true
+			theView.currentIndex = curIndex
+			suppressPositionOnIndexChange = false
+		}
+		if (keepSelectedItemAtTop)
+			repositionTimer.restart()
+	}
+
 	function selectIndex(index) {
 		if (!theView.model || index < 0 || index >= theView.count)
 			return
 		if (isIndexLocked(index))
 			return
-		theView.currentIndex = index
-		positionSelectedItem()
+		if (curIndex !== index)
+			curIndex = index
+		else if (keepSelectedItemAtTop)
+			positionSelectedItem()
 		newIndexSelected(index)
+		// Re-apply after ListView finishes any internal currentIndex handling.
+		if (keepSelectedItemAtTop)
+			Qt.callLater(itemList.positionSelectedItem)
 	}
 
 	function isIndexLocked(index) {
@@ -70,19 +92,19 @@ Rectangle {
 	function highlightIndex(index) {
 		if (!theView.model || index < 0 || index >= theView.count)
 			return
-		theView.currentIndex = index
-		if (keepSelectedItemAtTop) {
+		if (curIndex !== index)
+			curIndex = index
+		else if (keepSelectedItemAtTop)
 			positionSelectedItem()
-		} else if (theView.count > 0) {
+		else if (theView.count > 0)
 			theView.positionViewAtIndex(index, ListView.Contain)
-		}
 	}
 
 	function scrollUp() {
-		if (theView.count <= 0 || theView.currentIndex <= 0)
+		if (theView.count <= 0 || curIndex <= 0)
 			return
-		var nextIndex = scrollSelectsItem ? nextSelectableIndex(theView.currentIndex, -1)
-		                                  : theView.currentIndex - 1
+		var nextIndex = scrollSelectsItem ? nextSelectableIndex(curIndex, -1)
+		                                  : curIndex - 1
 		if (nextIndex < 0)
 			return
 		if (scrollSelectsItem)
@@ -95,8 +117,8 @@ Rectangle {
 		if (theView.count <= 0)
 			return
 		var nextIndex = scrollSelectsItem
-				? nextSelectableIndex(theView.currentIndex < 0 ? -1 : theView.currentIndex, 1)
-				: (theView.currentIndex < 0 ? 0 : theView.currentIndex + 1)
+				? nextSelectableIndex(curIndex < 0 ? -1 : curIndex, 1)
+				: (curIndex < 0 ? 0 : curIndex + 1)
 		if (nextIndex >= theView.count)
 			return
 		if (nextIndex < 0)
@@ -108,11 +130,11 @@ Rectangle {
 	}
 
 	function currentItemId() {
-		if (!theView.model || theView.currentIndex < 0 || theView.currentIndex >= theView.count
+		if (!theView.model || curIndex < 0 || curIndex >= theView.count
 				|| typeof theView.model.get !== "function") {
 			return -1
 		}
-		return parseInt(theView.model.get(theView.currentIndex).itemId)
+		return parseInt(theView.model.get(curIndex).itemId)
 	}
 
 	function positionSelectedItem() {
@@ -121,19 +143,25 @@ Rectangle {
 		}
 
 		if (currentItemId() === noAutoScrollItemId) {
-			theView.positionViewAtIndex(0, ListView.Beginning)
+			theView.contentY = theView.originY
 			return
 		}
 
-		if (theView.currentIndex >= 0 && theView.currentIndex < theView.count) {
-			var index = theView.currentIndex
-			theView.positionViewAtIndex(index, ListView.Beginning)
-			var rowsAbove = Math.min(selectedItemRowsAbove, index)
-			if (rowsAbove > 0) {
-				var offset = rowsAbove * (listItemHeight + theView.spacing)
-				theView.contentY = Math.max(0, theView.contentY - offset)
-			}
+		var index = curIndex
+		if (index < 0 || index >= theView.count) {
+			return
 		}
+
+		// Keep the first items pinned to the top: never leave a blank gap above.
+		if (index <= selectedItemRowsAbove) {
+			theView.contentY = theView.originY
+			return
+		}
+
+		var rowStride = listItemHeight + listItemSpacing
+		var targetY = (index - selectedItemRowsAbove) * rowStride
+		var maxContentY = Math.max(0, theView.contentHeight - theView.height)
+		theView.contentY = theView.originY + Math.min(targetY, maxContentY)
 	}
 	ColumnLayout {
 		id: layout
@@ -151,14 +179,28 @@ Rectangle {
 			displayMarginEnd: 15
 			spacing: listItemSpacing
 			clip: true
-			onCurrentIndexChanged: itemList.positionSelectedItem()
+			// When we manage contentY ourselves, ListView must not auto-scroll the
+			// current item (it can push the first rows to the bottom and leave a gap on top).
+			highlightFollowsCurrentItem: !itemList.keepSelectedItemAtTop
+			boundsBehavior: Flickable.StopAtBounds
+			onCurrentIndexChanged: {
+				// Selection highlight is driven by curIndex, not ListView.currentIndex.
+				// Model rebuilds reset currentIndex and must not move the viewport alone.
+				if (!itemList.suppressPositionOnIndexChange
+						&& theView.currentIndex === itemList.curIndex)
+					itemList.positionSelectedItem()
+			}
 			onHeightChanged: {
 				if (itemList.keepSelectedItemAtTop)
-					itemList.positionSelectedItem()
+					repositionTimer.restart()
 			}
 			onCountChanged: {
 				if (itemList.keepSelectedItemAtTop)
-					Qt.callLater(itemList.positionSelectedItem)
+					repositionTimer.restart()
+			}
+			onContentHeightChanged: {
+				if (itemList.keepSelectedItemAtTop)
+					repositionTimer.restart()
 			}
 
 			footer: Item {
@@ -172,7 +214,7 @@ Rectangle {
 
 			delegate: Rectangle {
 				id: itemRoot
-				property bool isSelected: (index === curIndex)
+				property bool isSelected: (index === itemList.curIndex)
 				readonly property bool locked: model.locked === true
 				readonly property bool showImage: !noImage && imageSourceTemplate !== "" && itemImage.status === Image.Ready
 				readonly property bool reserveLeftSymbolSpace: noImage && !hideNoImageSymbol
@@ -264,7 +306,8 @@ Rectangle {
 						id: itemNameLabel
 						anchors.fill: parent
 						anchors.rightMargin: expandIcon.visible ? expandIcon.implicitWidth + 8 : 0
-						text: model.itemName
+						text: model.itemName !== undefined && model.itemName !== null
+						      ? String(model.itemName) : ""
 						horizontalAlignment: Qt.AlignHCenter
 						verticalAlignment: Qt.AlignVCenter
 						wrapMode: Text.WordWrap
@@ -364,7 +407,8 @@ Rectangle {
 								text: "";
 								onClicked: {
 									nameDialog.editingIndex = index
-									nameDialog.initialName = model.itemName
+									nameDialog.initialName = (model.itemName !== undefined && model.itemName !== null)
+									                            ? String(model.itemName) : ""
 									nameDialog.open()
 								}
 							}

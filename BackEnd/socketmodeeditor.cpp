@@ -18,6 +18,7 @@ void SocketModeEditor::initialize(int socket, int mode, bool isCoag)
     m_modeNames = m_model->modeNames(socket, isCoag);
     m_modeNameIds = m_model->modeNamesIds(socket, isCoag);
     m_modeNameNums = m_model->modeNamesNums(socket, isCoag);
+    preloadModeCache();
 
     const int modelModeIndex = m_model->index(socket, 0).data(
                                    m_isCoag ? SocketModel::CoagModeIndex
@@ -57,14 +58,47 @@ void SocketModeEditor::loadModeParameters(int modeIndex)
 {
     if (modeIndex >= m_modeNames.size())
         return;
-    m_currentParameters = m_model->modeParam(m_socketID, (modeIndex), m_isCoag);
-    m_instrList = m_model->instrumNames(m_socketID, modeIndex, m_isCoag);
-    m_instrListIds = m_model->instrumNamesIds(m_socketID, modeIndex, m_isCoag);
-    m_instrListNums = m_model->instrumNamesNums(m_socketID, modeIndex, m_isCoag);
+    if (hasCachedModeData(modeIndex)) {
+        const ModeCacheEntry& cached = m_modeCache.at(modeIndex);
+        m_currentParameters = cached.parameters;
+        m_instrList = cached.instrList;
+        m_instrListIds = cached.instrListIds;
+        m_instrListNums = cached.instrListNums;
+    } else {
+        m_currentParameters = m_model->modeParam(m_socketID, modeIndex, m_isCoag);
+        m_instrList = m_model->instrumNames(m_socketID, modeIndex, m_isCoag);
+        m_instrListIds = m_model->instrumNamesIds(m_socketID, modeIndex, m_isCoag);
+        m_instrListNums = m_model->instrumNamesNums(m_socketID, modeIndex, m_isCoag);
+    }
 
     emit parametersLoaded();
 
-    setCurrentInstrIndex(m_model->selectedInstrumIndexByMode(m_socketID, modeIndex, m_isCoag));
+    const int selectedInstrIndex = hasCachedModeData(modeIndex)
+            ? m_modeCache.at(modeIndex).selectedInstrIndex
+            : m_model->selectedInstrumIndexByMode(m_socketID, modeIndex, m_isCoag);
+    setCurrentInstrIndex(selectedInstrIndex);
+}
+
+void SocketModeEditor::preloadModeCache()
+{
+    m_modeCache.clear();
+    m_modeCache.resize(m_modeNames.size());
+
+    for (int i = 0; i < m_modeNames.size(); ++i) {
+        ModeCacheEntry& entry = m_modeCache[i];
+        entry.parameters = m_model->modeParam(m_socketID, i, m_isCoag);
+        entry.instrList = m_model->instrumNames(m_socketID, i, m_isCoag);
+        entry.instrListIds = m_model->instrumNamesIds(m_socketID, i, m_isCoag);
+        entry.instrListNums = m_model->instrumNamesNums(m_socketID, i, m_isCoag);
+        entry.selectedInstrIndex = m_model->selectedInstrumIndexByMode(m_socketID, i, m_isCoag);
+    }
+}
+
+bool SocketModeEditor::hasCachedModeData(int modeIndex) const
+{
+    return modeIndex >= 0
+            && modeIndex < m_modeCache.size()
+            && !m_modeCache.at(modeIndex).parameters.isEmpty();
 }
 
 void SocketModeEditor::updateCurrentParameters(const QVariantMap ms)

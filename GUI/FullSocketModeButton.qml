@@ -32,6 +32,8 @@ Item {
         anchors.fill: parent
         anchors.margins: 8
         spacing: 8
+        // Для резания иконка справа, для коагуляции — слева.
+        layoutDirection: isCoagSide ? Qt.LeftToRight : Qt.RightToLeft
 
         Image {
             Layout.fillHeight: true
@@ -51,7 +53,7 @@ Item {
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            font.pixelSize: 32
+            font.pixelSize: 38
             font.bold: true
             color: accentTextColor
         }
