@@ -6,6 +6,8 @@ CONFIG += c++17
 # Линковка с математической библиотекой
 LIBS += -lm
 
+include($$PWD/apppaths.pri)
+
 HEADERS += \
     $$PWD/dblocale.h \
     $$PWD/translationcontroller.h \

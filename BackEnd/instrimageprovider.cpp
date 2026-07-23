@@ -1,4 +1,5 @@
 #include "instrimageprovider.h"
+#include "apppaths.h"
 
 #include <QDir>
 #include <QMutex>
@@ -30,8 +31,10 @@ void InstrImageProvider::scanFiles()
 
 
     
+    const AppPaths &paths = AppPaths::instance();
+
     // Сканируем папку с инструментами
-    QDir instrDir("/home/kikorik/FOTEK/Images/instruments");
+    QDir instrDir(paths.instrumentsDir());
     if (instrDir.exists()) {
         s_knownFiles = instrDir.entryInfoList(filters, QDir::Files
                                                         | QDir::NoDotAndDotDot
@@ -42,7 +45,7 @@ void InstrImageProvider::scanFiles()
     }
     
     // Сканируем папку с режимами
-    QDir modesDir("/home/kikorik/FOTEK/Images/modes");
+    QDir modesDir(paths.modesDir());
     if (modesDir.exists()) {
         QFileInfoList modeFiles = modesDir.entryInfoList(filters,
                                                         QDir::Files
@@ -55,7 +58,7 @@ void InstrImageProvider::scanFiles()
     }
     
     // Сканируем папку со скоупами
-    QDir scopesDir("/home/kikorik/FOTEK/Images/scopes");
+    QDir scopesDir(paths.scopesDir());
     if (scopesDir.exists()) {
         QFileInfoList scopeFiles = scopesDir.entryInfoList(filters,
                                                         QDir::Files

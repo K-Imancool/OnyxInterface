@@ -10,7 +10,7 @@ Rectangle {
     
     signal closeRequested()
     
-    property string videoFolder: "/home/kikorik/FOTEK/Video"
+    property string videoFolder: AppPaths.videoDir
     property var videoFiles: []
     property int currentVideoIndex: -1
     property bool showLoadingOnPlay: false  // Показывать индикатор при нажатии Play

@@ -17,7 +17,7 @@ Rectangle {
     property bool neutralConnected: periphHandle.neutralElConnected  // Передается снаружи
     property bool showControls: false      // Показывать ли кнопки управления
 
-    readonly property string neIconsBasePath: "file:///home/kikorik/FOTEK/Images/ne/"
+    readonly property string neIconsBasePath: AppPaths.neIconsBaseUrl
 
     // Сигналы для синхронизации с PeriphHandler
     // Используем другие имена, чтобы не конфликтовать с автоматическими сигналами свойств

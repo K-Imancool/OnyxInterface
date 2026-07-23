@@ -1,5 +1,7 @@
 #include "UpdateLogManager.h"
 
+#include "apppaths.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -88,7 +90,7 @@ QString UpdateLogManager::logFilePath() const
 
 QString UpdateLogManager::logDirPath() const
 {
-    return QDir::homePath() + QStringLiteral("/OnyxLog");
+    return AppPaths::instance().onyxLogDir();
 }
 
 bool UpdateLogManager::ensureLogDir() const

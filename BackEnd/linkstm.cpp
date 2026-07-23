@@ -508,7 +508,7 @@ void LinkStm::sendCommand()
     if (!m_uart->writeData(txPacket)) {
         m_state = STATE_TX_ERR;
         txStr = "!Tx ERROR";
-         qDebug() << "Tx ERR!";
+//         qDebug() << "Tx ERR!";
    }
    else {
         txStr = getHexStr(txPacket);

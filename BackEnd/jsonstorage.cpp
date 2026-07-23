@@ -1,4 +1,5 @@
 #include "jsonstorage.h"
+#include "apppaths.h"
 #include <QFile>
 #include <QFileInfo>
 #include <QSaveFile>
@@ -137,13 +138,14 @@ JsonStorage::JsonStorage(QObject *parent, QVariantMap* initMap)
         qWarning() << "JsonStorage: failed to create directory" << dir.absolutePath();
     }
 
-    // Одноразовая миграция со старого пути (/home/kikorik/FOTEK/OnyxLog/save.json),
+    // Одноразовая миграция со старого пути (<fotekRoot>/OnyxLog/save.json),
     // если новый продакшен-файл ещё не создан. Копия, не move — старый файл
     // остаётся как резерв на случай отката.
-    if (!QFile::exists(JSON_FILE_NAME) && QFile::exists(LEGACY_JSON_FILE_NAME)) {
-        if (!QFile::copy(LEGACY_JSON_FILE_NAME, JSON_FILE_NAME)) {
+    const QString legacyPath = AppPaths::instance().legacySaveJsonPath();
+    if (!QFile::exists(JSON_FILE_NAME) && QFile::exists(legacyPath)) {
+        if (!QFile::copy(legacyPath, JSON_FILE_NAME)) {
             qWarning() << "JsonStorage: failed to migrate legacy file from"
-                       << LEGACY_JSON_FILE_NAME << "to" << JSON_FILE_NAME;
+                       << legacyPath << "to" << JSON_FILE_NAME;
         }
     }
 

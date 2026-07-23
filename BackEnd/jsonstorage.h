@@ -34,8 +34,7 @@ private:
 
     // Продакшен-путь настроек
     const QString JSON_FILE_NAME = "/var/lib/qtpr/save.json";
-    // Легаси-путь для одноразовой миграции
-    const QString LEGACY_JSON_FILE_NAME = "/home/kikorik/FOTEK/OnyxLog/save.json";
+    // Легаси-путь задаётся через AppPaths::legacySaveJsonPath()
 
 };
 

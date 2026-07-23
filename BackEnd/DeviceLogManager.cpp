@@ -2,6 +2,7 @@
 
 #include "jsonstorage.h"
 #include "socketmodel.h"
+#include "apppaths.h"
 
 #include <QDir>
 #include <QFile>
@@ -272,7 +273,7 @@ void DeviceLogManager::logPowerOff(const QString &message)
 
 QString DeviceLogManager::logDirPath() const
 {
-    return QDir::homePath() + QStringLiteral("/OnyxLog");
+    return AppPaths::instance().onyxLogDir();
 }
 
 bool DeviceLogManager::ensureLogDir() const

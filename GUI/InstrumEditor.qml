@@ -534,7 +534,12 @@ Popup {
         function onPowerChosen() {
             modeEditor.updateParameter("currentpower", midPowerButton.power)
         }
+        // Не применять mid автоматически, пока пикер закрыт или открывается:
+        // иначе initialize()/setCurrentInstrIndex из FullSocketEditor затирает
+        // сохранённую мощность средней при каждом входе в редактор.
         function onPowerChanged() {
+            if (!root.opened || openingInProgress)
+                return
             modeEditor.updateParameter("currentpower", midPowerButton.power)
         }
     }
@@ -544,6 +549,8 @@ Popup {
             modeEditor.updateParameter("currentpower", lowPowerButton.power)
         }
         function onPowerChanged() {
+            if (!root.opened || openingInProgress)
+                return
             if (modeEditor.midPowerBound === 0)
                 modeEditor.updateParameter("currentpower", lowPowerButton.power)
         }

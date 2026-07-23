@@ -13,7 +13,7 @@ Item {
 
     property color fotekBlue: "#264093"
     property color fotekOrange: "#faa731"
-    readonly property string iconsBasePath: "file:///home/kikorik/FOTEK/Images/icons/"
+    readonly property string iconsBasePath: AppPaths.iconsBaseUrl
     readonly property int screenMargin: 34
     readonly property int mainSpacing: 24
     readonly property int headerHeight: 70

@@ -451,7 +451,9 @@ Popup {
     }
 
     function finishCommitAndClose() {
-        copyEditorToSide(activeIsCoag)
+        // Не вызывать copyEditorToSide: attemptCommitAndClose уже синхронизировал
+        // активную сторону, а onReduceChosen мог понизить power в cutLive/coagLive —
+        // повторный захват из modeEditor затёр бы снижение.
         if (cutDirty)
             commitSide(false)
         if (coagDirty)

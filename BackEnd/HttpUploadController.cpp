@@ -1,6 +1,7 @@
 #include "HttpUploadController.h"
 #include "jsonstorage.h"
 #include "linkstm.h"
+#include "apppaths.h"
 
 #include <QAbstractSocket>
 #include <QDate>
@@ -437,12 +438,12 @@ void HttpUploadController::setCurrentMediaVersion(const QString &version)
 
 void HttpUploadController::refreshReleaseVersions()
 {
-    const QString home = QDir::homePath();
-    const QStringList newMain = scanSubdirectoryVersions(home + QStringLiteral("/releases/main"));
-    const QStringList newMedia = scanSubdirectoryVersions(home + QStringLiteral("/releases/media"));
-    const QStringList newCom = scanFirmwareHexVersions(home + QStringLiteral("/releases/com"), QStringLiteral("COM"));
-    const QStringList newArg = scanFirmwareHexVersions(home + QStringLiteral("/releases/arg"), QStringLiteral("ARG"));
-    const QStringList newGen = scanFirmwareHexVersions(home + QStringLiteral("/releases/gen"), QStringLiteral("GEN"));
+    const AppPaths &paths = AppPaths::instance();
+    const QStringList newMain = scanSubdirectoryVersions(paths.releasesMainDir());
+    const QStringList newMedia = scanSubdirectoryVersions(paths.releasesMediaDir());
+    const QStringList newCom = scanFirmwareHexVersions(paths.releasesComDir(), QStringLiteral("COM"));
+    const QStringList newArg = scanFirmwareHexVersions(paths.releasesArgDir(), QStringLiteral("ARG"));
+    const QStringList newGen = scanFirmwareHexVersions(paths.releasesGenDir(), QStringLiteral("GEN"));
 
     bool changed = false;
     if (hasVersionListChanged(m_availableMainVersions, newMain)) {
@@ -836,9 +837,8 @@ bool HttpUploadController::buildLogArchiveBundle(const QString &sessionToken, QS
 
     qWarning() << "HttpUploadController: buildLogArchiveBundle start";
 
-    const QString home = QDir::homePath();
-    const QString onyxLogDir = QDir(home).filePath(QStringLiteral("OnyxLog"));
-    const QString userProgPath = QDir(home + QStringLiteral("/FOTEK")).filePath(QStringLiteral("userProg.db"));
+    const QString onyxLogDir = AppPaths::instance().onyxLogDir();
+    const QString userProgPath = AppPaths::instance().userProgDbPath();
 
     if (!QDir(onyxLogDir).exists()) {
         qWarning() << "HttpUploadController: buildLogArchiveBundle OnyxLog missing:" << onyxLogDir;
@@ -2402,12 +2402,12 @@ bool HttpUploadController::processReleaseArchiveBytes(const QString &sourceFileN
         fwGen = fwObj.value(QStringLiteral("gen")).toString().trimmed();
     }
 
-    const QString home = QDir::homePath();
-    const QString mainRoot = home + QStringLiteral("/releases/main/") + binaryVersion;
-    const QString mediaRoot = home + QStringLiteral("/releases/media/") + mediaVersion;
-    const QString comRoot = home + QStringLiteral("/releases/com");
-    const QString argRoot = home + QStringLiteral("/releases/arg");
-    const QString genRoot = home + QStringLiteral("/releases/gen");
+    const AppPaths &paths = AppPaths::instance();
+    const QString mainRoot = paths.releasesMainVersionDir(binaryVersion);
+    const QString mediaRoot = paths.releasesMediaVersionDir(mediaVersion);
+    const QString comRoot = paths.releasesComDir();
+    const QString argRoot = paths.releasesArgDir();
+    const QString genRoot = paths.releasesGenDir();
 
     for (const QJsonValue &v : deployPaths) {
         const QString rel = normalizeRelPath(v.toString());
@@ -2906,7 +2906,7 @@ bool HttpUploadController::applyMainVersion(const QString &version)
         return false;
     }
 
-    const QString srcPath = QDir::homePath() + QStringLiteral("/releases/main/") + v + QStringLiteral("/UserInterface");
+    const QString srcPath = AppPaths::instance().releasesMainBinaryPath(v);
     const QString dstPath = QStringLiteral("/usr/share/qtpr/UserInterface");
     const QString bakPath = QStringLiteral("/usr/share/qtpr/UserInterface.bak");
 
@@ -2951,8 +2951,8 @@ bool HttpUploadController::applyMediaVersion(const QString &version)
         return false;
     }
 
-    const QString srcDir = QDir::homePath() + QStringLiteral("/releases/media/") + v;
-    const QString dstDir = QDir::homePath() + QStringLiteral("/FOTEK");
+    const QString srcDir = AppPaths::instance().releasesMediaVersionDir(v);
+    const QString dstDir = AppPaths::instance().fotekRoot();
     QString copyErr;
     if (!copyDirectoryContentsReplace(srcDir, dstDir, &copyErr)) {
         setLastError(tr("Не удалось обновить медиафайлы"));
@@ -3018,8 +3018,7 @@ bool HttpUploadController::applyMcFirmwareFromReleases(const QString &version, c
         setLastError(tr("Не выбрана версия"));
         return false;
     }
-    const QString path = QDir::homePath() + QStringLiteral("/releases/") + releasesSubdir + QLatin1Char('/')
-            + filePrefixUpper + QLatin1Char('-') + v + QStringLiteral(".hex");
+    const QString path = AppPaths::instance().releasesFirmwareHexPath(releasesSubdir, filePrefixUpper, v);
     if (!QFileInfo::exists(path)) {
         setMcFirmwareUpdateProgress(-1);
         setLastError(tr("Файл не найден: %1").arg(path));

@@ -274,10 +274,15 @@ Drawer {
     NeutralPowerWarningDialog {
         id: neutralPowerWarningDialog
 
-        onContinueChosen: neutralDrawerRoot.close()
+        onContinueChosen: {
+            neutralDrawerRoot.pendingPowerViolations = []
+            neutralDrawerRoot.close()
+        }
 
         onReduceChosen: {
-            neutralDrawerRoot.reduceViolationsToSafeLevel(neutralDrawerRoot.pendingPowerViolations)
+            var violations = neutralDrawerRoot.pendingPowerViolations.slice()
+            neutralDrawerRoot.reduceViolationsToSafeLevel(violations)
+            neutralDrawerRoot.pendingPowerViolations = []
             neutralDrawerRoot.close()
         }
 

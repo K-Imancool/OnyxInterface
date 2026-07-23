@@ -93,8 +93,10 @@ Dialog {
                 cornerRadius: 20
                 labelPixelSize: 32
                 onPressed: {
-                    root.close()
+                    // Сигнал до close(): иначе onClosed у родителя может очистить
+                    // состояние (например pendingPowerViolations) до обработчика.
                     root.continueChosen()
+                    root.close()
                 }
             }
 
@@ -107,8 +109,8 @@ Dialog {
                 cornerRadius: 20
                 labelPixelSize: 32
                 onPressed: {
-                    root.close()
                     root.reduceChosen()
+                    root.close()
                 }
             }
         }

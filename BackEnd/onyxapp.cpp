@@ -1,24 +1,19 @@
 #include "onyxapp.h"
+#include "apppaths.h"
 
-#include <QFileInfo>
 #include <QStyleHints>
-
-namespace {
-const QString kEshfDbPath = QStringLiteral("/home/kikorik/FOTEK/eshfDb.db");
-}
 
 OnyxApp::OnyxApp(int &argc, char **argv, int flags) :
 QGuiApplication(argc, argv, flags)
 {
+    const AppPaths &paths = AppPaths::instance();
     m_dbReader = QSharedPointer<DataBaseReader>::create(
-        kEshfDbPath,
+        paths.eshfDbPath(),
         QStringLiteral("eshfCatalog"),
         true);
 
-    const QFileInfo eshfInfo(kEshfDbPath);
-    const QString userProgPath = eshfInfo.absolutePath() + QStringLiteral("/userProg.db");
     m_userProgDbReader = QSharedPointer<DataBaseReader>::create(
-        userProgPath,
+        paths.userProgDbPath(),
         QStringLiteral("userProgStore"),
         false);
 

@@ -30,6 +30,7 @@
 #include "BackEnd/datetimecontroller.h"
 #include "BackEnd/translationcontroller.h"
 #include "BackEnd/featureunlockcontroller.h"
+#include "BackEnd/apppaths.h"
 
 // Умный указатель на файл логирования
 QScopedPointer<QFile>   m_logFile;
@@ -103,8 +104,9 @@ int main(int argc, char *argv[])
     // Не отключаем *.debug — иначе qDebug() не вызывает messageHandler и не виден в SSH
     qputenv("QT_LOGGING_RULES", "qt.qpa.input=false");
 
+    AppPaths::initializeFromArgs(argc, argv);
     OnyxApp app(argc, argv);
-    QCoreApplication::setApplicationVersion("1.3");
+    QCoreApplication::setApplicationVersion("1.4");     // 23.07.26 переход к FullSocketEditor
 
     // Устанавливаем кастомный обработчик для вывода только имени файла (без пути)
     qInstallMessageHandler(messageHandler);
@@ -117,7 +119,7 @@ int main(int argc, char *argv[])
     // Для отладки без блокировки: -qmljsdebugger=port:3768
 
     // Устанавливаем файл логирования,
-    // m_logFile.reset(new QFile("/home/kikorik/OnyxLog/logFile.txt"));
+    // m_logFile.reset(new QFile(AppPaths::instance().onyxLogDir() + "/logFile.txt"));
     // Открываем файл логирования
     // m_logFile.data()->open(QFile::Append | QFile::Text);
     // Устанавливаем обработчик
@@ -154,6 +156,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("dateTimeController", dateTimeController);
     engine.rootContext()->setContextProperty("translationController", translationController);
     engine.rootContext()->setContextProperty("appVersion", QCoreApplication::applicationVersion());
+    engine.rootContext()->setContextProperty(QStringLiteral("AppPaths"), &AppPaths::instance());
 
     QVariantMap *initMap = new QVariantMap();
     initMap->insert("boot", 0);
