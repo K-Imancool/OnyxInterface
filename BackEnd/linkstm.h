@@ -154,6 +154,15 @@ public:
     };
     Q_ENUM(McUnit);
 
+    enum LedOutput : quint8 {
+        OUT_ALL = 0x00,                   // Все выходы для подсветки
+        OUT_BI1 = 0x01,
+        OUT_BI2 = 0x02,
+        OUT_MONO1 = 0x03,
+        OUT_MONO2 = 0x04
+    };
+    Q_ENUM(LedOutput);
+
     enum LedColor : quint8 {
         LED_OFF = 0x00,                   // Подсветка выходов выключена
         LED_GREEN = 0x01,                 // Зелёный цвет
@@ -241,8 +250,8 @@ public slots:
     void start();
     /// Загрузка hex из файла (вызов из потока LinkStm)
     void startFirmwareUpdateFromFile(const QString &filePath, const QString &versionStr, int mcUnitRaw);
-    void argonBlow();                               // Передать команду на продувку
-    void setLedOutput(quint8 out, LedColor color);  // Передать команду на включение/выключение подсветки
+    void argonBlow();                                   // Передать команду на продувку
+    void setLedOutput(LedOutput out, LedColor color);   // Передать команду на включение/выключение подсветки
     void setVolume(int level);
     void setEnableActivation(bool enable);
     void setNeutralElDivided(bool divided);

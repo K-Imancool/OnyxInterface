@@ -62,14 +62,14 @@ void LinkStm::argonBlow()
     setTxCommand(argonBlowCommand);
 }
 
-void LinkStm::setLedOutput(quint8 out, LedColor color)
+void LinkStm::setLedOutput(LedOutput out, LedColor color)
 {
     UartTx ledOutputCommand;
     ledOutputCommand.com = OutputLeds;
     ledOutputCommand.mc = MC_COM;
     ledOutputCommand.data.clear();
-    ledOutputCommand.data.append(out);
-    ledOutputCommand.data.append(static_cast<quint8> color);
+    ledOutputCommand.data.append(static_cast<quint8>(out));
+    ledOutputCommand.data.append(static_cast<quint8>(color));
     setTxCommand(ledOutputCommand);
 }
 

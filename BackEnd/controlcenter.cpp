@@ -87,6 +87,7 @@ void ControlCenter::registerHandles()
 	qmlRegisterUncreatableType<SocketModeEditor>("BackEnd", 1, 0, "SocketModeEditor", "should be one and exist not only for qml");
 	qmlRegisterUncreatableType<ProgHandle>("BackEnd", 1, 0, "ProgHandle", "should be one and exist not only for qml");
 	qmlRegisterUncreatableType<PeriphHandler>("BackEnd", 1, 0, "PeriphHandle", "should be one and exist not only for qml");
+	qmlRegisterUncreatableType<LinkStm>("BackEnd", 1, 0, "LinkStm", "LinkStm is created in C++");
 }
 
 QPointer<SocketModel> ControlCenter::getSocketModel() const
@@ -622,6 +623,19 @@ void ControlCenter::setVolumeLevel(int level)
     }
     QMetaObject::invokeMethod(m_linkStm.data(), "setVolume", Qt::QueuedConnection,
                               Q_ARG(int, level));
+}
+
+void ControlCenter::setLedOutput(int out, int color)
+{
+    if (m_linkStm.isNull()) {
+        return;
+    }
+    auto *link = m_linkStm.data();
+    const auto ledOut = static_cast<LinkStm::LedOutput>(out);
+    const auto ledColor = static_cast<LinkStm::LedColor>(color);
+    QMetaObject::invokeMethod(link, [link, ledOut, ledColor]() {
+        link->setLedOutput(ledOut, ledColor);
+    }, Qt::QueuedConnection);
 }
 
 bool ControlCenter::loadProgram(int progId, bool clear)

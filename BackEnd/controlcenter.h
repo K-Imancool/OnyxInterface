@@ -84,6 +84,7 @@ public:
 	Q_INVOKABLE bool loadProgram(int progId, bool clear);
 	Q_INVOKABLE void setNeutralResistPollEnabled(bool enabled);
     Q_INVOKABLE void setVolumeLevel(int level);
+    Q_INVOKABLE void setLedOutput(int out, int color);
     Q_INVOKABLE void appendDebugOverlayLine(const QString &line);
     Q_INVOKABLE void clearDebugOverlay();
     QString debugOverlayText() const;

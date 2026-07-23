@@ -519,7 +519,25 @@ Popup {
         }
     }
 
-    onOpened: prepareEditorData()
+    function ledOutputForSocket(id) {
+        switch (id) {
+        case 0: return LinkStm.OUT_BI1
+        case 1: return LinkStm.OUT_BI2
+        case 2: return LinkStm.OUT_MONO1
+        case 3: return LinkStm.OUT_MONO2
+        }
+        return LinkStm.OUT_ALL
+    }
+
+    onOpened: {
+        prepareEditorData()
+        if (socId >= 0 && socId <= 3)
+            appControl.setLedOutput(ledOutputForSocket(socId), LinkStm.LED_WHITE)
+    }
+
+    onClosed: {
+        appControl.setLedOutput(LinkStm.OUT_ALL, LinkStm.LED_OFF)
+    }
 
     Timer {
         id: powerRepeatDelay
