@@ -31,6 +31,7 @@
 #include "BackEnd/translationcontroller.h"
 #include "BackEnd/featureunlockcontroller.h"
 #include "BackEnd/apppaths.h"
+#include "appversion.h"
 
 // Умный указатель на файл логирования
 QScopedPointer<QFile>   m_logFile;
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
 
     AppPaths::initializeFromArgs(argc, argv);
     OnyxApp app(argc, argv);
-    QCoreApplication::setApplicationVersion("1.4");     // 23.07.26 переход к FullSocketEditor
+    QCoreApplication::setApplicationVersion(kOnyxAppVersion);
 
     // Устанавливаем кастомный обработчик для вывода только имени файла (без пути)
     qInstallMessageHandler(messageHandler);

@@ -21,6 +21,9 @@ LIBS += -lm
 SOURCES += \
         main.cpp
 
+HEADERS += \
+        appversion.h
+
 RESOURCES += qml.qrc
 
 TRANSLATIONS += \
