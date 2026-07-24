@@ -43,24 +43,40 @@ Rectangle {
     signal fullSocketEditorRequest(int socketId)
     signal dimmedSocketClicked(int socketId)
 
+    // Сокращённое имя режима для главного экрана при активном авторежиме.
+    // Пустая строка — сокращение не нужно, вызывающий код добавит суффикс сам.
+    function shortenedModeNameForAuto(modeId, autoMode) {
+        if (modeId === 6) { // БИ-КОАГ-ДИССЕКТ
+            if (autoMode === 1)
+                return qsTr("БИ КОАГ ДИСС А-СТОП")
+            if (autoMode === 2)
+                return qsTr("БИ КОАГ ДИСС А-СТ-СТОП")
+        }
+        else if (modeId === 27) { // БИ-КОАГ-МИКРО
+            if (autoMode === 1)
+                return qsTr("БИ КОАГ МИКРО\nАВТОСТОП")
+            if (autoMode === 2)
+                return qsTr("БИ КОАГ МИКР А-СТ-СТОП")
+        }
+        return ""
+    }
+
     readonly property string coagModeNameForDisplay: {
         var _ = _coagAutoDisplayRev
         var a = periphHandle.autoMode(socketId)
         var base = coagModeName
+        var shortened = shortenedModeNameForAuto(coagModeId, a)
+        if (shortened.length > 0)
+            return shortened
         if (coagModeId === 5 ||
                 coagModeId === 6 ||
-                coagModeId === 27 ||
-                coagModeId === 61 ||
-                coagModeId === 62 ||
-                coagModeId === 63 ||
-                coagModeId === 64) {
+                coagModeId === 27) {
             if (a === 1)
-                return base + qsTr(" АВТОСТОП")
+                return base + qsTr(" А-СТОП")
             if (a === 2)
-                return base + qsTr(" АВТО-СТ-СТОП")
-//            return base + qsTr(" АВТОСТАРТ/СТОП")
+                return base + qsTr(" А-СТ-СТОП")
         }
-        if (coagModeId === 21 && socketId >= 2 && socketId <= 3 && a === 1)
+        if (coagModeId === 21 && a === 1)
             return base + qsTr(" АВТОСТОП")
         return base
     }

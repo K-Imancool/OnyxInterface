@@ -199,7 +199,7 @@ Rectangle {
             else if (neutralSize === 1)
                 qsTr("5-15кг\nМакс.75")
             else if (neutralSize === 2)
-                qsTr("> 15кг\nМакс.400")
+                qsTr("> 15кг")
         }
     }
 

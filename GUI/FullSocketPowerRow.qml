@@ -15,9 +15,40 @@ Item {
     readonly property int endoLabelHeight: 28
     readonly property bool showEndo: modeSelected && sideState.isEndo
     readonly property int endoGroupsGap: 28
+    readonly property bool canStepPower: modeSelected && sideState.maxPower > 0
+    readonly property bool canDecreasePower: canStepPower && sideState.power > 1
+    readonly property bool canIncreasePower: canStepPower && sideState.power < sideState.maxPower
+    readonly property int cutEffect: editorRoot ? editorRoot.endoCutEffect(isCoagSide) : 1
+    readonly property int coagEffect: editorRoot ? editorRoot.endoCoagEffect(isCoagSide) : 1
 
     implicitHeight: showEndo ? (btnH + endoLabelHeight + 6) : btnH
     implicitWidth: 200
+
+    // Подсветка нажатия как у кнопок расхода аргона: фон fotekOrange, текст чёрный
+    component StepButton: Button {
+        id: stepBtn
+        flat: true
+        property int labelPixelSize: 52
+
+        background: Rectangle {
+            radius: 16
+            color: !stepBtn.enabled
+                   ? "#E8ECF2"
+                   : (stepBtn.down ? editorRoot.fotekOrange : "white")
+            border.width: stepBtn.enabled ? 2 : 1
+            border.color: stepBtn.enabled ? editorRoot.fotekOrange : "#C7CEDA"
+        }
+        contentItem: Text {
+            text: stepBtn.text
+            color: !stepBtn.enabled
+                   ? editorRoot.uiMidGray
+                   : (stepBtn.down ? "black" : editorRoot.fotekBlue)
+            font.pixelSize: stepBtn.labelPixelSize
+            font.bold: true
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -26,26 +57,12 @@ Item {
 
         Item { Layout.fillWidth: true }
 
-        Button {
+        StepButton {
             Layout.preferredWidth: control.btnW
             Layout.preferredHeight: control.btnH
             text: qsTr("−")
-            enabled: sideState.maxPower > 0
-            flat: true
-            background: Rectangle {
-                radius: 16
-                color: enabled ? "white" : "#E8ECF2"
-                border.width: enabled ? 2 : 1
-                border.color: enabled ? editorRoot.fotekOrange : "#C7CEDA"
-            }
-            contentItem: Text {
-                text: parent.text
-                color: parent.enabled ? editorRoot.fotekBlue : editorRoot.uiMidGray
-                font.pixelSize: 52
-                font.bold: true
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
+            enabled: control.canDecreasePower
+            labelPixelSize: 52
             onPressed: editorRoot.startMainPowerRepeat(isCoagSide, false)
             onReleased: editorRoot.stopMainPowerRepeat()
             onCanceled: editorRoot.stopMainPowerRepeat()
@@ -62,26 +79,12 @@ Item {
             color: editorRoot.fotekBlue
         }
 
-        Button {
+        StepButton {
             Layout.preferredWidth: control.btnW
             Layout.preferredHeight: control.btnH
             text: qsTr("+")
-            enabled: sideState.maxPower > 0
-            flat: true
-            background: Rectangle {
-                radius: 16
-                color: enabled ? "white" : "#E8ECF2"
-                border.width: enabled ? 2 : 1
-                border.color: enabled ? editorRoot.fotekOrange : "#C7CEDA"
-            }
-            contentItem: Text {
-                text: parent.text
-                color: parent.enabled ? editorRoot.fotekBlue : editorRoot.uiMidGray
-                font.pixelSize: 50
-                font.bold: true
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
+            enabled: control.canIncreasePower
+            labelPixelSize: 50
             onPressed: editorRoot.startMainPowerRepeat(isCoagSide, true)
             onReleased: editorRoot.stopMainPowerRepeat()
             onCanceled: editorRoot.stopMainPowerRepeat()
@@ -109,35 +112,22 @@ Item {
                 Layout.preferredWidth: 0
                 spacing: 6
 
-                Button {
+                StepButton {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("−")
-                    flat: true
-                    background: Rectangle {
-                        radius: 16
-                        color: "white"
-                        border.width: 2
-                        border.color: editorRoot.fotekOrange
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: editorRoot.fotekBlue
-                        font.pixelSize: 44
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                    enabled: control.cutEffect > 1
+                    labelPixelSize: 44
                     onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       editorRoot.endoCutEffect(isCoagSide) - 1,
-                                                       editorRoot.endoCoagEffect(isCoagSide))
+                                                       control.cutEffect - 1,
+                                                       control.coagEffect)
                 }
 
                 Label {
                     Layout.fillWidth: true
                     Layout.preferredWidth: 0
                     Layout.preferredHeight: control.btnH
-                    text: editorRoot.endoCutEffect(isCoagSide)
+                    text: control.cutEffect
                     font.pixelSize: 54
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
@@ -145,28 +135,15 @@ Item {
                     color: editorRoot.fotekBlue
                 }
 
-                Button {
+                StepButton {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("+")
-                    flat: true
-                    background: Rectangle {
-                        radius: 16
-                        color: "white"
-                        border.width: 2
-                        border.color: editorRoot.fotekOrange
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: editorRoot.fotekBlue
-                        font.pixelSize: 44
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                    enabled: control.cutEffect < 3
+                    labelPixelSize: 44
                     onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       editorRoot.endoCutEffect(isCoagSide) + 1,
-                                                       editorRoot.endoCoagEffect(isCoagSide))
+                                                       control.cutEffect + 1,
+                                                       control.coagEffect)
                 }
             }
 
@@ -195,35 +172,22 @@ Item {
                 Layout.preferredWidth: 0
                 spacing: 6
 
-                Button {
+                StepButton {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("−")
-                    flat: true
-                    background: Rectangle {
-                        radius: 16
-                        color: "white"
-                        border.width: 2
-                        border.color: editorRoot.fotekOrange
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: editorRoot.fotekBlue
-                        font.pixelSize: 44
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                    enabled: control.coagEffect > 1
+                    labelPixelSize: 44
                     onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       editorRoot.endoCutEffect(isCoagSide),
-                                                       editorRoot.endoCoagEffect(isCoagSide) - 1)
+                                                       control.cutEffect,
+                                                       control.coagEffect - 1)
                 }
 
                 Label {
                     Layout.fillWidth: true
                     Layout.preferredWidth: 0
                     Layout.preferredHeight: control.btnH
-                    text: editorRoot.endoCoagEffect(isCoagSide)
+                    text: control.coagEffect
                     font.pixelSize: 54
                     font.bold: true
                     horizontalAlignment: Text.AlignHCenter
@@ -231,28 +195,15 @@ Item {
                     color: editorRoot.fotekBlue
                 }
 
-                Button {
+                StepButton {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("+")
-                    flat: true
-                    background: Rectangle {
-                        radius: 16
-                        color: "white"
-                        border.width: 2
-                        border.color: editorRoot.fotekOrange
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: editorRoot.fotekBlue
-                        font.pixelSize: 44
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                    enabled: control.coagEffect < 3
+                    labelPixelSize: 44
                     onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       editorRoot.endoCutEffect(isCoagSide),
-                                                       editorRoot.endoCoagEffect(isCoagSide) + 1)
+                                                       control.cutEffect,
+                                                       control.coagEffect + 1)
                 }
             }
 

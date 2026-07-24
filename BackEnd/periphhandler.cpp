@@ -165,6 +165,10 @@ void PeriphHandler::argonBlow()
 	if (m_argonBlowing) {
 		return;
 	}
+	if (!m_argonCylinder1Connected && !m_argonCylinder2Connected) {
+		qDebug() << "Argon blow ignored: no cylinder connected";
+		return;
+	}
 
 	m_argonBlowing = true;
 	emit argonBlowingChanged(m_argonBlowing);

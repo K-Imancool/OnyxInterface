@@ -118,6 +118,22 @@ Popup {
         commitAndClose()
     }
 
+    function defaultRecommendedPower() {
+        if (modeEditor.midPowerBound !== 0)
+            return modeEditor.midPowerBound
+        if (modeEditor.lowPowerBound !== 0)
+            return modeEditor.lowPowerBound
+        if (modeEditor.highPowerBound !== 0)
+            return modeEditor.highPowerBound
+        return modeEditor.currentPower
+    }
+
+    function applyDefaultRecommendedPower() {
+        var power = defaultRecommendedPower()
+        if (power !== 0)
+            modeEditor.updateParameter("currentpower", power)
+    }
+
     function deselectInstrument() {
         if (openingInProgress)
             return
@@ -534,25 +550,11 @@ Popup {
         function onPowerChosen() {
             modeEditor.updateParameter("currentpower", midPowerButton.power)
         }
-        // Не применять mid автоматически, пока пикер закрыт или открывается:
-        // иначе initialize()/setCurrentInstrIndex из FullSocketEditor затирает
-        // сохранённую мощность средней при каждом входе в редактор.
-        function onPowerChanged() {
-            if (!root.opened || openingInProgress)
-                return
-            modeEditor.updateParameter("currentpower", midPowerButton.power)
-        }
     }
     Connections {
         target: lowPowerButton
         function onPowerChosen() {
             modeEditor.updateParameter("currentpower", lowPowerButton.power)
-        }
-        function onPowerChanged() {
-            if (!root.opened || openingInProgress)
-                return
-            if (modeEditor.midPowerBound === 0)
-                modeEditor.updateParameter("currentpower", lowPowerButton.power)
         }
     }
 
@@ -562,6 +564,10 @@ Popup {
             if (openingInProgress)
                 return
             modeEditor.currentInstrIndex = index
+            // Явно, а не через onPowerChanged у PowerRect: иначе клик по low/high
+            // мог тут же затираться повторным mid, а initialize() с закрытым пикером
+            // затирал сохранённую мощность.
+            applyDefaultRecommendedPower()
         }
     }
 }

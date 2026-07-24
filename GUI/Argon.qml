@@ -24,6 +24,8 @@ Rectangle {
     readonly property color compactLabelColor: compactOnLightBackground ? "#2c2c2c" : "white"
     readonly property int displayedArgonRate: (isActivation || isBlowing) ? realFlowRate : flowRate
     readonly property bool showRealFlow: isActivation || isBlowing
+    readonly property bool anyCylinderConnected: cylinder1Connected || cylinder2Connected
+    readonly property bool blowDisabled: isBlowing || !anyCylinderConnected
 
     function formatFlowRate(rate) {
         var value = Math.max(0, rate)
@@ -156,6 +158,17 @@ Rectangle {
 //        visible: !showControls
         
         // Иконка баллона
+        Text {
+            id: realFlowLabel
+            anchors.bottom: arLabel.top
+            anchors.bottomMargin: 2
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: showControls && showRealFlow
+            text: qsTr("РЕАЛЬНЫЙ")
+            font.pixelSize: arLabel.font.pixelSize
+            font.bold: arLabel.font.bold
+            color: arLabel.color
+        }
         Text {
             id: arLabel
             anchors.top: parent.top
@@ -391,7 +404,68 @@ Rectangle {
                 }
             }
         }
+
+        Text {
+            anchors.top: firstCylinder.bottom
+            anchors.topMargin: 16
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: showControls && !anyCylinderConnected
+            text: qsTr("ПОДКЛЮЧИТЕ БАЛЛОН")
+            font.pixelSize: 22
+            font.bold: true
+            color: fotekBlue
+        }
         
+        Column {
+            id: blowProgressBlock
+            width: blowButton.width
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: blowButton.top
+            anchors.bottomMargin: 12
+            visible: showControls && isBlowing
+            spacing: 6
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Продувка...")
+                font.pixelSize: buttonStep * 1.5
+                font.bold: true
+                color: fotekBlue
+            }
+
+            Item {
+                id: blowProgress
+                width: parent.width
+                height: 20
+                clip: true
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: height / 2
+                    color: "#CFD8DC"
+                }
+
+                Rectangle {
+                    id: blowProgressChunk
+                    width: parent.width * 0.35
+                    height: parent.height
+                    radius: height / 2
+                    color: fotekOrange
+
+                    SequentialAnimation on x {
+                        running: blowProgressBlock.visible
+                        loops: Animation.Infinite
+                        NumberAnimation {
+                            from: -blowProgressChunk.width
+                            to: blowProgress.width
+                            duration: 1100
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                }
+            }
+        }
+
         Rectangle {
             id: blowButton
             width: parent.width - 40
@@ -401,9 +475,9 @@ Rectangle {
             anchors.bottomMargin: 30
             radius: 10
             visible: showControls
-            color: isBlowing ? fotekOrange : fotekBlue
+            color: blowDisabled ? "#9E9E9E" : fotekBlue
             border {
-                color: "#558B2F"
+                color: blowDisabled ? "#757575" : "#558B2F"
                 width: 3
             }
             
@@ -412,13 +486,13 @@ Rectangle {
                 text: qsTr("ПРОДУТЬ")
                 font.pixelSize: buttonStep * 2
                 font.bold: true
-                color: isBlowing ? "black" : "white"
+                color: "white"
             }
             
             MouseArea {
                 id: blowMA
                 anchors.fill: parent
-                enabled: !isBlowing
+                enabled: !blowDisabled
                 onPressed: argonBlow()
             }
         }
