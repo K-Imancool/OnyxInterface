@@ -28,6 +28,9 @@ ef."
 21;Argon;АРГОН;ARGON;ARGÓN
 22;Argon;л/мин;l/min;l/min
 23;Argon;ПРОДУТЬ;BLOW OUT;PURGAR
+23a;Argon;РЕАЛЬНЫЙ;REAL;REAL
+23b;Argon;ПОДКЛЮЧИТЕ БАЛЛОН;CONNECT CYLINDER;CONECTE CILINDRO
+23c;Argon;Продувка...;Blowing...;Purgando...
 24;ArgonDrawer;НАСТРОЙКА ГАЗОВОГО ТРАКТА;GAS LINE SETUP;AJUSTE DEL CIRCUITO DE GAS
 25;ArgonDrawer;X;X;X
 26;DateTimeController;Не удалось запустить timedatectl;Failed to start timedatectl;No se pudo iniciar timedatectl

@@ -88,6 +88,85 @@ eff.</translation>
     </message>
 </context>
 <context>
+    <name>AdditionalSettingsMenu</name>
+    <message>
+        <source>ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ</source>
+        <translation>ADDITIONAL SETTINGS</translation>
+    </message>
+    <message>
+        <source>СЕРВИСНОЕ МЕНЮ</source>
+        <translation>SERVICE MENU</translation>
+    </message>
+    <message>
+        <source>ЖУРНАЛ СОБЫТИЙ</source>
+        <translation>EVENT LOG</translation>
+    </message>
+    <message>
+        <source>НАСТРОЙКА ДАТЫ И ВРЕМЕНИ</source>
+        <translation>DATE AND TIME</translation>
+    </message>
+    <message>
+        <source>НАЗАД</source>
+        <translation>BACK</translation>
+    </message>
+    <message>
+        <source>Для доступа к сервисным функциям введите пароль</source>
+        <translation>Enter the password to access service functions</translation>
+    </message>
+    <message>
+        <source>Пароль</source>
+        <translation>Password</translation>
+    </message>
+    <message>
+        <source>Неверный пароль</source>
+        <translation>INCORRECT PASSWORD</translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCEL</translation>
+    </message>
+    <message>
+        <source>ВОЙТИ</source>
+        <translation>LOG IN</translation>
+    </message>
+    <message>
+        <source>АКТИВАЦИЯ ДОПОЛНИТЕЛЬНЫХ ОПЦИЙ</source>
+        <translation>ACTIVATE ADDITIONAL OPTIONS</translation>
+    </message>
+    <message>
+        <source>Для активации дополнительных опций введите ключ</source>
+        <translation>Enter the key to activate additional options</translation>
+    </message>
+    <message>
+        <source>Контроллер активации недоступен</source>
+        <translation>Activation controller is unavailable</translation>
+    </message>
+    <message>
+        <source>Опция №%1 успешно активирована</source>
+        <translation>Option #%1 activated successfully</translation>
+    </message>
+    <message>
+        <source>Извините, ключ не верный! Попробуйте ещё раз или обратитесь к производителю</source>
+        <translation>Sorry, the key is invalid! Please try again or contact the manufacturer</translation>
+    </message>
+    <message>
+        <source>АКТИВИРОВАТЬ</source>
+        <translation>ACTIVATE</translation>
+    </message>
+    <message>
+        <source>ЗАКРЫТЬ</source>
+        <translation>CLOSE</translation>
+    </message>
+    <message>
+        <source>Сначала сохраните серийный номер аппарата</source>
+        <translation>Save the device serial number first</translation>
+    </message>
+    <message>
+        <source>123456789012</source>
+        <translation type="unfinished">123456789012</translation>
+    </message>
+</context>
+<context>
     <name>Argon</name>
     <message>
         <source>РАСХОД АРГОНА</source>
@@ -104,6 +183,18 @@ eff.</translation>
     <message>
         <source>ПРОДУТЬ</source>
         <translation>BLOW OUT</translation>
+    </message>
+    <message>
+        <source>РЕАЛЬНЫЙ</source>
+        <translation>REAL</translation>
+    </message>
+    <message>
+        <source>ПОДКЛЮЧИТЕ БАЛЛОН</source>
+        <translation>CONNECT CYLINDER</translation>
+    </message>
+    <message>
+        <source>Продувка...</source>
+        <translation>Blowing...</translation>
     </message>
 </context>
 <context>
@@ -223,6 +314,33 @@ eff.</translation>
     <message>
         <source>коаг</source>
         <translation>coag</translation>
+    </message>
+</context>
+<context>
+    <name>FeatureOptionsManager</name>
+    <message>
+        <source>Управление опциями</source>
+        <translation>Option management</translation>
+    </message>
+    <message>
+        <source>Назад</source>
+        <translation>back</translation>
+    </message>
+    <message>
+        <source>Ключ №%1: ВКЛ</source>
+        <translation>Key #%1: ON</translation>
+    </message>
+    <message>
+        <source>Ключ №%1: ВЫКЛ</source>
+        <translation>Key #%1: OFF</translation>
+    </message>
+    <message>
+        <source>Все ключи: ВКЛ</source>
+        <translation>All keys: ON</translation>
+    </message>
+    <message>
+        <source>Все ключи: ВЫКЛ</source>
+        <translation>All keys: OFF</translation>
     </message>
 </context>
 <context>
@@ -385,7 +503,6 @@ s</translation>
         <translation>→</translation>
     </message>
 </context>
-
 <context>
     <name>HalfSocket</name>
     <message>
@@ -924,6 +1041,46 @@ SETTING</translation>
     </message>
 </context>
 <context>
+    <name>NeutralEl</name>
+    <message>
+        <source>&lt; 5кг
+Макс.50</source>
+        <translation>&lt; 5 kg
+Max. 50</translation>
+    </message>
+    <message>
+        <source>5-15кг
+Макс.75</source>
+        <translation>5-15 kg
+Max. 75</translation>
+    </message>
+    <message>
+        <source>Пациент:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Максимальная
+мощность:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&gt; 15кг</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;gt; 15 кг</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>5-15 кг</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;lt; 5 кг</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NeutralPowerWarningDialog</name>
     <message>
         <source>Опасность перегрева области наложения нейтрального электрода (НЭ)! Мощность выхода %1 превышает безопасный уровень для выбранного НЭ (макс %2).
@@ -942,39 +1099,6 @@ REDUCE power to a safe level?</translation>
     <message>
         <source>ПОНИЗИТЬ</source>
         <translation>REDUCE</translation>
-    </message>
-</context>
-<context>
-    <name>NeutralEl</name>
-    <message>
-        <source>&lt; 5кг
-Макс.50</source>
-        <translation>&lt; 5 kg
-Max. 50</translation>
-    </message>
-    <message>
-        <source>5-15кг
-Макс.75</source>
-        <translation>5-15 kg
-Max. 75</translation>
-    </message>
-    <message>
-        <source>&gt; 15кг
-Макс.400</source>
-        <translation>&gt; 15 kg
-Max. 400</translation>
-    </message>
-    <message>
-        <source>Младенец: &amp;lt; &lt;b&gt;5&lt;/b&gt; кг&lt;br&gt;Макс. мощность &lt;b&gt;50&lt;/b&gt;</source>
-        <translation>Infant: &amp;lt; &lt;b&gt;5&lt;/b&gt; kg&lt;br&gt;Max. power &lt;b&gt;50&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Ребёнок: &lt;b&gt;5-15&lt;/b&gt; кг&lt;br&gt;Макс. мощность &lt;b&gt;75&lt;/b&gt;</source>
-        <translation>Child: &lt;b&gt;5-15&lt;/b&gt; kg&lt;br&gt;Max. power &lt;b&gt;75&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>Взрослый: &amp;gt; &lt;b&gt;15&lt;/b&gt; кг&lt;br&gt;Макс. мощность &lt;b&gt;400&lt;/b&gt;</source>
-        <translation>Adult: &amp;gt; &lt;b&gt;15&lt;/b&gt; kg&lt;br&gt;Max. power &lt;b&gt;400&lt;/b&gt;</translation>
     </message>
 </context>
 <context>
@@ -1072,6 +1196,10 @@ EMPTY</translation>
     <message>
         <source>ПРИНЯТЬ</source>
         <translation>ACCEPT</translation>
+    </message>
+    <message>
+        <source>Выберите вариант</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1526,14 +1654,6 @@ EMPTY</translation>
 <context>
     <name>SecretKeysWindow</name>
     <message>
-        <source>Эндоскопические функции</source>
-        <translation>Endoscopic features</translation>
-    </message>
-    <message>
-        <source>Аргонусиленная коагуляция</source>
-        <translation>Argon-enhanced coagulation</translation>
-    </message>
-    <message>
         <source>Секретные ключи</source>
         <translation>Secret keys</translation>
     </message>
@@ -1556,10 +1676,6 @@ EMPTY</translation>
     <message>
         <source>Номер ключа:</source>
         <translation>Key number:</translation>
-    </message>
-    <message>
-        <source>Функция:</source>
-        <translation>Feature:</translation>
     </message>
     <message>
         <source>Сгенерировать ключ</source>
@@ -1657,10 +1773,6 @@ EMPTY</translation>
         <translation>Production date, notes</translation>
     </message>
     <message>
-        <source>Вход без пароля</source>
-        <translation>Login without password</translation>
-    </message>
-    <message>
         <source>Сохранить</source>
         <translation>save</translation>
     </message>
@@ -1715,32 +1827,9 @@ EMPTY</translation>
         <source>Управление опциями</source>
         <translation>Option management</translation>
     </message>
-</context>
-<context>
-    <name>FeatureOptionsManager</name>
-    <message>
-        <source>Управление опциями</source>
-        <translation>Option management</translation>
-    </message>
     <message>
         <source>Назад</source>
-        <translation>back</translation>
-    </message>
-    <message>
-        <source>Ключ №%1: ВКЛ</source>
-        <translation>Key #%1: ON</translation>
-    </message>
-    <message>
-        <source>Ключ №%1: ВЫКЛ</source>
-        <translation>Key #%1: OFF</translation>
-    </message>
-    <message>
-        <source>Все ключи: ВКЛ</source>
-        <translation>All keys: ON</translation>
-    </message>
-    <message>
-        <source>Все ключи: ВЫКЛ</source>
-        <translation>All keys: OFF</translation>
+        <translation type="unfinished">back</translation>
     </message>
 </context>
 <context>
@@ -1766,107 +1855,8 @@ EMPTY</translation>
         <translation>ADDITIONAL SETTINGS</translation>
     </message>
     <message>
-        <source>РАЗБЛОКИРОВКА ЭНДОСКОПИИ</source>
-        <translation>UNLOCK ENDOSCOPY</translation>
-    </message>
-    <message>
         <source>НАЗАД</source>
         <translation>BACK</translation>
-    </message>
-    <message>
-        <source>Для разблокировки эндоскопических функций введите ключ</source>
-        <translation>Enter the key to unlock endoscopic features</translation>
-    </message>
-    <message>
-        <source>123-456-789-012</source>
-        <translation>123-456-789-012</translation>
-    </message>
-    <message>
-        <source>Сначала сохраните серийный номер аппарата</source>
-        <translation>Save the device serial number first</translation>
-    </message>
-    <message>
-        <source>РАЗБЛОКИРОВАТЬ</source>
-        <translation>UNLOCK</translation>
-    </message>
-</context>
-<context>
-    <name>AdditionalSettingsMenu</name>
-    <message>
-        <source>ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ</source>
-        <translation>ADDITIONAL SETTINGS</translation>
-    </message>
-    <message>
-        <source>СЕРВИСНОЕ МЕНЮ</source>
-        <translation>SERVICE MENU</translation>
-    </message>
-    <message>
-        <source>ЖУРНАЛ СОБЫТИЙ</source>
-        <translation>EVENT LOG</translation>
-    </message>
-    <message>
-        <source>НАСТРОЙКА ДАТЫ И ВРЕМЕНИ</source>
-        <translation>DATE AND TIME</translation>
-    </message>
-    <message>
-        <source>НАЗАД</source>
-        <translation>BACK</translation>
-    </message>
-    <message>
-        <source>Для доступа к сервисным функциям введите пароль</source>
-        <translation>Enter the password to access service functions</translation>
-    </message>
-    <message>
-        <source>Пароль</source>
-        <translation>Password</translation>
-    </message>
-    <message>
-        <source>Неверный пароль</source>
-        <translation>INCORRECT PASSWORD</translation>
-    </message>
-    <message>
-        <source>ОТМЕНА</source>
-        <translation>CANCEL</translation>
-    </message>
-    <message>
-        <source>ВОЙТИ</source>
-        <translation>LOG IN</translation>
-    </message>
-    <message>
-        <source>АКТИВАЦИЯ ДОПОЛНИТЕЛЬНЫХ ОПЦИЙ</source>
-        <translation>ACTIVATE ADDITIONAL OPTIONS</translation>
-    </message>
-    <message>
-        <source>Для активации дополнительных опций введите ключ</source>
-        <translation>Enter the key to activate additional options</translation>
-    </message>
-    <message>
-        <source>123-456-789-012</source>
-        <translation>123-456-789-012</translation>
-    </message>
-    <message>
-        <source>Контроллер активации недоступен</source>
-        <translation>Activation controller is unavailable</translation>
-    </message>
-    <message>
-        <source>Опция №%1 успешно активирована</source>
-        <translation>Option #%1 activated successfully</translation>
-    </message>
-    <message>
-        <source>Извините, ключ не верный! Попробуйте ещё раз или обратитесь к производителю</source>
-        <translation>Sorry, the key is invalid! Please try again or contact the manufacturer</translation>
-    </message>
-    <message>
-        <source>АКТИВИРОВАТЬ</source>
-        <translation>ACTIVATE</translation>
-    </message>
-    <message>
-        <source>ЗАКРЫТЬ</source>
-        <translation>CLOSE</translation>
-    </message>
-    <message>
-        <source>Сначала сохраните серийный номер аппарата</source>
-        <translation>Save the device serial number first</translation>
     </message>
 </context>
 <context>
@@ -2042,14 +2032,6 @@ EMPTY</translation>
         <translation>SPECIAL COMMANDS</translation>
     </message>
     <message>
-        <source>Режимы с аргоном: ВКЛ</source>
-        <translation>Argon modes: ON</translation>
-    </message>
-    <message>
-        <source>Режимы с аргоном: ВЫКЛ</source>
-        <translation>Argon modes: OFF</translation>
-    </message>
-    <message>
         <source>UART: ВКЛ</source>
         <translation>UART: ON</translation>
     </message>
@@ -2066,16 +2048,8 @@ EMPTY</translation>
         <translation>CPU load display</translation>
     </message>
     <message>
-        <source>Выкл</source>
-        <translation>Off</translation>
-    </message>
-    <message>
         <source>Выход в Linux</source>
         <translation>Exit to Linux</translation>
-    </message>
-    <message>
-        <source>Удалить все пользовательские программы</source>
-        <translation>Delete user programs</translation>
     </message>
     <message>
         <source>Назад</source>
@@ -2089,6 +2063,31 @@ EMPTY</translation>
         <source>Удалить все пользовательские программы?
 Это действие необратимо.</source>
         <translation>All user programs will be DELETED! Continue?</translation>
+    </message>
+    <message>
+        <source>Вход без пароля</source>
+        <translation type="unfinished">Login without password</translation>
+    </message>
+    <message>
+        <source>UART 500 мс</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>UART 50 мс</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ВЫКЛ одноплатника</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RESET одноплатника</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Удалить программы
+пользователя</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2129,8 +2128,29 @@ EMPTY</translation>
         <translation> AUTOSTOP</translation>
     </message>
     <message>
-        <source> АВТО-СТ-СТОП</source>
-        <translation> AUTO-ST-STOP</translation>
+        <source>БИ КОАГ ДИСС А-СТОП</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>БИ КОАГ ДИСС А-СТ-СТОП</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>БИ КОАГ МИКРО
+АВТОСТОП</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>БИ КОАГ МИКР А-СТ-СТОП</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> А-СТОП</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> А-СТ-СТОП</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2380,22 +2400,6 @@ Recent events:
         <translation>3. Open the upload page</translation>
     </message>
     <message>
-        <source>Аппарат создаст временную точку доступа &quot;ONYX-AM&quot;,
-можете подключиться к ней, используя QR-код справа</source>
-        <translation>The unit will create a temporary access point &quot;ONYX-AM&quot;,
-you can connect to it using the QR code on the right</translation>
-    </message>
-    <message>
-        <source>Отсканируйте QR-код или выберите сеть ONYX-AM в списке Wi‑Fi,
-после обнаружения подключения, QR-код изменится</source>
-        <translation>Scan the QR code or select the ONYX-AM network in the Wi‑Fi list,
-once a connection is detected the QR code will change</translation>
-    </message>
-    <message>
-        <source>Соединение установлено! Отсканируйте QR-код или откройте адрес вручную в любом браузере</source>
-        <translation>Connection established! Scan the QR code or open the address manually in any browser</translation>
-    </message>
-    <message>
         <source>Адрес загрузки</source>
         <translation>Upload address</translation>
     </message>
@@ -2470,6 +2474,22 @@ once a connection is detected the QR code will change</translation>
     <message>
         <source>Назад</source>
         <translation>back</translation>
+    </message>
+    <message>
+        <source>Аппарат создаст временную точку доступа &quot;ONYX-TEST&quot;
+и сформирует QR-код для подключения вашего устройства (смартфон/ноутбук)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Отключите приём по мобильной сети на вашем устройстве.
+Отсканируйте QR-код или выберите сеть ONYX-TEST в списке Wi‑Fi.
+После обнаружения подключения, QR-код изменится.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Соединение установлено! Отсканируйте новый QR-код или откройте адрес вручную в любом браузере</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2753,14 +2773,6 @@ will be overwritten</translation>
         <translation>Software update</translation>
     </message>
     <message>
-        <source>Список версий: текущие на устройстве и найденные в папке releases (поддерживается релизный формат a.b-c.d-e).</source>
-        <translation>Version list: current on the device and found in the releases folder (release format a.b-c.d-e is supported).</translation>
-    </message>
-    <message>
-        <source>Если выбрана версия релиза a.b-c.d-e, для интерфейса применяется a.b, для медиа — c.d.</source>
-        <translation>If release version a.b-c.d-e is selected, a.b is applied to the interface and c.d to the media.</translation>
-    </message>
-    <message>
         <source>Модуль</source>
         <translation>Module</translation>
     </message>
@@ -2769,20 +2781,12 @@ will be overwritten</translation>
         <translation>Current</translation>
     </message>
     <message>
-        <source>В releases</source>
-        <translation>In releases</translation>
-    </message>
-    <message>
         <source>нет версий</source>
         <translation>no versions</translation>
     </message>
     <message>
         <source>Обновить</source>
         <translation>Refresh</translation>
-    </message>
-    <message>
-        <source>Обновить всё до последних версии</source>
-        <translation>Update everything to the latest versions</translation>
     </message>
     <message>
         <source>Перезапуск</source>
@@ -2807,6 +2811,18 @@ will be overwritten</translation>
     <message>
         <source>Назад</source>
         <translation>back</translation>
+    </message>
+    <message>
+        <source>Список версий: текущие и доступные</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Доступные</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Обновить всё до последних версий</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

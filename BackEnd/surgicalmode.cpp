@@ -10,7 +10,8 @@ SurgicalMode::SurgicalMode(const QString& name,
                            int num,
                            const QString& brief,
                            const QString& descript,
-                           bool isEndo) :
+                           bool isEndo,
+                           bool isArgon) :
     m_maximumPower(maximum),
     m_minimumPower(minimum),
     m_currentPower(1),  // Мощность по умолчанию = 1
@@ -21,6 +22,7 @@ SurgicalMode::SurgicalMode(const QString& name,
     m_brief(brief),
     m_descript(descript),
     m_isEndo(isEndo),
+    m_isArgon(isArgon),
     m_InstrConstraints(_instrs)
 {
     // Устанавливаем "НЕ ВЫБРАН" (индекс = размер списка, ID = 1000)
@@ -67,6 +69,11 @@ QString SurgicalMode::descript() const
 bool SurgicalMode::isEndo() const
 {
     return m_isEndo;
+}
+
+bool SurgicalMode::isArgon() const
+{
+    return m_isArgon;
 }
 
 int SurgicalMode::selectedInstrIndex() const
@@ -210,6 +217,7 @@ QVariantMap SurgicalMode::params() const
     res["modebrief"] = m_brief;
     res["modedescript"] = m_descript;
     res["isendo"] = m_isEndo;
+    res["isargon"] = m_isArgon;
     res["id"] = m_id;
     res["num"] = m_num;
     return res;

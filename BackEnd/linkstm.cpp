@@ -36,6 +36,13 @@ LinkStm::LinkStm(QObject *parent)
         m_socketList[i].autoMode = 0;       // Нет авто режимов
     }
 
+    // До ответа МК показываем 0.0, а не неинициализированный мусор
+    static const McUnit kMcUnits[5] = {MC_COM, MC_ARG, MC_GEN, MC_GEN, MC_GEN};
+    for (int i = 0; i < 5; ++i) {
+        mcVersions[i].mc = kMcUnits[i];
+        clearMcVersionAt(i);
+    }
+
     // Таймер обмена по uart
     m_uartTimer->setTimerType(Qt::PreciseTimer);
     connect(m_uartTimer, &QTimer::timeout, [this]() {sendCommand();});
@@ -300,6 +307,9 @@ void LinkStm::sendCommand()
             emit sigError(m_state);             // Ошибки ответа
             preState = m_state;                 // Запоминаем предыдущее состояние
             errCounter = 0;                     // Сбрасываем счётчик ошибок
+            if (m_state == STATE_NO_RX && m_lastCommand.com == CurrentVersion) {
+                clearMcVersionsForUnit(m_lastCommand.mc);
+            }
         }
         else if (errCounter++ > 100) {
             m_state = STATE_OK;                 // Делаем попытку выйти на нормальную работу
@@ -707,6 +717,15 @@ void LinkStm::readRxCommand()
     // Присылаемые ошибки
     case RxErrors:
     case RxCritical:
+        if (m_lastCommand.com == CurrentVersion) {
+            if (m_rxCommand.com == ErrArgComm) {
+                clearMcVersionsForUnit(MC_ARG);
+            } else if (m_rxCommand.com == ErrGenComm) {
+                clearMcVersionsForUnit(MC_GEN);
+            } else {
+                clearMcVersionsForUnit(m_lastCommand.mc);
+            }
+        }
         emit sigError(m_rxCommand.com);
         break;
     // Ответы на команды обновления ПО
@@ -1047,6 +1066,33 @@ void LinkStm::mcVersRequest()
 
 }
 
+void LinkStm::clearMcVersionAt(int index)
+{
+    if (index < 0 || index >= 5) {
+        return;
+    }
+    mcVersions[index].bootVer = 0;
+    mcVersions[index].bootSubVer = 0;
+    mcVersions[index].appVer = 0;
+    mcVersions[index].appSubVer = 0;
+    m_moduleHasWorkingApp[index] = false;
+}
+
+void LinkStm::clearMcVersionsForUnit(McUnit unit)
+{
+    const quint8 idx = static_cast<quint8>(unit) >> 5;
+    if (idx >= 3) {
+        return;
+    }
+    clearMcVersionAt(idx);
+    // Версии раскачки и НЭ приходят от генератора
+    if (idx == 2) {
+        clearMcVersionAt(3);
+        clearMcVersionAt(4);
+    }
+    publishFirmwareVersions();
+}
+
 void LinkStm::setMcVersions(const UartRx &rxCom)
 {
     quint8 mc = rxCom.mc >> 5; // модуль связи - 0, аргонник - 1, генератор - 2
@@ -1057,6 +1103,7 @@ void LinkStm::setMcVersions(const UartRx &rxCom)
     }
     if (rxCom.data.size() < 4) {
         qWarning() << "setMcVersions: packet too short, size =" << rxCom.data.size();
+        clearMcVersionsForUnit(static_cast<McUnit>(mc << 5));
         return;
     }
     mcVersions[mc].bootVer = rxCom.data.at(0);
@@ -1069,11 +1116,19 @@ void LinkStm::setMcVersions(const UartRx &rxCom)
     if (mc == 2) {
         if (rxCom.data.size() < 8) {
             qWarning() << "setMcVersions: generator packet too short, size =" << rxCom.data.size();
+            clearMcVersionAt(3);
+            clearMcVersionAt(4);
             publishFirmwareVersions();
             return;
         }
         mcVersions[3].appVer = rxCom.data.at(6);       // Версия раскачки (без подверсий)
         mcVersions[4].appVer = rxCom.data.at(7);       // Версия НЭ
+        mcVersions[3].bootVer = 0;
+        mcVersions[3].bootSubVer = 0;
+        mcVersions[3].appSubVer = 0;
+        mcVersions[4].bootVer = 0;
+        mcVersions[4].bootSubVer = 0;
+        mcVersions[4].appSubVer = 0;
         m_moduleHasWorkingApp[3] = mcVersions[3].appVer == 0 ? false : true;
         m_moduleHasWorkingApp[4] = mcVersions[4].appVer == 0 ? false : true;
     }

@@ -178,7 +178,8 @@ void makeModes(QMap<int, SurgModePtr>& container,
 	                                           1000,
 	                                           "",
 	                                           "",
-	                                           false));  // Num = 1000, Brief = "", Descript = "", isEndo = false
+	                                           false,
+	                                           false));  // Num = 1000, Brief = "", Descript = "", isEndo = false, isArgon = false
 
 
 	for (const auto& item : modes) {
@@ -205,6 +206,7 @@ void makeModes(QMap<int, SurgModePtr>& container,
         }
 
 		bool isEndo = item.size() > 6 ? item.at(6).toBool() : false;  // ENDO_REG
+		bool isArgon = item.size() > 8 ? item.at(8).toInt() == 1 : false;  // Argon
 
 		SurgModePtr ptr = SurgModePtr::create(modeName,
 		                                      isCoag,
@@ -215,7 +217,8 @@ void makeModes(QMap<int, SurgModePtr>& container,
 		                                      modeNum,
 		                                      modeBrief,
 		                                      modeDescript,
-		                                      isEndo);  // Передаём Brief, Descript и isEndo
+		                                      isEndo,
+		                                      isArgon);  // Brief, Descript, isEndo, isArgon
 		container.insert(modeId, ptr);
 	}
 }
@@ -254,6 +257,11 @@ void filterModeMap(QMap<int, SurgModePtr>& container, const std::vector<int>& al
 	auto iter = container.begin();
 	while (iter != container.end()) {
 		bool contains = iter.key() == 1000;
+		// Аргоновые режимы доступны на обоих МОНО-выходах, даже если в Lists
+		// они указаны только для МОНО1.
+		if (!contains && !iter.value().isNull() && iter.value()->isArgon()) {
+			contains = true;
+		}
 		for (int a : allow) {
 			if (iter.key() == a) {
 				contains = true;
@@ -548,7 +556,7 @@ void ProgLoader::defaultSocketInit(bool clear)
 				bool isCoag = (halfSocket == 0);
 				QMap<int, SurgModePtr> modes;
 				QList<QVariantList> modesList = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
-				                                                                   QStringList{"MaxPower",DbLocale::column("Name"), "id", "Num", DbLocale::column("Brief"), DbLocale::column("Descript"), "ENDO_REG", "KEY"},
+				                                                                   QStringList{"MaxPower",DbLocale::column("Name"), "id", "Num", DbLocale::column("Brief"), DbLocale::column("Descript"), "ENDO_REG", "KEY", "Argon"},
 				                                                                   queryConditionModes
 				                                                                   .arg(socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1)
 				                                                                   .arg(halfSocket)
@@ -853,7 +861,7 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
             QList<QVariantList> modesList = m_dbReaderPtr->slotSendSelectQuery(
                         QStringList{"Modes"},
                         QStringList{"MaxPower",DbLocale::column("Name"), "id", "Num",
-                                    DbLocale::column("Brief"), DbLocale::column("Descript"), "ENDO_REG", "KEY"},
+                                    DbLocale::column("Brief"), DbLocale::column("Descript"), "ENDO_REG", "KEY", "Argon"},
                         queryConditionModes
                                     .arg(socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1)
                                     .arg(halfSocket)
@@ -1421,7 +1429,8 @@ bool ProgLoader::deviceHasArgon() const
 
 QString ProgLoader::deviceModeFilterCondition() const
 {
-	return deviceHasArgon() ? QString() : QStringLiteral(" AND Num NOT IN (17, 18, 19, 20)");
+	// Без газового тракта скрываем режимы с Modes.Argon = 1
+	return deviceHasArgon() ? QString() : QStringLiteral(" AND IFNULL(Argon, 0) = 0");
 }
 
 std::vector<int> ProgLoader::filterModesForDevice(const std::vector<int>& modeIds) const
@@ -1564,7 +1573,7 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 		modesList = m_dbReaderPtr->slotSendSelectQuery(
 		            QStringList{"Modes"},
 		            QStringList{"MaxPower",DbLocale::column("Name"), "id", "Num",
-		                        DbLocale::column("Brief"), DbLocale::column("Descript"), "ENDO_REG", "KEY"},
+		                        DbLocale::column("Brief"), DbLocale::column("Descript"), "ENDO_REG", "KEY", "Argon"},
 		            queryConditionModes
 		            .arg(biMonoFlag)
 		            .arg(halfSocket)

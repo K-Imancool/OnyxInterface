@@ -414,6 +414,33 @@ Popup {
         return false
     }
 
+    function liveHasArgonMode() {
+        if (typeof theModel === "undefined" || !theModel)
+            return false
+        return theModel.isArgonMode(cutLive.modeId) || theModel.isArgonMode(coagLive.modeId)
+    }
+
+    function needsArgonConflictWarning() {
+        if (socId !== 2 && socId !== 3)
+            return false
+        if (!liveHasArgonMode())
+            return false
+        if (typeof theModel === "undefined" || !theModel)
+            return false
+        var conflict = theModel.otherMonoArgonConflict(socId)
+        return conflict && conflict.conflict === true
+    }
+
+    function continueCommitAfterArgonCheck() {
+        if (needsNeutralPowerWarning()) {
+            neutralPowerWarningDialog.socketName = socketTitle
+            neutralPowerWarningDialog.maxNeutralPower = neutralMaxPower()
+            neutralPowerWarningDialog.showWarning()
+            return
+        }
+        finishCommitAndClose()
+    }
+
     function prepareEditorData() {
         if (socId < 0)
             return
@@ -463,16 +490,17 @@ Popup {
     }
 
     function attemptCommitAndClose() {
-        if (neutralPowerWarningDialog.opened)
+        if (neutralPowerWarningDialog.opened || argonConflictWarningDialog.opened)
             return
         copyEditorToSide(activeIsCoag)
-        if (needsNeutralPowerWarning()) {
-            neutralPowerWarningDialog.socketName = socketTitle
-            neutralPowerWarningDialog.maxNeutralPower = neutralMaxPower()
-            neutralPowerWarningDialog.showWarning()
+        if (needsArgonConflictWarning()) {
+            var conflict = theModel.otherMonoArgonConflict(socId)
+            argonConflictWarningDialog.socketName = conflict.socketName
+            argonConflictWarningDialog.conflictSocketId = conflict.socketId
+            argonConflictWarningDialog.showWarning()
             return
         }
-        finishCommitAndClose()
+        continueCommitAfterArgonCheck()
     }
 
     function acceptEditorAndClose() {
@@ -910,6 +938,22 @@ Popup {
                 root.coagDirty = true
             }
             root.finishCommitAndClose()
+        }
+    }
+
+    ArgonConflictWarningDialog {
+        id: argonConflictWarningDialog
+
+        onAcceptChosen: {
+            if (typeof theModel !== "undefined" && theModel
+                    && argonConflictWarningDialog.conflictSocketId >= 0) {
+                theModel.clearArgonModes(argonConflictWarningDialog.conflictSocketId)
+            }
+            root.continueCommitAfterArgonCheck()
+        }
+
+        onCancelChosen: {
+            // Остаёмся в редакторе текущего выхода
         }
     }
 }

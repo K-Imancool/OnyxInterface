@@ -310,6 +310,9 @@ private:
     void mcVersRequest();
     // Установка версий ПО МК
     void setMcVersions(const UartRx &rxCom);
+    // Сброс версий модуля в 0.0 (нет ответа / ошибка связи)
+    void clearMcVersionAt(int index);
+    void clearMcVersionsForUnit(McUnit unit);
     // Расшифровка команды
     void unpackRxCommand(const QByteArray &rxPacket);
     // Проверка на соответствие
@@ -358,7 +361,7 @@ private:
     quint8 m_autoSSmode;
     BootChoice m_boot;
     McUnit m_mc;
-    McVersions mcVersions[5];
+    McVersions mcVersions[5] = {};
 
     // Переменные состояния из ControlCenter
     bool m_enableActivation;
@@ -373,7 +376,7 @@ private:
     bool m_fwUpdateSessionActive = false;
     QElapsedTimer m_fwRxErrStreakTimer;
     bool m_abortFirmwareUpdatePending = false;
-    bool m_moduleHasWorkingApp[5] = {true, true, true, true, true};
+    bool m_moduleHasWorkingApp[5] = {false, false, false, false, false};
     /// После sigPressed3rdKnob не повторять, пока педали/кнопки не вернутся в PRESS_NONE
     bool m_thirdKnobSignalConsumedUntilRelease = false;
     bool m_neutralResistPollEnabled = false;

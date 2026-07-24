@@ -79,10 +79,11 @@ public:
                  int num = 0,
                  const QString& brief = "",
                  const QString& descript = "",
-                 bool isEndo = false);
+                 bool isEndo = false,
+                 bool isArgon = false);
 
     explicit SurgicalMode()  :
-        SurgicalMode("NoMode", false, 1, 1, 0, {}, 0, "", "", false) {}
+        SurgicalMode("NoMode", false, 1, 1, 0, {}, 0, "", "", false, false) {}
 
     //конструктор копирования тут дефолтный т.к. все поля тривиально коп
 
@@ -121,6 +122,7 @@ public:
     QString brief() const;
     QString descript() const;
     bool isEndo() const;
+    bool isArgon() const;
 
 private:
     void setModeName(const QString &newModeName);
@@ -140,6 +142,7 @@ private:
     QString m_brief;  // Краткое описание режима
     QString m_descript;  // Полное описание режима
     bool m_isEndo;  // Флаг эндоскопического режима
+    bool m_isArgon; // Режим с аргоном (Modes.Argon = 1)
     std::map<int, Onyx::InstrInfo> m_InstrConstraints;
 };
 

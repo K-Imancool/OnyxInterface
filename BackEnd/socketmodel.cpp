@@ -598,6 +598,126 @@ void SocketModel::qmlSetData(int row, const QVariant &value, const QString &role
     }
 }
 
+bool SocketModel::isArgonMode(int modeId) const
+{
+    if (modeId <= 0 || modeId == 1000 || !m_itemsMapPtr) {
+        return false;
+    }
+
+    for (const auto& [sockId, sock] : *m_itemsMapPtr) {
+        Q_UNUSED(sockId)
+        if (sock.isNull()) {
+            continue;
+        }
+        for (bool isCoag : {false, true}) {
+            const QStringList names = isCoag ? sock->coagModeNames() : sock->cutModeNames();
+            for (int i = 0; i < names.size(); ++i) {
+                const CSurgModePtr mode = sock->getMode(i, isCoag);
+                if (!mode.isNull() && mode->id() == modeId && mode->isArgon()) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+QVariantMap SocketModel::otherMonoArgonConflict(int currentSocketId) const
+{
+    QVariantMap result;
+    result.insert(QStringLiteral("conflict"), false);
+    result.insert(QStringLiteral("socketId"), -1);
+    result.insert(QStringLiteral("socketName"), QString());
+
+    if (currentSocketId != 2 && currentSocketId != 3) {
+        return result;
+    }
+
+    const int otherSocketId = (currentSocketId == 2) ? 3 : 2;
+    const auto resolved = resolveSocket(otherSocketId);
+    if (!resolved.itemsMap) {
+        return result;
+    }
+    auto iter = resolved.itemsMap->find(resolved.socketId);
+    if (iter == resolved.itemsMap->end() || iter->second.isNull()) {
+        return result;
+    }
+
+    const CSurgModePtr cutMode = iter->second->curCutMode();
+    const CSurgModePtr coagMode = iter->second->curCoagMode();
+    const bool otherHasArgon = (!cutMode.isNull() && cutMode->isArgon())
+            || (!coagMode.isNull() && coagMode->isArgon());
+    if (!otherHasArgon) {
+        return result;
+    }
+
+    result.insert(QStringLiteral("conflict"), true);
+    result.insert(QStringLiteral("socketId"), otherSocketId);
+    result.insert(QStringLiteral("socketName"), iter->second->socketName());
+    return result;
+}
+
+bool SocketModel::clearArgonModes(int socketId)
+{
+    auto resolved = resolveSocket(socketId);
+    if (!resolved.itemsMap) {
+        return false;
+    }
+    auto iter = resolved.itemsMap->find(resolved.socketId);
+    if (iter == resolved.itemsMap->end() || iter->second.isNull()) {
+        return false;
+    }
+
+    SockPtr sock = iter->second;
+    QModelIndex idx = createIndex(socketId, 0);
+    QVector<int> roles;
+    bool changed = false;
+
+    auto clearHalf = [&](bool isCoag) {
+        const CSurgModePtr mode = isCoag ? sock->curCoagMode() : sock->curCutMode();
+        if (mode.isNull() || !mode->isArgon()) {
+            return;
+        }
+        if (!sock->setModeId(1000, isCoag)) {
+            return;
+        }
+        changed = true;
+        if (isCoag) {
+            roles.append(CoagModeIndex);
+            roles.append(CoagModeId);
+            roles.append(CoagModeName);
+            roles.append(CoagModeNum);
+            roles.append(CoagModeInstrID);
+            roles.append(CoagModeInstrIndex);
+            roles.append(CoagModeInstrName);
+            roles.append(CoagModeInstrNum);
+            roles.append(CoagModePower);
+            roles.append(CoagModeMaxPower);
+            roles.append(CoagModeIsEndo);
+        } else {
+            roles.append(CutModeIndex);
+            roles.append(CutModeId);
+            roles.append(CutModeName);
+            roles.append(CutModeNum);
+            roles.append(CutModeInstrID);
+            roles.append(CutModeInstrIndex);
+            roles.append(CutModeInstrName);
+            roles.append(CutModeInstrNum);
+            roles.append(CutModePower);
+            roles.append(CutModeMaxPower);
+            roles.append(CutModeIsEndo);
+        }
+    };
+
+    clearHalf(false);
+    clearHalf(true);
+
+    if (changed) {
+        emit dataChanged(idx, idx, roles);
+    }
+    return changed;
+}
+
 void SocketModel::recalcCollapsed()
 {
     qmlSetData(0, Onyx::S_EXPANDED, "socketdisplaymode");

@@ -83,6 +83,22 @@ public:
     Q_INVOKABLE void qmlSetData(int row, const QVariant &value, const QString& roleName);
 
     /**
+     * @brief Режим с Modes.Argon = 1 (ищется в картах режимов текущей программы)
+     */
+    Q_INVOKABLE bool isArgonMode(int modeId) const;
+
+    /**
+     * @brief Конфликт аргона на другом МОНО-выходе.
+     * @return { conflict: bool, socketId: int, socketName: string }
+     */
+    Q_INVOKABLE QVariantMap otherMonoArgonConflict(int currentSocketId) const;
+
+    /**
+     * @brief Сбрасывает аргоновые режимы сокета в «не выбран» (modeId = 1000)
+     */
+    Q_INVOKABLE bool clearArgonModes(int socketId);
+
+    /**
      * @brief Это костыль по дерганью состояний сокетов после ресета модели
      */
     Q_INVOKABLE void recalcCollapsed();

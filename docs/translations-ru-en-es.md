@@ -32,6 +32,9 @@
 | 21 | АРГОН | ARGON | ARGÓN |
 | 22 | л/мин | l/min | l/min |
 | 23 | ПРОДУТЬ | BLOW OUT | PURGAR |
+| 23a | РЕАЛЬНЫЙ | REAL | REAL |
+| 23b | ПОДКЛЮЧИТЕ БАЛЛОН | CONNECT CYLINDER | CONECTE CILINDRO |
+| 23c | Продувка... | Blowing... | Purgando... |
 | | **Контекст: ArgonDrawer** | | |
 | 24 | НАСТРОЙКА ГАЗОВОГО ТРАКТА | GAS LINE SETUP | AJUSTE DEL CIRCUITO DE GAS |
 | 25 | X | X | X |
