@@ -46,17 +46,27 @@ Rectangle {
     // Сокращённое имя режима для главного экрана при активном авторежиме.
     // Пустая строка — сокращение не нужно, вызывающий код добавит суффикс сам.
     function shortenedModeNameForAuto(modeId, autoMode) {
-        if (modeId === 6) { // БИ-КОАГ-ДИССЕКТ
+        if (modeId === 5) { // БИ-КОАГ
             if (autoMode === 1)
-                return qsTr("БИ КОАГ ДИСС А-СТОП")
+                return qsTr("БИ КОАГ\nАВТОСТОП")
             if (autoMode === 2)
-                return qsTr("БИ КОАГ ДИСС А-СТ-СТОП")
+                return qsTr("БИ КОАГ\nА-СТ-СТОП")
+        }
+        else if (modeId === 6) { // БИ-КОАГ-ДИССЕКТ
+            if (autoMode === 1)
+                return qsTr("БИ КОАГ ДИСС\nАВТОСТОП")
+            if (autoMode === 2)
+                return qsTr("БИ КОАГ ДИСС\nА-СТ-СТОП")
         }
         else if (modeId === 27) { // БИ-КОАГ-МИКРО
             if (autoMode === 1)
                 return qsTr("БИ КОАГ МИКРО\nАВТОСТОП")
             if (autoMode === 2)
-                return qsTr("БИ КОАГ МИКР А-СТ-СТОП")
+                return qsTr("БИ КОАГ МИКР\nА-СТ-СТОП")
+        }
+        else if (modeId === 21) { // МЯГКАЯ
+            if (autoMode === 1)
+                return qsTr("МЯГКАЯ\nАВТОСТОП")
         }
         return ""
     }
@@ -68,16 +78,6 @@ Rectangle {
         var shortened = shortenedModeNameForAuto(coagModeId, a)
         if (shortened.length > 0)
             return shortened
-        if (coagModeId === 5 ||
-                coagModeId === 6 ||
-                coagModeId === 27) {
-            if (a === 1)
-                return base + qsTr(" А-СТОП")
-            if (a === 2)
-                return base + qsTr(" А-СТ-СТОП")
-        }
-        if (coagModeId === 21 && a === 1)
-            return base + qsTr(" АВТОСТОП")
         return base
     }
 
@@ -127,6 +127,8 @@ Rectangle {
             anchors.fill: parent
             onClicked: {
                 if (socketRoot.allowEditing) {
+                    if (!socketRoot.cutHasAvailableModes && !socketRoot.coagHasAvailableModes)
+                        return
                     socketRoot.fullSocketEditorRequest(socketRoot.socketId)
                 } else {
                     socketRoot.dimmedSocketClicked(socketRoot.socketId)
@@ -155,6 +157,8 @@ Rectangle {
             anchors.fill: parent
             onClicked: {
                 if (socketRoot.allowEditing) {
+                    if (!socketRoot.cutHasAvailableModes && !socketRoot.coagHasAvailableModes)
+                        return
                     socketRoot.fullSocketEditorRequest(socketRoot.socketId)
                 } else {
                     socketRoot.dimmedSocketClicked(socketRoot.socketId)

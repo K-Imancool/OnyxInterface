@@ -82,6 +82,8 @@ Popup {
                             })
     property var cutBaseline: ({})
     property var coagBaseline: ({})
+    property bool cutHasAvailableModes: true
+    property bool coagHasAvailableModes: true
 
     readonly property bool hasAnyChanges: cutDirty || coagDirty || autoModeDirty
 
@@ -441,16 +443,27 @@ Popup {
         finishCommitAndClose()
     }
 
+    function hasAvailableModesFromEditor() {
+        var nums = modeEditor.modeNamesNums()
+        for (var i = 0; i < nums.length; ++i) {
+            if (parseInt(nums[i]) !== 1000)
+                return true
+        }
+        return false
+    }
+
     function prepareEditorData() {
         if (socId < 0)
             return
 
         modeEditor.initialize(socId, 0, false)
+        cutHasAvailableModes = hasAvailableModesFromEditor()
         cutLive = normalizeSidePowerIfNeeded(captureSideFromEditor())
         cutBaseline = cloneSideState(cutLive)
         socketTitle = modeEditor.socketName
 
         modeEditor.initialize(socId, 0, true)
+        coagHasAvailableModes = hasAvailableModesFromEditor()
         coagLive = normalizeSidePowerIfNeeded(captureSideFromEditor())
         coagBaseline = cloneSideState(coagLive)
 
@@ -512,6 +525,10 @@ Popup {
     }
 
     function openModePicker(isCoag) {
+        if (isCoag && !coagHasAvailableModes)
+            return
+        if (!isCoag && !cutHasAvailableModes)
+            return
         if (!modePicker)
             return
         activateSide(isCoag)
@@ -526,6 +543,10 @@ Popup {
     }
 
     function openInstrPicker(isCoag) {
+        if (isCoag && !coagHasAvailableModes)
+            return
+        if (!isCoag && !cutHasAvailableModes)
+            return
         if (!instrPicker)
             return
         activateSide(isCoag)
@@ -561,6 +582,10 @@ Popup {
 
     onOpened: {
         prepareEditorData()
+        if (!cutHasAvailableModes && !coagHasAvailableModes) {
+            Qt.callLater(function() { root.close() })
+            return
+        }
         if (socId >= 0 && socId <= 3)
             appControl.setLedOutput(ledOutputForSocket(socId), LinkStm.LED_WHITE)
     }
@@ -668,6 +693,7 @@ Popup {
                     Layout.column: 0
                     Layout.fillWidth: true
                     Layout.preferredHeight: modeRowHeight
+                    visible: cutHasAvailableModes
                     editorRoot: root
                     isCoagSide: false
                     sideState: cutLive
@@ -680,6 +706,7 @@ Popup {
                     Layout.column: 1
                     Layout.preferredWidth: 170
                     Layout.preferredHeight: modeRowHeight
+                    visible: cutHasAvailableModes || coagHasAvailableModes
                     line1: qsTr("Выберите")
                     line2: qsTr("режим")
                     textColor: uiMidGray
@@ -691,6 +718,7 @@ Popup {
                     Layout.column: 2
                     Layout.fillWidth: true
                     Layout.preferredHeight: modeRowHeight
+                    visible: coagHasAvailableModes
                     editorRoot: root
                     isCoagSide: true
                     sideState: coagLive
@@ -703,6 +731,7 @@ Popup {
                     Layout.column: 0
                     Layout.fillWidth: true
                     Layout.preferredHeight: instrRowHeight
+                    visible: cutHasAvailableModes
                     editorRoot: root
                     isCoagSide: false
                     sideState: cutLive
@@ -713,6 +742,7 @@ Popup {
                     Layout.column: 1
                     Layout.preferredWidth: 170
                     Layout.preferredHeight: instrRowHeight
+                    visible: cutHasAvailableModes || coagHasAvailableModes
                     line1: qsTr("Выберите")
                     line2: qsTr("инструмент")
                     textColor: uiMidGray
@@ -724,6 +754,7 @@ Popup {
                     Layout.column: 2
                     Layout.fillWidth: true
                     Layout.preferredHeight: instrRowHeight
+                    visible: coagHasAvailableModes
                     editorRoot: root
                     isCoagSide: true
                     sideState: coagLive
