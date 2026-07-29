@@ -18,6 +18,7 @@ Rectangle {
     property bool loadClear: true
     required property bool recommended
     property bool editable: false
+    property bool userSelectedScope: false
     property int pendingDeleteIndex: -1
     property bool pendingDeleteIsScope: false
     property string pendingDeleteName: ""
@@ -53,6 +54,13 @@ Rectangle {
 
     function updateModel() {
         progsModel.clear()
+        progList.innerModel = progsModel
+        progList.curIndex = -1
+        closeSubProgramsPanel()
+
+        if (!userSelectedScope || scopeList.curIndex < 0)
+            return
+
         itemNameArr = recomHandle.progNameList
         itemIdArr = recomHandle.progIdList
         if (itemIdArr.length !== itemNameArr.length) {
@@ -68,11 +76,13 @@ Rectangle {
                               })
         }
         progList.innerModel = progsModel
-        progList.curIndex = -1
-        closeSubProgramsPanel()
     }
 
     function init() {
+        var previousScopeId = -1
+        if (userSelectedScope && scopeList.curIndex >= 0 && scopeList.curIndex < scopeModel.count)
+            previousScopeId = scopeModel.get(scopeList.curIndex).itemId
+
         scopeModel.clear()
         itemNameArr = recomHandle.scopeNameList
         itemIdArr = recomHandle.scopeIdList
@@ -88,13 +98,30 @@ Rectangle {
                               })
         }
         scopeList.innerModel = scopeModel
-        var selectedIndex = recomHandle.scopeIdx
-        if (selectedIndex >= scopeModel.count) {
-            selectedIndex = scopeModel.count > 0 ? scopeModel.count - 1 : -1
-            if (selectedIndex >= 0)
-                recomHandle.scopeIdx = selectedIndex
+
+        if (scopeModel.count <= 0) {
+            userSelectedScope = false
+            scopeList.curIndex = -1
+            return
         }
-        scopeList.curIndex = selectedIndex
+
+        var restoredIndex = -1
+        if (previousScopeId >= 0) {
+            for (var j = 0; j < scopeModel.count; ++j) {
+                if (scopeModel.get(j).itemId === previousScopeId) {
+                    restoredIndex = j
+                    break
+                }
+            }
+        }
+
+        if (restoredIndex >= 0) {
+            userSelectedScope = true
+            scopeList.curIndex = restoredIndex
+        } else {
+            userSelectedScope = false
+            scopeList.curIndex = -1
+        }
     }
 
     function requestDeleteScope(index) {
@@ -200,7 +227,10 @@ Rectangle {
             updateModel()
         }
         function onScopeIdxChanged() {
-            scopeList.curIndex = recomHandle.scopeIdx
+            if (!recProgs.userSelectedScope)
+                return
+            if (recomHandle.scopeIdx >= 0 && recomHandle.scopeIdx < scopeModel.count)
+                scopeList.curIndex = recomHandle.scopeIdx
         }
         function onProgNameListChanged() {
             updateModel()
@@ -252,7 +282,10 @@ Rectangle {
             color: "transparent"
 
             Label {
-                text: qsTr("Выберите область")
+                id: scopeLabel
+                text: recommended
+                      ? qsTr("Выберите область")
+                      : qsTr("Выберите папку")
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: 24
@@ -260,17 +293,44 @@ Rectangle {
                 color: uiMidGray
             }
 
+            Button {
+                id: scopeScrollUp
+                anchors.top: scopeLabel.bottom
+                anchors.topMargin: 8
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 44
+                text: qsTr("▲")
+                font.pixelSize: 24
+                background: Rectangle {
+                    radius: 18
+                    color: "white"
+                    border.color: fotekBlue
+                    border.width: 1
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: fotekBlue
+                    font.pixelSize: 24
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                onPressed: scopeList.scrollUp()
+            }
+
             ItemList {
                 id: scopeList
                 anchors {
-                    top: parent.top
-                    topMargin: 28
+                    top: scopeScrollUp.bottom
+                    topMargin: 10
                     left: parent.left
                     right: parent.right
-                    bottom: scopeButtons.top
+                    bottom: scopeScrollDown.top
+                    bottomMargin: 10
                 }
-                curIndex: recomHandle.scopeIdx
                 editable: !recProgs.recommended
+                alwaysShowEditActions: !recProgs.recommended
                 noImage: true
                 hideNoImageSymbol: true
                 selectedBackgroundColor: scopeSelectedBackground
@@ -284,60 +344,32 @@ Rectangle {
                 itemCornerRadius: 8
                 keepSelectedItemAtTop: true
                 noAutoScrollItemId: 1000
-                itemFontPixelSize: 22
+                itemFontPixelSize: 28
             }
 
-            RowLayout {
-                id: scopeButtons
-                height: 56
+            Button {
+                id: scopeScrollDown
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                spacing: 10
-
-                Button {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    text: qsTr("▲")
-                    font.pixelSize: 24
-                    background: Rectangle {
-                        radius: 18
-                        color: "white"
-                        border.color: fotekBlue
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: fotekBlue
-                        font.pixelSize: 24
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onPressed: scopeList.scrollUp()
+                height: 44
+                text: qsTr("▼")
+                font.pixelSize: 24
+                background: Rectangle {
+                    radius: 18
+                    color: "white"
+                    border.color: fotekBlue
+                    border.width: 1
                 }
-
-                Button {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    text: qsTr("▼")
+                contentItem: Text {
+                    text: parent.text
+                    color: fotekBlue
                     font.pixelSize: 24
-                    background: Rectangle {
-                        radius: 18
-                        color: "white"
-                        border.color: fotekBlue
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: fotekBlue
-                        font.pixelSize: 24
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onPressed: scopeList.scrollDown()
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
+                onPressed: scopeList.scrollDown()
             }
         }
 
@@ -355,6 +387,7 @@ Rectangle {
             color: "transparent"
 
             Label {
+                id: progLabel
                 text: qsTr("Выберите программу")
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -363,16 +396,44 @@ Rectangle {
                 color: uiMidGray
             }
 
+            Button {
+                id: progScrollUp
+                anchors.top: progLabel.bottom
+                anchors.topMargin: 8
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 44
+                text: qsTr("▲")
+                font.pixelSize: 24
+                background: Rectangle {
+                    radius: 18
+                    color: "white"
+                    border.color: fotekBlue
+                    border.width: 1
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: fotekBlue
+                    font.pixelSize: 24
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                onPressed: progList.scrollUp()
+            }
+
             ItemList {
                 id: progList
                 anchors {
-                    top: parent.top
-                    topMargin: 28
+                    top: progScrollUp.bottom
+                    topMargin: 10
                     left: parent.left
                     right: parent.right
-                    bottom: progButtons.top
+                    bottom: progScrollDown.top
+                    bottomMargin: 10
                 }
                 editable: !recProgs.recommended
+                alwaysShowEditActions: !recProgs.recommended
                 noImage: true
                 hideNoImageSymbol: true
                 scrollSelectsItem: false
@@ -387,62 +448,34 @@ Rectangle {
                 itemCornerRadius: 8
                 keepSelectedItemAtTop: true
                 noAutoScrollItemId: 1000
-                itemFontPixelSize: 22
+                itemFontPixelSize: 28
                 showExpandIndicator: recProgs.recommended
                 expandIndicatorActiveIndex: pendingSubProgParentIndex
             }
 
-            RowLayout {
-                id: progButtons
-                height: 56
+            Button {
+                id: progScrollDown
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                spacing: 10
-
-                Button {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    text: qsTr("▲")
-                    font.pixelSize: 24
-                    background: Rectangle {
-                        radius: 18
-                        color: "white"
-                        border.color: fotekBlue
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: fotekBlue
-                        font.pixelSize: 24
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onPressed: progList.scrollUp()
+                height: 44
+                text: qsTr("▼")
+                font.pixelSize: 24
+                background: Rectangle {
+                    radius: 18
+                    color: "white"
+                    border.color: fotekBlue
+                    border.width: 1
                 }
-
-                Button {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    text: qsTr("▼")
+                contentItem: Text {
+                    text: parent.text
+                    color: fotekBlue
                     font.pixelSize: 24
-                    background: Rectangle {
-                        radius: 18
-                        color: "white"
-                        border.color: fotekBlue
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: fotekBlue
-                        font.pixelSize: 24
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onPressed: progList.scrollDown()
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
+                onPressed: progList.scrollDown()
             }
         }
 
@@ -462,6 +495,7 @@ Rectangle {
             visible: subProgramsPanelVisible
 
             Label {
+                id: subProgLabel
                 text: qsTr("Выберите вариант")
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -473,14 +507,41 @@ Rectangle {
                 width: parent.width
             }
 
+            Button {
+                id: subProgScrollUp
+                anchors.top: subProgLabel.bottom
+                anchors.topMargin: 8
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 44
+                text: qsTr("▲")
+                font.pixelSize: 24
+                background: Rectangle {
+                    radius: 18
+                    color: "white"
+                    border.color: fotekBlue
+                    border.width: 1
+                }
+                contentItem: Text {
+                    text: parent.text
+                    color: fotekBlue
+                    font.pixelSize: 24
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                onPressed: subProgList.scrollUp()
+            }
+
             ItemList {
                 id: subProgList
                 anchors {
-                    top: parent.top
-                    topMargin: 28
+                    top: subProgScrollUp.bottom
+                    topMargin: 10
                     left: parent.left
                     right: parent.right
-                    bottom: subProgButtons.top
+                    bottom: subProgScrollDown.top
+                    bottomMargin: 10
                 }
                 innerModel: subProgsModel
                 noImage: true
@@ -497,60 +558,32 @@ Rectangle {
                 itemCornerRadius: 8
                 keepSelectedItemAtTop: true
                 noAutoScrollItemId: 1000
-                itemFontPixelSize: 20
+                itemFontPixelSize: 22
             }
 
-            RowLayout {
-                id: subProgButtons
-                height: 56
+            Button {
+                id: subProgScrollDown
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                spacing: 10
-
-                Button {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    text: qsTr("▲")
-                    font.pixelSize: 24
-                    background: Rectangle {
-                        radius: 18
-                        color: "white"
-                        border.color: fotekOrange
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: fotekOrange
-                        font.pixelSize: 24
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onPressed: subProgList.scrollUp()
+                height: 44
+                text: qsTr("▼")
+                font.pixelSize: 24
+                background: Rectangle {
+                    radius: 18
+                    color: "white"
+                    border.color: fotekBlue
+                    border.width: 1
                 }
-
-                Button {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    text: qsTr("▼")
+                contentItem: Text {
+                    text: parent.text
+                    color: fotekBlue
                     font.pixelSize: 24
-                    background: Rectangle {
-                        radius: 18
-                        color: "white"
-                        border.color: fotekOrange
-                        border.width: 1
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: fotekOrange
-                        font.pixelSize: 24
-                        font.bold: true
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    onPressed: subProgList.scrollDown()
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
                 }
+                onPressed: subProgList.scrollDown()
             }
         }
     }
@@ -675,6 +708,7 @@ Rectangle {
     Connections {
         target: scopeList
         function onNewIndexSelected(index) {
+            recProgs.userSelectedScope = true
             recomHandle.scopeIdx = index
             recProgs.updateModel()
         }
@@ -704,6 +738,15 @@ Rectangle {
 
     Connections {
         target: progList
+        function onIndexHighlighted(index) {
+            if (!recProgs.recommended)
+                return
+
+            if (recomHandle.hasSubPrograms(index))
+                recProgs.showSubProgramsPanel(index)
+            else
+                recProgs.closeSubProgramsPanel()
+        }
         function onNewIndexSelected(index) {
             if (recProgs.recommended && recomHandle.hasSubPrograms(index)) {
                 recProgs.showSubProgramsPanel(index)

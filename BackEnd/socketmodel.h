@@ -194,6 +194,9 @@ private:
      */
     void pedalRemover(int socketToSkip, int pedalToRemove);
 
+    int coagInstrumentButtonValue(int socketRow) const;
+    void syncBi2HandlePedal(int socketRow);
+
     /**
      * @brief populateRoles - метамагическая запонялка имён ролей по именам енума ролей
      */

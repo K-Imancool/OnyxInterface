@@ -80,6 +80,9 @@ public:
 	
 	void saveUserProg(const QString& scopeName,
 	                    const QString& progName);
+
+	bool userProgExists(const QString& scopeName,
+	                    const QString& progName);
 	
 
 	///формально ничего не мешает удалить/переименовать рекоменд прогу

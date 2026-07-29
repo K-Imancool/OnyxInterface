@@ -14,6 +14,7 @@ Item {
     signal userProgsButtonPressed()
     signal freeSettingsButtonPressed()
     signal lastSettingsButtonPressed()
+    signal saveSettingsButtonPressed()
     signal serviceMenuButtonPressed()
 
     property bool startupMode: false
@@ -181,6 +182,19 @@ Item {
                     iconSize: settingsScreen.menuActionIconSize
                     labelPixelSize: settingsScreen.menuActionLabelSize
                     onPressed: settingsScreen.lastSettingsButtonPressed()
+                }
+
+                MenuActionButton {
+                    visible: !settingsScreen.startupMode
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    text: qsTr("СОХРАНИТЬ\nПРОГРАММУ")
+                    iconSource: settingsScreen.iconsBasePath + "iconSave.png"
+                    accentColor: settingsScreen.fotekOrange
+                    textColor: settingsScreen.fotekBlue
+                    iconSize: settingsScreen.menuActionIconSize
+                    labelPixelSize: settingsScreen.menuActionLabelSize
+                    onPressed: settingsScreen.saveSettingsButtonPressed()
                 }
 
                 MenuActionButton {

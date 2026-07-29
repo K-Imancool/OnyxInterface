@@ -139,7 +139,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
 
     m_rxCommand.data.clear();
 
-//    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
+    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
     if (m_debugUart)
         emit sigDebugOverlayLine(QStringLiteral("Rx: %1").arg(getHexStr(rxPacket)));
 //    emit sigReportRx(getHexStr(rxPacket), m_uart->transmitDelay());
@@ -189,7 +189,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
         errStr.append(QString::number(packetLen));
         errStr.append(" байт, реальная: ");
         errStr.append(QString::number(destuffedBuffer.size()));
-//        qDebug() << errStr;                     // DEBUG
+        qDebug() << errStr;                     // DEBUG
         m_state = STATE_RX_LEN_ERR;
         return;
     }
@@ -518,11 +518,11 @@ void LinkStm::sendCommand()
     if (!m_uart->writeData(txPacket)) {
         m_state = STATE_TX_ERR;
         txStr = "!Tx ERROR";
-//         qDebug() << "Tx ERR!";
+         qDebug() << "Tx ERR!";             // DEBUG
    }
    else {
         txStr = getHexStr(txPacket);
-//        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
+        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
         if (m_debugUart)
             emit sigDebugOverlayLine(QStringLiteral("Tx: %1").arg(getHexStr(txPacket)));
         if (m_txCommand.com == ReadyToPowerOff) {
@@ -625,7 +625,7 @@ void LinkStm::readRxCommand()
 //        qDebug() << "баллон 1: " << unitState.argonCylinder1 << " баллон 2: " << unitState.argonCylinder2;
 
         // Преобразуем байт в enum PedalKnobPressed
-        if (!m_rxCommand.data.isEmpty()) {
+        if (!m_rxCommand.data.isEmpty() && m_comState != ACTIVATION) {
             quint8 pressValue = static_cast<quint8>(m_rxCommand.data.at(0));
 
             // Проверяем, соответствует ли значение одному из допустимых enum
@@ -652,6 +652,7 @@ void LinkStm::readRxCommand()
             case PRESS_MONO2_YB:
             case PRESS_PED2_YB:
             case PRESS_NONE:
+            case PRESS_WRONG:
                 unitState.pedalKnob = static_cast<PedalKnobPressed>(pressValue);
                 break;
             default:

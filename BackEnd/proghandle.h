@@ -33,6 +33,8 @@ public:
 	Q_INVOKABLE void permitAll();
 	Q_INVOKABLE void saveProg(const QString& scopeName,
 	                          const QString& progName);
+	Q_INVOKABLE bool userProgExists(const QString& scopeName,
+	                                const QString& progName);
 	Q_INVOKABLE void addEmptyDefault();
 	Q_INVOKABLE void copyCurrent();
     Q_INVOKABLE void deleteAllUserProgs();
@@ -106,6 +108,10 @@ signals:
 	void isRecomProgsChanged();
 
 	void endoProgramMixRejected();
+
+	void userProgExistsRequested(const QString& scopeName,
+	                             const QString& progName,
+	                             bool* result);
 
 private:
 	int m_scopeIdx = 0;

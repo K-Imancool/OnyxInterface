@@ -8,6 +8,7 @@ Instrument::Instrument(int id,
     : m_id(id),
       m_legacyNumber(legacyNumber),
       m_name(name),
+      m_handleType(0),
       m_isMono(mono)
 {
 

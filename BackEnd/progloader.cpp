@@ -1199,7 +1199,7 @@ std::map<int, InstrPtr > ProgLoader::getInstrums()
 {
 	std::map<int, InstrPtr> result;
 	QList<QVariantList> instrListForMode = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Instruments"},
-	                                                                          QStringList{"id","Num","BI_MONO",DbLocale::column("Name"),DbLocale::column("Brief")},
+	                                                                          QStringList{"id","Num","BI_MONO",DbLocale::column("Name"),DbLocale::column("Brief"),"Button"},
 	                                                                          "");
 	/* int id, int legacyNumber, const QString& name, bool mono */
 	for (const auto& item : instrListForMode) {
@@ -1208,9 +1208,40 @@ std::map<int, InstrPtr > ProgLoader::getInstrums()
 		                                item.at(3).toString(),
 		                                item.at(2).toInt() == 1 ? true : false);
 		ptr->setDescription(item.at(4).toString());
+		ptr->setHandleType(item.at(5).toInt());
 		result[item.at(0).toInt()] = ptr;
 	}
 	return result;
+}
+
+bool ProgLoader::userProgExists(const QString &scopeName, const QString &progName)
+{
+	if (m_userDbReaderPtr.isNull() || scopeName.isEmpty() || progName.isEmpty()) {
+		return false;
+	}
+
+	int scopeId = -1;
+	const std::unique_ptr<ProgLoaderBase> loader{getLoader(ptUser)};
+	const auto list = loader->getCategories();
+	for (const auto& item : list) {
+		if (item.second == scopeName) {
+			scopeId = item.first;
+			break;
+		}
+	}
+	if (scopeId < 0) {
+		return false;
+	}
+
+	const QString escapedProgName = QString(progName).replace(QLatin1Char('\''), QLatin1String("''"));
+	const QList<QVariantList> existingProgRows = m_userDbReaderPtr->slotSendSelectQuery(
+	            QStringList{QStringLiteral("Progs")},
+	            QStringList{QStringLiteral("id")},
+	            QStringLiteral("Scope_ID = %1 AND Name_RU = '%2' AND id > 1000")
+	            .arg(scopeId)
+	            .arg(escapedProgName));
+
+	return !existingProgRows.isEmpty() && !existingProgRows.first().isEmpty();
 }
 
 void ProgLoader::saveUserProg(const QString &scopeName, const QString &progName)
@@ -1383,10 +1414,27 @@ void ProgLoader::deleteAllUserProgs()
     QString deleteProgsQuery = "DELETE FROM Progs WHERE Scope_ID >= 1000";
     if (!m_userDbReaderPtr->executeUpdateQuery(deleteProgsQuery)) {
         qWarning() << "Failed to delete user programs";
-    } else {
-        m_userDbReaderPtr->commit();
-        qWarning() << "Все пользовательские программы удалены";
-	}
+        return;
+    }
+
+    // Пользовательские папки (Scopes) имеют id > 1000
+    QString deleteScopesQuery = "DELETE FROM Scopes WHERE id > 1000";
+    if (!m_userDbReaderPtr->executeUpdateQuery(deleteScopesQuery)) {
+        qWarning() << "Failed to delete user scopes";
+        return;
+    }
+
+    // Одна папка по умолчанию с именами для всех языков интерфейса
+    const QString insertDefaultScopeQuery = QStringLiteral(
+        "INSERT INTO Scopes (id, Num, Name_RU, Name_EN, Name_ES) "
+        "VALUES (1001, 1001, 'ПРОГРАММЫ ПОЛЬЗОВАТЕЛЯ', 'USER PROGRAMS', 'PROGRAMAS DE USUARIO')");
+    if (!m_userDbReaderPtr->executeUpdateQuery(insertDefaultScopeQuery)) {
+        qWarning() << "Failed to create default user scope";
+        return;
+    }
+
+    m_userDbReaderPtr->commit();
+    qWarning() << "Все пользовательские программы и папки удалены, создана папка по умолчанию";
 }
 
 ProgLoaderBase *ProgLoader::getLoader(progType type)

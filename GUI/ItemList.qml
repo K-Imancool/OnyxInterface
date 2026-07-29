@@ -13,6 +13,7 @@ Rectangle {
 	property bool noImage: false
 	property bool hideNoImageSymbol: false
 	property bool editable: false
+	property bool alwaysShowEditActions: false
 	property color selectedBackgroundColor: "transparent"
 	property color selectedTextColor: "white"
 	property color unselectedTextColor: "white"
@@ -34,6 +35,7 @@ Rectangle {
 	property bool suppressPositionOnIndexChange: false
 
 	signal newIndexSelected(int newIndex)
+	signal indexHighlighted(int newIndex)
 	signal deleteItem(int index)
 	signal editItemName(int index, string name)
 
@@ -98,6 +100,7 @@ Rectangle {
 			positionSelectedItem()
 		else if (theView.count > 0)
 			theView.positionViewAtIndex(index, ListView.Contain)
+		indexHighlighted(index)
 	}
 
 	function scrollUp() {
@@ -352,12 +355,15 @@ Rectangle {
 				}
 				Rectangle {
 					id: itemEditRect
-					property bool engaged : false
+					property bool engaged: false
+					readonly property bool actionsVisible: itemList.alwaysShowEditActions || engaged
                     color: "#80FFFFFF"
                     border.color: "#AA4040C0"
 					border.width: 1
 					radius: 8
-					width: engaged ? 3 * height : height
+					width: (itemList.alwaysShowEditActions || !actionsVisible)
+						   ? height
+						   : 3 * height
 					visible: showEditPanel
 					clip: true
 					anchors {
@@ -366,10 +372,26 @@ Rectangle {
 						right:  parent.right
 						margins: 10
 					}
+
+					SButton {
+						id: directEditButton
+						style: "btn-naked"
+						visible: itemList.alwaysShowEditActions
+						anchors.fill: parent
+						anchors.margins: 5
+						iconString: Fa.Icon.pencil_square_o;
+						onClicked: {
+							nameDialog.editingIndex = index
+							nameDialog.initialName = (model.itemName !== undefined && model.itemName !== null)
+							                            ? String(model.itemName) : ""
+							nameDialog.open()
+						}
+					}
+
 					SButton {
 						id: engageEditButton
 						style: "btn-naked"
-						visible: !itemEditRect.engaged
+						visible: !itemList.alwaysShowEditActions && !itemEditRect.actionsVisible
 						anchors.fill: parent
 						anchors.margins: 5
 						iconString: Fa.Icon.chevron_left;
@@ -379,7 +401,7 @@ Rectangle {
 					}
 					Rectangle {
 						id: editVariantBox
-						visible: itemEditRect.engaged
+						visible: !itemList.alwaysShowEditActions && itemEditRect.actionsVisible
 						color: "transparent"
 						anchors.fill: parent
 						anchors.margins: 5
@@ -443,6 +465,13 @@ Rectangle {
 		id: nameDialog
 		property int editingIndex
 		property string initialName: ""
+
+		function ensureKeyboard() {
+			if (!edit.activeFocus)
+				edit.forceActiveFocus()
+			Qt.inputMethod.show()
+		}
+
 		function submitRename() {
 			var newName = edit.text.trim()
 			edit.focus = false
@@ -452,23 +481,45 @@ Rectangle {
 			}
 			close()
 		}
-		width: 600
-		height: 320
+		function requestDelete() {
+			var idx = editingIndex
+			edit.focus = false
+			Qt.inputMethod.hide()
+			close()
+			if (idx >= 0)
+				Qt.callLater(function() { deleteItem(idx) })
+		}
+		width: Math.min(parent ? parent.width * 0.92 : 980, 980)
+		height: 360
 		parent: Overlay.overlay
 		modal: true
 		x: parent ? (parent.width - width) / 2 : 0
-		y: parent ? Math.max(20, Math.round(parent.height * 0.14)) : 20
-		title: qsTr("Редактирование названия")
+		// Всегда у верхнего края: кнопки остаются над виртуальной клавиатурой
+        y: 80
+		title: qsTr("Редактирование")
 		Overlay.modal: Rectangle {
 			color: "#70000000"
 		}
+
 		onOpened: {
 			edit.text = initialName
 			Qt.callLater(function() {
 				edit.forceActiveFocus()
 				edit.deselect()
 				edit.cursorPosition = edit.text.length
+				Qt.inputMethod.show()
 			})
+		}
+
+		Connections {
+			target: Qt.inputMethod
+			enabled: nameDialog.visible
+			function onVisibleChanged() {
+				// После скрытия клавиатуры снимаем фокус, чтобы следующее
+				// нажатие на поле снова активировало ввод и клавиатуру.
+				if (!Qt.inputMethod.visible && edit.activeFocus)
+					edit.focus = false
+			}
 		}
 		contentItem: Rectangle {
 			id: contentRect
@@ -476,17 +527,17 @@ Rectangle {
 
 			ColumnLayout {
 				anchors.fill: parent
-				anchors.margins: 24
-				spacing: 18
+				anchors.margins: 18
+				spacing: 16
 
 				Label {
 					id: editLabel
 					Layout.fillWidth: true
 					horizontalAlignment: Qt.AlignCenter
 					verticalAlignment: Qt.AlignVCenter
-					text: qsTr("Укажите новое имя:")
+					text: qsTr("Укажите новое название:")
 					color: "black"
-					font.pixelSize: 24
+					font.pixelSize: 34
 					font.bold: true
 					wrapMode: Text.WordWrap
 				}
@@ -494,52 +545,74 @@ Rectangle {
 				TextField {
 					id: edit
 					Layout.fillWidth: true
-					Layout.preferredHeight: 64
+					Layout.preferredHeight: 72
 					color: "black"
 					horizontalAlignment: Text.AlignLeft
 					verticalAlignment: Text.AlignVCenter
 					selectByMouse: true
+					activeFocusOnPress: true
 					inputMethodHints: Qt.ImhNoPredictiveText
-					font.pixelSize: 24
+					font.pixelSize: 32
 					background: Rectangle {
 						color: "#f5f5f5"
 						border.color: edit.activeFocus ? "#4a9eff" : "#7a7a7a"
 						border.width: 2
 						radius: 6
 					}
-				}
+					onActiveFocusChanged: {
+						if (activeFocus)
+							Qt.inputMethod.show()
+					}
 
-				Item {
-					Layout.fillHeight: true
+					MouseArea {
+						anchors.fill: parent
+						propagateComposedEvents: true
+						onPressed: {
+							nameDialog.ensureKeyboard()
+							mouse.accepted = false
+						}
+					}
 				}
 			}
 		}
 		footer: Rectangle {
 			color: "transparent"
-			implicitHeight: 108
+			implicitHeight: 120
 
 			RowLayout {
 				anchors.fill: parent
-				anchors.leftMargin: 20
-				anchors.rightMargin: 20
-				anchors.topMargin: 20
-				anchors.bottomMargin: 20
-				spacing: 16
+				anchors.leftMargin: 24
+				anchors.rightMargin: 24
+				anchors.topMargin: 16
+				anchors.bottomMargin: 16
+				spacing: 18
 
 				DialogActionButton {
-					Layout.preferredWidth: 180
+					Layout.preferredWidth: 220
 					Layout.fillHeight: true
 					text: qsTr("ОТМЕНА")
+					labelPixelSize: 34
 					onPressed: nameDialog.reject()
 				}
 
 				Item { Layout.fillWidth: true }
 
 				DialogActionButton {
-					Layout.preferredWidth: 180
+					Layout.preferredWidth: 220
+					Layout.fillHeight: true
+					text: qsTr("УДАЛИТЬ")
+					labelPixelSize: 34
+					onPressed: nameDialog.requestDelete()
+				}
+
+				Item { Layout.fillWidth: true }
+
+				DialogActionButton {
+					Layout.preferredWidth: 220
 					Layout.fillHeight: true
 					text: qsTr("ПРИНЯТЬ")
 					primary: true
+					labelPixelSize: 34
 					enabled: edit.text.trim().length > 0
 					onPressed: nameDialog.submitRename()
 				}

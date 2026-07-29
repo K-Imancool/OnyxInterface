@@ -54,6 +54,8 @@ Item {
         anchors.fill: parent
         spacing: 10
         visible: modeSelected && !sideState.isEndo
+        enabled: visible
+        z: visible ? 1 : 0
 
         Item { Layout.fillWidth: true }
 
@@ -99,6 +101,8 @@ Item {
         anchors.fill: parent
         spacing: control.endoGroupsGap
         visible: showEndo
+        enabled: visible
+        z: visible ? 1 : 0
 
         ColumnLayout {
             Layout.fillWidth: true

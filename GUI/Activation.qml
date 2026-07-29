@@ -3,111 +3,79 @@ import QtQuick.Controls 2.15
 
 Popup {
     id: activationPopup
-    
-    // Привязка к данным из ControlCenter
-    property string socketName /*control.activeSocketName || "Неизвестный сокет"*/
-    property string modeName /*control.activeModeName || "Режим не выбран"*/
+
+    property string socketName
+    property string modeName
     property int power: 0
     property bool isCoag: false
     property bool isEndo: false
     property int activeSocketId: -1
-    
-    onPowerChanged: {
-//        console.log("Activation.qml: power changed to", power)
-    }
-    
-    onOpened: {
-//        console.log("Activation.qml opened: socketName=", socketName, "modeName=", modeName, "power=", power, "isCoag=", isCoag, "isEndo=", isEndo)
-    }
-    
-    // Настройки popup
-    modal: true  // Модальный - блокируем касания
-    closePolicy: Popup.NoAutoClose  // Закрывается только программно
+
+    readonly property color foregroundColor: isCoag ? "white" : "black"
+    readonly property color foregroundOutlineColor: isCoag ? "black" : "white"
+
+    modal: true
+    dim: true
+    closePolicy: Popup.NoAutoClose
+    padding: 0
 
     onClosed: {
         activeSocketId = -1
     }
 
-    // Перехватываем все события мыши
     MouseArea {
         anchors.fill: parent
         propagateComposedEvents: false
         preventStealing: true
     }
-    
-    // Фон в зависимости от режима
+
     background: Rectangle {
-        id: backgroundRect
-        color: isCoag ? "#0f58fa" : "#ffd900"  // Синий для коагуляции, жёлтый для резания
+        color: isCoag ? "#0f58fa" : "#ffd900"
         radius: 20
         border.color: "white"
         border.width: 3
         opacity: 1.0
-
-        // Пульсирующая анимация
-//        SequentialAnimation on opacity {
-//            running: activationPopup.visible
-//            loops: Animation.Infinite
-
-//            NumberAnimation {
-//                from: 0.8
-//                to: 1.0
-//                duration: 600
-//                easing.type: Easing.InOutSine
-//            }
-//            NumberAnimation {
-//                from: 1.0
-//                to: 0.8
-//                duration: 600
-//                easing.type: Easing.InOutSine
-//            }
-//        }
     }
-    
+
     contentItem: Item {
-        // Главный контейнер с информацией
         Column {
             anchors.centerIn: parent
             spacing: 32
-            
-            // Заголовок "АКТИВАЦИЯ"
+
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("АКТИВАЦИЯ ") + socketName
                 font.pixelSize: 64
                 font.bold: true
-                color: isCoag ? "white" : "black"
+                color: foregroundColor
                 style: Text.Outline
-                styleColor: isCoag ? "black" : "white"
+                styleColor: foregroundOutlineColor
             }
-            
-            // Разделитель
+
             Rectangle {
                 width: 560
                 height: 4
-                color: isCoag ? "white" : "black"
+                color: foregroundColor
                 anchors.horizontalCenter: parent.horizontalCenter
             }
-            
-            // Название режима
+
             Label {
                 id: modeNameLabel
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: modeName
                 font.pixelSize: 96
-                color: isCoag ? "white" : "black"
+                color: foregroundColor
                 style: Text.Outline
-                styleColor: isCoag ? "black" : "white"
+                styleColor: foregroundOutlineColor
             }
 
-            // Мощность
             Rectangle {
                 id: powerInfoRect
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: 680
                 height: 280
                 color: "transparent"
-                
+
                 Column {
                     visible: !activationPopup.isEndo
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -119,9 +87,9 @@ Popup {
                         width: parent.width
                         font.pixelSize: 56
                         font.bold: true
-                        color: activationPopup.isCoag ? "white" : "black"
+                        color: foregroundColor
                         style: Text.Outline
-                        styleColor: activationPopup.isCoag ? "black" : "white"
+                        styleColor: foregroundOutlineColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         text: qsTr("Мощность")
@@ -131,9 +99,9 @@ Popup {
                         height: parent.height - parent.children[0].height - parent.spacing
                         font.pixelSize: 140
                         font.bold: true
-                        color: activationPopup.isCoag ? "white" : "black"
+                        color: foregroundColor
                         style: Text.Outline
-                        styleColor: activationPopup.isCoag ? "black" : "white"
+                        styleColor: foregroundOutlineColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         text: activationPopup.power
@@ -152,9 +120,9 @@ Popup {
                         width: parent.width
                         font.pixelSize: 56
                         font.bold: true
-                        color: activationPopup.isCoag ? "white" : "black"
+                        color: foregroundColor
                         style: Text.Outline
-                        styleColor: activationPopup.isCoag ? "black" : "white"
+                        styleColor: foregroundOutlineColor
                         text: qsTr("Эффект\nрезания")
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -164,14 +132,10 @@ Popup {
                         height: parent.height - parent.children[0].height - parent.spacing
                         font.pixelSize: 140
                         font.bold: true
-                        color: activationPopup.isCoag ? "white" : "black"
+                        color: foregroundColor
                         style: Text.Outline
-                        styleColor: activationPopup.isCoag ? "black" : "white"
-                        text: {
-                            var cutValue = Math.floor(activationPopup.power / 10)
-//                            console.log("Endo cut value:", cutValue, "from power:", activationPopup.power)
-                            return cutValue
-                        }
+                        styleColor: foregroundOutlineColor
+                        text: Math.floor(activationPopup.power / 10)
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -188,9 +152,9 @@ Popup {
                         width: parent.width
                         font.pixelSize: 56
                         font.bold: true
-                        color: activationPopup.isCoag ? "white" : "black"
+                        color: foregroundColor
                         style: Text.Outline
-                        styleColor: activationPopup.isCoag ? "black" : "white"
+                        styleColor: foregroundOutlineColor
                         text: qsTr("Эффект\nкоагуляции")
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -200,22 +164,17 @@ Popup {
                         height: parent.height - parent.children[0].height - parent.spacing
                         font.pixelSize: 140
                         font.bold: true
-                        color: activationPopup.isCoag ? "white" : "black"
-                style: Text.Outline
-                        styleColor: activationPopup.isCoag ? "black" : "white"
-                        text: {
-                            var coagValue = activationPopup.power % 10
-//                            console.log("Endo coag value:", coagValue, "from power:", activationPopup.power)
-                            return coagValue
-                        }
+                        color: foregroundColor
+                        style: Text.Outline
+                        styleColor: foregroundOutlineColor
+                        text: activationPopup.power % 10
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
             }
         }
-        
-        // Анимированная рамка по краям
+
         Rectangle {
             anchors.fill: parent
             anchors.margins: 10
@@ -224,11 +183,11 @@ Popup {
             border.width: 3
             radius: 15
             opacity: 0.7
-            
+
             SequentialAnimation on border.width {
                 running: activationPopup.visible
                 loops: Animation.Infinite
-                
+
                 NumberAnimation {
                     from: 3
                     to: 6
@@ -244,8 +203,7 @@ Popup {
             }
         }
     }
-    
-    // Открытие/закрытие с анимацией
+
     enter: Transition {
         NumberAnimation {
             property: "opacity"
@@ -261,7 +219,7 @@ Popup {
             easing.type: Easing.OutQuad
         }
     }
-    
+
     exit: Transition {
         NumberAnimation {
             property: "opacity"
@@ -278,4 +236,3 @@ Popup {
         }
     }
 }
-

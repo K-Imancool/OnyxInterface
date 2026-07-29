@@ -2060,9 +2060,9 @@ EMPTY</translation>
         <translation>Confirm deletion</translation>
     </message>
     <message>
-        <source>Удалить все пользовательские программы?
+        <source>Удалить все пользовательские программы и папки?
 Это действие необратимо.</source>
-        <translation>All user programs will be DELETED! Continue?</translation>
+        <translation>All user programs and folders will be DELETED! Continue?</translation>
     </message>
     <message>
         <source>Вход без пароля</source>

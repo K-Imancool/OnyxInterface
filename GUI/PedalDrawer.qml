@@ -8,11 +8,43 @@ Drawer {
 
     property int socketId: 0
     property var innerModel
+    property int pedalUiRev: 0
     readonly property real titleHeight: Math.max(18, Math.min(40, height * 0.22))
     readonly property color drawerGray: "#6a6a6a"
 
     modal: false
     closePolicy: Popup.NoAutoClose
+
+    onOpened: pedalUiRev++
+    onSocketIdChanged: pedalUiRev++
+
+    Connections {
+        enabled: repeatRoot.opened && innerModel
+        target: innerModel
+        function onDataChanged(topLeft, bottomRight, roles) {
+            if (socketId < topLeft.row || socketId > bottomRight.row)
+                return
+            pedalUiRev++
+        }
+    }
+
+    function currentShownPedals() {
+        if (!innerModel || socketId < 0) {
+            return []
+        }
+
+        var socketIndex = innerModel.index(socketId, 0)
+        return socketIndex.valid ? innerModel.data(socketIndex, SocketModel.SocketAllowedPedal) || [] : []
+    }
+
+    function currentSelectedPed() {
+        if (!innerModel || socketId < 0) {
+            return 0
+        }
+
+        var socketIndex = innerModel.index(socketId, 0)
+        return socketIndex.valid ? innerModel.data(socketIndex, SocketModel.SocketPedal) || 0 : 0
+    }
 
     background: Rectangle {
         color: repeatRoot.drawerGray
@@ -80,23 +112,16 @@ Drawer {
 
         PedalEditor {
             id: pedEditor
+            socketNumber: repeatRoot.socketId
             width: Math.max(editorViewport.width, 560)
             height: Math.max(editorViewport.height, 100)
             shownPedalsArray: {
-                if (!innerModel || socketId < 0) {
-                    return []
-                }
-
-                var socketIndex = innerModel.index(socketId, 0)
-                return socketIndex.valid ? innerModel.data(socketIndex, SocketModel.SocketAllowedPedal) || [] : []
+                var _ = repeatRoot.pedalUiRev
+                return repeatRoot.currentShownPedals()
             }
             selectedPed: {
-                if (!innerModel || socketId < 0) {
-                    return 0
-                }
-
-                var socketIndex = innerModel.index(socketId, 0)
-                return socketIndex.valid ? innerModel.data(socketIndex, SocketModel.SocketPedal) || 0 : 0
+                var _ = repeatRoot.pedalUiRev
+                return repeatRoot.currentSelectedPed()
             }
         }
 

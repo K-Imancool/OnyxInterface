@@ -508,7 +508,7 @@ Popup {
                 width: 520
                 height: 62
                 visible: root.instrumentSelected
-                text: qsTr("Другой инструмент")
+                text: qsTr("ДРУГОЙ ИНСТРУМЕНТ")
                 secondaryColor: "white"
                 secondaryBorderWidth: 2
                 secondaryBorderColor: root.fotekBlue

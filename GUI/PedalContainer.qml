@@ -86,6 +86,18 @@ Rectangle {
             width: pedContainer.width
             height: pedContainer.socketHeight(index)
 
+            Rectangle {
+                width: parent.width
+                height: 2
+                color: "lightgray"
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.topMargin: -3
+                anchors.leftMargin: 8
+                anchors.rightMargin: 8
+            }
+
             Text {
                 id: socketNameLabel
                 width: Math.min(parent.width - 8, pedIcon.width + 60)
@@ -109,6 +121,7 @@ Rectangle {
                 height: width
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
+                anchors.bottomMargin: 20
                 pedalStateIdx: model.socketpedal
                 socketId: index
             }

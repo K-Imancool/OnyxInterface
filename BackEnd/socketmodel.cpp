@@ -547,6 +547,7 @@ bool SocketModel::setData(const QModelIndex &index, const QVariant &value, int r
     }
     case CoagModeIndex:
         if (socketItem.setCoagModeIndex(value.toInt())) {
+            syncBi2HandlePedal(index.row());
             return true;
         }
         return false;
@@ -1087,6 +1088,7 @@ bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMa
             res = true;
         }
         if (res) {
+            syncBi2HandlePedal(socketId);
             emit dataChanged(idx, idx, roles);
         }
         return res;
@@ -1231,6 +1233,10 @@ void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMap
     if (add && m_subProgIdx != subProgIdxBeforeAdd) {
         emit subProgIdxChanged();
     }
+
+    for (int row = 0; row < m_socketNames.size(); ++row) {
+        syncBi2HandlePedal(row);
+    }
 //    qDebug() << "[ProgFlow] SocketModel::loadProgs готово subProgIdx:" << m_subProgIdx
 //             << "subProgCount:" << m_itemsMapVect.size();
 }
@@ -1369,6 +1375,70 @@ void SocketModel::pedalRemover(int socketToSkip, int pedalToRemove)
             // break;
         }
     }
+}
+
+int SocketModel::coagInstrumentButtonValue(int socketRow) const
+{
+    const auto resolved = resolveSocket(socketRow);
+    if (!resolved.itemsMap || !resolved.instrMap) {
+        return 0;
+    }
+
+    const auto socketIter = resolved.itemsMap->find(resolved.socketId);
+    if (socketIter == resolved.itemsMap->end() || socketIter->second.isNull()) {
+        return 0;
+    }
+
+    if (socketIter->second->socketType() != Onyx::BIPOLAR_2) {
+        return 0;
+    }
+
+    const CSurgModePtr coagMode = socketIter->second->curCoagMode();
+    if (coagMode.isNull() || coagMode->id() == 1000) {
+        return 0;
+    }
+
+    const int instrId = coagMode->selectedInstrId();
+    if (instrId <= 0 || instrId == 1000) {
+        return 0;
+    }
+
+    const auto instrIter = resolved.instrMap->find(instrId);
+    if (instrIter == resolved.instrMap->end() || instrIter->second.isNull()) {
+        return 0;
+    }
+
+    return instrIter->second->hadleType();
+}
+
+void SocketModel::syncBi2HandlePedal(int socketRow)
+{
+    const auto resolved = resolveSocket(socketRow);
+    if (!resolved.itemsMap || !resolved.instrMap) {
+        return;
+    }
+
+    const auto socketIter = resolved.itemsMap->find(resolved.socketId);
+    if (socketIter == resolved.itemsMap->end() || socketIter->second.isNull()) {
+        return;
+    }
+
+    SOCKET& socketItem = *(socketIter->second);
+    if (socketItem.socketType() != Onyx::BIPOLAR_2) {
+        return;
+    }
+
+    const bool hasHandleButton = coagInstrumentButtonValue(socketRow) == 1;
+    socketItem.updateBi2AllowedPedals(hasHandleButton);
+
+    QVector<int> roles = {SocketAllowedPedal};
+    if (!hasHandleButton && socketItem.pedal() == Onyx::INSTR_BUTTON_BI) {
+        socketItem.setPedal(Onyx::NO_PED);
+        roles.append(SocketPedal);
+    }
+
+    const QModelIndex idx = createIndex(socketRow, 0);
+    emit dataChanged(idx, idx, roles);
 }
 
 void SocketModel::populateRoles()

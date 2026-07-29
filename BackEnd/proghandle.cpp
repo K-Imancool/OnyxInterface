@@ -91,6 +91,13 @@ void ProgHandle::saveProg(const QString &scopeName, const QString &progName)
 	emit signalSaveName(scopeName, progName);
 }
 
+bool ProgHandle::userProgExists(const QString &scopeName, const QString &progName)
+{
+	bool result = false;
+	emit userProgExistsRequested(scopeName, progName, &result);
+	return result;
+}
+
 void ProgHandle::addEmptyDefault()
 {
 	emit signalAddEmptyDefault(false);

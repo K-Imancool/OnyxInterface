@@ -107,6 +107,7 @@ Item {
     signal programSelected(string scopeName, string progName)
     signal freeSettingsModeActivated()
     signal deleteAllUserProgsRequested()
+    signal saveSettingsButtonPressed()
 
     // Перехват касаний по пустым зонам; дочерние кнопки/поля — через propagateComposedEvents
     MouseArea {
@@ -148,6 +149,12 @@ Item {
                     }
                     if (menuLoader.item.userButtonPressed) {
                         menuLoader.item.userButtonPressed.disconnect()
+                    }
+                    if (menuLoader.item.freeSettingsButtonPressed) {
+                        menuLoader.item.freeSettingsButtonPressed.disconnect()
+                    }
+                    if (menuLoader.item.saveSettingsButtonPressed) {
+                        menuLoader.item.saveSettingsButtonPressed.disconnect()
                     }
                     if (menuLoader.item.infoButtonPressed) {
                         menuLoader.item.infoButtonPressed.disconnect()
@@ -209,6 +216,12 @@ Item {
                     if (menuLoader.item.freeSettingsButtonPressed) {
                         menuLoader.item.freeSettingsButtonPressed.connect(function() {
                             freeSettingsModeActivated()
+                            closeMe()
+                        })
+                    }
+                    if (menuLoader.item.saveSettingsButtonPressed) {
+                        menuLoader.item.saveSettingsButtonPressed.connect(function() {
+                            saveSettingsButtonPressed()
                             closeMe()
                         })
                     }

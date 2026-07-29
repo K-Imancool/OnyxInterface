@@ -272,11 +272,12 @@ Item {
 
             MenuActionButton {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 112
+                Layout.fillHeight: true
+//                Layout.preferredHeight: 112
                 text: qsTr("СВЕДЕНИЯ ОБ АППАРАТЕ")
                 labelCentered: true
-                iconSource: ""
-                iconSize: 0
+                iconSource: settingsMenuRoot.iconsBasePath + "iconInfo.png"
+                iconSize: 96
                 accentColor: settingsMenuRoot.fotekOrange
                 textColor: settingsMenuRoot.fotekBlue
                 labelPixelSize: settingsMenuRoot.menuActionLabelSize
@@ -288,14 +289,15 @@ Item {
 
             MenuActionButton {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 112
+                Layout.fillHeight: true
+//                Layout.preferredHeight: 112
                 text: qsTr("ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ")
                 labelCentered: true
-                iconSource: ""
-                iconSize: 0
+                iconSource: settingsMenuRoot.iconsBasePath + "iconSetting.png"
+                iconSize: 96
                 accentColor: settingsMenuRoot.fotekOrange
                 textColor: settingsMenuRoot.fotekBlue
-                labelPixelSize: settingsMenuRoot.menuActionSmallLabelSize
+                labelPixelSize: settingsMenuRoot.menuActionLabelSize
                 maxLabelLines: 2
                 cornerRadius: 20
                 onPressed: settingsMenuRoot.additionalSettingsButtonPressed()

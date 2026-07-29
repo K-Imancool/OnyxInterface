@@ -9,24 +9,8 @@ Rectangle {
     property var innerModel
     property alias socketEditorOpened: socketEditor.opened
     property alias fullSocketEditorOpened: fullSocketEditor.opened
+    property var activationOverlay: null
     color: "gray"
-
-    function updateActivationOverlayGeometry() {
-        if (repeat.count <= 0) {
-            return
-        }
-        var first = repeat.itemAt(0)
-        var last = repeat.itemAt(repeat.count - 1)
-        if (!first || !last) {
-            return
-        }
-        var topLeft = first.mapToItem(socketContainer, 0, 0)
-        var bottomRight = last.mapToItem(socketContainer, 0, last.height)
-        activationIndicator.x = topLeft.x
-        activationIndicator.y = topLeft.y
-        activationIndicator.width = Math.max(0, first.width)
-        activationIndicator.height = Math.max(0, bottomRight.y - topLeft.y)
-    }
 
     ColumnLayout {
         id: layout
@@ -137,26 +121,11 @@ Rectangle {
             containerMargins: layout.anchors.margins
             containerHeight: layout.height - layout.spacing - progPage.height
             usedSpacing: layout.spacing
-            activationOverlay: activationIndicator
+            activationOverlay: socketContainer.activationOverlay
         }
         Item {
             Layout.fillHeight: true
         }
-    }
-
-    Activation {
-        id: activationIndicator
-        parent: socketContainer
-        z: 500
-        onAboutToShow: Qt.callLater(socketContainer.updateActivationOverlayGeometry)
-    }
-
-    Timer {
-        id: activationGeometryTimer
-        interval: 50
-        repeat: true
-        running: activationIndicator.visible
-        onTriggered: socketContainer.updateActivationOverlayGeometry()
     }
 
     SocketEditor {
@@ -182,8 +151,8 @@ Rectangle {
     }
     ProgAdditionPop {
         id: progSelector
-        width: socketContainer.width
-        height: socketContainer.height/3
+        width: socketContainer.width + 200
+        height: socketContainer.height/2
         y: 0
         modal: true
     }

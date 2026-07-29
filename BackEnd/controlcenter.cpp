@@ -151,6 +151,7 @@ void ControlCenter::makeHandleConnections()
     connect(m_handle, &ProgHandle::signalDeleteAllUserProgs,
             this, [this]() {
         m_progLoader->deleteAllUserProgs();
+        emit m_handle->updateScopes(false);
     });
     
 	connect(m_handle, &ProgHandle::signalScopeRequest,
@@ -181,6 +182,13 @@ void ControlCenter::makeHandleConnections()
 	        this, [this](const QString& scopeName, const QString& progName) {
 		m_progLoader->saveUserProg(scopeName, progName);
 	});
+
+	connect(m_handle, &ProgHandle::userProgExistsRequested,
+	        this, [this](const QString& scopeName, const QString& progName, bool* result) {
+		if (result) {
+			*result = m_progLoader->userProgExists(scopeName, progName);
+		}
+	}, Qt::DirectConnection);
 
 	connect(m_handle, &ProgHandle::signalCopyCurrent,
 	        m_socketModel.data(), &SocketModel::copyCurrentList);

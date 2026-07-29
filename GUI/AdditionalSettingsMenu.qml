@@ -217,7 +217,7 @@ Item {
             iconSize: 0
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
-            labelPixelSize: additionalSettingsRoot.menuActionSmallLabelSize
+            labelPixelSize: additionalSettingsRoot.menuActionLabelSize
             maxLabelLines: 2
             cornerRadius: 20
             onPressed: additionalSettingsRoot.requestFeatureUnlock()

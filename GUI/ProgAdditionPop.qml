@@ -8,30 +8,46 @@ Dialog {
     signal progLoaderSelected(int buttonType)
     parent: Overlay.overlay
     anchors.centerIn: parent
+    readonly property string iconsBasePath: AppPaths.iconsBaseUrl
 
     component VariantRect: Rectangle {
         id: someRect
         property int buttonType: 0
         property alias title : titleLabel.text
+        property alias iconSource: icon.source
 
-        width: 310
-        height: 100
+        width: 380
+        height: 250
         radius: 8
         color: "transparent"
         border {
             color: "grey"
             width: 1
         }
-        Label {
-            id: titleLabel
-            horizontalAlignment: Qt.AlignHCenter
-            verticalAlignment: Qt.AlignVCenter
-            font.pixelSize: 20
-            font.bold: true
-            anchors.fill: parent
+        Column {
             anchors.centerIn: parent
-            wrapMode: Text.WordWrap
-            color: "black"
+            width: parent.width - 24
+            spacing: 12
+
+            Label {
+                id: titleLabel
+                width: parent.width
+                horizontalAlignment: Qt.AlignHCenter
+                verticalAlignment: Qt.AlignVCenter
+                font.pixelSize: 26
+                font.bold: true
+                wrapMode: Text.WordWrap
+                color: "black"
+            }
+
+            Image {
+                id: icon
+                anchors.horizontalCenter: parent.horizontalCenter
+//                width:
+                height: 130
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
         }
         MouseArea {
             anchors.fill: parent
@@ -61,7 +77,7 @@ Dialog {
         anchors.topMargin: 25
         color: "transparent"
         width: parent.width
-        height: 200
+        height: 300
         Rectangle {
             id: upper
             anchors.top: parent.top
@@ -80,11 +96,13 @@ Dialog {
                 spacing: 20
                 VariantRect{
                     title: qsTr("ДУБЛИРОВАТЬ\nТЕКУЩИЙ")
+                    iconSource: addTypeSelector.iconsBasePath + "listDub.png"
                     buttonType: 0
                     Layout.alignment: Qt.AlignCenter
                 }
                 VariantRect{
                     title: qsTr("ВЫБРАТЬ ИЗ\nРЕКОМЕНДОВАННЫХ")
+                    iconSource: addTypeSelector.iconsBasePath + "listRecom.png"
                     buttonType: 1
                     Layout.alignment: Qt.AlignCenter
                 }
@@ -95,6 +113,7 @@ Dialog {
 //                }
                 VariantRect{
                     title: qsTr("ДОБАВИТЬ\nПУСТОЙ")
+                    iconSource: addTypeSelector.iconsBasePath + "listFree.png"
                     buttonType: 2
                     Layout.alignment: Qt.AlignCenter
                 }

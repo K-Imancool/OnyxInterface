@@ -300,6 +300,8 @@ Popup {
     }
 
     function startMainPowerRepeat(isCoag, increase) {
+        if (!root.opened)
+            return
         powerRepeatIsCoag = isCoag
         powerRepeatIncrease = increase
         stepMainPower(isCoag, increase)
@@ -456,6 +458,8 @@ Popup {
         if (socId < 0)
             return
 
+        stopMainPowerRepeat()
+
         modeEditor.initialize(socId, 0, false)
         cutHasAvailableModes = hasAvailableModesFromEditor()
         cutLive = normalizeSidePowerIfNeeded(captureSideFromEditor())
@@ -476,6 +480,7 @@ Popup {
     }
 
     function cancelEditorAndClose() {
+        stopMainPowerRepeat()
         restoreAutoModesFromBaseline()
         modeEditor.rollBack()
         root.close()
@@ -491,6 +496,7 @@ Popup {
     }
 
     function finishCommitAndClose() {
+        stopMainPowerRepeat()
         // Не вызывать copyEditorToSide: attemptCommitAndClose уже синхронизировал
         // активную сторону, а onReduceChosen мог понизить power в cutLive/coagLive —
         // повторный захват из modeEditor затёр бы снижение.
@@ -581,6 +587,7 @@ Popup {
     }
 
     onOpened: {
+        stopMainPowerRepeat()
         prepareEditorData()
         if (!cutHasAvailableModes && !coagHasAvailableModes) {
             Qt.callLater(function() { root.close() })
@@ -591,6 +598,7 @@ Popup {
     }
 
     onClosed: {
+        stopMainPowerRepeat()
         appControl.setLedOutput(LinkStm.OUT_ALL, LinkStm.LED_OFF)
     }
 
@@ -605,7 +613,13 @@ Popup {
         id: powerRepeatTick
         interval: 120
         repeat: true
-        onTriggered: stepMainPower(powerRepeatIsCoag, powerRepeatIncrease)
+        onTriggered: {
+            if (!root.opened) {
+                stopMainPowerRepeat()
+                return
+            }
+            stepMainPower(powerRepeatIsCoag, powerRepeatIncrease)
+        }
     }
 
     Rectangle {

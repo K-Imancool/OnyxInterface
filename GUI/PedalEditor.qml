@@ -14,6 +14,19 @@ Rectangle {
     id: pedalSelectRoot
     color: "#6a6a6a"
 
+    function pedalTypeAllowed(pedalType) {
+        for (var i = 0; i < shownPedalsArray.length; ++i) {
+            if (shownPedalsArray[i] === pedalType)
+                return true
+        }
+        return false
+    }
+
+    readonly property bool showSinglePed: pedalTypeAllowed(1)
+    readonly property bool showDoublePed: pedalTypeAllowed(2)
+    readonly property bool showBiHandle: socketNumber === 1 && pedalTypeAllowed(3)
+    readonly property bool showMonoHandle: pedalTypeAllowed(4)
+
     // function calcDimensions() {
     //     var rowMargins = 30  //
     //     var itemCount = pedalSelectRoot.shownPedalsArray.length + 1  // +1 для emptyPed
@@ -88,30 +101,6 @@ Rectangle {
     //     layoutRow.elementSize = calcDimensions()
     //     layoutRow.spacing = calcSpacing()
     // }
-    onShownPedalsArrayChanged: {
-        singlePed.visible = false;
-        doublePed.visible = false;
-        biHandle.visible = false;
-        monoHandle.visible = false;
-//        console.log("onShownPedalsArrayChanged", shownPedalsArray)
-        for (var idx = 0; idx < shownPedalsArray.length; ++idx) {
-            if (shownPedalsArray[idx] === 1) {
-                singlePed.visible = true;
-            }
-            if (shownPedalsArray[idx] === 2) {
-                doublePed.visible = true;
-            }
-            // кнопка термошва доступна только для сокета с номером 1 (БИ2)
-            if (shownPedalsArray[idx] === 3 ) {
-                biHandle.visible = true;
-            }
-            // держатель с кнопками доступен только для монополярных сокетов
-            if (shownPedalsArray[idx] === 4 ) {
-                monoHandle.visible = true;
-            }
-        }
-    }
-
     Row {
         id: layoutRow
         property int elementSize: 100
@@ -120,34 +109,8 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 5
         Rectangle {
-            id: emptyPed
-            width: layoutRow.elementSize
-            height: layoutRow.elementSize
-            color: pedalSelectRoot.selectedPed === 0 ? "cyan" : "transparent"
-            radius: 8
-
-            border {
-                width: 1
-                color: "white"
-            }
-            
-            Text {
-                anchors.centerIn: parent
-                text: "✕"
-                font.pixelSize: parent.height * 0.6
-                font.bold: true
-                color: "gray"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-            
-            MouseArea {
-                anchors.fill: parent
-                onPressed: pedalSelectRoot.pedSelected(0)
-            }
-        }
-        Rectangle {
             id: singlePed
+            visible: pedalSelectRoot.showSinglePed
             width: layoutRow.elementSize
             height: layoutRow.elementSize
             color: pedalSelectRoot.selectedPed === 1 ? "cyan" : "transparent"
@@ -177,6 +140,7 @@ Rectangle {
         }
         Rectangle {
             id: doublePed
+            visible: pedalSelectRoot.showDoublePed
             width: layoutRow.elementSize
             height: layoutRow.elementSize
             color: pedalSelectRoot.selectedPed === 2 ? "cyan" : "transparent"
@@ -222,6 +186,7 @@ Rectangle {
         }
         Rectangle {
             id: biHandle
+            visible: pedalSelectRoot.showBiHandle
             width: layoutRow.elementSize
             height: layoutRow.elementSize
             color: pedalSelectRoot.selectedPed === 3 ? "cyan" : "transparent"
@@ -249,6 +214,7 @@ Rectangle {
         }
         Rectangle {
             id: monoHandle
+            visible: pedalSelectRoot.showMonoHandle
             width: layoutRow.elementSize
             height: layoutRow.elementSize
             color: pedalSelectRoot.selectedPed === 4 ? "cyan" : "transparent"
@@ -290,6 +256,33 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onPressed: pedalSelectRoot.pedSelected(4)
+            }
+        }
+        Rectangle {
+            id: emptyPed
+            width: layoutRow.elementSize
+            height: layoutRow.elementSize
+            color: pedalSelectRoot.selectedPed === 0 ? "cyan" : "transparent"
+            radius: 8
+
+            border {
+                width: 1
+                color: "white"
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: "✕"
+                font.pixelSize: parent.height * 0.6
+                font.bold: true
+                color: "gray"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onPressed: pedalSelectRoot.pedSelected(0)
             }
         }
     }

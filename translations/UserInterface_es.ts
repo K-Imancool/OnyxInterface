@@ -2060,9 +2060,9 @@ VACÍO</translation>
         <translation>Confirmar eliminación</translation>
     </message>
     <message>
-        <source>Удалить все пользовательские программы?
+        <source>Удалить все пользовательские программы и папки?
 Это действие необратимо.</source>
-        <translation>¡Todos los programas de usuario serán BORRADOS! ¿Continuar?</translation>
+        <translation>¡Todos los programas y carpetas de usuario serán BORRADOS! ¿Continuar?</translation>
     </message>
     <message>
         <source>Вход без пароля</source>

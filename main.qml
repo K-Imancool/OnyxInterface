@@ -32,6 +32,7 @@ Window {
     
     // Текущее название программы
     property string currentProgName: ""
+    property string currentScopeName: ""
     property string currentProgramDisplayTitle: ""
     property bool currentProgramIsUser: false
     property bool currentProgramIsRecom: false
@@ -40,10 +41,22 @@ Window {
     property bool argonAvailable: true
     readonly property color fotekBlue: "#264093"
     readonly property color fotekOrange: "#faa731"
+    readonly property color fotekGreen: "#77dd77"
     property string startupScreen: "startMenu"
     property bool startupInfoVisible: false
     property bool powerOffShutdownPending: false
     readonly property bool startupFlowVisible: startupScreen !== "mainScreen"
+
+    function updateActivationOverlayGeometry() {
+        if (!socketsDummy || !pedalContainer || !activationIndicator) {
+            return
+        }
+
+        activationIndicator.x = socketsDummy.x
+        activationIndicator.y = socketsDummy.y
+        activationIndicator.width = Math.max(0, pedalContainer.x + pedalContainer.width - socketsDummy.x)
+        activationIndicator.height = Math.max(0, socketsDummy.height)
+    }
 
     function activationEnable() {
         periphHandle.enableActivation = !(pedDrawer.opened
@@ -99,6 +112,7 @@ Window {
         currentProgramIsUser = isUserProgram
         currentProgramIsRecom = isRecomProgram
         currentProgramDisplayTitle = scopeName + ": " + progName
+        container.currentScopeName = scopeName
         container.currentProgName = progName
         resetUnsavedChanges()
         refreshStatusTitle()
@@ -109,6 +123,7 @@ Window {
         currentProgramIsUser = false
         currentProgramIsRecom = false
         currentProgramDisplayTitle = titleText
+        container.currentScopeName = ""
         container.currentProgName = titleText
         resetUnsavedChanges()
         refreshStatusTitle()
@@ -258,9 +273,13 @@ Window {
 
         currentProgramIsUser = false
         currentProgramIsRecom = false
+        currentScopeName = ""
 
         if (displayName !== "") {
             currentProgramDisplayTitle = displayTitleWithoutUnsavedMark(displayName)
+            var sep = currentProgramDisplayTitle.indexOf(": ")
+            if (sep >= 0)
+                currentScopeName = currentProgramDisplayTitle.substring(0, sep)
             restored = true
         }
 
@@ -498,6 +517,7 @@ Window {
         id: socketsDummy
         objectName: "socketContainer"
         innerModel: theModel
+        activationOverlay: activationIndicator
         anchors {
             left: argNeutralPanel.right
             right: pedalContainer.left
@@ -540,6 +560,31 @@ Window {
             right: parent.right
             bottom: parent.bottom
             top: statusDummy.bottom
+        }
+    }
+
+    Item {
+        id: activationLayer
+        anchors.fill: parent
+        z: 5000
+
+        Activation {
+            id: activationIndicator
+            parent: activationLayer
+
+            onOpenedChanged: {
+                if (opened) {
+                    Qt.callLater(container.updateActivationOverlayGeometry)
+                }
+            }
+        }
+
+        Timer {
+            id: activationGeometryTimer
+            interval: 50
+            repeat: true
+            running: activationIndicator.opened
+            onTriggered: container.updateActivationOverlayGeometry()
         }
     }
 
@@ -735,11 +780,13 @@ Window {
 
 	ProgSaveDialog {
 		id: saveProgDialog
-		width: 0.8 * parent.width
-		height: 390
-        x: (parent.width - width) / 2
-        y: statusDummy.height
+		width: parent.width
+        height: 490
+        x: 0
+        // У верхнего края: кнопки остаются над виртуальной клавиатурой
+        y: 0
         originalProgName: container.currentProgName
+        originalScopeName: container.currentScopeName
         currentProgramIsUser: container.currentProgramIsUser
     }
     Dialog {
@@ -871,7 +918,7 @@ Window {
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                text: qsTr("Внимание! Текущая программа\n\n%1\n\nбудет перезаписана").arg(saveProgDialog.originalProgName)
+                text: qsTr("Внимание! Программа\n\n%1\n\nбудет перезаписана").arg(saveProgDialog.progName)
                 font.pixelSize: 30
                 color: "black"
             }
@@ -890,7 +937,7 @@ Window {
                 spacing: 16
 
                 DialogActionButton {
-                    Layout.preferredWidth: 180
+                    Layout.preferredWidth: 220
                     Layout.fillHeight: true
                     text: qsTr("ОТМЕНА")
                     onPressed: overwriteConfirmDialog.close()
@@ -899,7 +946,7 @@ Window {
                 Item { Layout.fillWidth: true }
 
                 DialogActionButton {
-                    Layout.preferredWidth: 180
+                    Layout.preferredWidth: 220
                     Layout.fillHeight: true
                     text: qsTr("ПРИНЯТЬ")
                     primary: true
@@ -1255,6 +1302,9 @@ Window {
                 return
             }
             leftDrawer.close()
+        }
+        function onSaveSettingsButtonPressed() {
+            saveProgDialog.open()
         }
         function onProgramSelected(scopeName, progName) {
             if (menuLoad.shortcut) {

@@ -228,6 +228,7 @@ public:
     bool setPedal(int);
 
     QList<int> allowedPedals() const;
+    void updateBi2AllowedPedals(bool includeHandleButton);
 
     Onyx::SocketState getInfo() const;
 

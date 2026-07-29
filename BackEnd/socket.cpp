@@ -345,6 +345,14 @@ QList<int> SOCKET::allowedPedals() const
     return m_allowedPedals;
 }
 
+void SOCKET::updateBi2AllowedPedals(bool includeHandleButton)
+{
+    m_allowedPedals = {Onyx::NO_PED, Onyx::SINGLE_PED, Onyx::DOUBLE_PED};
+    if (includeHandleButton) {
+        m_allowedPedals.append(Onyx::INSTR_BUTTON_BI);
+    }
+}
+
 Onyx::SocketState SOCKET::getInfo() const
 {
     Onyx::SocketState res;
