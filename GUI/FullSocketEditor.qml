@@ -384,6 +384,14 @@ Popup {
         periphHandle.setAutoMode(socId, mode)
     }
 
+    function clearSocketAutoModes() {
+        if (autoModeConfirmPopup.opened) {
+            pendingAutoMode = -1
+            autoModeConfirmPopup.close()
+        }
+        setSocketAutoMode(0)
+    }
+
     function requestAutoMode(mode, confirmationText) {
         if (socketAutoModeState === mode) {
             setSocketAutoMode(0)
@@ -569,7 +577,13 @@ Popup {
 
     function handleSubEditorClosed(accepted) {
         if (accepted) {
+            var prevModeIndex = sideRef(pendingSubEditorCoag).modeIndex
+            var prevModeId = sideRef(pendingSubEditorCoag).modeId
             copyEditorToSide(pendingSubEditorCoag)
+            var side = sideRef(pendingSubEditorCoag)
+            // При смене режима АВТОСТОП / АВТОСТАРТСТОП сбрасываются обязательно
+            if (side.modeIndex !== prevModeIndex || side.modeId !== prevModeId)
+                clearSocketAutoModes()
             refreshDirtyFlags()
         } else {
             applySideToEditor(pendingSubEditorCoag)

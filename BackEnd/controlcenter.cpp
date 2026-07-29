@@ -211,6 +211,12 @@ void ControlCenter::makeHandleConnections()
 		emit m_handle->updateScopes(false);
 	});
 
+	connect(m_handle, &ProgHandle::signalAddScope,
+	        this, [this](const QString& name) {
+		m_progLoader->addUserScope(name);
+		emit m_handle->updateScopes(false);
+	});
+
 	connect(m_handle, &ProgHandle::signalRenameProg,
 	        this, [this](int progId, const QString& name) {
 		m_progLoader->renameUserProg(progId, name);
@@ -651,6 +657,14 @@ bool ControlCenter::loadProgram(int progId, bool clear)
 	if (m_progLoader.isNull())
 		return false;
 	return m_progLoader->programmLoadSocketInit(progId, clear);
+}
+
+QVariantMap ControlCenter::localizedProgramTitle(int scopeId, int progId) const
+{
+	if (m_progLoader.isNull()) {
+		return {};
+	}
+	return m_progLoader->localizedProgramTitle(scopeId, progId);
 }
 
 QString ControlCenter::debugOverlayText() const

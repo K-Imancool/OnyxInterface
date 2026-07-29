@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QPair>
 #include <QPointer>
+#include <QVariantMap>
 #include <map>
 // #include "userprogsloadmodel.h"
 // bi1CutInstr = "0", bi1CutMode = "1000", bi1CutPower = "1";
@@ -83,6 +84,9 @@ public:
 
 	bool userProgExists(const QString& scopeName,
 	                    const QString& progName);
+
+	/// Локализованные имена области и программы для текущего DbLocale.
+	QVariantMap localizedProgramTitle(int scopeId, int progId) const;
 	
 
 	///формально ничего не мешает удалить/переименовать рекоменд прогу

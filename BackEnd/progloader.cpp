@@ -815,6 +815,7 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
     struct SocketSelectionState {
         HalfSelectionState cut;
         HalfSelectionState coag;
+        int pedal = 0;
     };
 
     std::array<SocketSelectionState, 4> previousSelections;
@@ -831,6 +832,7 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
         previousSelections[i].cut.modeId = currentIndex.data(SocketModel::CutModeId).toInt();
         previousSelections[i].cut.instrId = currentIndex.data(SocketModel::CutModeInstrID).toInt();
         previousSelections[i].cut.power = currentIndex.data(SocketModel::CutModePower).toInt();
+        previousSelections[i].pedal = currentIndex.data(SocketModel::SocketPedal).toInt();
     }
     
     std::vector<std::map<int, SockPtr>> socketMapVector;
@@ -914,7 +916,8 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
             const int powerValue = std::max(1, halfState.power);
             isCoag ? socket->setCoagModePower(powerValue) : socket->setCutModePower(powerValue);
         }
-        
+
+        socket->setPedal(previousSelections[i].pedal);
         socket->setAllowed(true);
         socket->setDisplayMode(Onyx::S_COLLAPSED);
     }
@@ -1242,6 +1245,72 @@ bool ProgLoader::userProgExists(const QString &scopeName, const QString &progNam
 	            .arg(escapedProgName));
 
 	return !existingProgRows.isEmpty() && !existingProgRows.first().isEmpty();
+}
+
+QVariantMap ProgLoader::localizedProgramTitle(int scopeId, int progId) const
+{
+	QVariantMap result;
+	result.insert(QStringLiteral("scopeName"), QString());
+	result.insert(QStringLiteral("progName"), QString());
+
+	if (progId <= 0 && scopeId <= 0) {
+		return result;
+	}
+
+	int resolvedScopeId = scopeId;
+	QString progName;
+	QString subName;
+
+	if (progId > 0) {
+		const QSharedPointer<DataBaseReader> progsDb = progsDbForProg(progId);
+		if (progsDb.isNull()) {
+			return result;
+		}
+
+		const QList<QVariantList> progRows = progsDb->slotSendSelectQuery(
+		            QStringList{QStringLiteral("Progs")},
+		            QStringList{DbLocale::column(QStringLiteral("Name")),
+		                        DbLocale::column(QStringLiteral("Subprog")),
+		                        QStringLiteral("Scope_ID")},
+		            QStringLiteral("id = %1").arg(progId));
+		if (progRows.isEmpty() || progRows.first().size() < 3) {
+			return result;
+		}
+
+		progName = progRows.first().at(0).toString().trimmed();
+		subName = progRows.first().at(1).toString().trimmed();
+		if (resolvedScopeId <= 0) {
+			resolvedScopeId = progRows.first().at(2).toInt();
+		}
+
+		if (!subName.isEmpty()) {
+			QString parentName = progName;
+			const QString suffix = QLatin1Char(' ') + subName;
+			if (progName.endsWith(suffix, Qt::CaseInsensitive)) {
+				parentName = progName.left(progName.length() - suffix.length()).trimmed();
+			}
+			progName = parentName + QStringLiteral(" — ") + subName;
+		}
+		result.insert(QStringLiteral("progName"), progName);
+	}
+
+	if (resolvedScopeId > 0) {
+		const QSharedPointer<DataBaseReader> scopesDb = (resolvedScopeId > 1000)
+		        ? m_userDbReaderPtr
+		        : m_dbReaderPtr;
+		if (!scopesDb.isNull()) {
+			const QList<QVariantList> scopeRows = scopesDb->slotSendSelectQuery(
+			            QStringList{QStringLiteral("Scopes")},
+			            QStringList{DbLocale::column(QStringLiteral("Name"))},
+			            QStringLiteral("id = %1").arg(resolvedScopeId));
+			if (!scopeRows.isEmpty() && !scopeRows.first().isEmpty()) {
+				result.insert(QStringLiteral("scopeName"),
+				              scopeRows.first().at(0).toString().trimmed());
+			}
+		}
+	}
+
+	return result;
 }
 
 void ProgLoader::saveUserProg(const QString &scopeName, const QString &progName)

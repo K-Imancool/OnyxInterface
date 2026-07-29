@@ -5,6 +5,7 @@
 #include <QPointer>
 #include <QTimer>
 #include <QStringList>
+#include <QVariantMap>
 
 #include "BackEnd/socketmodeeditor.h"
 #include "socketmodel.h"
@@ -82,6 +83,7 @@ public:
     Q_INVOKABLE void shutdownSystemFromUi();
     Q_INVOKABLE void resetSystemFromUi();
 	Q_INVOKABLE bool loadProgram(int progId, bool clear);
+	Q_INVOKABLE QVariantMap localizedProgramTitle(int scopeId, int progId) const;
 	Q_INVOKABLE void setNeutralResistPollEnabled(bool enabled);
     Q_INVOKABLE void setVolumeLevel(int level);
     Q_INVOKABLE void setLedOutput(int out, int color);

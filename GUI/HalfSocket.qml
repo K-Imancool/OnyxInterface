@@ -171,7 +171,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 8
         anchors.left: halfSocketRoot.isCoag
-                     ? (halfSocketRoot.hasInstrImage ? collapsedInstrImage.right : parent.left)
+                     ? (halfSocketRoot.hasInstrImage ? collapsedInstrImage.right - 20 : parent.left)
                      : parent.left
         anchors.leftMargin: halfSocketRoot.isCoag
                             ? (halfSocketRoot.hasInstrImage ? coagLabelToImageGap : coagImageLeftInset)

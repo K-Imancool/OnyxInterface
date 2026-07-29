@@ -43,6 +43,7 @@ public:
 
 	Q_INVOKABLE void deleteScopeRequest(int index);
 	Q_INVOKABLE void renameScopeRequest(int index, const QString& name);
+	Q_INVOKABLE void addScopeRequest(const QString& name);
 	Q_INVOKABLE bool hasSubPrograms(int index) const;
 	Q_INVOKABLE QVariantList subProgramsAt(int index) const;
 
@@ -88,6 +89,7 @@ signals:
 	void signalRenameProg(int progId, const QString& name);
 	void signalDeleteScope(int scopeId);
 	void signalRenameScope(int scopeId, const QString& name);
+	void signalAddScope(const QString& name);
 	
 	void signalLoadEmpty();
 	void signalSave(int id, const QString& name);

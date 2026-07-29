@@ -34,6 +34,10 @@ Window {
     property string currentProgName: ""
     property string currentScopeName: ""
     property string currentProgramDisplayTitle: ""
+    // "" | "free" | "last" | "named"
+    property string currentProgramTitleKind: ""
+    property int currentProgId: -1
+    property int currentScopeId: -1
     property bool currentProgramIsUser: false
     property bool currentProgramIsRecom: false
     property bool hasUnsavedChanges: false
@@ -102,15 +106,24 @@ Window {
         argonDrawer.open()
     }
 
-    function setCurrentProgram(scopeName, progName, isUserProgram, isRecomProgram) {
+    function setCurrentProgram(scopeName, progName, isUserProgram, isRecomProgram, scopeId, progId) {
         if (isUserProgram === undefined) {
             isUserProgram = false
         }
         if (isRecomProgram === undefined) {
             isRecomProgram = false
         }
+        if (scopeId === undefined) {
+            scopeId = -1
+        }
+        if (progId === undefined) {
+            progId = -1
+        }
         currentProgramIsUser = isUserProgram
         currentProgramIsRecom = isRecomProgram
+        currentProgramTitleKind = "named"
+        currentScopeId = scopeId
+        currentProgId = progId
         currentProgramDisplayTitle = scopeName + ": " + progName
         container.currentScopeName = scopeName
         container.currentProgName = progName
@@ -119,13 +132,46 @@ Window {
         persistCurrentProgramInfo()
     }
 
-    function setCurrentProgramTitle(titleText) {
+    function setCurrentProgramTitle(titleText, titleKind) {
         currentProgramIsUser = false
         currentProgramIsRecom = false
+        currentProgramTitleKind = titleKind || ""
+        currentScopeId = -1
+        currentProgId = -1
         currentProgramDisplayTitle = titleText
         container.currentScopeName = ""
         container.currentProgName = titleText
         resetUnsavedChanges()
+        refreshStatusTitle()
+        persistCurrentProgramInfo()
+    }
+
+    function refreshProgramTitleForLanguage() {
+        if (currentProgramTitleKind === "free") {
+            currentProgramDisplayTitle = qsTr("СВОБОДНЫЕ УСТАНОВКИ")
+            container.currentProgName = currentProgramDisplayTitle
+            container.currentScopeName = ""
+        } else if (currentProgramTitleKind === "last") {
+            currentProgramDisplayTitle = qsTr("Последние установки")
+            container.currentProgName = currentProgramDisplayTitle
+            container.currentScopeName = ""
+        } else if (currentProgramIsRecom && currentProgId > 0) {
+            var parts = appControl.localizedProgramTitle(currentScopeId, currentProgId)
+            var scopeName = parts && parts.scopeName ? String(parts.scopeName) : ""
+            var progName = parts && parts.progName ? String(parts.progName) : ""
+            if (scopeName.length === 0 && progName.length === 0)
+                return
+            if (scopeName.length > 0)
+                container.currentScopeName = scopeName
+            if (progName.length > 0)
+                container.currentProgName = progName
+            if (container.currentScopeName.length > 0 && container.currentProgName.length > 0)
+                currentProgramDisplayTitle = container.currentScopeName + ": " + container.currentProgName
+            else if (container.currentProgName.length > 0)
+                currentProgramDisplayTitle = container.currentProgName
+        } else {
+            return
+        }
         refreshStatusTitle()
         persistCurrentProgramInfo()
     }
@@ -264,6 +310,11 @@ Window {
     function persistCurrentProgramInfo() {
         savedJson.saveString("lastProgramDisplayName", currentProgramDisplayTitle)
         savedJson.saveString("lastProgramName", container.currentProgName)
+        savedJson.saveString("lastProgramTitleKind", currentProgramTitleKind)
+        savedJson.saveString("lastProgramIsUser", currentProgramIsUser ? "1" : "0")
+        savedJson.saveString("lastProgramIsRecom", currentProgramIsRecom ? "1" : "0")
+        savedJson.saveInt("lastProgramId", currentProgId)
+        savedJson.saveInt("lastScopeId", currentScopeId)
     }
 
     function restoreCurrentProgramInfo() {
@@ -271,8 +322,11 @@ Window {
         var progName = String(savedJson.readString("lastProgramName", "")).trim()
         var restored = false
 
-        currentProgramIsUser = false
-        currentProgramIsRecom = false
+        currentProgramIsUser = savedJson.readString("lastProgramIsUser", "0") === "1"
+        currentProgramIsRecom = savedJson.readString("lastProgramIsRecom", "0") === "1"
+        currentProgramTitleKind = String(savedJson.readString("lastProgramTitleKind", "")).trim()
+        currentProgId = savedJson.readInt("lastProgramId", -1)
+        currentScopeId = savedJson.readInt("lastScopeId", -1)
         currentScopeName = ""
 
         if (displayName !== "") {
@@ -290,6 +344,7 @@ Window {
             container.currentProgName = displayTitleWithoutUnsavedMark(displayName)
         }
         resetUnsavedChanges()
+        refreshProgramTitleForLanguage()
         refreshStatusTitle()
 
         return restored
@@ -418,6 +473,7 @@ Window {
                 recomHandle.saveCurrentState()
                 recomHandle.loadLastSettings()
             }
+            container.refreshProgramTitleForLanguage()
         }
         if (languageApplied && keyboardLoader.item)
             keyboardLoader.item.syncKeyboardLocales()
@@ -720,14 +776,14 @@ Window {
                     }
                     function onFreeSettingsButtonPressed() {
                         recomHandle.loadEmptyFreeSettings()
-                        container.setCurrentProgramTitle(qsTr("СВОБОДНЫЕ УСТАНОВКИ"))
+                        container.setCurrentProgramTitle(qsTr("СВОБОДНЫЕ УСТАНОВКИ"), "free")
                         container.resetUnsavedChanges()
                         container.showMainScreen()
                     }
                     function onLastSettingsButtonPressed() {
                         recomHandle.loadLastSettings()
                         if (!container.restoreCurrentProgramInfo()) {
-                            container.setCurrentProgramTitle(qsTr("Последние установки"))
+                            container.setCurrentProgramTitle(qsTr("Последние установки"), "last")
                         }
                         container.showMainScreen()
                     }
@@ -757,7 +813,7 @@ Window {
                 editable: false
                 onReturnButtonPressed: container.showStartupScreen("startMenu")
                 onProgramSelected: {
-                    container.setCurrentProgram(scopeName, progName, false, true)
+                    container.setCurrentProgram(scopeName, progName, false, true, scopeId, progId)
                 }
                 onClickedButton: container.showMainScreen()
             }
@@ -771,7 +827,7 @@ Window {
                 editable: true
                 onReturnButtonPressed: container.showStartupScreen("startMenu")
                 onProgramSelected: {
-                    container.setCurrentProgram(scopeName, progName, true, false)
+                    container.setCurrentProgram(scopeName, progName, true, false, scopeId, progId)
                 }
                 onClickedButton: container.showMainScreen()
             }
@@ -1306,7 +1362,7 @@ Window {
         function onSaveSettingsButtonPressed() {
             saveProgDialog.open()
         }
-        function onProgramSelected(scopeName, progName) {
+        function onProgramSelected(scopeName, progName, scopeId, progId) {
             if (menuLoad.shortcut) {
                 menuLoad.shortcut = false
                 return
@@ -1317,10 +1373,10 @@ Window {
                 isRecomProgram = menuLoad.loader.item.recommended
                 isUserProgram = !isRecomProgram
             }
-            container.setCurrentProgram(scopeName, progName, isUserProgram, isRecomProgram)
+            container.setCurrentProgram(scopeName, progName, isUserProgram, isRecomProgram, scopeId, progId)
         }
         function onFreeSettingsModeActivated() {
-            container.setCurrentProgramTitle(qsTr("СВОБОДНЫЕ УСТАНОВКИ"))
+            container.setCurrentProgramTitle(qsTr("СВОБОДНЫЕ УСТАНОВКИ"), "free")
             container.markUnsavedChanges()
         }
         function onDeleteAllUserProgsRequested() {

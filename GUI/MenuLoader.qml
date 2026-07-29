@@ -104,7 +104,7 @@ Item {
 
     signal returnButtonPressed()
     signal closeMe()
-    signal programSelected(string scopeName, string progName)
+    signal programSelected(string scopeName, string progName, int scopeId, int progId)
     signal freeSettingsModeActivated()
     signal deleteAllUserProgsRequested()
     signal saveSettingsButtonPressed()
@@ -349,8 +349,8 @@ Item {
                             })
                         }
                         if (menuLoader.item.programSelected) {
-                            menuLoader.item.programSelected.connect(function(scopeName, progName) {
-                                menuLoadRoot.programSelected(scopeName, progName)
+                            menuLoader.item.programSelected.connect(function(scopeName, progName, scopeId, progId) {
+                                menuLoadRoot.programSelected(scopeName, progName, scopeId, progId)
                             })
                         }
                     } catch(e) {

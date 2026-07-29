@@ -335,6 +335,18 @@ void ProgHandle::renameScopeRequest(int index, const QString &name)
 	emit signalRenameScope(idToRename, name);
 }
 
+void ProgHandle::addScopeRequest(const QString &name)
+{
+	if (m_isRecomProgs) {
+		return;
+	}
+	const QString trimmed = name.trimmed();
+	if (trimmed.isEmpty()) {
+		return;
+	}
+	emit signalAddScope(trimmed);
+}
+
 QString ProgHandle::readTextFile(const QString& filePath)
 {
 	QFile file(filePath);

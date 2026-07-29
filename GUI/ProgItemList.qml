@@ -8,7 +8,7 @@ Rectangle {
     id: recProgs
 
     signal clickedButton(int idx)
-    signal programSelected(string scopeName, string progName)
+    signal programSelected(string scopeName, string progName, int scopeId, int progId)
     signal returnButtonPressed()
 
     color: "#F3F5F9"
@@ -150,13 +150,20 @@ Rectangle {
                 : ""
     }
 
+    function scopeIdAtCurrentIndex() {
+        return scopeList.curIndex >= 0 && scopeList.curIndex < scopeModel.count
+                ? scopeModel.get(scopeList.curIndex).itemId
+                : -1
+    }
+
     function loadSelectedProgram(progId, progName) {
         if (progId < 0)
             return false
         if (!appControl.loadProgram(progId, loadClear))
             return false
 
-        recProgs.programSelected(scopeNameAtCurrentIndex(), progName)
+        recProgs.programSelected(scopeNameAtCurrentIndex(), progName,
+                                 scopeIdAtCurrentIndex(), progId)
         recProgs.clickedButton(-1)
         return true
     }
@@ -614,6 +621,21 @@ Rectangle {
             labelColor: fotekBlue
             onPressed: recProgs.returnButtonPressed()
         }
+
+        DialogActionButton {
+            id: addScopeButton
+            visible: !recProgs.recommended
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            width: 500
+            height: 62
+            text: qsTr("ДОБАВИТЬ НОВУЮ ПАПКУ")
+            secondaryColor: fotekBlue
+            cornerRadius: 20
+            labelPixelSize: 28
+            labelColor: "white"
+            onPressed: addScopeDialog.open()
+        }
     }
 
     Dialog {
@@ -702,6 +724,148 @@ Rectangle {
         onClosed: {
             recProgs.pendingDeleteIndex = -1
             recProgs.pendingDeleteName = ""
+        }
+    }
+
+    Dialog {
+        id: addScopeDialog
+        modal: true
+        parent: Overlay.overlay
+        width: Math.min(recProgs.width * 0.92, 980)
+        height: 360
+        x: parent ? (parent.width - width) / 2 : 0
+        y: 80
+        title: qsTr("Новая папка")
+        Overlay.modal: Rectangle {
+            color: "#70000000"
+        }
+
+        function ensureKeyboard() {
+            if (!newScopeEdit.activeFocus)
+                newScopeEdit.forceActiveFocus()
+            Qt.inputMethod.show()
+        }
+
+        function submit() {
+            var newName = newScopeEdit.text.trim()
+            newScopeEdit.focus = false
+            Qt.inputMethod.hide()
+            if (newName.length > 0)
+                recomHandle.addScopeRequest(newName)
+            close()
+        }
+
+        onOpened: {
+            newScopeEdit.text = ""
+            Qt.callLater(function() {
+                newScopeEdit.forceActiveFocus()
+                Qt.inputMethod.show()
+            })
+        }
+
+        Connections {
+            target: Qt.inputMethod
+            enabled: addScopeDialog.visible
+            function onVisibleChanged() {
+                if (!Qt.inputMethod.visible && newScopeEdit.activeFocus)
+                    newScopeEdit.focus = false
+            }
+        }
+
+        contentItem: Rectangle {
+            color: "white"
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 18
+                spacing: 16
+
+                Label {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Qt.AlignCenter
+                    text: qsTr("Укажите название папки:")
+                    color: "black"
+                    font.pixelSize: 34
+                    font.bold: true
+                    wrapMode: Text.WordWrap
+                }
+
+                TextField {
+                    id: newScopeEdit
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 72
+                    color: "black"
+                    selectByMouse: true
+                    activeFocusOnPress: true
+                    inputMethodHints: Qt.ImhNoPredictiveText
+                    font.pixelSize: 32
+                    placeholderText: qsTr("Название")
+                    background: Rectangle {
+                        color: "#f5f5f5"
+                        border.color: newScopeEdit.activeFocus ? "#4a9eff" : "#7a7a7a"
+                        border.width: 2
+                        radius: 6
+                    }
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            Qt.inputMethod.show()
+                    }
+                    Keys.onReturnPressed: addScopeDialog.submit()
+                    Keys.onEnterPressed: addScopeDialog.submit()
+
+                    MouseArea {
+                        anchors.fill: parent
+                        propagateComposedEvents: true
+                        onPressed: {
+                            addScopeDialog.ensureKeyboard()
+                            mouse.accepted = false
+                        }
+                    }
+                }
+            }
+        }
+
+        footer: Rectangle {
+            color: "transparent"
+            implicitHeight: 120
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 24
+                anchors.rightMargin: 24
+                anchors.topMargin: 16
+                anchors.bottomMargin: 16
+                spacing: 18
+
+                DialogActionButton {
+                    Layout.preferredWidth: 220
+                    Layout.fillHeight: true
+                    text: qsTr("ОТМЕНА")
+                    labelPixelSize: 34
+                    onPressed: {
+                        newScopeEdit.focus = false
+                        Qt.inputMethod.hide()
+                        addScopeDialog.reject()
+                    }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                DialogActionButton {
+                    Layout.preferredWidth: 220
+                    Layout.fillHeight: true
+                    text: qsTr("ПРИНЯТЬ")
+                    primary: true
+                    labelPixelSize: 34
+                    enabled: newScopeEdit.text.trim().length > 0
+                    onPressed: addScopeDialog.submit()
+                }
+            }
+        }
+
+        onRejected: {
+            newScopeEdit.focus = false
+            Qt.inputMethod.hide()
         }
     }
 

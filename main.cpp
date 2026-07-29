@@ -180,6 +180,11 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("savedJson", m_savedJson);
     engine.rootContext()->setContextProperty("featureUnlock", featureUnlock);
 
+    // Язык до загрузки QML — иначе первый кадр с русским qsTr, потом мигание перевода
+    const QString savedLanguage = translationController->normalizedLanguage(
+                m_savedJson->readString(QStringLiteral("language"), QStringLiteral("ru")));
+    translationController->setLanguage(savedLanguage);
+
     auto *deviceLog = new DeviceLogManager(m_savedJson, ctrl->getSocketModel(), &app);
     engine.rootContext()->setContextProperty(QStringLiteral("deviceLog"), deviceLog);
     deviceLog->beginSession();
