@@ -36,6 +36,7 @@ Rectangle {
     readonly property int cutLabelToImageGap: 6
     readonly property int instrImageRightInset: 8
     readonly property int coagLabelToImageGap: 6
+    readonly property int coagLabelImageOverlap: 20
     readonly property int coagLabelRightInset: 8
     readonly property int coagImageLeftInset: 8
     // Реальная ширина подписи режима (см. anchors у modeLabel и collapsedInstrImage)
@@ -171,10 +172,10 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 8
         anchors.left: halfSocketRoot.isCoag
-                     ? (halfSocketRoot.hasInstrImage ? collapsedInstrImage.right - 20 : parent.left)
+                     ? (halfSocketRoot.hasInstrImage ? collapsedInstrImage.right : parent.left)
                      : parent.left
         anchors.leftMargin: halfSocketRoot.isCoag
-                            ? (halfSocketRoot.hasInstrImage ? coagLabelToImageGap : coagImageLeftInset)
+                            ? (halfSocketRoot.hasInstrImage ? -coagLabelImageOverlap : coagImageLeftInset)
                             : cutLabelLeftInset
         anchors.right: halfSocketRoot.isCoag
                       ? parent.right

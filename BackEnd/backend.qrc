@@ -1,1 +1,5 @@
-<RCC/>
+<RCC>
+    <qresource prefix="/gstreamer">
+        <file alias="libgstqmlgl.so">../deploy/gstreamer/libgstqmlgl.so</file>
+    </qresource>
+</RCC>

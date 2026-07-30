@@ -15,6 +15,8 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QLoggingCategory>
+#include <QResource>
+#include <QSaveFile>
 #include <QScopedPointer>
 #include <QDateTime>
 #include <QTextStream>
@@ -31,7 +33,12 @@
 #include "BackEnd/translationcontroller.h"
 #include "BackEnd/featureunlockcontroller.h"
 #include "BackEnd/apppaths.h"
+#include "BackEnd/gstreamervideoplayer.h"
 #include "appversion.h"
+
+#include <gst/gst.h>
+
+#include <cstdlib>
 
 // Умный указатель на файл логирования
 QScopedPointer<QFile>   m_logFile;
@@ -44,6 +51,41 @@ JsonStorage* m_savedJson;
 
 // Объявляение обработчика для логов
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+QString extractBundledQmlGlPlugin()
+{
+    QFile resource(QStringLiteral(":/gstreamer/libgstqmlgl.so"));
+    if (!resource.open(QIODevice::ReadOnly)) {
+        qWarning() << "Bundled qmlglsink resource is unavailable";
+        return QString();
+    }
+
+    const QString pluginDir = QDir::tempPath()
+            + QStringLiteral("/qtpr-gstreamer");
+    if (!QDir().mkpath(pluginDir)) {
+        qWarning() << "Cannot create bundled GStreamer plugin directory:"
+                   << pluginDir;
+        return QString();
+    }
+
+    const QString pluginPath = pluginDir
+            + QStringLiteral("/libgstqmlgl.so");
+    QSaveFile output(pluginPath);
+    if (!output.open(QIODevice::WriteOnly)
+            || output.write(resource.readAll()) < 0
+            || !output.commit()) {
+        qWarning() << "Cannot extract bundled qmlglsink to:" << pluginPath;
+        return QString();
+    }
+
+    QFile::setPermissions(
+                pluginPath,
+                QFileDevice::ReadOwner | QFileDevice::WriteOwner
+                | QFileDevice::ExeOwner | QFileDevice::ReadGroup
+                | QFileDevice::ExeGroup | QFileDevice::ReadOther
+                | QFileDevice::ExeOther);
+    return pluginPath;
+}
 
 int main(int argc, char *argv[])
 {
@@ -74,6 +116,14 @@ int main(int argc, char *argv[])
     
     // Настройки буферизации и обработки кадров
     qputenv("GST_BUFFER_DURATION", "1000000000");  // 1 секунда буферизации (в наносекундах)
+
+    // qmlglsink должен использовать тот же EGL/OpenGL ES контекст, что и Qt Quick.
+    if (qEnvironmentVariableIsEmpty("GST_GL_PLATFORM")) {
+        qputenv("GST_GL_PLATFORM", "egl");
+    }
+    if (qEnvironmentVariableIsEmpty("GST_GL_API")) {
+        qputenv("GST_GL_API", "gles2");
+    }
     
     // Настройки аудио - используем PulseAudio с явным указанием устройства
     // Доступные устройства (pactl list sinks):
@@ -105,12 +155,92 @@ int main(int argc, char *argv[])
     // Не отключаем *.debug — иначе qDebug() не вызывает messageHandler и не виден в SSH
     qputenv("QT_LOGGING_RULES", "qt.qpa.input=false");
 
+    Q_INIT_RESOURCE(backend);
+    const QString bundledQmlGlPath = extractBundledQmlGlPlugin();
+    if (!bundledQmlGlPath.isEmpty()) {
+        QByteArray pluginPath = QFileInfo(bundledQmlGlPath)
+                .absolutePath().toLocal8Bit();
+        const QByteArray existingPluginPath =
+                qgetenv("GST_PLUGIN_PATH_1_0");
+        if (!existingPluginPath.isEmpty()) {
+            pluginPath += ':';
+            pluginPath += existingPluginPath;
+        }
+        qputenv("GST_PLUGIN_PATH_1_0", pluginPath);
+        qputenv("GST_REGISTRY", QFileInfo(bundledQmlGlPath)
+                .absolutePath().append(QStringLiteral("/registry.bin"))
+                .toLocal8Bit());
+    }
+
     AppPaths::initializeFromArgs(argc, argv);
+
+    GError *gstError = nullptr;
+    if (!gst_init_check(&argc, &argv, &gstError)) {
+        qCritical() << "GStreamer initialization failed:"
+                    << (gstError ? gstError->message : "unknown error");
+        if (gstError) {
+            g_error_free(gstError);
+        }
+        return EXIT_FAILURE;
+    }
+
     OnyxApp app(argc, argv);
     QCoreApplication::setApplicationVersion(kOnyxAppVersion);
 
     // Устанавливаем кастомный обработчик для вывода только имени файла (без пути)
     qInstallMessageHandler(messageHandler);
+
+    // Системный qmlglsink может быть собран против несовместимого системного Qt.
+    // Сначала пробуем плагин, собранный против Qt приложения и установленный рядом.
+    if (!bundledQmlGlPath.isEmpty()) {
+        GError *pluginError = nullptr;
+        GstPlugin *plugin = gst_plugin_load_file(
+                    bundledQmlGlPath.toLocal8Bit().constData(), &pluginError);
+        if (plugin) {
+            gst_object_unref(plugin);
+        } else {
+            qWarning() << "Bundled qmlglsink failed to load:"
+                       << (pluginError ? pluginError->message : "unknown error");
+        }
+        if (pluginError) {
+            g_error_free(pluginError);
+        }
+    }
+
+    // Загрузка qmlglsink регистрирует GstGLVideoItem до разбора QML.
+    GstElement *qmlGlSinkProbe =
+            gst_element_factory_make("qmlglsink", "qml-registration-probe");
+    bool qmlGlAvailable = false;
+    if (qmlGlSinkProbe) {
+        GstElementFactory *factory = gst_element_get_factory(qmlGlSinkProbe);
+        GstPlugin *plugin = factory
+                ? gst_plugin_feature_get_plugin(GST_PLUGIN_FEATURE(factory))
+                : nullptr;
+        const QString loadedPluginPath = plugin && gst_plugin_get_filename(plugin)
+                ? QFileInfo(QString::fromLocal8Bit(
+                                gst_plugin_get_filename(plugin)))
+                  .canonicalFilePath()
+                : QString();
+        qmlGlAvailable = !bundledQmlGlPath.isEmpty()
+                && loadedPluginPath
+                == QFileInfo(bundledQmlGlPath).canonicalFilePath();
+
+        if (qmlGlAvailable) {
+            qInfo() << "Using bundled qmlglsink:" << loadedPluginPath;
+        } else {
+            qWarning() << "Refusing incompatible qmlglsink:"
+                       << loadedPluginPath;
+        }
+
+        if (plugin) {
+            gst_object_unref(plugin);
+        }
+        gst_object_unref(qmlGlSinkProbe);
+    }
+    if (!qmlGlAvailable) {
+        qWarning() << "GStreamer qmlglsink plugin is unavailable;"
+                      " video player is disabled";
+    }
 
     // Включаем QML debugger для удаленной отладки
     // Использование: приложение -qmljsdebugger=port:3768,block
@@ -130,6 +260,7 @@ int main(int argc, char *argv[])
     UpdateClient::registerUpdateClient();
     RemoteUpdater::registerRemoteUpdater();
     ControlCenter::registerHandles();
+    GStreamerVideoPlayer::registerQmlType();
 
     QSharedPointer<ControlCenter> ctrl  = QSharedPointer<ControlCenter>::create(nullptr);
 
@@ -146,6 +277,8 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     auto *translationController = new TranslationController(&engine, &app);
+    engine.rootContext()->setContextProperty(
+                QStringLiteral("qmlGlAvailable"), qmlGlAvailable);
     engine.rootContext()->setContextProperty("theModel", ctrl->getSocketModel());
     engine.rootContext()->setContextProperty("Editor", ctrl->getModeEditor());
     engine.rootContext()->setContextProperty("recomHandle", ctrl->getHandle());

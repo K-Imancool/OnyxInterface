@@ -3,7 +3,6 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
-#include <QDir>
 #include <QStringList>
 
 #include "proghandle.h"
@@ -361,39 +360,4 @@ QString ProgHandle::readTextFile(const QString& filePath)
 
 	return content;
 }
-
-QStringList ProgHandle::scanVideoFiles(const QString& folderPath)
-{
-	///whyyyy on earth VIDEO got in PROG loader?
-	///
-	QDir dir(folderPath);
-	if (!dir.exists()) {
-		// qWarning() << "ProgHandle: Video folder does not exist:" << folderPath;
-		return QStringList();
-	}
-
-	// Поддерживаемые форматы видео
-	QStringList filters;
-	filters << "*.mp4" << "*.MP4"
-	        << "*.avi" << "*.AVI"
-	        << "*.mkv" << "*.MKV"
-	        << "*.mov" << "*.MOV"
-	        << "*.wmv" << "*.WMV"
-	        << "*.flv" << "*.FLV"
-	        << "*.webm" << "*.WEBM"
-	        << "*.m4v" << "*.M4V"
-	        << "*.mpeg" << "*.MPEG"
-	        << "*.mpg" << "*.MPG";
-
-	dir.setNameFilters(filters);
-	dir.setFilter(QDir::Files | QDir::Readable);
-	dir.setSorting(QDir::Name);
-
-	QStringList videoFiles = dir.entryList();
-
-	// qDebug() << "ProgHandle: Found" << videoFiles.size() << "video files in" << folderPath;
-
-	return videoFiles;
-}
-
 

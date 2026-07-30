@@ -47,9 +47,7 @@ public:
 	Q_INVOKABLE bool hasSubPrograms(int index) const;
 	Q_INVOKABLE QVariantList subProgramsAt(int index) const;
 
-	///TODO: убрать видео из класса работы с программами
 	Q_INVOKABLE QString readTextFile(const QString& filePath);
-	Q_INVOKABLE QStringList scanVideoFiles(const QString& folderPath);
 	
 	QStringList scopeNameList() const;
 	QStringList progNameList() const;

@@ -25,6 +25,7 @@ HEADERS += \
     $$PWD/instrument.h \
     $$PWD/jsonstorage.h \
     $$PWD/McFirmwareVersionsBridge.h \
+    $$PWD/gstreamervideoplayer.h \
     $$PWD/keygenerator.h \
     $$PWD/linkstm.h \
     $$PWD/loggingcategories.h \
@@ -60,6 +61,7 @@ SOURCES += \
     $$PWD/instrument.cpp \
     $$PWD/jsonstorage.cpp \
     $$PWD/McFirmwareVersionsBridge.cpp \
+    $$PWD/gstreamervideoplayer.cpp \
     $$PWD/keygenerator.cpp \
     $$PWD/linkstm.cpp \
     $$PWD/loggingcategories.cpp \

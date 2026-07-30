@@ -34,6 +34,10 @@ Item {
 
     property bool videoPlayerVisible: false
 
+    function closeVideoPlayer() {
+        videoPlayerVisible = false
+    }
+
     Rectangle {
         anchors.fill: parent
         color: "#F3F5F9"
@@ -80,7 +84,10 @@ Item {
         secondaryBorderColor: "#1E3274"
         cornerRadius: 20
         labelPixelSize: 30
-        onPressed: settingsScreen.exitButtonPressed()
+        onPressed: {
+            settingsScreen.closeVideoPlayer()
+            settingsScreen.exitButtonPressed()
+        }
         anchors {
             left: parent.left
             bottom: parent.bottom
@@ -129,6 +136,7 @@ Item {
         iconSize: 52
         labelPixelSize: 26
         cornerRadius: 20
+        enabled: qmlGlAvailable
         onPressed: settingsScreen.videoPlayerVisible = true
         anchors {
             horizontalCenter: parent.horizontalCenter
@@ -233,15 +241,16 @@ Item {
         id: videoPlayerLoader
         anchors.fill: parent
         z: 1000
-        active: settingsScreen.videoPlayerVisible
-        sourceComponent: videoPlayerComponent
+        active: settingsScreen.videoPlayerVisible && qmlGlAvailable
+        source: active ? "qrc:/VideoPlayer.qml" : ""
     }
 
-    Component {
-        id: videoPlayerComponent
-        VideoPlayer {
-            anchors.fill: parent
-            onCloseRequested: settingsScreen.videoPlayerVisible = false
+    Connections {
+        target: videoPlayerLoader.item
+        ignoreUnknownSignals: true
+
+        function onCloseRequested() {
+            settingsScreen.closeVideoPlayer()
         }
     }
 }

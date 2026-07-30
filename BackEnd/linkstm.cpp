@@ -139,7 +139,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
 
     m_rxCommand.data.clear();
 
-    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
+//    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
     if (m_debugUart)
         emit sigDebugOverlayLine(QStringLiteral("Rx: %1").arg(getHexStr(rxPacket)));
 //    emit sigReportRx(getHexStr(rxPacket), m_uart->transmitDelay());
@@ -189,7 +189,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
         errStr.append(QString::number(packetLen));
         errStr.append(" байт, реальная: ");
         errStr.append(QString::number(destuffedBuffer.size()));
-        qDebug() << errStr;                     // DEBUG
+//        qDebug() << errStr;                     // DEBUG
         m_state = STATE_RX_LEN_ERR;
         return;
     }
@@ -522,7 +522,7 @@ void LinkStm::sendCommand()
    }
    else {
         txStr = getHexStr(txPacket);
-        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
+//        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
         if (m_debugUart)
             emit sigDebugOverlayLine(QStringLiteral("Tx: %1").arg(getHexStr(txPacket)));
         if (m_txCommand.com == ReadyToPowerOff) {
@@ -597,6 +597,10 @@ void LinkStm::readRxCommand()
 
     rxType = static_cast<RxType> (m_rxCommand.com >> 5);
 
+    // Начинаем с копии текущего состояния
+    UnitState unitState = m_unitState;
+    bool forceUnitStateEmit = false;
+
     // Если шлёт что-то не то во время активации, надо послать команду на стоп на всякий случай
     if (m_comState == ACTIVATION) {
         if (rxType != RxActivation && rxType != RxStop) {
@@ -605,12 +609,16 @@ void LinkStm::readRxCommand()
             command.data.clear();
             command.mc = MC_COM;
             m_txCommandList.append(command);
+            emit sigStopActivation(m_rxCommand.com);
+            unitState.activOutput = 0;  // Сбрасываем активированный выход
+            unitState.activMode = 0;    // Сбрасываем активированный режим
+            m_unitState = unitState;
+            emit sigUnitStateChanged(m_unitState);
+            qDebug() << "Stop! m_rxCommand: " << m_rxCommand.com << m_rxCommand.data;  // DEBUG
+            m_comState = IDLE;
+            return;
         }
     }
-
-    // Начинаем с копии текущего состояния
-    UnitState unitState = m_unitState;
-    bool forceUnitStateEmit = false;
 
     switch (rxType) {     // Три старших бита определяют тип посылки
     // Стандартная посылка

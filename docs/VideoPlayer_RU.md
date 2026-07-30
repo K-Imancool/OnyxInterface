@@ -58,11 +58,11 @@ cp /path/to/your/video.mp4 ~/FOTEK/Video/
 ### Компоненты
 - `GUI/VideoPlayer.qml` - Основной компонент проигрывателя
 - `GUI/MainMenu.qml` - Главное меню с кнопкой запуска
-- `BackEnd/proghandle.cpp` - Сканирование папки с видео
+- `BackEnd/gstreamervideoplayer.cpp` - Воспроизведение и сканирование папки с видео
 
 ### C++ API
 ```cpp
-Q_INVOKABLE QStringList scanVideoFiles(const QString& folderPath);
+Q_INVOKABLE QStringList scanVideoFiles(const QString &folderPath) const;
 ```
 Метод автоматически сканирует папку и возвращает список видеофайлов.
 
