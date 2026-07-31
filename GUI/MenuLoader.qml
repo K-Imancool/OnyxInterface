@@ -88,6 +88,7 @@ Item {
                 || base === "SpecialCommands.qml"
                 || base === "SecretKeysWindow.qml"
                 || base === "FeatureOptionsManager.qml"
+                || base === "IsnCorrection.qml"
                 || base === "logUpdate.qml"
     }
 
@@ -176,6 +177,9 @@ Item {
                     }
                     if (menuLoader.item.featureOptionsButtonPressed) {
                         menuLoader.item.featureOptionsButtonPressed.disconnect()
+                    }
+                    if (menuLoader.item.isnCorrectionButtonPressed) {
+                        menuLoader.item.isnCorrectionButtonPressed.disconnect()
                     }
                 } catch(e) {
                     // Игнорируем ошибки отключения
@@ -302,6 +306,14 @@ Item {
                                 return
                             }
                             navigateTo("qrc:/FeatureOptionsManager.qml")
+                        })
+                    }
+                    if (menuLoader.item.isnCorrectionButtonPressed) {
+                        menuLoader.item.isnCorrectionButtonPressed.connect(function() {
+                            if (!isServiceMenuScreenAllowed("IsnCorrection.qml")) {
+                                return
+                            }
+                            navigateTo("qrc:/IsnCorrection.qml")
                         })
                     }
                     if (menuLoader.item.touchScreenTestButtonPressed) {

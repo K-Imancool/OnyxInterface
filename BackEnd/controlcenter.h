@@ -29,6 +29,8 @@ class ControlCenter : public QObject
     Q_PROPERTY(bool debugUartEnabled READ debugUartEnabled WRITE setDebugUartEnabled NOTIFY debugUartEnabledChanged)
     Q_PROPERTY(int uartRate READ uartRate WRITE setUartRate NOTIFY uartRateChanged)
     Q_PROPERTY(bool cpuMonitorVisible READ cpuMonitorVisible WRITE setCpuMonitorVisible NOTIFY cpuMonitorVisibleChanged)
+    Q_PROPERTY(int isnDacValue READ isnDacValue NOTIFY isnDacValueChanged)
+    Q_PROPERTY(int isnAdcValue READ isnAdcValue NOTIFY isnAdcValueChanged)
 
 public:
 	explicit ControlCenter(QObject *parent = nullptr);
@@ -84,9 +86,11 @@ public:
     Q_INVOKABLE void resetSystemFromUi();
 	Q_INVOKABLE bool loadProgram(int progId, bool clear);
 	Q_INVOKABLE QVariantMap localizedProgramTitle(int scopeId, int progId) const;
-	Q_INVOKABLE void setNeutralResistPollEnabled(bool enabled);
+    Q_INVOKABLE void setNeutralResistPollEnabled(bool enabled);
     Q_INVOKABLE void setVolumeLevel(int level);
     Q_INVOKABLE void setLedOutput(int out, int color);
+    /// Управление ИСН: enabled=false → 0,0; иначе voltage (0..110) и dacAction (IsnDacAction)
+    Q_INVOKABLE void manageIsn(bool enabled, int voltage, int dacAction = 0);
     Q_INVOKABLE void appendDebugOverlayLine(const QString &line);
     Q_INVOKABLE void clearDebugOverlay();
     QString debugOverlayText() const;
@@ -96,12 +100,16 @@ public:
     void setUartRate(int rate);
     bool cpuMonitorVisible() const;
     void setCpuMonitorVisible(bool visible);
+    int isnDacValue() const;
+    int isnAdcValue() const;
 
 signals:
     void debugOverlayTextChanged();
     void debugUartEnabledChanged();
     void uartRateChanged();
     void cpuMonitorVisibleChanged();
+    void isnDacValueChanged();
+    void isnAdcValueChanged();
     void powerOffConfirmationRequested(int timeoutSeconds);
 
 public slots:
@@ -130,6 +138,8 @@ private:
     bool m_debugUartEnabled = false;
     int m_uartRate = 50;
     bool m_cpuMonitorVisible = false;
+    int m_isnDacValue = -1;
+    int m_isnAdcValue = -1;
     static constexpr int kDebugOverlayMaxLines = 40;
 
 	QTimer* m_saveTimer = nullptr;  // Таймер для отложенного сохранения

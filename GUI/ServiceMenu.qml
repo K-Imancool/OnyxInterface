@@ -17,11 +17,12 @@ Item {
     signal specialCommandsButtonPressed()
     signal secretKeysButtonPressed()
     signal featureOptionsButtonPressed()
+    signal isnCorrectionButtonPressed()
 
     property string accessLevel: "full"
     readonly property bool isLimitedAccess: accessLevel === "limited"
     readonly property int menuButtonWidth: 550
-    readonly property int menuButtonHeight: 96
+    readonly property int menuButtonHeight: 85
     readonly property int menuColumnsSpacing: 24
     
     Rectangle {
@@ -44,12 +45,12 @@ Item {
     GridLayout {
         anchors {
             top: screenTitle.bottom
-            topMargin: 36
+            topMargin: 24
             horizontalCenter: parent.horizontalCenter
         }
         columns: 2
         columnSpacing: serviceMenuRoot.menuColumnsSpacing
-        rowSpacing: 20
+        rowSpacing: 14
         width: serviceMenuRoot.menuButtonWidth * 2 + serviceMenuRoot.menuColumnsSpacing
 
         SButton {
@@ -146,6 +147,16 @@ Item {
             Layout.preferredHeight: serviceMenuRoot.menuButtonHeight
             text: qsTr("Управление опциями")
             onPressed: serviceMenuRoot.featureOptionsButtonPressed()
+        }
+
+        SButton {
+            id: isnCorrectionButton
+            visible: !serviceMenuRoot.isLimitedAccess
+            style: "btn-primary lg"
+            Layout.preferredWidth: serviceMenuRoot.menuButtonWidth
+            Layout.preferredHeight: serviceMenuRoot.menuButtonHeight
+            text: qsTr("Управление ИСН")
+            onPressed: serviceMenuRoot.isnCorrectionButtonPressed()
         }
     }
     

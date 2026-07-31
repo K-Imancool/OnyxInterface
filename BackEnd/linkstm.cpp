@@ -103,6 +103,18 @@ void LinkStm::setLedOutput(LedOutput out, LedColor color)
     setTxCommand(ledOutputCommand);
 }
 
+void LinkStm::manageIsn(quint8 voltage, quint8 dacAction)
+{
+    UartTx isnCommand;
+    isnCommand.com = IsnManage;
+    isnCommand.mc = MC_COM;
+    isnCommand.data.clear();
+    isnCommand.data.append(static_cast<char>(voltage));
+    isnCommand.data.append(static_cast<char>(dacAction));
+    // Без фильтра дубликатов: каждое нажатие ЦАП ± должно уйти в МК
+    m_txCommandList.append(isnCommand);
+}
+
 void LinkStm::setVolume(int level)
 {
     const int clamped = qBound(1, level, 7);
@@ -766,6 +778,14 @@ void LinkStm::readRxCommand()
     case RxSpecial:
         if (m_rxCommand.com == NeutralResist) {
             emit sigNeutralResistReceived(m_rxCommand.data);
+        } else if (m_rxCommand.com == IsnDAC) {
+            if (m_rxCommand.data.size() >= 4) {
+                const int dacValue = (static_cast<quint8>(m_rxCommand.data.at(0)) << 8)
+                        | static_cast<quint8>(m_rxCommand.data.at(1));
+                const int adcValue = (static_cast<quint8>(m_rxCommand.data.at(2)) << 8)
+                        | static_cast<quint8>(m_rxCommand.data.at(3));
+                emit sigIsnDacReceived(dacValue, adcValue);
+            }
         } else if (m_rxCommand.com == PowerOff) {
             emit sigPowerOffCommand();
         } else if (m_rxCommand.com == ArgonBlowAck) {

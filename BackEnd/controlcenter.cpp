@@ -416,6 +416,17 @@ void ControlCenter::setLinkStm(LinkStm* linkStm)
 		connect(m_linkStm, &LinkStm::sigNeutralResistReceived,
 		        m_periphery, &PeriphHandler::onNeutralResistReceived,
 		        Qt::QueuedConnection);
+        connect(m_linkStm, &LinkStm::sigIsnDacReceived,
+                this, [this](int dacValue, int adcValue) {
+            if (m_isnDacValue != dacValue) {
+                m_isnDacValue = dacValue;
+                emit isnDacValueChanged();
+            }
+            if (m_isnAdcValue != adcValue) {
+                m_isnAdcValue = adcValue;
+                emit isnAdcValueChanged();
+            }
+        }, Qt::QueuedConnection);
         connect(m_linkStm, &LinkStm::sigDebugOverlayLine,
                 this, &ControlCenter::appendDebugOverlayLine,
                 Qt::QueuedConnection);
@@ -646,6 +657,33 @@ void ControlCenter::setLedOutput(int out, int color)
     QMetaObject::invokeMethod(link, [link, ledOut, ledColor]() {
         link->setLedOutput(ledOut, ledColor);
     }, Qt::QueuedConnection);
+}
+
+void ControlCenter::manageIsn(bool enabled, int voltage, int dacAction)
+{
+    if (m_linkStm.isNull()) {
+        return;
+    }
+    const quint8 voltByte = enabled
+            ? static_cast<quint8>(qBound(0, voltage, 110))
+            : static_cast<quint8>(0);
+    const quint8 dacByte = enabled
+            ? static_cast<quint8>(dacAction & 0xFF)
+            : static_cast<quint8>(0);
+    auto *link = m_linkStm.data();
+    QMetaObject::invokeMethod(link, [link, voltByte, dacByte]() {
+        link->manageIsn(voltByte, dacByte);
+    }, Qt::QueuedConnection);
+}
+
+int ControlCenter::isnDacValue() const
+{
+    return m_isnDacValue;
+}
+
+int ControlCenter::isnAdcValue() const
+{
+    return m_isnAdcValue;
 }
 
 bool ControlCenter::loadProgram(int progId, bool clear)

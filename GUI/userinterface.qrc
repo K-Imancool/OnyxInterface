@@ -55,6 +55,7 @@
         <file>SystemMonitor.qml</file>
         <file>SecretKeysWindow.qml</file>
         <file>FeatureOptionsManager.qml</file>
+        <file>IsnCorrection.qml</file>
         <file>DialogActionButton.qml</file>
         <file>ProgSaveDialog.qml</file>
         <file>StartupInfoScreen.qml</file>

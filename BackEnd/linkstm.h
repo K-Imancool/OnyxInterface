@@ -30,6 +30,7 @@ public:
 
         AckNeutralResist = 0x61,        // Запрос сопротивления НЭ
         OutputLeds = 0x62,              // Включение/выключение подсветки выходов
+        IsnManage = 0x63,               // Управление ИСН
 //        AckMonoHandleResist = 0x62,     // Запрос сопр. моно держателя                Пока не используются
 //        AckBiHandleResist = 0x63,       // Запрос сопр. би держателя
 //        ReadMono2Id = 0x64,             // Прочитать данные в определителе Моно2
@@ -80,6 +81,7 @@ public:
         SpecAnswer = 0x60,
         NeutralResist = 0x61,           // Сопротивление НЭ
         AckOutputLeds = 0x62,           // Подтверждение включения/выключения подсветки выходов
+        IsnDAC = 0x63,                  // Значение ЦАП и АЦП ИСН (4 байта)
 //        MonoHandleResist = 0x62,        // Сопротивление моно держателя
 //        BiHandleResist = 0x63,          // Сопротивление би держателя
 //        DataMono2Id = 0x64,             // Данные из определителя Моно2
@@ -175,6 +177,14 @@ public:
     };
     Q_ENUM(LedColor);
 
+    enum IsnDacAction : quint8 {
+        IsnDacNone = 0x00,                // Только напряжение / вкл-выкл
+        IsnDacInc = 0x01,                 // Увеличить значение ЦАП
+        IsnDacDec = 0x10,                 // Уменьшить значение ЦАП
+        IsnDacSave = 0xFF                 // Запомнить значение ЦАП
+    };
+    Q_ENUM(IsnDacAction);
+
     struct UartTx {
         quint8 com;
         QByteArray data;
@@ -252,6 +262,8 @@ public slots:
     void startFirmwareUpdateFromFile(const QString &filePath, const QString &versionStr, int mcUnitRaw);
     void argonBlow();                                   // Передать команду на продувку
     void setLedOutput(LedOutput out, LedColor color);   // Передать команду на включение/выключение подсветки
+    /// Управление ИСН: voltage=0 и dacAction=0 — выкл; иначе voltage 0..110, dacAction — IsnDacAction
+    void manageIsn(quint8 voltage, quint8 dacAction);
     void setVolume(int level);
     void setEnableActivation(bool enable);
     void setNeutralElDivided(bool divided);
@@ -293,6 +305,7 @@ signals:
     void sigPowerOffCommand();
     void sigReadyToPowerOffSent();
     void sigNeutralResistReceived(const QByteArray &data);
+    void sigIsnDacReceived(int dacValue, int adcValue);
     // Отладочные строки для полупрозрачного оверлея в main.qml
     void sigDebugOverlayLine(const QString &line);
     /// Версии ПО модулей МК: список из 5 QVariantMap (числа для UI и сравнения с обновлениями).
