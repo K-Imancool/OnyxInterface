@@ -129,6 +129,7 @@ Drawer {
             target: pedEditor
             function onPedSelected(pedal) {
                 innerModel.qmlSetData(socketId, pedal, "socketpedal")
+                recomHandle.saveCurrentState()
                 repeatRoot.close()
             }
         }

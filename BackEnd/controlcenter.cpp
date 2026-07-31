@@ -479,10 +479,10 @@ QPointer<PeriphHandler> ControlCenter::getPeripheryHandle() const
 	return m_periphery;
 }
 
-void ControlCenter::logPowerOff(const QString &message)
+void ControlCenter::logPowerOff(quint8 reasonCode)
 {
     if (m_deviceLog) {
-        m_deviceLog->logPowerOff(message);
+        m_deviceLog->logPowerOff(reasonCode);
     }
 }
 
@@ -500,7 +500,6 @@ void ControlCenter::onPowerOffCommand()
         QMetaObject::invokeMethod(m_linkStm.data(), "requestReadyToPowerOff", Qt::QueuedConnection);
     }
     emit powerOffConfirmationRequested(10);
-    logPowerOff(QStringLiteral("Получена команда PowerOff по UART LinkStm; ожидание подтверждения выключения"));
 }
 
 void ControlCenter::cancelPowerOff()
@@ -510,7 +509,7 @@ void ControlCenter::cancelPowerOff()
     }
 
     m_powerOffConfirmationActive = false;
-    logPowerOff(QStringLiteral("Выключение аппарата отменено пользователем"));
+    logPowerOff(DeviceLogManager::PowerOffCancelled);
 }
 
 void ControlCenter::confirmPowerOff()
@@ -527,7 +526,7 @@ void ControlCenter::confirmPowerOff()
     if (m_deviceLog) {
         m_deviceLog->finalizeSession();
     }
-    logPowerOff(QStringLiteral("Выключение аппарата подтверждено; отправка ReadyToPowerOff по UART LinkStm"));
+    logPowerOff(DeviceLogManager::UartPowerOff);
 
     if (!m_linkStm.isNull()) {
         QMetaObject::invokeMethod(m_linkStm.data(), "requestReadyToPowerOffWithData",
@@ -551,7 +550,7 @@ void ControlCenter::shutdownSystemFromUi()
     if (m_deviceLog) {
         m_deviceLog->finalizeSession();
     }
-    logPowerOff(QStringLiteral("poweroff через сервисное меню"));
+    logPowerOff(DeviceLogManager::ServicePowerOff);
     shutdownSystem();
 }
 
@@ -569,7 +568,7 @@ void ControlCenter::resetSystemFromUi()
     if (m_deviceLog) {
         m_deviceLog->finalizeSession();
     }
-    logPowerOff(QStringLiteral("reboot через сервисное меню"));
+    logPowerOff(DeviceLogManager::ServiceReboot);
     resetSystem();
 }
 
@@ -580,7 +579,6 @@ void ControlCenter::resetSystem()
     }
 
     m_shutdownStarted = true;
-    logPowerOff(QStringLiteral("Запуск системной команды перезагрузки roc-RK3566"));
 
     const QList<QPair<QString, QStringList>> rebootActions = {
         {QStringLiteral("systemctl"), {QStringLiteral("reboot")}},
@@ -593,10 +591,9 @@ void ControlCenter::resetSystem()
         if (runLoginAction(action.first, action.second, &error)) {
             return;
         }
-        logPowerOff(QStringLiteral("reboot %1: %2").arg(action.first, error));
     }
 
-    logPowerOff(QStringLiteral("Не удалось запустить системную команду перезагрузки"));
+    logPowerOff(DeviceLogManager::RebootFailed);
 }
 
 void ControlCenter::shutdownSystem()
@@ -606,7 +603,6 @@ void ControlCenter::shutdownSystem()
     }
 
     m_shutdownStarted = true;
-    logPowerOff(QStringLiteral("Запуск системной команды выключения roc-RK3566"));
 
     if (QProcess::startDetached(QStringLiteral("systemctl"), QStringList{QStringLiteral("poweroff")})) {
         return;
@@ -618,7 +614,7 @@ void ControlCenter::shutdownSystem()
         return;
     }
 
-    logPowerOff(QStringLiteral("Не удалось запустить системную команду выключения"));
+    logPowerOff(DeviceLogManager::PowerOffFailed);
 }
 
 void ControlCenter::setNeutralResistPollEnabled(bool enabled)

@@ -113,6 +113,8 @@ public:
     int selectedInstrumIdByMode(int socketId, int modeIndex, bool isCoag);
 
     InstrPtr getInstrumentById(int id) const;
+    QString modeNameById(int id) const;
+    QString instrumentNameById(int id) const;
     void copyCurrentList();
 
 public slots:
@@ -215,6 +217,7 @@ private:
     int m_subProgIdx = 0;
     int activeSocket = -1;
     bool m_endoProgramView = false;
+    quint64 m_activationSequence = 0;
 
     QStringList m_socketNames;
     QHash<int, QByteArray> m_roles;

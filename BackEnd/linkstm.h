@@ -281,6 +281,7 @@ signals:
 //    void rxError();
     void sigRecieveData(UartRx* rxData);
     void sigError(quint8 error);
+    void sigErrorForLog(quint8 error);
     void sigUpdateProgress(int progress);
     void sigReportTx(QString txStr);
     void sigReportRx(QString rxStr, int ms);
@@ -321,6 +322,7 @@ private:
     void setNextCommand();
 
     void readRxCommand();
+    void reportError(quint8 error);
 
     ActiveSocket determineSocket(const PedalKnobPressed &pedalKnob);
 
@@ -377,6 +379,10 @@ private:
     QElapsedTimer m_fwRxErrStreakTimer;
     bool m_abortFirmwareUpdatePending = false;
     bool m_moduleHasWorkingApp[5] = {false, false, false, false, false};
+    quint8 m_lastReportedUiError = 0;
+    QElapsedTimer m_uiErrorReportTimer;
+    /// После запуска активации не воспринимать удерживаемую педаль как новое нажатие.
+    bool m_activationInputConsumedUntilRelease = false;
     /// После sigPressed3rdKnob не повторять, пока педали/кнопки не вернутся в PRESS_NONE
     bool m_thirdKnobSignalConsumedUntilRelease = false;
     bool m_neutralResistPollEnabled = false;
@@ -385,6 +391,8 @@ private:
     QByteArray m_readyToPowerOffData;
 
     int m_uartRate;
+    /// Повтор одного и того же кода в UI не чаще этого интервала.
+    static constexpr qint64 ERROR_UI_REPORT_INTERVAL_MS = 1000;
 };
 
 #endif // LINKSTM_H

@@ -5,6 +5,29 @@
 #include <QMetaType>
 #include <QVariantMap>
 #include <QElapsedTimer>
+
+namespace {
+
+// Тело посылки без FRAME_START (байт 0) и без CRC (2 последних байта).
+QByteArray uartPacketBodyWithoutCrc(const QByteArray &packet)
+{
+    if (packet.size() < 3)
+        return {};
+    return packet.mid(1, packet.size() - 3);
+}
+
+// Тестовый лог: печатает посылку только при изменении сравниваемого тела.
+void debugLogNewUartPacket(const char *label, const QByteArray &packet, QByteArray *lastBody)
+{
+    const QByteArray body = uartPacketBodyWithoutCrc(packet);
+    if (body.isEmpty() || body == *lastBody)
+        return;
+    *lastBody = body;
+    qDebug().noquote() << label << LinkStm::getHexStr(body);
+}
+
+} // namespace
+
 //перенёс инициализатор в конструктор - так не происходит инициализация по умолчанию,
 // а затем присваивание новых значени1
 LinkStm::LinkStm(QObject *parent)
@@ -123,6 +146,7 @@ void LinkStm::setDebugUart(bool enabled)
 void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
 {
 //    qDebug() << "[LinkStm] unpackRxCommand, bytes:" << rxPacket.size();
+    static QByteArray lastRxBody;
 
     // Замеряем задержку от момента readyRead (readData) до входа в unpackRxCommand
     QTime now = QTime::currentTime();
@@ -140,6 +164,8 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
     m_rxCommand.data.clear();
 
 //    qDebug() << "Rx: " << getHexStr(rxPacket) << "ms: " << m_uart->transmitDelay();  // DEBUG
+    debugLogNewUartPacket("--------NEW RX", rxPacket, &lastRxBody);
+
     if (m_debugUart)
         emit sigDebugOverlayLine(QStringLiteral("Rx: %1").arg(getHexStr(rxPacket)));
 //    emit sigReportRx(getHexStr(rxPacket), m_uart->transmitDelay());
@@ -304,7 +330,7 @@ void LinkStm::sendCommand()
     if (m_state != STATE_OK) {
         if (m_state != preState) {
             // qDebug() << "UART-ошибки: " << m_state;
-            emit sigError(m_state);             // Ошибки ответа
+            reportError(m_state);               // Ошибки ответа
             preState = m_state;                 // Запоминаем предыдущее состояние
             errCounter = 0;                     // Сбрасываем счётчик ошибок
             if (m_state == STATE_NO_RX && m_lastCommand.com == CurrentVersion) {
@@ -521,8 +547,9 @@ void LinkStm::sendCommand()
          qDebug() << "Tx ERR!";             // DEBUG
    }
    else {
+        static QByteArray lastTxBody;
         txStr = getHexStr(txPacket);
-//        qDebug() << "Tx: " << getHexStr(txPacket);   // DEBUG
+        debugLogNewUartPacket("NEW TX--------", txPacket, &lastTxBody);
         if (m_debugUart)
             emit sigDebugOverlayLine(QStringLiteral("Tx: %1").arg(getHexStr(txPacket)));
         if (m_txCommand.com == ReadyToPowerOff) {
@@ -579,6 +606,23 @@ QString LinkStm::getHexStr(QByteArray byteArray)
         outStr.append(num).append(" ");
     }
     return outStr;
+}
+
+void LinkStm::reportError(quint8 error)
+{
+    // DeviceLogManager сам объединяет повторы и ограничивает запись на диск,
+    // поэтому для журнала передаём каждое событие.
+    emit sigErrorForLog(error);
+
+    // В UI: новый код — сразу; тот же код — не чаще раза в ERROR_UI_REPORT_INTERVAL_MS,
+    // чтобы не забивать главный поток и Scene Graph при аварии.
+    if (error != m_lastReportedUiError
+        || !m_uiErrorReportTimer.isValid()
+        || m_uiErrorReportTimer.elapsed() >= ERROR_UI_REPORT_INTERVAL_MS) {
+        m_lastReportedUiError = error;
+        m_uiErrorReportTimer.restart();
+        emit sigError(error);
+    }
 }
 
 
@@ -647,13 +691,17 @@ void LinkStm::readRxCommand()
             case PRESS_PED2_Y:
             case PRESS_PED2_B:
                 unitState.pedalKnob = static_cast<PedalKnobPressed>(pressValue);
-                qDebug() << "Pressed pedal: " << unitState.pedalKnob << "current m_comState:" << m_comState;
-                if (m_enableActivation && !m_neutralResistPollEnabled && m_comState != ACTIVATION) {
+//                qDebug() << "Pressed pedal: " << unitState.pedalKnob << "current m_comState:" << m_comState;
+                if (!m_activationInputConsumedUntilRelease
+                    && m_enableActivation
+                    && !m_neutralResistPollEnabled
+                    && m_comState != ACTIVATION) {
+                    m_activationInputConsumedUntilRelease = true;
                     m_comState = START_ACTIVATION;
                     qDebug() << "Set m_comState to START_ACTIVATION";
-                    qDebug() << m_rxCommand.com << " " << getHexStr(m_rxCommand.data);
+//                    qDebug() << m_rxCommand.com << " " << getHexStr(m_rxCommand.data);
                 } else {
-                    qDebug() << "m_comState is ACTIVATION, not setting START_ACTIVATION";
+//                    qDebug() << "m_comState is ACTIVATION, not setting START_ACTIVATION";
                 }
                 break;
             case PRESS_MONO1_YB:
@@ -662,6 +710,9 @@ void LinkStm::readRxCommand()
             case PRESS_NONE:
             case PRESS_WRONG:
                 unitState.pedalKnob = static_cast<PedalKnobPressed>(pressValue);
+                if (unitState.pedalKnob == PRESS_NONE) {
+                    m_activationInputConsumedUntilRelease = false;
+                }
                 break;
             default:
                 unitState.pedalKnob = PRESS_WRONG;
@@ -678,6 +729,7 @@ void LinkStm::readRxCommand()
         } else {
             // qDebug() << "Посылка от stm отстой - нет нажатий кнопок";
             unitState.pedalKnob = PRESS_NONE;
+            m_activationInputConsumedUntilRelease = false;
         }
         break;
     }
@@ -735,7 +787,7 @@ void LinkStm::readRxCommand()
                 clearMcVersionsForUnit(m_lastCommand.mc);
             }
         }
-        emit sigError(m_rxCommand.com);
+        reportError(m_rxCommand.com);
         break;
     // Ответы на команды обновления ПО
     case RxUpdating:

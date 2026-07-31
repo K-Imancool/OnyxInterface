@@ -391,7 +391,7 @@ int main(int argc, char *argv[])
                      deviceLog, &DeviceLogManager::onActivationStopped, Qt::QueuedConnection);
     QObject::connect(m_linkStm, &LinkStm::sigStopActivation,
                      deviceLog, &DeviceLogManager::onWarningCode, Qt::QueuedConnection);
-    QObject::connect(m_linkStm, &LinkStm::sigError,
+    QObject::connect(m_linkStm, &LinkStm::sigErrorForLog,
                      deviceLog, &DeviceLogManager::onWarningCode, Qt::QueuedConnection);
     ctrl->setDeviceLogManager(deviceLog);
 

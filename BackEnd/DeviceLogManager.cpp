@@ -21,6 +21,14 @@ const char *kLegacyLogFileName = "logFile.txt";
 const char *kLogFilePrefix = "log-";
 const char *kLogFileSuffix = ".txt";
 constexpr qint64 kMaxDailyLogBytes = 2 * 1024 * 1024;
+constexpr int kWarningFlushCheckMs = 1000;
+constexpr qint64 kWarningSummaryIntervalMs = 10000;
+constexpr qint64 kWarningQuietPeriodMs = 3000;
+
+QString decodeLogValue(const QString &value)
+{
+    return QString::fromUtf8(QByteArray::fromBase64(value.toLatin1()));
+}
 }
 
 DeviceLogManager::DeviceLogManager(JsonStorage *jsonStorage,
@@ -33,6 +41,11 @@ DeviceLogManager::DeviceLogManager(JsonStorage *jsonStorage,
     m_persistTimer.setInterval(60000);
     connect(&m_persistTimer, &QTimer::timeout,
             this, &DeviceLogManager::persistCounters);
+
+    m_warningFlushTimer.setInterval(kWarningFlushCheckMs);
+    connect(&m_warningFlushTimer, &QTimer::timeout, this, [this]() {
+        flushWarningSummaries(false);
+    });
 }
 
 QStringList DeviceLogManager::readLogLines(const QString &filter, int maxLines) const
@@ -62,7 +75,7 @@ QStringList DeviceLogManager::readLogLines(const QString &filter, const QString 
         if (!lineMatchesFilter(line, filter)) {
             continue;
         }
-        lines.append(line);
+        lines.append(expandedLogLine(line, targetDate));
         if (lines.size() > maxLines) {
             lines.removeFirst();
         }
@@ -148,6 +161,8 @@ void DeviceLogManager::beginSession()
     m_sessionTimer.start();
     m_sessionFinalized = false;
     m_persistTimer.start();
+    m_pendingWarnings.clear();
+    m_warningFlushTimer.start();
 
     const QString deviceType = m_jsonStorage
             ? m_jsonStorage->readString(QStringLiteral("deviceType"), QStringLiteral("не указано"))
@@ -156,12 +171,11 @@ void DeviceLogManager::beginSession()
             ? m_jsonStorage->readString(QStringLiteral("serialNumber"), QStringLiteral("не указан"))
             : QStringLiteral("не указан");
 
-    appendEvent(QStringLiteral("BOOT"),
-                QStringLiteral("Включение аппарата; тип=%1; серийный номер=%2; общая наработка=%3; общее время активации=%4")
-                    .arg(deviceType.trimmed().isEmpty() ? QStringLiteral("не указано") : deviceType.trimmed())
-                    .arg(serialNumber.trimmed().isEmpty() ? QStringLiteral("не указан") : serialNumber.trimmed())
-                    .arg(formatTotalDuration(m_runtimeBaseMs))
-                    .arg(formatTotalDuration(readCounter(QString::fromLatin1(kTotalActivationMsKey)))));
+    appendBootEvent(
+            deviceType.trimmed().isEmpty() ? QStringLiteral("не указано") : deviceType.trimmed(),
+            serialNumber.trimmed().isEmpty() ? QStringLiteral("не указан") : serialNumber.trimmed(),
+            m_runtimeBaseMs,
+            readCounter(QString::fromLatin1(kTotalActivationMsKey)));
 }
 
 void DeviceLogManager::finalizeSession()
@@ -170,8 +184,10 @@ void DeviceLogManager::finalizeSession()
         return;
     }
 
+    flushWarningSummaries(true);
     persistCounters();
     m_persistTimer.stop();
+    m_warningFlushTimer.stop();
     m_sessionFinalized = true;
 }
 
@@ -210,11 +226,17 @@ void DeviceLogManager::onActivationStarted(quint8 socketId, bool isCut, quint16 
     m_activation.isCut = isCut;
     m_activation.mode = mode;
     m_activation.power = power;
+    m_activation.modeId = socketData(
+            socketId,
+            isCut ? SocketModel::CutModeId : SocketModel::CoagModeId).toInt();
+    m_activation.instrumentId = socketData(
+            socketId,
+            isCut ? SocketModel::CutModeInstrID : SocketModel::CoagModeInstrID).toInt();
+    if (m_activation.instrumentId <= 0 || m_activation.instrumentId == 1000) {
+        m_activation.instrumentId = 0;
+    }
     m_activation.autoMode = autoMode;
     m_activation.sourceCode = sourceCode;
-    m_activation.output = socketData(socketId, SocketModel::SocketName);
-    m_activation.modeName = socketData(socketId, isCut ? SocketModel::CutModeName : SocketModel::CoagModeName);
-    m_activation.instrument = socketData(socketId, isCut ? SocketModel::CutModeInstrName : SocketModel::CoagModeInstrName);
     m_activation.startedAt = QDateTime::currentDateTime();
     m_activation.persistedMs = 0;
     m_activation.timer.start();
@@ -241,15 +263,7 @@ void DeviceLogManager::onActivationStopped(quint8 stopReason)
         saveCounter(QString::fromLatin1(kTotalActivationMsKey), totalActivation);
     }
 
-    appendEvent(QStringLiteral("ACTIVATION"),
-                QStringLiteral("Активация; выход=%1; режим=%2 (%3); мощность=%4; инструмент=%5; длительность=%6; источник=%7")
-                    .arg(activation.output.isEmpty() ? QString::number(activation.socketId + 1) : activation.output)
-                    .arg(activation.modeName.isEmpty() ? QStringLiteral("не указан") : activation.modeName)
-                    .arg(activation.mode)
-                    .arg(activation.power)
-                    .arg(activation.instrument.isEmpty() ? QStringLiteral("Другой инструмент") : activation.instrument)
-                    .arg(formatDuration(durationMs))
-                    .arg(sourceText(activation.autoMode, activation.sourceCode)));
+    appendActivationEvent(activation, durationMs);
 }
 
 void DeviceLogManager::onWarningCode(quint8 warningCode)
@@ -258,17 +272,27 @@ void DeviceLogManager::onWarningCode(quint8 warningCode)
         return;
     }
 
-    const int code = static_cast<int>(warningCode);
-    const QString codeText = QString::number(code, 16).rightJustified(2, QLatin1Char('0')).toUpper();
-    appendEvent(QStringLiteral("ERROR"),
-                QStringLiteral("Ошибка; код=0x%1; текст=%2")
-                    .arg(codeText)
-                    .arg(warningTextForCode(code)));
+    flushWarningSummaries(false);
+
+    const QDateTime now = QDateTime::currentDateTime();
+    auto accumulator = m_pendingWarnings.find(warningCode);
+    if (accumulator == m_pendingWarnings.end()) {
+        appendWarningEvent(warningCode);
+
+        WarningAccumulator newAccumulator;
+        newAccumulator.lastSeen = now;
+        newAccumulator.summaryStartedAt = now;
+        m_pendingWarnings.insert(warningCode, newAccumulator);
+        return;
+    }
+
+    accumulator->lastSeen = now;
+    ++accumulator->suppressedCount;
 }
 
-void DeviceLogManager::logPowerOff(const QString &message)
+void DeviceLogManager::logPowerOff(quint8 reasonCode)
 {
-    appendEvent(QStringLiteral("POWER_OFF"), message);
+    appendPowerOffEvent(reasonCode);
 }
 
 QString DeviceLogManager::logDirPath() const
@@ -419,17 +443,6 @@ void DeviceLogManager::appendEvent(const QString &category, const QString &messa
     }
 
     const QString filePath = logFilePathForDate(QDate::currentDate());
-    if (category == QStringLiteral("ERROR") && isDailyLogOverSizeLimit(filePath)) {
-        if (appendOrUpdateRepeatedError(filePath, message)) {
-            return;
-        }
-        return;
-    }
-
-    if (category == QStringLiteral("ERROR") && appendOrUpdateRepeatedError(filePath, message)) {
-        return;
-    }
-
     if (isDailyLogOverSizeLimit(filePath)) {
         return;
     }
@@ -446,86 +459,306 @@ void DeviceLogManager::appendEvent(const QString &category, const QString &messa
         << Qt::endl;
 }
 
-bool DeviceLogManager::appendOrUpdateRepeatedError(const QString &filePath, const QString &message)
+void DeviceLogManager::appendCompactEvent(const QStringList &fields)
 {
+    if (fields.isEmpty()) {
+        return;
+    }
+
+    QMutexLocker locker(&m_mutex);
+    if (!ensureLogDir()) {
+        return;
+    }
+
+    const QString filePath = logFilePathForDate(QDate::currentDate());
+    if (isDailyLogOverSizeLimit(filePath)) {
+        return;
+    }
+
     QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
-    }
-
-    QStringList lines;
-    QTextStream in(&file);
-    while (!in.atEnd()) {
-        lines.append(in.readLine());
-    }
-    file.close();
-
-    if (lines.isEmpty()) {
-        return false;
-    }
-
-    const QString lastMessage = repeatedEventMessage(lines.constLast(), QStringLiteral("ERROR"));
-    if (lastMessage != message) {
-        return false;
-    }
-
-    const int nextCount = repeatedEventCount(lines.constLast()) + 1;
-    lines.last() = withRepeatedEventCount(lines.constLast(), nextCount);
-
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-        return false;
+    if (!file.open(QIODevice::Append | QIODevice::Text)) {
+        return;
     }
 
     QTextStream out(&file);
-    for (const QString &line : qAsConst(lines)) {
-        out << line << Qt::endl;
-    }
-    return true;
+    out << QTime::currentTime().toString(QStringLiteral("hh:mm:ss.zzz"))
+        << QLatin1Char('|')
+        << fields.join(QLatin1Char('|'))
+        << Qt::endl;
 }
 
-QString DeviceLogManager::repeatedEventMessage(const QString &line, const QString &category) const
+void DeviceLogManager::appendBootEvent(const QString &deviceType,
+                                       const QString &serialNumber,
+                                       qint64 runtimeMs,
+                                       qint64 activationMs)
 {
-    const QString marker = QStringLiteral("[%1] ").arg(category);
-    const int markerIndex = line.indexOf(marker);
-    if (markerIndex < 0) {
-        return {};
+    QString deviceCode = deviceType;
+    if (deviceCode.startsWith(QStringLiteral("ONYX-"))) {
+        deviceCode.remove(0, 5);
     }
 
-    QString message = line.mid(markerIndex + marker.length());
-    const int countStart = message.lastIndexOf(QStringLiteral(" (x"));
-    if (countStart < 0 || !message.endsWith(QLatin1Char(')'))) {
-        return message;
-    }
-
-    bool ok = false;
-    message.mid(countStart + 3, message.length() - countStart - 4).toInt(&ok);
-    return ok ? message.left(countStart) : message;
+    appendCompactEvent({
+        QStringLiteral("B"),
+        deviceCode,
+        serialNumber,
+        formatCompactTotalDuration(runtimeMs),
+        QStringLiteral("A%1").arg(formatCompactTotalDuration(activationMs))
+    });
 }
 
-int DeviceLogManager::repeatedEventCount(const QString &line) const
+void DeviceLogManager::appendActivationEvent(const ActivationInfo &activation,
+                                             qint64 durationMs)
 {
-    const int countStart = line.lastIndexOf(QStringLiteral(" (x"));
-    if (countStart < 0 || !line.endsWith(QLatin1Char(')'))) {
-        return 1;
-    }
-
-    bool ok = false;
-    const int count = line.mid(countStart + 3, line.length() - countStart - 4).toInt(&ok);
-    return ok && count > 0 ? count : 1;
+    appendCompactEvent({
+        QStringLiteral("A"),
+        activationOutputCode(activation.socketId),
+        QStringLiteral("Mod%1").arg(activation.modeId),
+        QStringLiteral("P%1").arg(activation.power),
+        QStringLiteral("I%1").arg(activation.instrumentId),
+        formatCompactDuration(durationMs),
+        activationSourceCode(activation.autoMode, activation.sourceCode)
+    });
 }
 
-QString DeviceLogManager::withRepeatedEventCount(const QString &line, int count) const
+void DeviceLogManager::appendPowerOffEvent(quint8 reasonCode)
 {
-    const int countStart = line.lastIndexOf(QStringLiteral(" (x"));
-    if (countStart >= 0 && line.endsWith(QLatin1Char(')'))) {
-        bool ok = false;
-        line.mid(countStart + 3, line.length() - countStart - 4).toInt(&ok);
-        if (ok) {
-            return line.left(countStart) + QStringLiteral(" (x%1)").arg(count);
+    appendCompactEvent({
+        QStringLiteral("P"),
+        QString::number(reasonCode)
+    });
+}
+
+void DeviceLogManager::appendWarningEvent(quint8 warningCode,
+                                          qint64 repeatedCount,
+                                          qint64 periodSeconds)
+{
+    QStringList fields{
+        QStringLiteral("E"),
+        QString::number(warningCode, 16)
+            .rightJustified(2, QLatin1Char('0'))
+            .toUpper()
+    };
+    if (repeatedCount > 0) {
+        fields.append(QString::number(repeatedCount));
+        fields.append(QString::number(periodSeconds));
+    }
+    appendCompactEvent(fields);
+}
+
+QString DeviceLogManager::warningMessage(quint8 warningCode) const
+{
+    const int code = static_cast<int>(warningCode);
+    const QString codeText = QString::number(code, 16)
+            .rightJustified(2, QLatin1Char('0'))
+            .toUpper();
+    return QStringLiteral("Ошибка; код=0x%1; текст=%2")
+            .arg(codeText)
+            .arg(warningTextForCode(code));
+}
+
+QString DeviceLogManager::expandedLogLine(const QString &line, const QDate &date) const
+{
+    const QStringList parts = line.split(QLatin1Char('|'));
+    if (parts.size() < 2) {
+        return line;
+    }
+
+    const QTime time = QTime::fromString(parts.at(0), QStringLiteral("hh:mm:ss.zzz"));
+    if (!time.isValid()) {
+        return line;
+    }
+
+    const QString timestamp =
+            QDateTime(date, time).toString(QStringLiteral("dd-MM-yyyy hh:mm:ss.zzz"));
+
+    if (parts.at(1) == QStringLiteral("E")
+            && (parts.size() == 3 || parts.size() == 5)) {
+        bool codeOk = false;
+        const int code = parts.at(2).toInt(&codeOk, 16);
+        if (!codeOk || code < 0 || code > 0xFF) {
+            return line;
+        }
+
+        QString expanded = QStringLiteral("%1 [ERROR] %2")
+                .arg(timestamp)
+                .arg(warningMessage(static_cast<quint8>(code)));
+
+        if (parts.size() == 3) {
+            return expanded;
+        }
+
+        bool countOk = false;
+        bool periodOk = false;
+        const qint64 repeatedCount = parts.at(3).toLongLong(&countOk);
+        const qint64 periodSeconds = parts.at(4).toLongLong(&periodOk);
+        if (!countOk || !periodOk || repeatedCount <= 0 || periodSeconds < 0) {
+            return line;
+        }
+
+        expanded += QStringLiteral("; повторов=%1; период=%2 сек")
+                .arg(repeatedCount)
+                .arg(periodSeconds);
+        return expanded;
+    }
+
+    if (parts.at(1) == QStringLiteral("B") && parts.size() == 6) {
+        if (parts.at(4).contains(QLatin1Char('h'))
+                && parts.at(4).endsWith(QLatin1Char('m'))
+                && parts.at(5).startsWith(QLatin1Char('A'))) {
+            QString runtime = parts.at(4);
+            runtime.replace(QLatin1Char('h'), QStringLiteral(" ч "));
+            runtime.replace(QLatin1Char('m'), QStringLiteral(" мин"));
+
+            QString activation = parts.at(5).mid(1);
+            activation.replace(QLatin1Char('h'), QStringLiteral(" ч "));
+            activation.replace(QLatin1Char('m'), QStringLiteral(" мин"));
+
+            return QStringLiteral("%1 [BOOT] Включение аппарата; тип=ONYX-%2; серийный номер=%3; общая наработка=%4; общее время активации=%5")
+                    .arg(timestamp)
+                    .arg(parts.at(2))
+                    .arg(parts.at(3))
+                    .arg(runtime)
+                    .arg(activation);
+        }
+
+        bool runtimeOk = false;
+        bool activationOk = false;
+        const qint64 runtimeMs = parts.at(4).toLongLong(&runtimeOk);
+        const qint64 activationMs = parts.at(5).toLongLong(&activationOk);
+        if (!runtimeOk || !activationOk || runtimeMs < 0 || activationMs < 0) {
+            return line;
+        }
+
+        return QStringLiteral("%1 [BOOT] Включение аппарата; тип=%2; серийный номер=%3; общая наработка=%4; общее время активации=%5")
+                .arg(timestamp)
+                .arg(decodeLogValue(parts.at(2)))
+                .arg(decodeLogValue(parts.at(3)))
+                .arg(formatTotalDuration(runtimeMs))
+                .arg(formatTotalDuration(activationMs));
+    }
+
+    if (parts.at(1) == QStringLiteral("A") && parts.size() == 8
+            && parts.at(3).startsWith(QStringLiteral("Mod"))
+            && parts.at(4).startsWith(QLatin1Char('P'))
+            && parts.at(5).startsWith(QLatin1Char('I'))) {
+        const QHash<QString, QString> outputNames{
+            {QStringLiteral("M1"), QStringLiteral("МОНО1")},
+            {QStringLiteral("M2"), QStringLiteral("МОНО2")},
+            {QStringLiteral("B1"), QStringLiteral("БИ1")},
+            {QStringLiteral("B2"), QStringLiteral("БИ2")}
+        };
+        const QHash<QString, QString> sourceNames{
+            {QStringLiteral("P1"), QStringLiteral("педаль 1")},
+            {QStringLiteral("P2"), QStringLiteral("педаль 2")},
+            {QStringLiteral("H1"), QStringLiteral("кнопка держателя МОНО1")},
+            {QStringLiteral("H2"), QStringLiteral("кнопка держателя МОНО2")},
+            {QStringLiteral("T"), QStringLiteral("термозажим")},
+            {QStringLiteral("Auto"), QStringLiteral("автозапуск")}
+        };
+
+        bool modeOk = false;
+        bool instrumentOk = false;
+        const int modeId = parts.at(3).mid(3).toInt(&modeOk);
+        const int instrumentId = parts.at(5).mid(1).toInt(&instrumentOk);
+        if (!modeOk || !instrumentOk) {
+            return line;
+        }
+
+        QString modeName = m_socketModel
+                ? m_socketModel->modeNameById(modeId)
+                : QString();
+        if (modeName.isEmpty()) {
+            modeName = QStringLiteral("Неизвестный режим (ID=%1)").arg(modeId);
+        }
+
+        QString instrumentName = m_socketModel
+                ? m_socketModel->instrumentNameById(instrumentId)
+                : QString();
+        if (instrumentName.isEmpty()) {
+            instrumentName = instrumentId == 0
+                    ? QStringLiteral("Другой инструмент")
+                    : QStringLiteral("Неизвестный инструмент (ID=%1)").arg(instrumentId);
+        }
+
+        QString duration = parts.at(6);
+        duration.replace(QLatin1Char('m'), QStringLiteral(" мин "));
+        duration.replace(QLatin1Char('s'), QStringLiteral(" сек"));
+
+        return QStringLiteral("%1 [ACTIVATION] Активация; выход=%2; режим=%3; мощность=%4; инструмент=%5; длительность=%6; источник=%7")
+                .arg(timestamp)
+                .arg(outputNames.value(parts.at(2), parts.at(2)))
+                .arg(modeName)
+                .arg(parts.at(4).mid(1))
+                .arg(instrumentName)
+                .arg(duration)
+                .arg(sourceNames.value(parts.at(7), parts.at(7)));
+    }
+
+    if (parts.at(1) == QStringLiteral("A") && parts.size() == 9) {
+        bool modeOk = false;
+        bool powerOk = false;
+        bool durationOk = false;
+        bool autoModeOk = false;
+        const int mode = parts.at(4).toInt(&modeOk);
+        const int power = parts.at(5).toInt(&powerOk);
+        const qint64 durationMs = parts.at(7).toLongLong(&durationOk);
+        const int autoMode = parts.at(8).toInt(&autoModeOk);
+        if (!modeOk || !powerOk || !durationOk || !autoModeOk
+                || durationMs < 0 || (autoMode != 0 && autoMode != 1)) {
+            return line;
+        }
+
+        return QStringLiteral("%1 [ACTIVATION] Активация; выход=%2; режим=%3 (%4); мощность=%5; инструмент=%6; длительность=%7; источник=%8")
+                .arg(timestamp)
+                .arg(decodeLogValue(parts.at(2)))
+                .arg(decodeLogValue(parts.at(3)))
+                .arg(mode)
+                .arg(power)
+                .arg(decodeLogValue(parts.at(6)))
+                .arg(formatDuration(durationMs))
+                .arg(sourceText(autoMode != 0, 0));
+    }
+
+    if (parts.at(1) == QStringLiteral("P") && parts.size() == 3) {
+        bool codeOk = false;
+        const int code = parts.at(2).toInt(&codeOk);
+        if (!codeOk) {
+            return line;
+        }
+        return QStringLiteral("%1 [POWER_OFF] %2")
+                .arg(timestamp)
+                .arg(powerOffTextForCode(code));
+    }
+
+    return line;
+}
+
+void DeviceLogManager::flushWarningSummaries(bool force)
+{
+    const QDateTime now = QDateTime::currentDateTime();
+    auto accumulator = m_pendingWarnings.begin();
+    while (accumulator != m_pendingWarnings.end()) {
+        const bool quiet = accumulator->lastSeen.msecsTo(now) >= kWarningQuietPeriodMs;
+        const bool summaryDue =
+                accumulator->summaryStartedAt.msecsTo(now) >= kWarningSummaryIntervalMs;
+
+        if (accumulator->suppressedCount > 0 && (force || quiet || summaryDue)) {
+            const qint64 periodMs =
+                    accumulator->summaryStartedAt.msecsTo(accumulator->lastSeen);
+            appendWarningEvent(accumulator.key(),
+                               accumulator->suppressedCount,
+                               qMax<qint64>(1, periodMs / 1000));
+
+            accumulator->suppressedCount = 0;
+            accumulator->summaryStartedAt = now;
+        }
+
+        if (force || quiet) {
+            accumulator = m_pendingWarnings.erase(accumulator);
+        } else {
+            ++accumulator;
         }
     }
-
-    return line + QStringLiteral(" (x%1)").arg(count);
 }
 
 bool DeviceLogManager::lineMatchesFilter(const QString &line, const QString &filter) const
@@ -535,10 +768,12 @@ bool DeviceLogManager::lineMatchesFilter(const QString &line, const QString &fil
         return true;
     }
     if (normalized == QStringLiteral("errors")) {
-        return line.contains(QStringLiteral("[ERROR]"));
+        return line.contains(QStringLiteral("[ERROR]"))
+                || line.contains(QStringLiteral("|E|"));
     }
     if (normalized == QStringLiteral("boots")) {
-        return line.contains(QStringLiteral("[BOOT]"));
+        return line.contains(QStringLiteral("[BOOT]"))
+                || line.contains(QStringLiteral("|B|"));
     }
     return true;
 }
@@ -566,6 +801,63 @@ QString DeviceLogManager::formatTotalDuration(qint64 milliseconds) const
     const qint64 hours = totalMinutes / 60;
     const qint64 minutes = totalMinutes % 60;
     return QStringLiteral("%1 ч %2 мин").arg(hours).arg(minutes, 2, 10, QLatin1Char('0'));
+}
+
+QString DeviceLogManager::formatCompactDuration(qint64 milliseconds) const
+{
+    const qint64 totalSeconds = qMax<qint64>(0, milliseconds) / 1000;
+    return QStringLiteral("%1m%2s")
+            .arg(totalSeconds / 60)
+            .arg(totalSeconds % 60);
+}
+
+QString DeviceLogManager::formatCompactTotalDuration(qint64 milliseconds) const
+{
+    const qint64 totalMinutes = qMax<qint64>(0, milliseconds) / 60000;
+    return QStringLiteral("%1h%2m")
+            .arg(totalMinutes / 60)
+            .arg(totalMinutes % 60);
+}
+
+QString DeviceLogManager::activationOutputCode(quint8 socketId) const
+{
+    switch (socketId) {
+    case 0: return QStringLiteral("B1");
+    case 1: return QStringLiteral("B2");
+    case 2: return QStringLiteral("M1");
+    case 3: return QStringLiteral("M2");
+    default: return QStringLiteral("O%1").arg(socketId);
+    }
+}
+
+QString DeviceLogManager::activationSourceCode(bool autoMode, quint8 sourceCode) const
+{
+    if (autoMode) {
+        return QStringLiteral("Auto");
+    }
+
+    switch (sourceCode) {
+    case 0x04:
+        return QStringLiteral("P1");
+    case 0x01:
+    case 0x02:
+    case 0x03:
+        return QStringLiteral("P2");
+    case 0x40:
+    case 0x80:
+    case 0xC0:
+        return QStringLiteral("H1");
+    case 0x10:
+    case 0x20:
+    case 0x30:
+        return QStringLiteral("H2");
+    case 0x08:
+        return QStringLiteral("T");
+    default:
+        return QStringLiteral("S%1")
+                .arg(sourceCode, 2, 16, QLatin1Char('0'))
+                .toUpper();
+    }
 }
 
 QString DeviceLogManager::warningTextForCode(int code) const
@@ -608,6 +900,26 @@ QString DeviceLogManager::warningTextForCode(int code) const
         const QString codeText = QString::number(code, 16).rightJustified(2, QLatin1Char('0')).toUpper();
         return QStringLiteral("Ошибка устройства (код 0x%1)").arg(codeText);
     }
+    }
+}
+
+QString DeviceLogManager::powerOffTextForCode(int code) const
+{
+    switch (code) {
+    case UartPowerOff:
+        return QStringLiteral("Выключение подтверждено по команде UART");
+    case ServicePowerOff:
+        return QStringLiteral("Выключение через сервисное меню");
+    case ServiceReboot:
+        return QStringLiteral("Перезагрузка через сервисное меню");
+    case PowerOffCancelled:
+        return QStringLiteral("Выключение отменено пользователем");
+    case PowerOffFailed:
+        return QStringLiteral("Не удалось запустить системную команду выключения");
+    case RebootFailed:
+        return QStringLiteral("Не удалось запустить системную команду перезагрузки");
+    default:
+        return QStringLiteral("Причина выключения: код %1").arg(code);
     }
 }
 

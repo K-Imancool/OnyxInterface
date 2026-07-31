@@ -141,7 +141,7 @@ private:
 	 */
 	void makeHandleConnections();
 	void initSocketsForPeriphery();
-	void logPowerOff(const QString &message);
+	void logPowerOff(quint8 reasonCode);
 
 	void initSockets();
 	void prepareConnectios();

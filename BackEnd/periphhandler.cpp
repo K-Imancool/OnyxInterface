@@ -357,11 +357,10 @@ void PeriphHandler::showWarningCode(quint8 warningCode)
         return;
     }
     const int code = static_cast<int>(warningCode);
-    bool changed = false;
+    const bool isNew = !m_activeWarningCodes.contains(code);
 
-    if (!m_activeWarningCodes.contains(code)) {
+    if (isNew) {
         m_activeWarningCodes.append(code);
-        changed = true;
     }
 
     QTimer *timer = m_warningTimers.value(code, nullptr);
@@ -373,20 +372,17 @@ void PeriphHandler::showWarningCode(quint8 warningCode)
         });
         m_warningTimers.insert(code, timer);
     }
+    // Продлеваем показ, пока ошибка повторяется, без лишних QML-перестроек.
     timer->start(5000);
 
-    if (m_activeWarningCodes.isEmpty()) {
-        m_activationStopWarningVisible = false;
-        m_activationStopWarningCode = -1;
-    } else {
-        m_activationStopWarningVisible = true;
-        m_activationStopWarningCode = m_activeWarningCodes.first();
+    if (!isNew) {
+        return;
     }
 
-    if (changed) {
-        recomputeEnableActivation();
-        emit activationStopWarningChanged();
-    }
+    m_activationStopWarningVisible = true;
+    m_activationStopWarningCode = m_activeWarningCodes.first();
+    recomputeEnableActivation();
+    emit activationStopWarningChanged();
 }
 
 void PeriphHandler::clearActivationStopWarning()

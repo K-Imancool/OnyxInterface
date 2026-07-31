@@ -920,6 +920,51 @@ InstrPtr SocketModel::getInstrumentById(int id) const
     return nullptr;
 }
 
+QString SocketModel::modeNameById(int id) const
+{
+    const QString idText = QString::number(id);
+    for (const auto &itemsMap : m_itemsMapVect) {
+        for (const auto &item : itemsMap) {
+            if (item.second.isNull()) {
+                continue;
+            }
+
+            for (const bool isCoag : {false, true}) {
+                const QStringList ids = isCoag
+                        ? item.second->coagModeNamesIds()
+                        : item.second->cutModeNamesIds();
+                const int index = ids.indexOf(idText);
+                if (index < 0) {
+                    continue;
+                }
+
+                const QStringList names = isCoag
+                        ? item.second->coagModeNames()
+                        : item.second->cutModeNames();
+                if (index < names.size()) {
+                    return names.at(index);
+                }
+            }
+        }
+    }
+    return {};
+}
+
+QString SocketModel::instrumentNameById(int id) const
+{
+    if (id <= 0 || id == 1000) {
+        return tr("Другой инструмент");
+    }
+
+    for (const auto &instruments : m_instrMapVect) {
+        const auto instrument = instruments.find(id);
+        if (instrument != instruments.cend() && !instrument->second.isNull()) {
+            return instrument->second->name();
+        }
+    }
+    return {};
+}
+
 void SocketModel::copyCurrentList()
 {
     if (m_subProgIdx < 0
@@ -965,7 +1010,12 @@ void SocketModel::slotRemoveSubProg()
 
 void SocketModel::startActivation(int socketId, bool isCut)
 {
-    QTimer::singleShot(0, this, [this, socketId, isCut]() {
+    const quint64 activationSequence = ++m_activationSequence;
+    QTimer::singleShot(0, this, [this, socketId, isCut, activationSequence]() {
+        if (activationSequence != m_activationSequence) {
+            return;
+        }
+
         expandSocket(socketId);
         // Сначала сбрасываем статус, чтобы QML увидел изменение при повторной активации
         Onyx::SocStatus newStatus = isCut ? Onyx::S_ACTIVE_CUT : Onyx::S_ACTIVE_COAG;
@@ -976,7 +1026,10 @@ void SocketModel::startActivation(int socketId, bool isCut)
                 if (iter->second->socketStatus() == newStatus) {
                     qmlSetData(socketId, Onyx::S_ENABLED, "socketstatus");
                     // Даём время QML обработать изменение
-                    QTimer::singleShot(10, this, [this, socketId, newStatus]() {
+                    QTimer::singleShot(10, this, [this, socketId, newStatus, activationSequence]() {
+                        if (activationSequence != m_activationSequence) {
+                            return;
+                        }
                         qmlSetData(socketId, newStatus, "socketstatus");
                     });
                 } else {
@@ -989,6 +1042,8 @@ void SocketModel::startActivation(int socketId, bool isCut)
 
 void SocketModel::stopActivation()
 {
+    ++m_activationSequence;
+
     if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return ;
     }
