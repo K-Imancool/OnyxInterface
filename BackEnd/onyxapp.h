@@ -16,6 +16,8 @@ public:
 	QSharedPointer<DataBaseReader> getDbReader();
 	/// Пользовательские Scopes / Progs / Lists (userProg.db).
 	QSharedPointer<DataBaseReader> getUserProgDbReader();
+	/// Ленивое создание читателей БД (до первого обращения можно не трогать диск).
+	void ensureDatabases();
 
 private:
 	QSharedPointer<DataBaseReader> m_dbReader;

@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import StratifyLabs.UI 2.0
+import QtQuick.Controls 2.15
 
 Rectangle {
     id: statusRoot
@@ -9,6 +9,7 @@ Rectangle {
     property alias text: mainText.text
     property alias versionText: appVersionText.text
     property bool saveHighlighted: false
+    property int saveButtonWidth: 100
     readonly property int sideSpacing: 12
     readonly property int leftOccupiedWidth: drawerButton.width + sideSpacing
     readonly property int rightOccupiedWidth: saveButton.width
@@ -25,19 +26,23 @@ Rectangle {
     }
     radius: 8
 
-    SButton {
+    Button {
         id: drawerButton
+        flat: true
         height: Math.round(parent.height * 1.30)
         width: height
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        iconString: Fa.Icon.bars
-        style: "btn-naked lg"
         scale: 1.12
-
-        onClicked: {
-            statusRoot.drawerCalled()
+        contentItem: Text {
+            text: "☰"
+            font.pixelSize: Math.round(drawerButton.height * 0.45)
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            color: "#111111"
         }
+        background: Item {}
+        onClicked: statusRoot.drawerCalled()
     }
     Flickable {
         id: titleViewport
@@ -107,7 +112,7 @@ Rectangle {
         }
     }
 
-    SText {
+    Text {
         id: mainTextMeasure
         visible: false
         text: mainText.text
@@ -131,7 +136,7 @@ Rectangle {
                         ? statusRoot.titleCompactFontSize
                         : statusRoot.titleLargeFontSize
     }
-    SText {
+    Text {
         id: appVersionText
         height: parent.height
         width: visible ? Math.min(implicitWidth, statusRoot.width * 0.25) : 0
@@ -142,19 +147,22 @@ Rectangle {
         text: ""
         visible: text !== ""
     }
-    SButton {
+    Button {
         id: saveButton
+        flat: true
         height: Math.round(parent.height * 1.50)
-        width: container.pedalPanelWidth
+        width: statusRoot.saveButtonWidth
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        iconString: Fa.Icon.save
-        style: "btn-naked lg"
         scale: 1.12
-
-        onClicked: {
-            statusRoot.saveCalled()
+        contentItem: Text {
+            text: "💾"
+            font.pixelSize: Math.round(saveButton.height * 0.4)
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
+        background: Item {}
+        onClicked: statusRoot.saveCalled()
 
         Rectangle {
             anchors.fill: parent

@@ -100,10 +100,8 @@ void ControlCenter::init()
 	m_progLoader->setSocketModelPtr(m_socketModel);
 	m_saveTimer->setSingleShot(true);
 	m_saveTimer->setInterval(2000);  // 2 секунды
-	m_socketModel->blockSignals(true);
 	prepareConnectios();
-	initSockets();
-	m_socketModel->blockSignals(false);
+	// initSockets() — после setJsonStorage / setFeatureUnlockController (один раз)
 }
 
 void ControlCenter::makeHandleConnections()
@@ -233,8 +231,10 @@ QPointer<SocketModeEditor> ControlCenter::getModeEditor() const
 
 void ControlCenter::initSockets()
 {
+	m_socketModel->blockSignals(true);
 	if (!m_progLoader->loadCurrentState())
 		m_progLoader->defaultSocketInit();
+	m_socketModel->blockSignals(false);
 
 	// m_handle->setScopeNameList(m_progLoader->getCategories());
 }

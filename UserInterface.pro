@@ -25,6 +25,7 @@ HEADERS += \
 
 RESOURCES += qml.qrc
 
+
 TRANSLATIONS += \
     translations/UserInterface_en.ts \
     translations/UserInterface_es.ts

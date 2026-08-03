@@ -35,6 +35,12 @@ Rectangle {
         mediaPlayer.shutdown()
     }
 
+    // Перехват касаний в пустых зонах оверлея, иначе они проходят
+    // сквозь Rectangle к кнопкам MainMenu под Loader.
+    MouseArea {
+        anchors.fill: parent
+    }
+
     function loadVideoFiles() {
         videoFiles = mediaPlayer.scanVideoFiles(videoFolder)
         currentVideoIndex = -1

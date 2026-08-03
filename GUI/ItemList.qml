@@ -3,8 +3,6 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
 
-import StratifyLabs.UI 2.0
-
 Rectangle {
 	id: itemList
 	property alias innerModel: theView.model
@@ -373,13 +371,22 @@ Rectangle {
 						margins: 10
 					}
 
-					SButton {
+					Button {
 						id: directEditButton
-						style: "btn-naked"
+						flat: true
 						visible: itemList.alwaysShowEditActions
 						anchors.fill: parent
 						anchors.margins: 5
-						iconString: Fa.Icon.pencil_square_o;
+						implicitWidth: 1
+						implicitHeight: 1
+						contentItem: Text {
+							text: "✎"
+							font.pixelSize: Math.round(itemList.itemFontPixelSize * 1.4)
+							horizontalAlignment: Text.AlignHCenter
+							verticalAlignment: Text.AlignVCenter
+							color: "#264093"
+						}
+						background: Item {}
 						onClicked: {
 							nameDialog.editingIndex = index
 							nameDialog.initialName = (model.itemName !== undefined && model.itemName !== null)
@@ -388,13 +395,22 @@ Rectangle {
 						}
 					}
 
-					SButton {
+					Button {
 						id: engageEditButton
-						style: "btn-naked"
+						flat: true
 						visible: !itemList.alwaysShowEditActions && !itemEditRect.actionsVisible
 						anchors.fill: parent
 						anchors.margins: 5
-						iconString: Fa.Icon.chevron_left;
+						implicitWidth: 1
+						implicitHeight: 1
+						contentItem: Text {
+							text: "‹"
+							font.pixelSize: Math.round(itemList.itemFontPixelSize * 1.8)
+							horizontalAlignment: Text.AlignHCenter
+							verticalAlignment: Text.AlignVCenter
+							color: "#264093"
+						}
+						background: Item {}
 						onClicked: {
 							itemEditRect.engaged = true;
 						}
@@ -409,24 +425,39 @@ Rectangle {
 							anchors.fill: parent
 							spacing: 5
 							anchors.margins: 0
-							SButton {
+							Button {
 								id: deleteButton
-								style: "btn-naked"
+								flat: true
 								Layout.fillHeight: true
 								Layout.fillWidth: true
-								iconString: Fa.Icon.trash;
-								text: "";
+								implicitWidth: 1
+								implicitHeight: 1
+								contentItem: Text {
+									text: "🗑"
+									font.pixelSize: Math.round(itemList.itemFontPixelSize * 1.3)
+									horizontalAlignment: Text.AlignHCenter
+									verticalAlignment: Text.AlignVCenter
+								}
+								background: Item {}
 								onClicked: {
 									deleteItem(index)
 								}
 							}
-							SButton {
+							Button {
 								id: renameButton
-								style: "btn-naked"
+								flat: true
 								Layout.fillHeight: true
 								Layout.fillWidth: true
-								iconString: Fa.Icon.pencil_square_o;
-								text: "";
+								implicitWidth: 1
+								implicitHeight: 1
+								contentItem: Text {
+									text: "✎"
+									font.pixelSize: Math.round(itemList.itemFontPixelSize * 1.3)
+									horizontalAlignment: Text.AlignHCenter
+									verticalAlignment: Text.AlignVCenter
+									color: "#264093"
+								}
+								background: Item {}
 								onClicked: {
 									nameDialog.editingIndex = index
 									nameDialog.initialName = (model.itemName !== undefined && model.itemName !== null)
@@ -434,13 +465,21 @@ Rectangle {
 									nameDialog.open()
 								}
 							}
-							SButton {
+							Button {
 								id: cancelButton
-								style: "btn-naked"
+								flat: true
 								Layout.fillHeight: true
 								Layout.fillWidth: true
-								iconString: Fa.Icon.chevron_right;
-								text: "";
+								implicitWidth: 1
+								implicitHeight: 1
+								contentItem: Text {
+									text: "›"
+									font.pixelSize: Math.round(itemList.itemFontPixelSize * 1.8)
+									horizontalAlignment: Text.AlignHCenter
+									verticalAlignment: Text.AlignVCenter
+									color: "#264093"
+								}
+								background: Item {}
 								onClicked: {
 									itemEditRect.engaged = false;
 								}

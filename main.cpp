@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQuickWindow>
 
 #include "SettingsScreen/wifimodule/NetworkDiscover.h"
 #include "SettingsScreen/updatemodule/updateclient.h"
@@ -14,7 +15,6 @@
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
-#include <QLoggingCategory>
 #include <QResource>
 #include <QSaveFile>
 #include <QScopedPointer>
@@ -22,6 +22,7 @@
 #include <QTextStream>
 #include <QThread>
 #include <QProcess>
+#include <functional>
 #include "BackEnd/loggingcategories.h"
 #include "BackEnd/linkstm.h"
 #include "BackEnd/jsonstorage.h"
@@ -38,8 +39,6 @@
 
 #include <gst/gst.h>
 
-#include <cstdlib>
-
 // Умный указатель на файл логирования
 QScopedPointer<QFile>   m_logFile;
 
@@ -51,6 +50,42 @@ JsonStorage* m_savedJson;
 
 // Объявляение обработчика для логов
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+namespace {
+
+bool g_deferredStartupDone = false;
+
+void runAfterFirstFrame(QObject *rootObject, const std::function<void()> &onFirstFrame)
+{
+    auto *window = qobject_cast<QQuickWindow *>(rootObject);
+    if (!window) {
+        window = rootObject ? rootObject->findChild<QQuickWindow *>() : nullptr;
+    }
+    if (!window) {
+        if (onFirstFrame) {
+            onFirstFrame();
+        }
+        return;
+    }
+
+    QObject::connect(
+                window,
+                &QQuickWindow::frameSwapped,
+                QCoreApplication::instance(),
+                [onFirstFrame]() {
+                    if (g_deferredStartupDone) {
+                        return;
+                    }
+                    g_deferredStartupDone = true;
+                    if (onFirstFrame) {
+                        onFirstFrame();
+                    }
+                },
+                // threaded scene graph: frameSwapped может быть не из GUI-потока
+                Qt::QueuedConnection);
+}
+
+} // namespace
 
 QString extractBundledQmlGlPlugin()
 {
@@ -144,7 +179,7 @@ int main(int argc, char *argv[])
     ///Добавляем модуль клавиатуры
     qputenv("QT_IM_MODULE", QByteArray("cutekeyboard"));
     ///Отключаем курсор мыши на embedded-системе
-    // qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
+    qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
     
     // Оптимизация производительности QML
     qputenv("QSG_RENDER_LOOP", "threaded");
@@ -156,6 +191,10 @@ int main(int argc, char *argv[])
     qputenv("QT_LOGGING_RULES", "qt.qpa.input=false");
 
     Q_INIT_RESOURCE(backend);
+    AppPaths::initializeFromArgs(argc, argv);
+
+    // GStreamer / qmlglsink — после firstFrame (видео на стартовом меню не нужно).
+    // Плагин извлекаем заранее: дёшево и нужно для GST_PLUGIN_PATH до gst_init.
     const QString bundledQmlGlPath = extractBundledQmlGlPlugin();
     if (!bundledQmlGlPath.isEmpty()) {
         QByteArray pluginPath = QFileInfo(bundledQmlGlPath)
@@ -172,89 +211,11 @@ int main(int argc, char *argv[])
                 .toLocal8Bit());
     }
 
-    AppPaths::initializeFromArgs(argc, argv);
-
-    GError *gstError = nullptr;
-    if (!gst_init_check(&argc, &argv, &gstError)) {
-        qCritical() << "GStreamer initialization failed:"
-                    << (gstError ? gstError->message : "unknown error");
-        if (gstError) {
-            g_error_free(gstError);
-        }
-        return EXIT_FAILURE;
-    }
-
     OnyxApp app(argc, argv);
     QCoreApplication::setApplicationVersion(kOnyxAppVersion);
 
     // Устанавливаем кастомный обработчик для вывода только имени файла (без пути)
     qInstallMessageHandler(messageHandler);
-
-    // Системный qmlglsink может быть собран против несовместимого системного Qt.
-    // Сначала пробуем плагин, собранный против Qt приложения и установленный рядом.
-    if (!bundledQmlGlPath.isEmpty()) {
-        GError *pluginError = nullptr;
-        GstPlugin *plugin = gst_plugin_load_file(
-                    bundledQmlGlPath.toLocal8Bit().constData(), &pluginError);
-        if (plugin) {
-            gst_object_unref(plugin);
-        } else {
-            qWarning() << "Bundled qmlglsink failed to load:"
-                       << (pluginError ? pluginError->message : "unknown error");
-        }
-        if (pluginError) {
-            g_error_free(pluginError);
-        }
-    }
-
-    // Загрузка qmlglsink регистрирует GstGLVideoItem до разбора QML.
-    GstElement *qmlGlSinkProbe =
-            gst_element_factory_make("qmlglsink", "qml-registration-probe");
-    bool qmlGlAvailable = false;
-    if (qmlGlSinkProbe) {
-        GstElementFactory *factory = gst_element_get_factory(qmlGlSinkProbe);
-        GstPlugin *plugin = factory
-                ? gst_plugin_feature_get_plugin(GST_PLUGIN_FEATURE(factory))
-                : nullptr;
-        const QString loadedPluginPath = plugin && gst_plugin_get_filename(plugin)
-                ? QFileInfo(QString::fromLocal8Bit(
-                                gst_plugin_get_filename(plugin)))
-                  .canonicalFilePath()
-                : QString();
-        qmlGlAvailable = !bundledQmlGlPath.isEmpty()
-                && loadedPluginPath
-                == QFileInfo(bundledQmlGlPath).canonicalFilePath();
-
-        if (qmlGlAvailable) {
-            qInfo() << "Using bundled qmlglsink:" << loadedPluginPath;
-        } else {
-            qWarning() << "Refusing incompatible qmlglsink:"
-                       << loadedPluginPath;
-        }
-
-        if (plugin) {
-            gst_object_unref(plugin);
-        }
-        gst_object_unref(qmlGlSinkProbe);
-    }
-    if (!qmlGlAvailable) {
-        qWarning() << "GStreamer qmlglsink plugin is unavailable;"
-                      " video player is disabled";
-    }
-
-    // Включаем QML debugger для удаленной отладки
-    // Использование: приложение -qmljsdebugger=port:3768,block
-    // Или через переменную окружения: QT_QML_DEBUG=1
-    // Для удаленной отладки: -qmljsdebugger=port:3768,host:IP_АДРЕС_ХОСТА
-    // Для локальной отладки: -qmljsdebugger=port:3768,block
-    // Для отладки без блокировки: -qmljsdebugger=port:3768
-
-    // Устанавливаем файл логирования,
-    // m_logFile.reset(new QFile(AppPaths::instance().onyxLogDir() + "/logFile.txt"));
-    // Открываем файл логирования
-    // m_logFile.data()->open(QFile::Append | QFile::Text);
-    // Устанавливаем обработчик
-    // qInstallMessageHandler(messageHandler);
 
     NetworkControl::registerNetworkControl();
     UpdateClient::registerUpdateClient();
@@ -264,10 +225,7 @@ int main(int argc, char *argv[])
 
     QSharedPointer<ControlCenter> ctrl  = QSharedPointer<ControlCenter>::create(nullptr);
 
-    // Создаём монитор системы
     SystemMonitor *sysMonitor = new SystemMonitor();
-    
-    // Создаём генератор секретных ключей
     KeyGenerator *keyGen = new KeyGenerator();
 
     auto *featureUnlock = new FeatureUnlockController(&app);
@@ -277,8 +235,9 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     auto *translationController = new TranslationController(&engine, &app);
+    // До deferred gst_init кнопка видео будет disabled; обновим после firstFrame.
     engine.rootContext()->setContextProperty(
-                QStringLiteral("qmlGlAvailable"), qmlGlAvailable);
+                QStringLiteral("qmlGlAvailable"), false);
     engine.rootContext()->setContextProperty("theModel", ctrl->getSocketModel());
     engine.rootContext()->setContextProperty("Editor", ctrl->getModeEditor());
     engine.rootContext()->setContextProperty("recomHandle", ctrl->getHandle());
@@ -307,9 +266,10 @@ int main(int argc, char *argv[])
     initMap->insert("httpUploadTrustProxyHeaders", "0");
     initMap->insert("volume", 7);
     m_savedJson = new JsonStorage(nullptr, initMap);
-    ctrl->setJsonStorage(m_savedJson);
     featureUnlock->setJsonStorage(m_savedJson);
+    // FeatureUnlock до initSockets — фильтр режимов учитывается с первого раза
     ctrl->setFeatureUnlockController(featureUnlock);
+    ctrl->setJsonStorage(m_savedJson);
     engine.rootContext()->setContextProperty("savedJson", m_savedJson);
     engine.rootContext()->setContextProperty("featureUnlock", featureUnlock);
 
@@ -320,26 +280,15 @@ int main(int argc, char *argv[])
 
     auto *deviceLog = new DeviceLogManager(m_savedJson, ctrl->getSocketModel(), &app);
     engine.rootContext()->setContextProperty(QStringLiteral("deviceLog"), deviceLog);
-    deviceLog->beginSession();
+    // beginSession — после firstFrame (запись на диск не блокирует меню)
 
-    auto *updateLog = new UpdateLogManager(&app);
-    engine.rootContext()->setContextProperty(QStringLiteral("updateLog"), updateLog);
-
-    auto *globalRemoteUpdater = new RemoteUpdater(&app);
-    globalRemoteUpdater->setSerialNumber(m_savedJson->readString(QStringLiteral("serialNumber")));
-    const QString savedApiUrl = m_savedJson->readString(QStringLiteral("uiUpdaterApiBaseUrl"));
-    if (!savedApiUrl.isEmpty()) {
-        globalRemoteUpdater->setApiBaseUrl(savedApiUrl);
-    }
-    const QString savedTunnelHost = m_savedJson->readString(QStringLiteral("uiUpdaterTunnelHost"));
-    if (!savedTunnelHost.isEmpty()) {
-        globalRemoteUpdater->setTunnelUserHost(savedTunnelHost);
-    }
-    engine.rootContext()->setContextProperty(QStringLiteral("remoteUpdater"), globalRemoteUpdater);
-
-    auto *httpUpload = new HttpUploadController(&app);
-    httpUpload->setJsonStorage(m_savedJson);
-    engine.rootContext()->setContextProperty(QStringLiteral("httpUpload"), httpUpload);
+    // Тяжёлые сервисы сервиса/обновлений — создаём после firstFrame
+    engine.rootContext()->setContextProperty(
+                QStringLiteral("updateLog"), static_cast<QObject *>(nullptr));
+    engine.rootContext()->setContextProperty(
+                QStringLiteral("remoteUpdater"), static_cast<QObject *>(nullptr));
+    engine.rootContext()->setContextProperty(
+                QStringLiteral("httpUpload"), static_cast<QObject *>(nullptr));
 
     auto *mcFirmware = new McFirmwareVersionsBridge(&app);
     engine.rootContext()->setContextProperty(QStringLiteral("mcFirmware"), mcFirmware);
@@ -349,16 +298,125 @@ int main(int argc, char *argv[])
     engine.addImageProvider(QLatin1String("modes"), new InstrImageProvider);
     engine.addImageProvider(QLatin1String("scopes"), new InstrImageProvider);
 
+    HttpUploadController *httpUpload = nullptr;
+    RemoteUpdater *globalRemoteUpdater = nullptr;
+    UpdateLogManager *updateLog = nullptr;
+
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreated,
         &app,
-        [url](QObject *obj, const QUrl &objUrl) {
-            if (!obj && url == objUrl)
+        [url, &engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, m_savedJson = m_savedJson](QObject *obj, const QUrl &objUrl) {
+            if (url != objUrl) {
+                return;
+            }
+            if (!obj) {
                 QCoreApplication::exit(-1);
+                return;
+            }
+            runAfterFirstFrame(obj, [&engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, m_savedJson]() {
+                // Отложенный GStreamer
+                GError *gstError = nullptr;
+                if (!gst_init_check(nullptr, nullptr, &gstError)) {
+                    qWarning() << "GStreamer initialization failed:"
+                               << (gstError ? gstError->message : "unknown error");
+                    if (gstError) {
+                        g_error_free(gstError);
+                    }
+                    engine.rootContext()->setContextProperty(
+                                QStringLiteral("qmlGlAvailable"), false);
+                } else {
+                    if (!bundledQmlGlPath.isEmpty()) {
+                        GError *pluginError = nullptr;
+                        GstPlugin *plugin = gst_plugin_load_file(
+                                    bundledQmlGlPath.toLocal8Bit().constData(), &pluginError);
+                        if (plugin) {
+                            gst_object_unref(plugin);
+                        } else {
+                            qWarning() << "Bundled qmlglsink failed to load:"
+                                       << (pluginError ? pluginError->message : "unknown error");
+                        }
+                        if (pluginError) {
+                            g_error_free(pluginError);
+                        }
+                    }
+
+                    GstElement *qmlGlSinkProbe =
+                            gst_element_factory_make("qmlglsink", "qml-registration-probe");
+                    bool qmlGlAvailable = false;
+                    if (qmlGlSinkProbe) {
+                        GstElementFactory *factory = gst_element_get_factory(qmlGlSinkProbe);
+                        GstPlugin *plugin = factory
+                                ? gst_plugin_feature_get_plugin(GST_PLUGIN_FEATURE(factory))
+                                : nullptr;
+                        const QString loadedPluginPath = plugin && gst_plugin_get_filename(plugin)
+                                ? QFileInfo(QString::fromLocal8Bit(
+                                                gst_plugin_get_filename(plugin)))
+                                  .canonicalFilePath()
+                                : QString();
+                        qmlGlAvailable = !bundledQmlGlPath.isEmpty()
+                                && loadedPluginPath
+                                == QFileInfo(bundledQmlGlPath).canonicalFilePath();
+
+                        if (qmlGlAvailable) {
+                            qInfo() << "Using bundled qmlglsink:" << loadedPluginPath;
+                        } else {
+                            qWarning() << "Refusing incompatible qmlglsink:"
+                                       << loadedPluginPath;
+                        }
+
+                        if (plugin) {
+                            gst_object_unref(plugin);
+                        }
+                        gst_object_unref(qmlGlSinkProbe);
+                    }
+                    if (!qmlGlAvailable) {
+                        qWarning() << "GStreamer qmlglsink plugin is unavailable;"
+                                      " video player is disabled";
+                    }
+                    engine.rootContext()->setContextProperty(
+                                QStringLiteral("qmlGlAvailable"), qmlGlAvailable);
+                }
+
+                // Лог сессии и сервисные контроллеры
+                deviceLog->beginSession();
+
+                updateLog = new UpdateLogManager(&app);
+                engine.rootContext()->setContextProperty(QStringLiteral("updateLog"), updateLog);
+
+                globalRemoteUpdater = new RemoteUpdater(&app);
+                globalRemoteUpdater->setSerialNumber(
+                            m_savedJson->readString(QStringLiteral("serialNumber")));
+                const QString savedApiUrl =
+                        m_savedJson->readString(QStringLiteral("uiUpdaterApiBaseUrl"));
+                if (!savedApiUrl.isEmpty()) {
+                    globalRemoteUpdater->setApiBaseUrl(savedApiUrl);
+                }
+                const QString savedTunnelHost =
+                        m_savedJson->readString(QStringLiteral("uiUpdaterTunnelHost"));
+                if (!savedTunnelHost.isEmpty()) {
+                    globalRemoteUpdater->setTunnelUserHost(savedTunnelHost);
+                }
+                engine.rootContext()->setContextProperty(
+                            QStringLiteral("remoteUpdater"), globalRemoteUpdater);
+
+                httpUpload = new HttpUploadController(&app);
+                httpUpload->setJsonStorage(m_savedJson);
+                engine.rootContext()->setContextProperty(QStringLiteral("httpUpload"), httpUpload);
+
+                if (m_linkStm) {
+                    httpUpload->setLinkStm(m_linkStm);
+                    QObject::connect(m_linkStm, &LinkStm::firmwareUpdateParseError,
+                                     httpUpload, &HttpUploadController::onMcFirmwareParseError,
+                                     Qt::QueuedConnection);
+                    QObject::connect(m_linkStm, &LinkStm::sigUpdateProgress,
+                                     httpUpload, &HttpUploadController::setMcFirmwareUpdateProgress,
+                                     Qt::QueuedConnection);
+                }
+            });
         },
-        Qt::QueuedConnection);
+        Qt::DirectConnection);
     //этот вызов для загрузки элемента pullToRefresshHandler
     engine.addImportPath("qrc:/");
     // Добавляем пути для поиска QML модулей на удалённой машине - c чего вдруг мы используем дефолтные qt?!
@@ -380,11 +438,6 @@ int main(int argc, char *argv[])
                      Qt::QueuedConnection);
     m_linkStm->publishFirmwareVersions();
 
-    httpUpload->setLinkStm(m_linkStm);
-    QObject::connect(m_linkStm, &LinkStm::firmwareUpdateParseError,
-                     httpUpload, &HttpUploadController::onMcFirmwareParseError, Qt::QueuedConnection);
-    QObject::connect(m_linkStm, &LinkStm::sigUpdateProgress,
-                     httpUpload, &HttpUploadController::setMcFirmwareUpdateProgress, Qt::QueuedConnection);
     QObject::connect(m_linkStm, &LinkStm::sigActivationStartedDetails,
                      deviceLog, &DeviceLogManager::onActivationStarted, Qt::QueuedConnection);
     QObject::connect(m_linkStm, &LinkStm::sigStopActivation,
@@ -422,7 +475,6 @@ int main(int argc, char *argv[])
     ctrl->setLinkStm(m_linkStm);
     ctrl->setVolumeLevel(m_savedJson->readInt(QStringLiteral("volume"), 7));
 
-    qDebug() << "Start";
 
     return app.exec();
 }

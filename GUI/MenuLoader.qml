@@ -126,7 +126,9 @@ Item {
         Loader {
             id: menuLoader
             anchors.fill: parent
-            source: "qrc:/MainMenu.qml"
+            // Пусто по умолчанию: MainMenu задаёт вызывающий код (startup / drawer).
+            // Иначе WorkScreen при создании снова тянет тяжёлое меню.
+            source: ""
 
             onItemChanged: {
             // Отключаем все предыдущие подключения

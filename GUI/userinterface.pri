@@ -43,7 +43,8 @@ DISTFILES += \
     $$PWD/SocketContainerV2.qml \
     $$PWD/StartupInfoScreen.qml \
     $$PWD/StatusBar.qml \
-    $$PWD/VideoPlayer.qml
+    $$PWD/VideoPlayer.qml \
+    $$PWD/WorkScreen.qml
 
 HEADERS +=
 
