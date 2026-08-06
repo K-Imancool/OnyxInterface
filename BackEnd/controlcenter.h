@@ -17,6 +17,7 @@
 class DeviceLogManager;
 class FeatureUnlockController;
 class JsonStorage;
+class UiClickSound;
 
 /**
  * @brief Управляющий класс бэкэнда, осуществляющий
@@ -76,6 +77,7 @@ public:
 	void setLinkStm(LinkStm* linkStm);
 	void setDeviceLogManager(DeviceLogManager *deviceLog);
 	void setJsonStorage(JsonStorage *jsonStorage);
+	void setUiClickSound(UiClickSound *clickSound);
 	void setFeatureUnlockController(class FeatureUnlockController *controller);
 
 	QPointer<PeriphHandler> getPeripheryHandle() const;
@@ -129,6 +131,8 @@ private:
 	FeatureUnlockController *m_featureUnlock = nullptr;
 	QPointer<LinkStm> m_linkStm;
 	DeviceLogManager *m_deviceLog = nullptr;
+	UiClickSound *m_uiClickSound = nullptr;
+    bool m_systemMixerAtFull = false;
     int m_autoDelay = 0; // Задержка автозапуска в мс (runtime)
     bool m_powerOffConfirmationActive = false;
     bool m_powerOffRequested = false;
@@ -155,6 +159,7 @@ private:
 
 	void initSockets();
 	void prepareConnectios();
+	void ensureFullSystemMixerVolume();
 
 	// void uartChat(LinkStm::UartRx* rxData);
 	// void uartError(quint8 errorState);

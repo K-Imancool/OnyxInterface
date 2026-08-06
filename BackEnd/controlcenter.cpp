@@ -2,12 +2,14 @@
 #include "DeviceLogManager.h"
 #include "featureunlockcontroller.h"
 #include "proghandle.h"
+#include "uiclicksound.h"
 
 #include <QProcess>
 #include <algorithm>
 // #include <iostream>
 #include <vector>
 
+#include <QAudio>
 #include <QQmlEngine>
 #include <QString>
 #include <QTimer>
@@ -284,6 +286,11 @@ void ControlCenter::setJsonStorage(JsonStorage *jsonStorage)
 
 	m_progLoader->setJsonStorage(jsonStorage);
 	initSockets();
+}
+
+void ControlCenter::setUiClickSound(UiClickSound *clickSound)
+{
+	m_uiClickSound = clickSound;
 }
 
 void ControlCenter::setFeatureUnlockController(FeatureUnlockController *controller)
@@ -639,11 +646,63 @@ void ControlCenter::setNeutralResistPollEnabled(bool enabled)
 
 void ControlCenter::setVolumeLevel(int level)
 {
-    if (m_linkStm.isNull()) {
+    // Legacy 1..7 → 0..3 (как в SettingsMenu).
+    int clamped = level;
+    if (clamped > 3) {
+        clamped = qBound(0, qRound((clamped - 1) * 3.0 / 6.0), 3);
+    } else {
+        clamped = qBound(0, clamped, 3);
+    }
+
+    // Клики: UI-проценты 10%…60% по шкале sink (кубической, как pactl),
+    // в линейный множитель QSoundEffect.
+    constexpr int kMinVol = 15;
+    constexpr int kMaxVol = 60;
+    const int percent = kMinVol + clamped * (kMaxVol - kMinVol) / 3;
+    if (m_uiClickSound) {
+        const qreal linear = QAudio::convertVolume(
+                    percent / 100.0,
+                    QAudio::CubicVolumeScale,
+                    QAudio::LinearVolumeScale);
+        m_uiClickSound->setVolume(linear);
+    }
+
+    // Sink на 100% один раз — видео не режется настройкой кликов.
+    ensureFullSystemMixerVolume();
+
+    if (!m_linkStm.isNull()) {
+        QMetaObject::invokeMethod(m_linkStm.data(), "setVolume", Qt::QueuedConnection,
+                                  Q_ARG(int, clamped));
+    }
+}
+
+void ControlCenter::ensureFullSystemMixerVolume()
+{
+    if (m_systemMixerAtFull) {
         return;
     }
-    QMetaObject::invokeMethod(m_linkStm.data(), "setVolume", Qt::QueuedConnection,
-                              Q_ARG(int, level));
+
+    QProcess pactlProcess;
+    pactlProcess.start(QStringLiteral("pactl"),
+                       {QStringLiteral("set-sink-volume"),
+                        QStringLiteral("@DEFAULT_SINK@"),
+                        QStringLiteral("100%")});
+    if (pactlProcess.waitForStarted(1000) && pactlProcess.waitForFinished(2000)
+            && pactlProcess.exitStatus() == QProcess::NormalExit
+            && pactlProcess.exitCode() == 0) {
+        m_systemMixerAtFull = true;
+        return;
+    }
+
+    QProcess amixerProcess;
+    amixerProcess.start(QStringLiteral("amixer"),
+                        {QStringLiteral("sset"),
+                         QStringLiteral("Master"),
+                         QStringLiteral("100%")});
+    amixerProcess.waitForStarted(1000);
+    amixerProcess.waitForFinished(2000);
+    m_systemMixerAtFull = (amixerProcess.exitStatus() == QProcess::NormalExit
+                           && amixerProcess.exitCode() == 0);
 }
 
 void ControlCenter::setLedOutput(int out, int color)

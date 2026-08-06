@@ -35,6 +35,46 @@ Item {
 
     function closeVideoPlayer() {
         videoPlayerVisible = false
+        videoClickGuard.stop()
+        restoreClickSoundPreference()
+    }
+
+    function clickSoundPreferred() {
+        if (typeof savedJson === "undefined" || !savedJson) {
+            return true
+        }
+        return savedJson.readInt("clickSound", 1) !== 0
+    }
+
+    function restoreClickSoundPreference() {
+        if (typeof uiClickSound !== "undefined" && uiClickSound) {
+            uiClickSound.enabled = clickSoundPreferred()
+        }
+    }
+
+    function openVideoPlayer() {
+        // Клик уже сыграл; не даём GStreamer перехватить ALSA на том же нажатии.
+        if (typeof uiClickSound !== "undefined" && uiClickSound) {
+            uiClickSound.enabled = false
+        }
+        videoOpenDelay.restart()
+    }
+
+    Timer {
+        id: videoOpenDelay
+        interval: 120
+        repeat: false
+        onTriggered: {
+            settingsScreen.videoPlayerVisible = true
+            videoClickGuard.restart()
+        }
+    }
+
+    Timer {
+        id: videoClickGuard
+        interval: 350
+        repeat: false
+        onTriggered: settingsScreen.restoreClickSoundPreference()
     }
 
     Rectangle {
@@ -136,7 +176,7 @@ Item {
         labelPixelSize: 26
         cornerRadius: 20
         enabled: qmlGlAvailable
-        onPressed: settingsScreen.videoPlayerVisible = true
+        onPressed: settingsScreen.openVideoPlayer()
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom

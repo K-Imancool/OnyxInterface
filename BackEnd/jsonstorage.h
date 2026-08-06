@@ -27,8 +27,6 @@ public:
 signals:
 
 private:
-    void applyVolume(int level);
-
     QJsonDocument m_document;
     QJsonObject m_object;
 

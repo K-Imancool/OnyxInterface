@@ -27,6 +27,7 @@ class AppPaths : public QObject
     Q_PROPERTY(QString modesDir READ modesDir CONSTANT)
     Q_PROPERTY(QString scopesDir READ scopesDir CONSTANT)
     Q_PROPERTY(QString videoDir READ videoDir CONSTANT)
+    Q_PROPERTY(QString soundsDir READ soundsDir CONSTANT)
     Q_PROPERTY(QString downloadDir READ downloadDir CONSTANT)
     Q_PROPERTY(QString eshfDbPath READ eshfDbPath CONSTANT)
     Q_PROPERTY(QString userProgDbPath READ userProgDbPath CONSTANT)
@@ -63,6 +64,7 @@ public:
     QString modesDir() const;
     QString scopesDir() const;
     QString videoDir() const;
+    QString soundsDir() const;
     QString downloadDir() const;
 
     QString eshfDbPath() const;

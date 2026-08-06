@@ -44,15 +44,9 @@ public:
         ArgonBlow = 0x6C,               // Продувка газового тракта
         ReadyToPowerOff = 0x6F,         // Команда на выключение питания
 
-        SignalAlarm = 0x80,             // Выдача звукового сигнала (аварии)
-        Volume1 = 0x81,                 // Громкость, уровень 1
-        Volume2 = 0x82,
-        Volume3 = 0x83,
-        Volume4 = 0x84,
-        Volume5 = 0x85,
-        Volume6 = 0x86,
-        Volume7 = 0x87,                 // Громкость, уровень 7
+        Sound = 0x64,                   // Звук; data[0]=0x01 — громкость, data[1]=уровень 0..3
 
+        SignalAlarm = 0x80,             // Выдача звукового сигнала (аварии)
         CurrentVersion = 0xE0,          // Запрос версий ПО
         Erase = 0xE1,                   // Стереть память под прошивку
         StartUpdate = 0xE2,             // Начало передачи ПО

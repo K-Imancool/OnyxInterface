@@ -91,6 +91,9 @@ Rectangle {
     }
 
     function closePlayer() {
+        if (typeof uiClickSound !== "undefined" && uiClickSound) {
+            uiClickSound.stop()
+        }
         mediaPlayer.shutdown()
         showLoadingOnPlay = false
         closeRequested()
@@ -651,7 +654,7 @@ Rectangle {
 //                         ? "btn-outline-light" : "btn-danger"
                 font.family: "DejaVu Sans"
                 opacity: videoPlayerRoot.fullScreen ? 0.2 : 1.0
-                onClicked: {
+                onPressed: {
                     if (videoPlayerRoot.fullScreen) {
                         videoPlayerRoot.fullScreen = false
                     } else {

@@ -152,6 +152,11 @@ QString AppPaths::videoDir() const
     return m_fotekRoot + QStringLiteral("/Video");
 }
 
+QString AppPaths::soundsDir() const
+{
+    return m_fotekRoot + QStringLiteral("/sounds");
+}
+
 QString AppPaths::downloadDir() const
 {
     return m_fotekRoot + QStringLiteral("/TestFolder/RECIEVE");

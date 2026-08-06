@@ -9,7 +9,8 @@ Item {
     signal additionalSettingsButtonPressed()
     signal infoButtonPressed()
 
-    property int volumeLevel: 7
+    property int volumeLevel: 3
+    property bool clickSoundEnabled: true
 
     property color fotekBlue: "#264093"
     property color fotekOrange: "#faa731"
@@ -25,19 +26,45 @@ Item {
 
     function readVolumeLevel() {
         if (typeof savedJson === "undefined" || !savedJson) {
-            return 7
+            return 3
         }
-        return savedJson.readInt("volume", 7)
+        var raw = savedJson.readInt("volume", 3)
+        if (raw > 3) {
+            raw = Math.round((raw - 1) * 3 / 6)
+        }
+        return Math.max(0, Math.min(3, raw))
+    }
+
+    function applyVolumeLevel(level) {
+        var clamped = Math.max(0, Math.min(3, Math.round(level)))
+        volumeLevel = clamped
+        if (typeof appControl !== "undefined" && appControl) {
+            appControl.setVolumeLevel(clamped)
+        }
+        return clamped
     }
 
     function saveVolumeLevel(level) {
-        var clamped = Math.max(1, Math.min(7, Math.round(level)))
-        volumeLevel = clamped
+        var clamped = applyVolumeLevel(level)
         if (typeof savedJson !== "undefined" && savedJson) {
             savedJson.saveInt("volume", clamped)
         }
-        if (typeof appControl !== "undefined" && appControl) {
-            appControl.setVolumeLevel(clamped)
+    }
+
+    function readClickSoundEnabled() {
+        if (typeof savedJson === "undefined" || !savedJson) {
+            return true
+        }
+        return savedJson.readInt("clickSound", 1) !== 0
+    }
+
+    function saveClickSoundEnabled(enabled) {
+        clickSoundEnabled = enabled
+        if (typeof uiClickSound !== "undefined" && uiClickSound) {
+            uiClickSound.enabled = enabled
+        }
+        if (typeof savedJson !== "undefined" && savedJson) {
+            savedJson.saveInt("clickSound", enabled ? 1 : 0)
         }
     }
 
@@ -50,6 +77,10 @@ Item {
 
     Component.onCompleted: {
         volumeLevel = readVolumeLevel()
+        clickSoundEnabled = readClickSoundEnabled()
+        if (typeof uiClickSound !== "undefined" && uiClickSound) {
+            uiClickSound.enabled = clickSoundEnabled
+        }
     }
 
     Rectangle {
@@ -147,17 +178,19 @@ Item {
 
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 148
+                Layout.preferredHeight: 220
 
                 RowLayout {
                     anchors.fill: parent
                     spacing: settingsMenuRoot.mainSpacing
 
+                    // Блок громкости + звук касания
                     Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
                         Text {
+                            id: volumeTitle
                             text: qsTr("ГРОМКОСТЬ")
                             anchors {
                                 top: parent.top
@@ -170,6 +203,7 @@ Item {
 
                         Slider {
                             id: volumeSlider
+                            objectName: "settingsVolumeSlider"
                             anchors {
                                 top: parent.top
                                 topMargin: 52
@@ -178,17 +212,22 @@ Item {
                                 leftMargin: 12
                                 rightMargin: 12
                             }
-                            from: 1
-                            to: 7
+                            from: 0
+                            to: 3
                             stepSize: 1
                             snapMode: Slider.SnapAlways
                             value: settingsMenuRoot.volumeLevel
                             onPressedChanged: {
-                                if (!pressed) {
+                                if (pressed) {
+                                    settingsMenuRoot.applyVolumeLevel(value)
+                                    if (typeof uiClickSound !== "undefined" && uiClickSound) {
+                                        uiClickSound.play(true)
+                                    }
+                                } else {
                                     settingsMenuRoot.saveVolumeLevel(value)
                                 }
                             }
-                            onMoved: settingsMenuRoot.volumeLevel = Math.round(value)
+                            onMoved: settingsMenuRoot.applyVolumeLevel(value)
 
                             background: Rectangle {
                                 x: volumeSlider.leftPadding
@@ -220,28 +259,75 @@ Item {
                                 border.width: 2
                             }
                         }
+
+                        Row {
+                            id: clickSoundRow
+                            anchors {
+                                left: parent.left
+                                leftMargin: 12
+                                top: volumeSlider.bottom
+                                topMargin: 18
+                            }
+                            spacing: 20
+                            height: 48
+
+                            // Только индикатор кликабелен; подпись снаружи Switch.
+                            Switch {
+                                id: clickSoundSwitch
+                                width: 88
+                                height: parent.height
+                                checked: settingsMenuRoot.clickSoundEnabled
+                                text: ""
+                                padding: 0
+                                onToggled: settingsMenuRoot.saveClickSoundEnabled(checked)
+
+                                indicator: Rectangle {
+                                    implicitWidth: 88
+                                    implicitHeight: 48
+                                    anchors.centerIn: parent
+                                    radius: height / 2
+                                    color: clickSoundSwitch.checked
+                                           ? settingsMenuRoot.fotekOrange : "#D7DCE3"
+                                    border.color: settingsMenuRoot.fotekBlue
+                                    border.width: 1
+
+                                    Rectangle {
+                                        x: clickSoundSwitch.checked
+                                           ? parent.width - width - 4 : 4
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: 40
+                                        height: 40
+                                        radius: width / 2
+                                        color: "white"
+                                        border.color: settingsMenuRoot.fotekBlue
+                                        border.width: 1
+                                    }
+                                }
+
+                                contentItem: Item {}
+                            }
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: qsTr("ЗВУК КАСАНИЯ")
+                                color: settingsMenuRoot.fotekBlue
+                                font.pixelSize: 28
+                                font.bold: true
+                            }
+                        }
                     }
 
+                    // Блок языка
                     Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
-                        Text {
-                            text: qsTr("ЯЗЫК")
-                            anchors {
-                                top: parent.top
-                                horizontalCenter: parent.horizontalCenter
-                            }
-                            color: settingsMenuRoot.fotekBlue
-                            font.pixelSize: 28
-                            font.bold: true
-                        }
-
-                        RowLayout {
+                        Row {
+                            id: languageFlagsRow
                             anchors {
                                 top: parent.top
                                 topMargin: 44
-                                right: parent.right
+                                horizontalCenter: parent.horizontalCenter
                             }
                             spacing: 20
 
@@ -265,6 +351,17 @@ Item {
                                 selected: settingsMenuRoot.currentLanguage === "es"
                                 onChosen: settingsMenuRoot.setLanguage(langCode)
                             }
+                        }
+
+                        Text {
+                            text: qsTr("ЯЗЫК")
+                            anchors {
+                                top: parent.top
+                                horizontalCenter: languageFlagsRow.horizontalCenter
+                            }
+                            color: settingsMenuRoot.fotekBlue
+                            font.pixelSize: 28
+                            font.bold: true
                         }
                     }
                 }

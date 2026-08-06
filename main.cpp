@@ -33,6 +33,7 @@
 #include "BackEnd/datetimecontroller.h"
 #include "BackEnd/translationcontroller.h"
 #include "BackEnd/featureunlockcontroller.h"
+#include "BackEnd/uiclicksound.h"
 #include "BackEnd/apppaths.h"
 #include "BackEnd/gstreamervideoplayer.h"
 #include "appversion.h"
@@ -251,6 +252,10 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("appVersion", QCoreApplication::applicationVersion());
     engine.rootContext()->setContextProperty(QStringLiteral("AppPaths"), &AppPaths::instance());
 
+    auto *uiClickSound = new UiClickSound(&app);
+    engine.rootContext()->setContextProperty(QStringLiteral("uiClickSound"), uiClickSound);
+    ctrl->setUiClickSound(uiClickSound);
+
     QVariantMap *initMap = new QVariantMap();
     initMap->insert("boot", 0);
     initMap->insert("language", "ru");
@@ -264,7 +269,8 @@ int main(int argc, char *argv[])
     initMap->insert("httpUploadListenAddress", "");
     initMap->insert("httpUploadPublicBaseUrl", "");
     initMap->insert("httpUploadTrustProxyHeaders", "0");
-    initMap->insert("volume", 7);
+    initMap->insert("volume", 3);
+    initMap->insert("clickSound", 1);
     m_savedJson = new JsonStorage(nullptr, initMap);
     featureUnlock->setJsonStorage(m_savedJson);
     // FeatureUnlock до initSockets — фильтр режимов учитывается с первого раза
@@ -272,6 +278,7 @@ int main(int argc, char *argv[])
     ctrl->setJsonStorage(m_savedJson);
     engine.rootContext()->setContextProperty("savedJson", m_savedJson);
     engine.rootContext()->setContextProperty("featureUnlock", featureUnlock);
+    uiClickSound->setEnabled(m_savedJson->readInt(QStringLiteral("clickSound"), 1) != 0);
 
     // Язык до загрузки QML — иначе первый кадр с русским qsTr, потом мигание перевода
     const QString savedLanguage = translationController->normalizedLanguage(
@@ -473,7 +480,7 @@ int main(int argc, char *argv[])
 
     // Связываем LinkStm с ControlCenter для обработки UART-данных
     ctrl->setLinkStm(m_linkStm);
-    ctrl->setVolumeLevel(m_savedJson->readInt(QStringLiteral("volume"), 7));
+    ctrl->setVolumeLevel(m_savedJson->readInt(QStringLiteral("volume"), 3));
 
 
     return app.exec();

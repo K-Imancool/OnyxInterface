@@ -12,6 +12,7 @@ HEADERS += \
     $$PWD/dblocale.h \
     $$PWD/translationcontroller.h \
     $$PWD/datetimecontroller.h \
+    $$PWD/uiclicksound.h \
     $$PWD/DeviceLogManager.h \
     $$PWD/UpdateLogManager.h \
     $$PWD/featureunlockcontroller.h \
@@ -49,6 +50,7 @@ SOURCES += \
     $$PWD/dblocale.cpp \
     $$PWD/translationcontroller.cpp \
     $$PWD/datetimecontroller.cpp \
+    $$PWD/uiclicksound.cpp \
     $$PWD/DeviceLogManager.cpp \
     $$PWD/UpdateLogManager.cpp \
     $$PWD/featureunlockcontroller.cpp \

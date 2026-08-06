@@ -117,11 +117,13 @@ void LinkStm::manageIsn(quint8 voltage, quint8 dacAction)
 
 void LinkStm::setVolume(int level)
 {
-    const int clamped = qBound(1, level, 7);
+    const int clamped = qBound(0, level, 3);
     UartTx volumeCommand;
-    volumeCommand.com = static_cast<quint8>(SignalAlarm + clamped);
+    volumeCommand.com = Sound;
     volumeCommand.mc = MC_COM;
     volumeCommand.data.clear();
+    volumeCommand.data.append(static_cast<char>(0x01));
+    volumeCommand.data.append(static_cast<char>(clamped));
     setTxCommand(volumeCommand);
 }
 

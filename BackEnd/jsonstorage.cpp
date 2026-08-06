@@ -6,7 +6,6 @@
 #include <QDir>
 #include <QVariantMap>
 #include <QDebug>
-#include <QProcess>
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -100,31 +99,6 @@ bool writeJsonObjectToFile(const QString &filePath, const QJsonObject &object)
     return true;
 }
 
-void applyVolumeLevel(int level)
-{
-    const int clamped = qBound(1, level, 7);
-    const int percent = clamped * 100 / 7;
-
-    QProcess pactlProcess;
-    pactlProcess.start(QStringLiteral("pactl"),
-                       {QStringLiteral("set-sink-volume"),
-                        QStringLiteral("@DEFAULT_SINK@"),
-                        QString::number(percent) + QStringLiteral("%")});
-    if (pactlProcess.waitForStarted(1000) && pactlProcess.waitForFinished(2000)
-            && pactlProcess.exitStatus() == QProcess::NormalExit
-            && pactlProcess.exitCode() == 0) {
-        return;
-    }
-
-    QProcess amixerProcess;
-    amixerProcess.start(QStringLiteral("amixer"),
-                        {QStringLiteral("sset"),
-                         QStringLiteral("Master"),
-                         QString::number(percent) + QStringLiteral("%")});
-    amixerProcess.waitForStarted(1000);
-    amixerProcess.waitForFinished(2000);
-}
-
 } // namespace
 
 JsonStorage::JsonStorage(QObject *parent, QVariantMap* initMap)
@@ -168,8 +142,6 @@ JsonStorage::JsonStorage(QObject *parent, QVariantMap* initMap)
         m_document.setObject(m_object);
         writeJsonObjectToFile(JSON_FILE_NAME, m_object);
     }
-
-    applyVolume(readInt(QStringLiteral("volume"), 7));
 }
 
 JsonStorage::~JsonStorage()
@@ -222,10 +194,6 @@ QString JsonStorage::readString(const QString& key, const QString& defaultValue)
 void JsonStorage::saveInt(const QString& key, int value)
 {
     save(key, QJsonValue(value));
-
-    if (key == QStringLiteral("volume")) {
-        applyVolume(value);
-    }
 }
 
 int JsonStorage::readInt(const QString& key, int defaultValue) const
@@ -233,9 +201,4 @@ int JsonStorage::readInt(const QString& key, int defaultValue) const
     if (!m_object.contains(key))
         return defaultValue;
     return m_object.value(key).toInt(defaultValue);
-}
-
-void JsonStorage::applyVolume(int level)
-{
-    applyVolumeLevel(level);
 }

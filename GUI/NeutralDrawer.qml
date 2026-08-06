@@ -10,6 +10,8 @@ Drawer {
     readonly property int monopolarSocketType2: 4
 
     property var pendingPowerViolations: []
+    property bool isTypeSelected: false
+    property bool isMassSelected: false
 
     interactive: false
     modal: false
@@ -78,6 +80,8 @@ Drawer {
     }
 
     function attemptClose() {
+        isMassSelected = false
+        isTypeSelected = false
         if (!opened || neutralPowerWarningDialog.opened)
             return
 
@@ -265,9 +269,13 @@ Drawer {
         target: neutralView
         function onNeutralDividedToggled(divided) {
             periphHandle.neutralElDivided = divided
+            if (isMassSelected) neutralDrawerRoot.attemptClose()
+            else isTypeSelected = true
         }
         function onNeutralSizeSelected(size) {
             periphHandle.neutralSize = size
+            if (isTypeSelected) neutralDrawerRoot.attemptClose()
+            else isMassSelected = true
         }
     }
 
