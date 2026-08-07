@@ -80,12 +80,12 @@ Rectangle {
             PropertyChanges { target: monoHandle; opacity: 1 }
         }
     ]
-    transitions: [
-        Transition {
-            from: "*"; to: "*"
-            NumberAnimation { properties: "opacity"; duration: 500; easing.type: Easing.InOutQuad }
-        }
-    ]
+//    transitions: [
+//        Transition {
+//            from: "*"; to: "*"
+//            NumberAnimation { properties: "opacity"; duration: 500; easing.type: Easing.InOutQuad }
+//        }
+//    ]
 
     Rectangle {
         id: shell

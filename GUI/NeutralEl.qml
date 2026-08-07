@@ -24,6 +24,16 @@ Rectangle {
     signal neutralDividedToggled(bool divided)
     signal neutralSizeSelected(int size)
 
+    // Всегда эмитим сигнал (в т.ч. по уже выбранной кнопке) — без локального
+    // присвоения, чтобы не рвать биндинг от родителя.
+    function selectType(divided) {
+        neutralDividedToggled(divided)
+    }
+
+    function selectMass(size) {
+        neutralSizeSelected(size)
+    }
+
     component MassSelectionBut: Rectangle {
         id: rootCustomBut
         required property int type
@@ -151,31 +161,10 @@ Rectangle {
         MouseArea {
             id: mouseArea
             anchors.fill: parent
-            onClicked: {
+            // onPressed: надёжнее onClicked под swipe-MouseArea в NeutralDrawer
+            onPressed: {
                 rootCustomBut.clicked()
-                if (neutralSize !== type) {
-                    neutralSize = type
-                    neutralSizeSelected(type)
-                }
-            }
-        }
-    }
-
-    Connections {
-        target: buttonDivided
-        function onClicked() {
-            if (neutralDivided !== true) {
-                neutralDivided = true
-                neutralDividedToggled(true)
-            }
-        }
-    }
-    Connections {
-        target: buttonNotDivided
-        function onClicked() {
-            if (neutralDivided !== false) {
-                neutralDivided = false
-                neutralDividedToggled(false)
+                neutralEl.selectMass(type)
             }
         }
     }
@@ -277,6 +266,7 @@ Rectangle {
                 leftMargin: 10
                 topMargin: 10
             }
+            onClicked: neutralEl.selectType(true)
         }
         NeutralButton {
             id: buttonNotDivided
@@ -293,6 +283,7 @@ Rectangle {
                 leftMargin: 10
                 bottomMargin: 10
             }
+            onClicked: neutralEl.selectType(false)
         }
         MassSelectionBut {
             id: largeNeutralSize

@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
+import CuteKeyboard 1.0
 
 Item {
     id: additionalSettingsRoot
@@ -12,10 +13,13 @@ Item {
 
     property color fotekBlue: "#264093"
     property color fotekOrange: "#faa731"
+    readonly property string iconsBasePath: AppPaths.iconsBaseUrl
     readonly property int screenMargin: 34
-    readonly property int mainSpacing: 24
+    readonly property int mainSpacing: 20
     readonly property int headerHeight: 70
     readonly property int menuActionLabelSize: 34
+    readonly property int menuActionIconSize: 76
+    readonly property int panelRadius: 20
     readonly property int menuActionSmallLabelSize: 28
 
     function isServiceMenuNoPasswordEnabled() {
@@ -110,11 +114,12 @@ Item {
             text: qsTr("ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ")
             anchors.centerIn: parent
             color: additionalSettingsRoot.fotekBlue
-            font.pixelSize: 40
+            font.pixelSize: 36
             font.bold: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             width: parent.width
+            lineHeight: 1.05
         }
     }
 
@@ -137,7 +142,7 @@ Item {
             secondaryColor: additionalSettingsRoot.fotekBlue
             secondaryBorderWidth: 1
             secondaryBorderColor: "#1E3274"
-            cornerRadius: 20
+            cornerRadius: additionalSettingsRoot.panelRadius
             labelPixelSize: 30
             onPressed: additionalSettingsRoot.returnButtonPressed()
             anchors {
@@ -155,8 +160,9 @@ Item {
                   ? dateTimeController.currentDateTime
                   : ""
             color: additionalSettingsRoot.fotekBlue
-            font.pixelSize: 26
-            font.bold: true
+            opacity: 0.72
+            font.pixelSize: 24
+            font.bold: false
         }
     }
 
@@ -170,7 +176,7 @@ Item {
     ColumnLayout {
         anchors {
             top: headerArea.bottom
-            topMargin: 26
+            topMargin: 22
             left: parent.left
             right: parent.right
             bottom: footerArea.top
@@ -182,60 +188,66 @@ Item {
 
         MenuActionButton {
             Layout.fillWidth: true
-            Layout.preferredHeight: 112
+            Layout.fillHeight: true
             text: qsTr("ЖУРНАЛ СОБЫТИЙ")
             labelCentered: true
-            iconSource: ""
-            iconSize: 0
+            iconSource: additionalSettingsRoot.iconsBasePath + "iconLog.png"
+            iconSize: additionalSettingsRoot.menuActionIconSize
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
-            cornerRadius: 20
+            cornerRadius: additionalSettingsRoot.panelRadius
             onPressed: additionalSettingsRoot.logFileButtonPressed()
         }
 
         MenuActionButton {
             Layout.fillWidth: true
-            Layout.preferredHeight: 112
+            Layout.fillHeight: true
             text: qsTr("НАСТРОЙКА ДАТЫ И ВРЕМЕНИ")
             labelCentered: true
-            iconSource: ""
-            iconSize: 0
+            iconSource: additionalSettingsRoot.iconsBasePath + "iconDate.png"
+            iconSize: additionalSettingsRoot.menuActionIconSize
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
-            cornerRadius: 20
+            cornerRadius: additionalSettingsRoot.panelRadius
             onPressed: additionalSettingsRoot.dateTimeSettingsButtonPressed()
         }
 
         MenuActionButton {
             Layout.fillWidth: true
-            Layout.preferredHeight: 112
+            Layout.fillHeight: true
             text: qsTr("АКТИВАЦИЯ ДОПОЛНИТЕЛЬНЫХ ОПЦИЙ")
             labelCentered: true
-            iconSource: ""
-            iconSize: 0
+            iconSource: additionalSettingsRoot.iconsBasePath + "iconOption.png"
+            iconSize: additionalSettingsRoot.menuActionIconSize
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
             maxLabelLines: 2
-            cornerRadius: 20
+            cornerRadius: additionalSettingsRoot.panelRadius
             onPressed: additionalSettingsRoot.requestFeatureUnlock()
         }
 
-        Item { Layout.fillHeight: true }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            Layout.topMargin: 4
+            Layout.bottomMargin: 4
+            color: "#00000028"
+        }
 
         MenuActionButton {
             Layout.fillWidth: true
-            Layout.preferredHeight: 112
+            Layout.fillHeight: true
             text: qsTr("СЕРВИСНОЕ МЕНЮ")
             labelCentered: true
-            iconSource: ""
-            iconSize: 0
+            iconSource: additionalSettingsRoot.iconsBasePath + "iconPass.png"
+            iconSize: additionalSettingsRoot.menuActionIconSize
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
-            cornerRadius: 20
+            cornerRadius: additionalSettingsRoot.panelRadius
             onPressed: additionalSettingsRoot.requestServiceMenuAccess()
         }
     }
@@ -243,16 +255,21 @@ Item {
     Dialog {
         id: servicePasswordDialog
         property string passwordError: ""
+        parent: Overlay.overlay
         modal: true
-        width: Math.min(additionalSettingsRoot.width * 0.92, 760)
-        height: 380
-        x: (additionalSettingsRoot.width - width) / 2
-        y: (additionalSettingsRoot.height - height) / 2
+        width: Math.min(Overlay.overlay ? Overlay.overlay.width * 0.92 : 760, 760)
+        height: 360
+        x: parent ? (parent.width - width) / 2 : 0
+        // У верхнего края — кнопки остаются над виртуальной клавиатурой
+        y: 48
         title: ""
+        Overlay.modal: Rectangle {
+            color: "#E8ECF2"
+        }
 
         contentItem: Rectangle {
             color: "white"
-            radius: 8
+            radius: additionalSettingsRoot.panelRadius
 
             ColumnLayout {
                 anchors.fill: parent
@@ -264,6 +281,7 @@ Item {
                     text: qsTr("Для доступа к сервисным функциям введите пароль")
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
+                    color: additionalSettingsRoot.fotekBlue
                     font.pixelSize: 28
                     font.bold: true
                 }
@@ -275,15 +293,31 @@ Item {
                     placeholderText: qsTr("Пароль")
                     echoMode: TextInput.Password
                     selectByMouse: true
+                    activeFocusOnPress: true
                     font.pixelSize: 24
                     color: "black"
                     background: Rectangle {
-                        color: "#f5f5f5"
-                        border.color: servicePasswordInput.activeFocus ? "#4a9eff" : "#7a7a7a"
+                        color: "#F3F5F9"
+                        border.color: servicePasswordInput.activeFocus
+                                      ? additionalSettingsRoot.fotekOrange
+                                      : "#C5CAD3"
                         border.width: 2
-                        radius: 6
+                        radius: 12
                     }
                     onAccepted: servicePasswordDialog.trySubmit()
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            Qt.inputMethod.show()
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        propagateComposedEvents: true
+                        onPressed: {
+                            servicePasswordDialog.ensureKeyboard()
+                            mouse.accepted = false
+                        }
+                    }
                 }
 
                 Label {
@@ -298,6 +332,12 @@ Item {
 
                 Item { Layout.fillHeight: true }
             }
+        }
+
+        function ensureKeyboard() {
+            if (!servicePasswordInput.activeFocus)
+                servicePasswordInput.forceActiveFocus()
+            Qt.inputMethod.show()
         }
 
         function trySubmit() {
@@ -317,7 +357,18 @@ Item {
             servicePasswordDialog.passwordError = ""
             Qt.callLater(function() {
                 servicePasswordInput.forceActiveFocus()
+                Qt.inputMethod.show()
             })
+        }
+
+        Connections {
+            target: Qt.inputMethod
+            enabled: servicePasswordDialog.visible
+            function onVisibleChanged() {
+                // После Hide снимаем фокус, чтобы следующий тап снова открыл клавиатуру.
+                if (!Qt.inputMethod.visible && servicePasswordInput.activeFocus)
+                    servicePasswordInput.focus = false
+            }
         }
 
         onClosed: {
@@ -361,16 +412,21 @@ Item {
         property bool activationSucceeded: false
         readonly property bool showInputMode: !activationSucceeded && passwordError.length === 0
         readonly property bool showCloseOnly: activationSucceeded || passwordError.length > 0
+        parent: Overlay.overlay
         modal: true
-        width: Math.min(additionalSettingsRoot.width * 0.92, 820)
-        height: 420
-        x: (additionalSettingsRoot.width - width) / 2
-        y: (additionalSettingsRoot.height - height) / 2
+        width: Math.min(Overlay.overlay ? Overlay.overlay.width * 0.92 : 820, 820)
+        height: 380
+        x: parent ? (parent.width - width) / 2 : 0
+        // У верхнего края — кнопки остаются над виртуальной клавиатурой
+        y: 48
         title: ""
+        Overlay.modal: Rectangle {
+            color: "#E8ECF2"
+        }
 
         contentItem: Rectangle {
             color: "white"
-            radius: 8
+            radius: additionalSettingsRoot.panelRadius
 
             ColumnLayout {
                 anchors.fill: parent
@@ -383,6 +439,7 @@ Item {
                     text: qsTr("Для активации дополнительных опций введите ключ")
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
+                    color: additionalSettingsRoot.fotekBlue
                     font.pixelSize: 28
                     font.bold: true
                 }
@@ -397,13 +454,16 @@ Item {
                     maximumLength: 12
                     inputMethodHints: Qt.ImhDigitsOnly | Qt.ImhNoPredictiveText
                     selectByMouse: true
+                    activeFocusOnPress: true
                     font.pixelSize: 24
                     color: "black"
                     background: Rectangle {
-                        color: "#f5f5f5"
-                        border.color: featureUnlockInput.activeFocus ? "#4a9eff" : "#7a7a7a"
+                        color: "#F3F5F9"
+                        border.color: featureUnlockInput.activeFocus
+                                      ? additionalSettingsRoot.fotekOrange
+                                      : "#C5CAD3"
                         border.width: 2
-                        radius: 6
+                        radius: 12
                     }
                     onTextChanged: {
                         var digits = additionalSettingsRoot.unlockKeyDigits(text)
@@ -413,6 +473,19 @@ Item {
                         }
                     }
                     onAccepted: featureUnlockDialog.trySubmit()
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            Qt.inputMethod.show()
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        propagateComposedEvents: true
+                        onPressed: {
+                            featureUnlockDialog.ensureKeyboard()
+                            mouse.accepted = false
+                        }
+                    }
                 }
 
                 Label {
@@ -458,6 +531,18 @@ Item {
             featureUnlockDialog.successMessage = ""
         }
 
+        function ensureKeyboard() {
+            if (!featureUnlockInput.activeFocus)
+                featureUnlockInput.forceActiveFocus()
+            // Явно цифровая раскладка: после Hide/Loader буквы могли остаться.
+            Qt.callLater(function() {
+                InputEngine.symbolMode = false
+                InputEngine.inputMode = InputEngine.Letters
+                InputEngine.inputMode = InputEngine.DigitsOnly
+                Qt.inputMethod.show()
+            })
+        }
+
         function trySubmit() {
             if (featureUnlockDialog.activationSucceeded) {
                 featureUnlockDialog.close()
@@ -497,8 +582,18 @@ Item {
             featureUnlockInput.text = ""
             featureUnlockDialog.resetActivationState()
             Qt.callLater(function() {
-                featureUnlockInput.forceActiveFocus()
+                featureUnlockDialog.ensureKeyboard()
             })
+        }
+
+        Connections {
+            target: Qt.inputMethod
+            enabled: featureUnlockDialog.visible
+            function onVisibleChanged() {
+                // После Hide снимаем фокус, чтобы следующий тап снова открыл клавиатуру.
+                if (!Qt.inputMethod.visible && featureUnlockInput.activeFocus)
+                    featureUnlockInput.focus = false
+            }
         }
 
         onClosed: {

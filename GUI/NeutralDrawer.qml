@@ -98,6 +98,8 @@ Drawer {
     }
 
     onOpened: {
+        isTypeSelected = false
+        isMassSelected = false
         if (typeof appControl !== "undefined" && appControl) {
             appControl.setNeutralResistPollEnabled(true)
         }
@@ -231,10 +233,19 @@ Drawer {
         }
 
         onReleased: function(mouse) {
+            if (!pressed) {
+                mouse.accepted = false
+                isSwipeGesture = false
+                return
+            }
             var deltaX = mouse.x - startX
             if (isSwipeGesture && deltaX < -minSwipeDistance)
                 neutralDrawerRoot.attemptClose()
             isSwipeGesture = false
+        }
+
+        onClicked: function(mouse) {
+            mouse.accepted = false
         }
     }
 

@@ -190,9 +190,6 @@ Item {
 		edge: Qt.RightEdge
 	}
 
-    // Глобальный отладочный индикатор тача временно отключён,
-    // чтобы гарантированно не влиять на обработку событий в приложении.
-
     // Полноэкранное меню (как FullSocketEditor), без выезда сбоку
     Popup {
         id: leftDrawer
@@ -1007,7 +1004,7 @@ Item {
 
    // }
    
-   // Клавиатура только в дереве, когда реально нужна — иначе InputPanel (z:9999) перехватывает тач
+   // Клавиатура только в дереве, когда реально нужна — иначе InputPanel (z:9999) перехватывает тач.
    Loader {
       id: keyboardLoader
       anchors.left: parent.left
@@ -1027,11 +1024,23 @@ Item {
          languageLayout: host.keyboardPrimaryLayout()
          availableLanguageLayouts: host.availableKeyboardLayouts()
          btnTextFontFamily: "DejaVu Sans"
+         // Свободное поле цифровой раскладки берёт backgroundColor (по умолчанию чёрный).
+         backgroundColor: "#E8ECF2"
+         btnBackgroundColor: "#FFFFFF"
+         btnSpecialBackgroundColor: "#D0D5DD"
+         btnTextColor: "#264093"
          anchors.left: parent.left
          anchors.right: parent.right
 
          function keyboardFontFamily() {
             return "DejaVu Sans"
+         }
+
+         function applyKeyboardColors() {
+            InputPanel.backgroundColor = backgroundColor
+            InputPanel.btnBackgroundColor = btnBackgroundColor
+            InputPanel.btnSpecialBackgroundColor = btnSpecialBackgroundColor
+            InputPanel.btnTextColor = btnTextColor
          }
 
          function applyKeyboardFont() {
@@ -1052,6 +1061,7 @@ Item {
             InputPanel.availableLanguageLayouts = layouts
             languageLayout = primary
             InputPanel.languageLayout = primary
+            applyKeyboardColors()
             applyKeyboardFont()
             applyKeyboardUppercase()
          }
@@ -1071,15 +1081,29 @@ Item {
                tuneKeyboardTree(node.children[i])
          }
 
+         function reassertInputModeLayout() {
+            // После пересоздания InputPanel loadLettersLayout() в onCompleted
+            // может оставить буквы, если DigitsOnly уже был выставлен и notify не пришёл.
+            var mode = InputEngine.inputMode
+            var symbols = InputEngine.symbolMode
+            InputEngine.inputMode = (mode === InputEngine.DigitsOnly)
+                  ? InputEngine.Letters : InputEngine.DigitsOnly
+            InputEngine.symbolMode = symbols
+            InputEngine.inputMode = mode
+         }
+
          function applyTouchTuning() {
+            applyKeyboardColors()
             applyKeyboardFont()
             applyKeyboardUppercase()
+            reassertInputModeLayout()
             tuneKeyboardTree(inputPanel)
          }
 
          onActiveChanged: {
             if (active) {
                syncKeyboardLocales()
+               applyKeyboardColors()
                keyboardTuningTimer.restart()
                keyboardUppercaseTimer.restart()
             }

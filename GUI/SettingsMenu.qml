@@ -14,12 +14,20 @@ Item {
 
     property color fotekBlue: "#264093"
     property color fotekOrange: "#faa731"
+    property color pageBg: "#F3F5F9"
+    property color panelBg: "#FFFFFF"
+    property color trackIdle: "#D7DCE3"
+    property color mutedBorder: "#C5CAD3"
     readonly property string iconsBasePath: AppPaths.iconsBaseUrl
     readonly property int screenMargin: 34
-    readonly property int mainSpacing: 24
+    readonly property int mainSpacing: 20
+    readonly property int panelRadius: 20
+    readonly property int panelPadding: 20
     readonly property int headerHeight: 70
     readonly property int menuActionLabelSize: 34
-    readonly property int menuActionSmallLabelSize: 28
+    readonly property int sectionTitleSize: 24
+    readonly property int controlLabelSize: 22
+    readonly property int menuActionIconSize: 76
     readonly property string currentLanguage: (typeof container !== "undefined" && container)
             ? container.normalizedLanguage(container.language)
             : "ru"
@@ -85,7 +93,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: "#B8BEC8"
+        color: settingsMenuRoot.pageBg
     }
 
     Item {
@@ -128,7 +136,7 @@ Item {
             secondaryColor: settingsMenuRoot.fotekBlue
             secondaryBorderWidth: 1
             secondaryBorderColor: "#1E3274"
-            cornerRadius: 20
+            cornerRadius: settingsMenuRoot.panelRadius
             labelPixelSize: 30
             onPressed: settingsMenuRoot.returnButtonPressed()
             anchors {
@@ -137,33 +145,34 @@ Item {
             }
         }
 
-        Text {
-            id: footerDateTime
-            anchors {
-                right: parent.right
-                verticalCenter: parent.verticalCenter
-            }
-            text: (typeof dateTimeController !== "undefined" && dateTimeController)
-                  ? dateTimeController.currentDateTime
-                  : ""
-            color: settingsMenuRoot.fotekBlue
-            font.pixelSize: 26
-            font.bold: true
-        }
+//        Text {
+//            id: footerDateTime
+//            anchors {
+//                right: parent.right
+//                verticalCenter: parent.verticalCenter
+//            }
+//            text: (typeof dateTimeController !== "undefined" && dateTimeController)
+//                  ? dateTimeController.currentDateTime
+//                  : ""
+//            color: settingsMenuRoot.fotekBlue
+//            opacity: 0.72
+//            font.pixelSize: 24
+//            font.bold: false
+//        }
     }
 
-    Timer {
-        interval: 1000
-        repeat: true
-        running: typeof dateTimeController !== "undefined" && dateTimeController
-        onTriggered: dateTimeController.refresh()
-    }
+//    Timer {
+//        interval: 1000
+//        repeat: true
+//        running: typeof dateTimeController !== "undefined" && dateTimeController
+//        onTriggered: dateTimeController.refresh()
+//    }
 
     Item {
         id: actionsArea
         anchors {
             top: headerArea.bottom
-            topMargin: 26
+            topMargin: 22
             left: parent.left
             right: parent.right
             bottom: footerArea.top
@@ -178,190 +187,250 @@ Item {
 
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 220
+                Layout.preferredHeight: 248
 
                 RowLayout {
                     anchors.fill: parent
                     spacing: settingsMenuRoot.mainSpacing
 
                     // Блок громкости + звук касания
-                    Item {
+                    Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        radius: settingsMenuRoot.panelRadius
+                        color: settingsMenuRoot.panelBg
+                        border.width: 1
+                        border.color: settingsMenuRoot.mutedBorder
 
-                        Text {
-                            id: volumeTitle
-                            text: qsTr("ГРОМКОСТЬ")
+                        Item {
                             anchors {
-                                top: parent.top
-                                horizontalCenter: parent.horizontalCenter
-                            }
-                            color: settingsMenuRoot.fotekBlue
-                            font.pixelSize: 28
-                            font.bold: true
-                        }
-
-                        Slider {
-                            id: volumeSlider
-                            objectName: "settingsVolumeSlider"
-                            anchors {
-                                top: parent.top
-                                topMargin: 52
-                                left: parent.left
-                                right: parent.right
-                                leftMargin: 12
-                                rightMargin: 12
-                            }
-                            from: 0
-                            to: 3
-                            stepSize: 1
-                            snapMode: Slider.SnapAlways
-                            value: settingsMenuRoot.volumeLevel
-                            onPressedChanged: {
-                                if (pressed) {
-                                    settingsMenuRoot.applyVolumeLevel(value)
-                                    if (typeof uiClickSound !== "undefined" && uiClickSound) {
-                                        uiClickSound.play(true)
-                                    }
-                                } else {
-                                    settingsMenuRoot.saveVolumeLevel(value)
-                                }
-                            }
-                            onMoved: settingsMenuRoot.applyVolumeLevel(value)
-
-                            background: Rectangle {
-                                x: volumeSlider.leftPadding
-                                y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
-                                implicitWidth: 200
-                                implicitHeight: 8
-                                width: volumeSlider.availableWidth
-                                height: implicitHeight
-                                radius: 4
-                                color: "#D7DCE3"
-
-                                Rectangle {
-                                    width: volumeSlider.visualPosition * parent.width
-                                    height: parent.height
-                                    color: settingsMenuRoot.fotekOrange
-                                    radius: 4
-                                }
-                            }
-
-                            handle: Rectangle {
-                                x: volumeSlider.leftPadding + volumeSlider.visualPosition
-                                      * (volumeSlider.availableWidth - width)
-                                y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
-                                implicitWidth: 28
-                                implicitHeight: 28
-                                radius: 14
-                                color: "white"
-                                border.color: settingsMenuRoot.fotekBlue
-                                border.width: 2
-                            }
-                        }
-
-                        Row {
-                            id: clickSoundRow
-                            anchors {
-                                left: parent.left
-                                leftMargin: 12
-                                top: volumeSlider.bottom
-                                topMargin: 18
-                            }
-                            spacing: 20
-                            height: 48
-
-                            // Только индикатор кликабелен; подпись снаружи Switch.
-                            Switch {
-                                id: clickSoundSwitch
-                                width: 88
-                                height: parent.height
-                                checked: settingsMenuRoot.clickSoundEnabled
-                                text: ""
-                                padding: 0
-                                onToggled: settingsMenuRoot.saveClickSoundEnabled(checked)
-
-                                indicator: Rectangle {
-                                    implicitWidth: 88
-                                    implicitHeight: 48
-                                    anchors.centerIn: parent
-                                    radius: height / 2
-                                    color: clickSoundSwitch.checked
-                                           ? settingsMenuRoot.fotekOrange : "#D7DCE3"
-                                    border.color: settingsMenuRoot.fotekBlue
-                                    border.width: 1
-
-                                    Rectangle {
-                                        x: clickSoundSwitch.checked
-                                           ? parent.width - width - 4 : 4
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        width: 40
-                                        height: 40
-                                        radius: width / 2
-                                        color: "white"
-                                        border.color: settingsMenuRoot.fotekBlue
-                                        border.width: 1
-                                    }
-                                }
-
-                                contentItem: Item {}
+                                fill: parent
+                                margins: settingsMenuRoot.panelPadding
                             }
 
                             Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: qsTr("ЗВУК КАСАНИЯ")
+                                id: volumeTitle
+                                text: qsTr("ГРОМКОСТЬ")
+                                anchors {
+                                    top: parent.top
+                                    horizontalCenter: parent.horizontalCenter
+                                }
                                 color: settingsMenuRoot.fotekBlue
-                                font.pixelSize: 28
+                                font.pixelSize: settingsMenuRoot.sectionTitleSize
                                 font.bold: true
+                                opacity: 0.92
+                            }
+
+                            Slider {
+                                id: volumeSlider
+                                objectName: "settingsVolumeSlider"
+                                anchors {
+                                    top: volumeTitle.bottom
+                                    topMargin: 22
+                                    left: parent.left
+                                    right: parent.right
+                                }
+                                height: 44
+                                from: 0
+                                to: 3
+                                stepSize: 1
+                                snapMode: Slider.SnapAlways
+                                value: settingsMenuRoot.volumeLevel
+                                leftPadding: 18
+                                rightPadding: 18
+                                onPressedChanged: {
+                                    if (pressed) {
+                                        settingsMenuRoot.applyVolumeLevel(value)
+                                        if (typeof uiClickSound !== "undefined" && uiClickSound) {
+                                            uiClickSound.play(true)
+                                        }
+                                    } else {
+                                        settingsMenuRoot.saveVolumeLevel(value)
+                                    }
+                                }
+                                onMoved: settingsMenuRoot.applyVolumeLevel(value)
+
+                                background: Item {
+                                    x: volumeSlider.leftPadding
+                                    y: volumeSlider.topPadding
+                                       + volumeSlider.availableHeight / 2 - height / 2
+                                    width: volumeSlider.availableWidth
+                                    height: 28
+
+                                    Rectangle {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: parent.width
+                                        height: 12
+                                        radius: 6
+                                        color: settingsMenuRoot.trackIdle
+
+                                        Rectangle {
+                                            width: volumeSlider.visualPosition * parent.width
+                                            height: parent.height
+                                            radius: parent.radius
+                                            color: settingsMenuRoot.fotekOrange
+                                        }
+                                    }
+
+                                    // Дискретные метки уровней 0..3 — небольшие кружки
+                                    // с отступом от скруглений по краям полоски.
+                                    Repeater {
+                                        model: 4
+                                        Rectangle {
+                                            readonly property real endInset: 8
+                                            readonly property real span: parent.width
+                                                                        - 2 * endInset
+                                            readonly property bool active:
+                                                index === Math.round(volumeSlider.value)
+                                            readonly property bool filled:
+                                                index <= Math.round(volumeSlider.value)
+                                            width: active ? 10 : 8
+                                            height: width
+                                            radius: width / 2
+                                            color: filled ? "white" : settingsMenuRoot.trackIdle
+                                            border.width: active ? 2 : 1
+                                            border.color: filled
+                                                          ? settingsMenuRoot.fotekBlue
+                                                          : "#9AA3B2"
+                                            x: endInset + index * (span / 3) - width / 2
+                                            anchors.verticalCenter: parent.verticalCenter
+                                        }
+                                    }
+                                }
+
+                                handle: Rectangle {
+                                    x: volumeSlider.leftPadding + volumeSlider.visualPosition
+                                          * (volumeSlider.availableWidth - width)
+                                    y: volumeSlider.topPadding
+                                          + volumeSlider.availableHeight / 2 - height / 2
+                                    implicitWidth: 36
+                                    implicitHeight: 36
+                                    radius: width / 2
+                                    color: "white"
+                                    border.color: settingsMenuRoot.fotekOrange
+                                    border.width: 3
+                                }
+                            }
+
+                            Row {
+                                id: clickSoundRow
+                                anchors {
+                                    left: parent.left
+                                    top: volumeSlider.bottom
+                                    topMargin: 28
+                                }
+                                spacing: 18
+                                height: 48
+
+                                // Только индикатор кликабелен; подпись снаружи Switch.
+                                Switch {
+                                    id: clickSoundSwitch
+                                    width: 88
+                                    height: parent.height
+                                    checked: settingsMenuRoot.clickSoundEnabled
+                                    text: ""
+                                    padding: 0
+                                    onToggled: settingsMenuRoot.saveClickSoundEnabled(checked)
+
+                                    indicator: Rectangle {
+                                        implicitWidth: 88
+                                        implicitHeight: 48
+                                        anchors.centerIn: parent
+                                        radius: height / 2
+                                        color: clickSoundSwitch.checked
+                                               ? settingsMenuRoot.fotekOrange
+                                               : settingsMenuRoot.trackIdle
+                                        border.width: clickSoundSwitch.checked ? 0 : 1
+                                        border.color: settingsMenuRoot.mutedBorder
+
+                                        Rectangle {
+                                            x: clickSoundSwitch.checked
+                                               ? parent.width - width - 4 : 4
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            width: 40
+                                            height: 40
+                                            radius: width / 2
+                                            color: "white"
+                                            border.width: 1
+                                            border.color: clickSoundSwitch.checked
+                                                          ? settingsMenuRoot.fotekOrange
+                                                          : settingsMenuRoot.mutedBorder
+                                        }
+                                    }
+
+                                    contentItem: Item {}
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("ЗВУК КАСАНИЯ")
+                                    color: settingsMenuRoot.fotekBlue
+                                    font.pixelSize: settingsMenuRoot.controlLabelSize
+                                    font.bold: true
+                                    opacity: 0.88
+                                }
                             }
                         }
                     }
 
                     // Блок языка
-                    Item {
+                    Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        radius: settingsMenuRoot.panelRadius
+                        color: settingsMenuRoot.panelBg
+                        border.width: 1
+                        border.color: settingsMenuRoot.mutedBorder
 
-                        Row {
-                            id: languageFlagsRow
+                        Item {
                             anchors {
-                                top: parent.top
-                                topMargin: 44
-                                horizontalCenter: parent.horizontalCenter
-                            }
-                            spacing: 20
-
-                            LanguageFlagButton {
-                                langCode: "ru"
-                                langLabel: "RU"
-                                selected: settingsMenuRoot.currentLanguage === "ru"
-                                onChosen: settingsMenuRoot.setLanguage(langCode)
+                                fill: parent
+                                margins: settingsMenuRoot.panelPadding
                             }
 
-                            LanguageFlagButton {
-                                langCode: "en"
-                                langLabel: "EN"
-                                selected: settingsMenuRoot.currentLanguage === "en"
-                                onChosen: settingsMenuRoot.setLanguage(langCode)
+                            Text {
+                                id: languageTitle
+                                text: qsTr("ЯЗЫК")
+                                anchors {
+                                    top: parent.top
+                                    horizontalCenter: parent.horizontalCenter
+                                }
+                                color: settingsMenuRoot.fotekBlue
+                                font.pixelSize: settingsMenuRoot.sectionTitleSize
+                                font.bold: true
+                                opacity: 0.92
                             }
 
-                            LanguageFlagButton {
-                                langCode: "es"
-                                langLabel: "ES"
-                                selected: settingsMenuRoot.currentLanguage === "es"
-                                onChosen: settingsMenuRoot.setLanguage(langCode)
-                            }
-                        }
+                            Row {
+                                id: languageFlagsRow
+                                anchors {
+                                    top: languageTitle.bottom
+                                    topMargin: 18
+                                    horizontalCenter: parent.horizontalCenter
+                                }
+                                spacing: 16
 
-                        Text {
-                            text: qsTr("ЯЗЫК")
-                            anchors {
-                                top: parent.top
-                                horizontalCenter: languageFlagsRow.horizontalCenter
+                                LanguageFlagButton {
+                                    langCode: "ru"
+                                    langLabel: "RU"
+                                    selected: settingsMenuRoot.currentLanguage === "ru"
+                                    onChosen: settingsMenuRoot.setLanguage(langCode)
+                                }
+
+                                LanguageFlagButton {
+                                    langCode: "en"
+                                    langLabel: "EN"
+                                    selected: settingsMenuRoot.currentLanguage === "en"
+                                    onChosen: settingsMenuRoot.setLanguage(langCode)
+                                }
+
+                                LanguageFlagButton {
+                                    langCode: "es"
+                                    langLabel: "ES"
+                                    selected: settingsMenuRoot.currentLanguage === "es"
+                                    onChosen: settingsMenuRoot.setLanguage(langCode)
+                                }
                             }
-                            color: settingsMenuRoot.fotekBlue
-                            font.pixelSize: 28
-                            font.bold: true
                         }
                     }
                 }
@@ -370,33 +439,29 @@ Item {
             MenuActionButton {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-//                Layout.preferredHeight: 112
                 text: qsTr("СВЕДЕНИЯ ОБ АППАРАТЕ")
                 labelCentered: true
                 iconSource: settingsMenuRoot.iconsBasePath + "iconInfo.png"
-                iconSize: 96
+                iconSize: settingsMenuRoot.menuActionIconSize
                 accentColor: settingsMenuRoot.fotekOrange
                 textColor: settingsMenuRoot.fotekBlue
                 labelPixelSize: settingsMenuRoot.menuActionLabelSize
-                cornerRadius: 20
+                cornerRadius: settingsMenuRoot.panelRadius
                 onPressed: settingsMenuRoot.infoButtonPressed()
             }
-
-            Item { Layout.fillHeight: true }
 
             MenuActionButton {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-//                Layout.preferredHeight: 112
                 text: qsTr("ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ")
                 labelCentered: true
                 iconSource: settingsMenuRoot.iconsBasePath + "iconSetting.png"
-                iconSize: 96
+                iconSize: settingsMenuRoot.menuActionIconSize
                 accentColor: settingsMenuRoot.fotekOrange
                 textColor: settingsMenuRoot.fotekBlue
                 labelPixelSize: settingsMenuRoot.menuActionLabelSize
                 maxLabelLines: 2
-                cornerRadius: 20
+                cornerRadius: settingsMenuRoot.panelRadius
                 onPressed: settingsMenuRoot.additionalSettingsButtonPressed()
             }
         }
@@ -409,15 +474,18 @@ Item {
         property bool selected: false
         signal chosen()
 
-        implicitWidth: 132
-        implicitHeight: 96
+        implicitWidth: 124
+        implicitHeight: 100
         padding: 0
+        opacity: flagButton.selected ? 1.0 : 0.78
 
         background: Rectangle {
-            radius: 16
-            color: "white"
+            radius: settingsMenuRoot.panelRadius
+            color: flagButton.selected ? "#FFFBF3" : "#FAFBFC"
             border.width: flagButton.selected ? 3 : 1
-            border.color: flagButton.selected ? settingsMenuRoot.fotekOrange : "#8A93A3"
+            border.color: flagButton.selected
+                          ? settingsMenuRoot.fotekOrange
+                          : settingsMenuRoot.mutedBorder
         }
 
         contentItem: ColumnLayout {
@@ -430,6 +498,7 @@ Item {
 
                 Loader {
                     anchors.fill: parent
+                    opacity: flagButton.selected ? 1.0 : 0.9
                     sourceComponent: {
                         if (flagButton.langCode === "ru")
                             return russianFlagComponent
@@ -444,8 +513,9 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
                 text: flagButton.langLabel
                 color: settingsMenuRoot.fotekBlue
-                font.pixelSize: 22
+                font.pixelSize: 20
                 font.bold: flagButton.selected
+                opacity: flagButton.selected ? 1.0 : 0.75
             }
         }
 
