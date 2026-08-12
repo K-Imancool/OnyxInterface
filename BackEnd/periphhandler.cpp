@@ -463,8 +463,11 @@ void PeriphHandler::setAutoMode(int socketId, int mode)
     int bounded = mode;
     if (bounded < 0) {
         bounded = 0;
-    } else if (bounded > 2) {
-        bounded = 2;
+    } else {
+        const int maxMode = (socketId == 2) ? 3 : 2;
+        if (bounded > maxMode) {
+            bounded = maxMode;
+        }
     }
     const quint8 clamped = static_cast<quint8>(bounded);
     if (m_socketAutoModes[socketId] == clamped) {

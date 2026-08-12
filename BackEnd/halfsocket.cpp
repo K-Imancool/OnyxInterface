@@ -122,8 +122,14 @@ QByteArray HalfSocket::toByteArray()
 QStringList HalfSocket::modeNamesIds() const
 {
     QStringList tmp;
-    for (auto item : m_modes.keys())
-        tmp.append(QString("%1").arg(item));
+    for (const QString& modeName : m_modeNames) {
+        for (const auto& item : m_modes) {
+            if (item->modeName() == modeName) {
+                tmp.append(QString::number(item->id()));
+                break;
+            }
+        }
+    }
 
     return tmp;
 }

@@ -10,7 +10,19 @@ Rectangle {
     property alias socketEditorOpened: socketEditor.opened
     property alias fullSocketEditorOpened: fullSocketEditor.opened
     property var activationOverlay: null
+    property bool activationUiAllowed: true
+    property var onActivationEnableRequested: null
+
+    function requestActivationEnable() {
+        if (onActivationEnableRequested)
+            onActivationEnableRequested()
+        else
+            periphHandle.enableActivation = true
+    }
+
     color: "gray"
+
+    property bool monoSprayM1M2Active: false
 
     ColumnLayout {
         id: layout
@@ -80,7 +92,7 @@ Rectangle {
                         anchors.fill: parent
 
                         onClicked:  {
-                            periphHandle.enableActivation = true;
+                            socketContainer.requestActivationEnable()
                             progSelector.open()
                         }
                     }
@@ -122,10 +134,254 @@ Rectangle {
             containerHeight: layout.height - layout.spacing - progPage.height
             usedSpacing: layout.spacing
             activationOverlay: socketContainer.activationOverlay
+            activationUiAllowed: socketContainer.activationUiAllowed
         }
         Item {
             Layout.fillHeight: true
         }
+    }
+
+    // Плашка СПРЕЙ М1+М2
+    Item {
+        id: sprayM1M2Overlay
+        z: 20
+        visible: false
+        clip: true
+
+        readonly property color coagBlue: "blue"
+        readonly property int cornerRadius: 20
+        readonly property int instrBaseSize: 150
+        readonly property int coagImageLeftInset: 8
+        readonly property int coagLabelRightInset: 8
+        readonly property int coagLabelToImageGap: 6
+        readonly property int coagLabelImageOverlap: 20
+
+        property var mono1Item: null
+        property var mono2Item: null
+
+        readonly property string modeName: mono1Item ? mono1Item.coagModeName : ""
+        readonly property int modePower: mono1Item ? mono1Item.coagModePower : 0
+        readonly property int instrumNum: mono1Item ? mono1Item.coagInstrumNum : 0
+        readonly property bool hasInstrImage: instrumNum > 0 && instrumNum !== 1000
+
+        function socketsVisibleForOverlay() {
+            if (!mono1Item || !mono2Item)
+                return false
+            if (mono1Item.dimmed || mono2Item.dimmed)
+                return false
+            return true
+        }
+
+        function syncGeometry() {
+            mono1Item = repeat.itemAt(2)
+            mono2Item = repeat.itemAt(3)
+            if (!socketContainer.monoSprayM1M2Active || !socketsVisibleForOverlay()) {
+                visible = false
+                return
+            }
+
+            var p1 = mono1Item.mapToItem(socketContainer, 0, 0)
+            var p2 = mono2Item.mapToItem(socketContainer, 0, 0)
+            var coagLeft = Math.round(mono1Item.width / 2) + 1
+            x = p1.x + coagLeft
+            y = p1.y
+            width = Math.max(0, mono1Item.width - coagLeft)
+            height = Math.max(0, (p2.y + mono2Item.height) - p1.y)
+            visible = width > 0 && height > 0
+            bgCanvas.requestPaint()
+        }
+
+        Canvas {
+            id: bgCanvas
+            anchors.fill: parent
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+                var radius = sprayM1M2Overlay.cornerRadius
+                var w = width
+                var h = height
+                ctx.beginPath()
+                ctx.moveTo(0, 0)
+                ctx.lineTo(w - radius, 0)
+                ctx.arcTo(w, 0, w, radius, radius)
+                ctx.lineTo(w, h - radius)
+                ctx.arcTo(w, h, w - radius, h, radius)
+                ctx.lineTo(0, h)
+                ctx.closePath()
+                ctx.fillStyle = sprayM1M2Overlay.coagBlue
+                ctx.fill()
+            }
+        }
+
+        Item {
+            id: mono1Zone
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: sprayM1M2Overlay.mono1Item ? sprayM1M2Overlay.mono1Item.height : parent.height / 2
+
+            Image {
+                id: overlayInstrImage
+                visible: sprayM1M2Overlay.hasInstrImage
+                asynchronous: true
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                mipmap: true
+                width: sprayM1M2Overlay.instrBaseSize
+                height: sprayM1M2Overlay.instrBaseSize
+                source: sprayM1M2Overlay.hasInstrImage
+                        ? ("image://instruments/coaginstr" + sprayM1M2Overlay.instrumNum)
+                        : ""
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 4
+                anchors.left: parent.left
+                anchors.leftMargin: sprayM1M2Overlay.coagImageLeftInset
+            }
+
+            Label {
+                id: overlayModeLabel
+                text: sprayM1M2Overlay.modeName
+                color: "white"
+                font.pixelSize: 42
+                font.bold: true
+                wrapMode: Text.Wrap
+                lineHeight: 0.82
+                lineHeightMode: Text.ProportionalHeight
+                maximumLineCount: 2
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignTop
+                anchors.top: parent.top
+                anchors.topMargin: 8
+                anchors.left: sprayM1M2Overlay.hasInstrImage ? overlayInstrImage.right : parent.left
+                anchors.leftMargin: sprayM1M2Overlay.hasInstrImage
+                                    ? -sprayM1M2Overlay.coagLabelImageOverlap
+                                    : sprayM1M2Overlay.coagImageLeftInset
+                anchors.right: parent.right
+                anchors.rightMargin: sprayM1M2Overlay.coagLabelRightInset
+            }
+        }
+
+        Item {
+            id: mono2Zone
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: sprayM1M2Overlay.mono2Item ? sprayM1M2Overlay.mono2Item.height : parent.height / 2
+
+            Label {
+                text: sprayM1M2Overlay.modePower
+                color: "white"
+                font.pixelSize: 60
+                font.bold: true
+                horizontalAlignment: Text.AlignRight
+                verticalAlignment: Text.AlignBottom
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 5
+                anchors.left: parent.left
+                anchors.leftMargin: sprayM1M2Overlay.coagImageLeftInset
+                anchors.right: parent.right
+                anchors.rightMargin: sprayM1M2Overlay.coagLabelRightInset
+            }
+        }
+
+        Rectangle {
+            color: "darkgray"
+            anchors.left: parent.left
+//            anchors.leftMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            width: 150
+            height: 8
+        }
+
+        Rectangle {
+            color: "gray"
+            anchors.right: parent.right
+//            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            width: 220
+            height: 60
+        }
+
+        Label {
+            text: "М1+М2"
+            color: "white"
+            font.pixelSize: 48
+            font.bold: true
+            horizontalAlignment: Text.AlignRight
+            verticalAlignment: Text.AlignVCenter
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                fullSocketEditor.socId = 2
+                periphHandle.enableActivation = false
+                fullSocketEditor.open()
+            }
+        }
+
+        onWidthChanged: bgCanvas.requestPaint()
+        onHeightChanged: bgCanvas.requestPaint()
+    }
+
+    Connections {
+        target: periphHandle
+        function onAutoModeChanged(socketId, mode) {
+            socketContainer.monoSprayM1M2Active = (periphHandle.autoMode(2) === 3)
+            Qt.callLater(sprayM1M2Overlay.syncGeometry)
+        }
+    }
+
+    Connections {
+        target: theModel
+        function onDataChanged(topLeft, bottomRight, roles) {
+            if (!socketContainer.monoSprayM1M2Active)
+                return
+            if (bottomRight.row < 2 || topLeft.row > 3)
+                return
+            Qt.callLater(sprayM1M2Overlay.syncGeometry)
+        }
+        function onSubProgIdxChanged() {
+            Qt.callLater(sprayM1M2Overlay.syncGeometry)
+        }
+        function onEndoProgramViewChanged() {
+            Qt.callLater(sprayM1M2Overlay.syncGeometry)
+        }
+    }
+
+    Connections {
+        target: layout
+        function onWidthChanged() { Qt.callLater(sprayM1M2Overlay.syncGeometry) }
+        function onHeightChanged() { Qt.callLater(sprayM1M2Overlay.syncGeometry) }
+    }
+
+    Connections {
+        target: repeat
+        function onCountChanged() { Qt.callLater(sprayM1M2Overlay.syncGeometry) }
+        function onContainerHeightChanged() { Qt.callLater(sprayM1M2Overlay.syncGeometry) }
+    }
+
+    onWidthChanged: Qt.callLater(sprayM1M2Overlay.syncGeometry)
+    onHeightChanged: Qt.callLater(sprayM1M2Overlay.syncGeometry)
+    onMonoSprayM1M2ActiveChanged: {
+        Qt.callLater(sprayM1M2Overlay.syncGeometry)
+        if (monoSprayM1M2Active)
+            sprayOverlayLayoutTimer.restart()
+    }
+
+    Timer {
+        id: sprayOverlayLayoutTimer
+        interval: 50
+        repeat: false
+        onTriggered: sprayM1M2Overlay.syncGeometry()
+    }
+
+    Component.onCompleted: {
+        monoSprayM1M2Active = (periphHandle.autoMode(2) === 3)
+        sprayOverlayLayoutTimer.start()
     }
 
     SocketEditor {
@@ -243,19 +499,19 @@ Rectangle {
     Connections {
         target: progSelector
         function onClosed() {
-            periphHandle.enableActivation = true;
+            socketContainer.requestActivationEnable()
         }
     }
     Connections {
         target: socketEditor
         function onClosed() {
-            periphHandle.enableActivation = true;
+            socketContainer.requestActivationEnable()
         }
     }
     Connections {
         target: fullSocketEditor
         function onClosed() {
-            periphHandle.enableActivation = true;
+            socketContainer.requestActivationEnable()
         }
     }
 

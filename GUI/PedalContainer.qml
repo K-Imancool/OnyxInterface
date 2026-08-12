@@ -3,7 +3,12 @@ Rectangle {
     id: pedContainer
 
     property var innerModel
+    property bool monoSprayM1M2Active: false
     signal pedMenuRequest(int socketId)
+
+    function pedalHiddenByM1M2(socketId) {
+        return monoSprayM1M2Active && (socketId === 2 || socketId === 3)
+    }
     readonly property int pedalSideMargin: 8
     /** Как в SocketContainerV2: anchors.margins у ColumnLayout */
     readonly property int layoutMargins: 5
@@ -117,6 +122,7 @@ Rectangle {
 
             Pedal {
                 id: pedIcon
+                visible: !pedContainer.pedalHiddenByM1M2(index)
                 width: Math.max(0, Math.min(parent.width - pedContainer.pedalSideMargin * 2, parent.height))
                 height: width
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -136,7 +142,7 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 wrapMode: Text.WordWrap
-                visible: pedIcon.state === "empty"
+                visible: pedIcon.visible && pedIcon.state === "empty"
             }
 
             Connections {

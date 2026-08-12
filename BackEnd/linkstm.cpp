@@ -8,6 +8,9 @@
 
 namespace {
 
+constexpr quint8 kAutoModeSprayM1M2 = 3;
+constexpr quint16 kHwModeSprayM1M2 = 50;
+
 // Тело посылки без FRAME_START (байт 0) и без CRC (2 последних байта).
 QByteArray uartPacketBodyWithoutCrc(const QByteArray &packet)
 {
@@ -396,8 +399,15 @@ void LinkStm::sendCommand()
                 mode = m_socketList[activeSocket.id].coagModeNum;
                 power = m_socketList[activeSocket.id].coagModePower;
 
+                const bool sprayM1M2Active = (m_socketList[2].autoMode == kAutoModeSprayM1M2);
+                const PedalKnobPressed knob = m_unitState.pedalKnob;
+                if (sprayM1M2Active
+                        && (knob == PRESS_MONO1_B || knob == PRESS_MONO2_B)) {
+                    mode = kHwModeSprayM1M2;
+                }
             }
-            if (m_enableActivation && (mode < 32) && (power > 0) && (power <= 400)) {
+            const bool modeAllowed = mode < 32 || mode == kHwModeSprayM1M2;
+            if (m_enableActivation && modeAllowed && (power > 0) && (power <= 400)) {
                     activeSocket.autoMode = m_socketList[activeSocket.id].autoMode > 0 ? true : false;
                     QElapsedTimer m_elapsedTimer;
                     m_elapsedTimer.start();
@@ -667,12 +677,17 @@ void LinkStm::readRxCommand()
             command.data.clear();
             command.mc = MC_COM;
             m_txCommandList.append(command);
-            emit sigStopActivation(m_rxCommand.com);
+            quint8 stopReason = GenLinkModuleErr;
+            if (rxType == RxErrors || rxType == RxCritical) {
+                stopReason = m_rxCommand.com;
+            }
+            emit sigStopActivation(stopReason);
             unitState.activOutput = 0;  // Сбрасываем активированный выход
             unitState.activMode = 0;    // Сбрасываем активированный режим
             m_unitState = unitState;
             emit sigUnitStateChanged(m_unitState);
-            qDebug() << "Stop! m_rxCommand: " << m_rxCommand.com << m_rxCommand.data;  // DEBUG
+            qDebug() << "Stop! unexpected rx during activation:" << m_rxCommand.com
+                     << m_rxCommand.data << "reason:" << Qt::hex << stopReason;
             m_comState = IDLE;
             return;
         }
@@ -1254,6 +1269,21 @@ LinkStm::UartTx LinkStm::getLastCommand() const
     return m_lastCommand;
 }
 
+void LinkStm::requestStopActivation()
+{
+    if (m_comState != ACTIVATION) {
+        return;
+    }
+
+    UartTx command;
+    command.com = StopActivation;
+    command.data.clear();
+    command.mc = MC_COM;
+    m_txCommandList.append(command);
+    m_comState = IDLE;
+    emit sigStopActivation(GenStop);
+}
+
 void LinkStm::setEnableActivation(bool enable)
 {
     m_enableActivation = enable;
@@ -1274,8 +1304,9 @@ void LinkStm::setSocketAutoMode(int socketIndex, quint8 mode)
     if (socketIndex < 0 || socketIndex > 3) {
         return;
     }
-    if (mode > 2) {
-        mode = 2;
+    const quint8 maxMode = (socketIndex == 2) ? 3 : 2;
+    if (mode > maxMode) {
+        mode = maxMode;
     }
     m_socketList[socketIndex].autoMode = mode;
 }

@@ -70,6 +70,7 @@ public:
         GenStopNeBreak = 0x43,          // Остановка активации из-за обрыва НЭ
         GenStopNoArgon = 0x44,          // Остановка активации - закончился аргон
         GenStopBlockedArg = 0x45,       // Остановка активации - непроходимость газового тракта
+        GenLinkModuleErr = 0x46,        // UI: неожиданная посылка модуля связи во время активации
         GenStopErr = 0x4F,              // Остановка активации из-за других ошибок
 
         SpecAnswer = 0x60,
@@ -270,6 +271,7 @@ public slots:
     void setDebugUart(bool enabled);
     void requestReadyToPowerOff();
     void requestReadyToPowerOffWithData(quint8 byte0, quint8 byte1);
+    void requestStopActivation();
     void updateSocketData(int socketIndex, quint16 cutModeNum, quint16 coagModeNum, 
                          quint16 cutModePower, quint16 coagModePower, quint8 pedal);
     void updateSocketData(int socketIndex, const Onyx::SocketState& info);

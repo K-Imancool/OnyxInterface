@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import BackEnd 1.0
 
 Popup {
     id: activationPopup
@@ -27,6 +28,18 @@ Popup {
         anchors.fill: parent
         propagateComposedEvents: false
         preventStealing: true
+
+        onPressed: function(mouse) {
+            if (activationPopup.activeSocketId >= 0
+                    && periphHandle.autoMode(activationPopup.activeSocketId) === 2) {
+                appControl.stopActivation()
+            }
+            mouse.accepted = true
+        }
+
+        onReleased: function(mouse) {
+            mouse.accepted = true
+        }
     }
 
     background: Rectangle {

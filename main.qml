@@ -127,6 +127,9 @@ Window {
         if (!argonAvailable || !workReady) {
             return
         }
+        if (work.activationHidesArgon) {
+            return
+        }
         work.argonDrawer.open()
     }
 
@@ -407,6 +410,8 @@ Window {
         case 0x44:
         case 0x45:
             return "#ffb74d"
+        case 0x46:
+            return "#ff8a80"
         case 0x4F:
             return "#ff5252"
         case 0x90:
@@ -437,6 +442,7 @@ Window {
         case 0x43: return qsTr("Активация остановлена: обрыв нейтрального электрода")
         case 0x44: return qsTr("Активация остановлена: закончился аргон")
         case 0x45: return qsTr("Активация остановлена: непроходимость газового тракта")
+        case 0x46: return qsTr("Ошибка модуля связи")
         case 0x4F: return qsTr("Активация остановлена: ошибка генератора")
 
         case 0x80: return qsTr("Ошибка: модуль связи не принимает сигналы от МИФ")
@@ -698,6 +704,117 @@ Window {
                     }
                     function onClickedButton() {
                         container.showMainScreen()
+                    }
+                }
+            }
+        }
+    }
+
+    // Индикация поверх Popup/Drawer: не перехватывает тач (enabled: false).
+    Item {
+        id: globalHudLayer
+        parent: Overlay.overlay ? Overlay.overlay : container
+        anchors.fill: parent
+        z: 1000000
+        enabled: false
+
+        SystemMonitor {
+            id: systemMonitor
+            visible: appControl && appControl.cpuMonitorVisible
+            anchors {
+                right: parent.right
+                top: parent.top
+                margins: 10
+            }
+            monitoringActive: true
+        }
+
+        Rectangle {
+            id: debugOverlay
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+                leftMargin: 800
+                topMargin: 300
+                bottomMargin: 30
+            }
+            color: "#99000000"
+            radius: 8
+            border.color: "#66ffffff"
+            border.width: 1
+            visible: appControl && appControl.debugUartEnabled
+                     && appControl.debugOverlayText !== ""
+            clip: true
+
+            readonly property int textPadding: 10
+            readonly property int maxVisibleLines: {
+                var available = height - textPadding * 2
+                var line = Math.max(1, debugFontMetrics.height)
+                return Math.max(1, Math.floor(available / line))
+            }
+            readonly property string visibleDebugText: {
+                var src = appControl && appControl.debugOverlayText
+                          ? appControl.debugOverlayText : ""
+                if (src === "")
+                    return ""
+                var lines = src.split("\n")
+                var start = Math.max(0, lines.length - maxVisibleLines)
+                return lines.slice(start).join("\n")
+            }
+
+            FontMetrics {
+                id: debugFontMetrics
+                font.family: "monospace"
+                font.pixelSize: 18
+            }
+
+            Text {
+                anchors.fill: parent
+                anchors.margins: debugOverlay.textPadding
+                text: debugOverlay.visibleDebugText
+                color: "white"
+                wrapMode: Text.NoWrap
+                font.family: "monospace"
+                font.pixelSize: 18
+                elide: Text.ElideNone
+                clip: true
+            }
+        }
+
+        Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 83
+            spacing: 8
+            visible: periphHandle.activationStopWarningVisible
+
+            Repeater {
+                model: periphHandle.activationStopWarningCodes
+
+                delegate: Rectangle {
+                    required property var modelData
+
+                    readonly property int warningCode: Number(modelData)
+                    readonly property string warningText: container.warningTextForCode(warningCode)
+
+                    width: Math.min(container.width - 80, warningTextLabel.implicitWidth + 32)
+                    height: warningTextLabel.implicitHeight + 20
+                    radius: 8
+                    color: container.warningColorForCode(warningCode)
+                    border.color: "#212121"
+                    border.width: 1
+
+                    Text {
+                        id: warningTextLabel
+                        anchors.centerIn: parent
+                        text: parent.warningText
+                        color: "#111111"
+                        font.pixelSize: 22
+                        font.bold: true
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
             }

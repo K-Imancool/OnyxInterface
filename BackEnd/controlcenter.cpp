@@ -244,6 +244,46 @@ void ControlCenter::initSockets()
 void ControlCenter::prepareConnectios()
 {
 	makeHandleConnections();
+	if (m_progLoader && m_saveTimer) {
+		connect(m_saveTimer, &QTimer::timeout,
+		        m_progLoader, &ProgLoader::slotSaveCurrentState);
+	}
+
+	if (m_progLoader && m_editor) {
+		connect(m_editor, &SocketModeEditor::editingFinished,
+		        this, [this] (bool success) {
+			if (success) {
+				scheduleSave();
+			}
+		});
+	}
+
+	connect(m_socketModel.data(), &SocketModel::dataChanged,
+	        this, [this] (const QModelIndex&, const QModelIndex&, const QVector<int>& roles) {
+		if (roles.empty()) {
+			scheduleSave();
+			return;
+		}
+		size_t checkIdx = 0;
+		std::vector<int> rolesSrtd = std::vector(roles.begin(), roles.end());
+		std::sort(rolesSrtd.begin(), rolesSrtd.end());
+		for (const auto& item : rolesSrtd) {
+			for (size_t i = checkIdx; i < m_rolesSaveTriggered.size(); ++i) {
+				if (m_rolesSaveTriggered[i] < item) {
+					checkIdx++;
+					continue;
+				}
+				break;
+			}
+			if (checkIdx < m_rolesSaveTriggered.size()
+			        && item == m_rolesSaveTriggered[checkIdx]) {
+				scheduleSave();
+				return;
+			}
+		}
+	});
+	connect(m_socketModel.data(), &SocketModel::subProgCountChanged,
+	        this, &ControlCenter::scheduleSave);
 }
 
 QPointer<ProgHandle> ControlCenter::getHandle() const
@@ -633,6 +673,14 @@ void ControlCenter::shutdownSystem()
     }
 
     logPowerOff(DeviceLogManager::PowerOffFailed);
+}
+
+void ControlCenter::stopActivation()
+{
+    if (m_linkStm.isNull()) {
+        return;
+    }
+    QMetaObject::invokeMethod(m_linkStm.data(), "requestStopActivation", Qt::QueuedConnection);
 }
 
 void ControlCenter::setNeutralResistPollEnabled(bool enabled)

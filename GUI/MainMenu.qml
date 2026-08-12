@@ -106,6 +106,7 @@ Item {
             visible: !settingsScreen.startupMode
             text: qsTr("МЕНЮ")
             anchors.centerIn: parent
+//            color: "green"
             color: settingsScreen.fotekBlue
             font.pixelSize: 48
             font.bold: true

@@ -873,6 +873,7 @@ QString DeviceLogManager::warningTextForCode(int code) const
     case 0x43: return QStringLiteral("Активация остановлена: обрыв нейтрального электрода");
     case 0x44: return QStringLiteral("Активация остановлена: закончился аргон");
     case 0x45: return QStringLiteral("Активация остановлена: непроходимость газового тракта");
+    case 0x46: return QStringLiteral("Ошибка модуля связи");
     case 0x4F: return QStringLiteral("Активация остановлена: ошибка генератора");
     case 0x80: return QStringLiteral("Ошибка: модуль связи не принимает сигналы от МИФ");
     case 0x81: return QStringLiteral("Ошибка: генератор не отвечает");

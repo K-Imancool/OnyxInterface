@@ -5,6 +5,7 @@ Rectangle {
     id: socketRoot
     color: "transparent"
     property var activationOverlay: null
+    property bool activationUiAllowed: true
     property bool dimmed: false
     property bool allowEditing: true
 
@@ -85,6 +86,12 @@ Rectangle {
         if (!activationOverlay) {
             return
         }
+        if (!activationUiAllowed) {
+            if (activationOverlay.activeSocketId === socketId) {
+                activationOverlay.close()
+            }
+            return
+        }
         if (socketState === socketStateActiveCoag) {
             activationOverlay.activeSocketId = socketId
             activationOverlay.socketName = title
@@ -127,7 +134,7 @@ Rectangle {
             anchors.fill: parent
             onClicked: {
                 if (socketRoot.allowEditing) {
-                    if (!socketRoot.cutHasAvailableModes && !socketRoot.coagHasAvailableModes)
+                    if (!socketRoot.cutHasAvailableModes)
                         return
                     socketRoot.fullSocketEditorRequest(socketRoot.socketId)
                 } else {
@@ -157,7 +164,7 @@ Rectangle {
             anchors.fill: parent
             onClicked: {
                 if (socketRoot.allowEditing) {
-                    if (!socketRoot.cutHasAvailableModes && !socketRoot.coagHasAvailableModes)
+                    if (!socketRoot.coagHasAvailableModes)
                         return
                     socketRoot.fullSocketEditorRequest(socketRoot.socketId)
                 } else {

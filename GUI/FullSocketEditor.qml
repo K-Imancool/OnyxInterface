@@ -86,6 +86,9 @@ Popup {
     property bool coagHasAvailableModes: true
 
     readonly property bool hasAnyChanges: cutDirty || coagDirty || autoModeDirty
+    readonly property int autoModeSprayM1M2: 3
+    property bool sprayM1M2Active: false
+    readonly property bool mono2CoagLockedByM1M2: socId === 3 && sprayM1M2Active
 
     background: Rectangle {
         color: "#F3F5F9"
@@ -337,6 +340,10 @@ Popup {
         return sideRef(isCoag).modeId === 21
     }
 
+    function isSprayModeInSide(isCoag) {
+        return sideRef(isCoag).modeId === 22
+    }
+
     function endoPulseRateText(modeId) {
         switch (parseInt(modeId)) {
         case 13: // ЭНДОНОЖ-1
@@ -405,6 +412,74 @@ Popup {
         autoModeConfirmPopup.x = Math.round((Overlay.overlay.width - autoModeConfirmPopup.width) / 2)
         autoModeConfirmPopup.y = Math.round((Overlay.overlay.height - autoModeConfirmPopup.height) / 2)
         autoModeConfirmPopup.open()
+    }
+
+    function requestSprayM1M2Mode() {
+        if (sprayM1M2Active) {
+            periphHandle.setAutoMode(2, 0)
+            sprayM1M2Active = false
+            if (socId === 2)
+                socketAutoModeState = 0
+            syncAutoModeDirtyFromAuto()
+            Qt.callLater(syncMono2CoagLockOverlay)
+            return
+        }
+        if (socId !== 2)
+            return
+        sprayM1M2WarningDialog.showWarning()
+    }
+
+    function syncMono2CoagLockOverlay() {
+        if (!mono2CoagLockedByM1M2 || !coagModeBtn.visible) {
+            mono2CoagLockOverlay.visible = false
+            return
+        }
+        var topLeft = coagModeBtn.mapToItem(editorContent, 0, 0)
+        var bottomRight = coagPowerRow.mapToItem(editorContent,
+                                                 coagPowerRow.width,
+                                                 coagPowerRow.height)
+        mono2CoagLockOverlay.x = topLeft.x - 15
+        mono2CoagLockOverlay.y = topLeft.y - 15
+        mono2CoagLockOverlay.width = Math.max(0, bottomRight.x - topLeft.x + 30)
+        mono2CoagLockOverlay.height = Math.max(0, bottomRight.y - topLeft.y + 30)
+        mono2CoagLockOverlay.visible = mono2CoagLockOverlay.width > 0
+                && mono2CoagLockOverlay.height > 0
+    }
+
+    function sprayModeIndexForSocket(targetSocketId) {
+        modeEditor.initialize(targetSocketId, 0, true)
+        var ids = modeEditor.modeNamesIds()
+        for (var i = 0; i < ids.length; ++i) {
+            if (parseInt(ids[i]) === 22)
+                return i
+        }
+        return -1
+    }
+
+    function shouldApplySprayM1M2ToMono2() {
+        return socId === 2
+                && socketAutoModeState === autoModeSprayM1M2
+                && isSprayModeInSide(true)
+    }
+
+    function applySprayM1M2ToMono2() {
+        if (!shouldApplySprayM1M2ToMono2())
+            return
+        if (typeof theModel === "undefined" || !theModel)
+            return
+
+        var mono2SocketId = 3
+        var sprayModeIndex = sprayModeIndexForSocket(mono2SocketId)
+        if (sprayModeIndex < 0)
+            return
+
+        modeEditor.initialize(mono2SocketId, 0, true)
+        modeEditor.currentModeIndex = sprayModeIndex
+        modeEditor.updateParameter("currentpower", coagLive.power)
+        modeEditor.commitChanges()
+
+        theModel.qmlSetData(socId, 0, "socketpedal")
+        theModel.qmlSetData(mono2SocketId, 0, "socketpedal")
     }
 
     function isMonopolarSocket() {
@@ -482,9 +557,11 @@ Popup {
         activeIsCoag = false
         applySideToEditor(false)
         socketAutoModeState = periphHandle.autoMode(socId)
+        sprayM1M2Active = periphHandle.autoMode(2) === autoModeSprayM1M2
         captureAutoModeBaseline()
         autoModeDirty = false
         refreshDirtyFlags()
+        Qt.callLater(syncMono2CoagLockOverlay)
     }
 
     function cancelEditorAndClose() {
@@ -512,12 +589,14 @@ Popup {
             commitSide(false)
         if (coagDirty)
             commitSide(true)
+        applySprayM1M2ToMono2()
         recomHandle.saveCurrentState()
         root.close()
     }
 
     function attemptCommitAndClose() {
-        if (neutralPowerWarningDialog.opened || argonConflictWarningDialog.opened)
+        if (neutralPowerWarningDialog.opened || argonConflictWarningDialog.opened
+                || sprayM1M2WarningDialog.opened)
             return
         copyEditorToSide(activeIsCoag)
         if (needsArgonConflictWarning()) {
@@ -609,12 +688,18 @@ Popup {
         }
         if (socId >= 0 && socId <= 3)
             appControl.setLedOutput(ledOutputForSocket(socId), LinkStm.LED_WHITE)
+        Qt.callLater(syncMono2CoagLockOverlay)
     }
 
     onClosed: {
         stopMainPowerRepeat()
+        mono2CoagLockOverlay.visible = false
         appControl.setLedOutput(LinkStm.OUT_ALL, LinkStm.LED_OFF)
     }
+
+    onMono2CoagLockedByM1M2Changed: Qt.callLater(syncMono2CoagLockOverlay)
+    onWidthChanged: Qt.callLater(syncMono2CoagLockOverlay)
+    onHeightChanged: Qt.callLater(syncMono2CoagLockOverlay)
 
     Timer {
         id: powerRepeatDelay
@@ -637,6 +722,7 @@ Popup {
     }
 
     Rectangle {
+        id: editorContent
         anchors.fill: parent
         color: "#F3F5F9"
 
@@ -742,6 +828,7 @@ Popup {
                 }
 
                 FullSocketModeButton {
+                    id: coagModeBtn
                     Layout.row: 0
                     Layout.column: 2
                     Layout.fillWidth: true
@@ -778,6 +865,7 @@ Popup {
                 }
 
                 FullSocketInstrButton {
+                    id: coagInstrBtn
                     Layout.row: 1
                     Layout.column: 2
                     Layout.fillWidth: true
@@ -810,6 +898,7 @@ Popup {
                 }
 
                 FullSocketPowerRow {
+                    id: coagPowerRow
                     Layout.row: 2
                     Layout.column: 2
                     Layout.fillWidth: true
@@ -845,6 +934,21 @@ Popup {
                     isCoagSide: true
                     sideState: coagLive
                 }
+            }
+        }
+
+        Rectangle {
+            id: mono2CoagLockOverlay
+            visible: false
+            z: 50
+            color: "#99ffffff"
+            radius: 12
+
+            MouseArea {
+                anchors.fill: parent
+                preventStealing: true
+                onPressed: mouse.accepted = true
+                onClicked: mouse.accepted = true
             }
         }
 
@@ -898,7 +1002,10 @@ Popup {
         function onAutoModeChanged(socketId, mode) {
             if (socketId === root.socId)
                 socketAutoModeState = mode
+            if (socketId === 2)
+                sprayM1M2Active = (mode === autoModeSprayM1M2)
             syncAutoModeDirtyFromAuto()
+            Qt.callLater(syncMono2CoagLockOverlay)
         }
         function onAutoDelayMsChanged(delayMs) {
             syncAutoModeDirtyFromAuto()
@@ -997,6 +1104,16 @@ Popup {
                 root.coagDirty = true
             }
             root.finishCommitAndClose()
+        }
+    }
+
+    SprayM1M2WarningDialog {
+        id: sprayM1M2WarningDialog
+
+        onAcceptChosen: root.setSocketAutoMode(root.autoModeSprayM1M2)
+
+        onCancelChosen: {
+            // Остаёмся в редакторе с выключенной функцией М1+М2
         }
     }
 

@@ -49,6 +49,7 @@
         <file>ArgonDrawer.qml</file>
         <file>NeutralDrawer.qml</file>
         <file>NeutralPowerWarningDialog.qml</file>
+        <file>SprayM1M2WarningDialog.qml</file>
         <file>ArgonConflictWarningDialog.qml</file>
         <file>PeripheryPanel.qml</file>
         <file>NeutralButton.qml</file>

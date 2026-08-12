@@ -119,15 +119,15 @@ private:
 	std::map<int, InstrPtr> getInstrums();
 	void saveProg(const QString& name = "");
 	ProgLoaderBase* getLoader(progType type);
-	std::vector<int> getAllowedInstrs(int progId, const QVariantList& progItem);
-	std::vector<int> getAllowedModes(int progId, const QVariantList &progItem);
+	std::vector<int> getAllowedModes(const QVariantList &progItem);
 	void fillHalfSocket(int halfSocket,
 	                    int socketNumber,
 	                    SockPtr socket,
 	                    const QVariantList& progItem,
 	                    const QStringList& modeNamesList,
 	                    const std::vector<int>& allowedModesId,
-	                    const std::map<int, std::map<int, Onyx::InstrInfo>>& instrumConstraints);
+	                    const std::map<int, std::map<int, Onyx::InstrInfo>>& instrumConstraints,
+	                    bool treatLowPowerAsUnselected = false);
 
 	QSharedPointer<DataBaseReader> listsDbForProg(int progId) const;
 	QSharedPointer<DataBaseReader> progsDbForProg(int progId) const;

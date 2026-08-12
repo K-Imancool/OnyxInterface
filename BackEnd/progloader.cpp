@@ -63,6 +63,16 @@ std::map<int, InstrPtr> cloneInstrMap(const std::map<int, InstrPtr>& src)
 
 using namespace Onyx;
 
+// БИ1: недоступны Термошов (id=7) и ТЕРМОШОВ А (id=30).
+void excludeBi1RestrictedModes(int socketIndex, QMap<int, SurgModePtr>& modes)
+{
+	if (socketIndex != 0) {
+		return;
+	}
+	modes.remove(7);
+	modes.remove(30);
+}
+
 bool executePreparedUpdate(const QString& connectionName,
                            const QString& sql,
                            const std::function<void(QSqlQuery&)>& bindValues,
@@ -500,7 +510,7 @@ void ProgLoader::defaultSocketInit(bool clear)
 	}
 
 	// Добавляем дефолтные значения для педалей и маски
-	dummyProgItem << 0 << 0 << 255;  // Pedal_1, Pedal_2, OutEnabled_MASK (все сокеты разрешены)
+	dummyProgItem << 0 << 0 << 11111111;  // Pedal_1, Pedal_2, OutEnabled_MASK (все полусокеты разрешены)
 
 	progListVariant.append(dummyProgItem);
 	// qDebug() << "progId = 0: Created dummy program item with" << dummyProgItem.size() << "fields";
@@ -587,10 +597,7 @@ void ProgLoader::defaultSocketInit(bool clear)
 				          isCoag,
 				          instIdLst);  // Передаём фильтр инструментов
 
-				// Исключаем режим "Термошов" (ID=7) для сокета БИ2 (i=0)
-				if (i == 0 && modes.contains(7)) {
-					modes.remove(7);
-				}
+				excludeBi1RestrictedModes(i, modes);
 
 				isCoag ? socket->setCoagModes(modes, modeNamesList)
 				       : socket->setCutModes(modes, modeNamesList);
@@ -621,9 +628,9 @@ void ProgLoader::defaultSocketInit(bool clear)
 				isCoag ? socket->setCoagModePower(defaultPower)
 				        : socket->setCutModePower(defaultPower);
 			}
-			//МОНО2 КОАГ = 1, БИ1РЕЗ 8
-			bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) - 1 );
-			bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) );
+			// OutEnabled_MASK: MSB→LSB — БИ1 cut/coag … МОНО2 cut/coag
+			bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), 7 - 2 * i);
+			bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), 6 - 2 * i);
 			bool allowSock = cutEna || coagEna;
 			socket->setAllowed(allowSock);
 			socket->setDisplayMode(Onyx::S_COLLAPSED);
@@ -655,9 +662,6 @@ bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
                                                   QString("id = %1").arg(progId));
 //    qWarning() << "[ProgFlow] programmLoadSocketInit Progs lookup rows:" << progInfo.size();
 
-    const bool useInlineUserData = (progId == 1000 || m_curLoaderType == ptUser);
-    Q_UNUSED(useInlineUserData)
-    
 	//начинаем прорабатывать прогрузку несекольких экранов
 	std::vector<std::map<int, SockPtr>> socketMapVector;
 	std::vector<std::map<int, InstrPtr >> instrMapVector;
@@ -686,15 +690,7 @@ bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
         return false;
     }
 
-	//Шаг5---------------------------------------------------------
-	//тут какой-то затуп с базой на каких-то прогах, разрешено всего несколько инструментов
-	//при этом для выбранных режимов эти инструменты не разрешены
-	// for (auto iterItem = instrumConstraints.begin(); iterItem != instrumConstraints.end(); ++iterItem) {
-	//     std::map<int, InstrInfo>& item = iterItem->second;
-	//     filterMapByKey<InstrInfo>(item, allowedInstrId);
-	// }
-
-	//Шаг 6--------------------------------------------------------
+	//Шаг 5--------------------------------------------------------
 	QList<QVariantList> modeNamesListV = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
 	                                                                        QStringList{DbLocale::column("Name"),"id"},
 	                                                                        "");
@@ -716,19 +712,7 @@ bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
 			continue;
 		}
 		acceptedNums.insert(num);
-		//Шаг2---------------------------------------------------------
-		std::vector<int> allowedModesId = getAllowedModes(progId, progItem);
-		if (allowedModesId.empty()) {
-//			qWarning() << "[ProgFlow] programmLoadSocketInit: пустой allowedModesId"
-//			           << "progId:" << progId
-//			           << "listRowId:" << progItem.at(0).toInt()
-//			           << "listNum:" << progItem.at(1).toInt();
-		}
-
-		//Шаг3---------------------------------------------------------
-		std::vector<int> allowedInstrId = getAllowedInstrs(progId, progItem);
-
-		//Шаг4---------------------------------------------------------
+		std::vector<int> allowedModesId = getAllowedModes(progItem);
 
 		instrumConstraints = getConstraints(allowedModesId);
 
@@ -744,16 +728,20 @@ bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
 			socket->setSocketName(makeSocketName(type));
 
 			for (int halfSocket = 0; halfSocket < 2; ++halfSocket ) {
+				// Для рекомендованных программ (progId < 1000) мощность ≤ 1 = «НЕ ВЫБРАН».
+				// Для текущих настроек (1000) и пользовательских (>1000) режим сохраняем.
 				fillHalfSocket(halfSocket,
 				                i,
 				                socket,
 				                progItem,
 				                modeNamesList,
 				                allowedModesId,
-				                instrumConstraints);
+				                instrumConstraints,
+				                progId > 0 && progId < 1000);
 			}
-			bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) - 1 );
-			bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), (8 - 2*i) );
+			// OutEnabled_MASK: MSB→LSB — БИ1 cut/coag … МОНО2 cut/coag
+			bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), 7 - 2 * i);
+			bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), 6 - 2 * i);
 
 			const int singleIdx = listsPedalColumnToSocketIndex(progItem.at(27).toInt());
 			const int doubleIdx = listsPedalColumnToSocketIndex(progItem.at(28).toInt());
@@ -889,9 +877,7 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
             
             makeModes(modes, modesList, instrumConstraints, QVariantList(), i, isCoag, {}, true);
             
-            if (i == 0 && modes.contains(7)) {
-                modes.remove(7);
-            }
+            excludeBi1RestrictedModes(i, modes);
             
             isCoag ? socket->setCoagModes(modes, modeNamesList)
                    : socket->setCutModes(modes, modeNamesList);
@@ -1579,99 +1565,20 @@ std::vector<int> ProgLoader::filterModesForDevice(const std::vector<int>& modeId
 	return filtered;
 }
 
-std::vector<int> ProgLoader::getAllowedInstrs(int progId, const QVariantList& progItem)
-{
-	std::vector<int> allowedInstrId;
-	const bool useInlineUserData = (progId == 1000 || m_curLoaderType == ptUser);
-	if (!useInlineUserData) {
-		QList<QVariantList> allowedInstr
-		        = m_dbReaderPtr->slotSendSelectQuery(QStringList{"EnableInstr"},
-		                                             QStringList{"Instr_ID"},
-		                                             QString("List_ID = %1").arg(progItem.at(0).toUInt()));
-
-		for (const auto& item : allowedInstr) {
-			allowedInstrId.push_back(item.at(0).toInt());
-		}
-	} else {
-		std::vector<int> allowedInstrId__;
-		for (int i = 0; i < 8; ++i) {
-			// allowedInstrId__.push_back(progItem.at(3 + 3*i).toInt());
-			QString allowed = progItem.at(3 + 3*i).toString();
-			QStringList list = allowed.split(',');
-			for (const auto& instr : list) {
-				allowedInstrId__.push_back(instr.toInt());
-			}
-		}
-		std::sort(allowedInstrId__.begin(), allowedInstrId__.end());
-		auto last = std::unique(allowedInstrId__.begin(), allowedInstrId__.end());
-		allowedInstrId__.erase(last, allowedInstrId__.end());
-		allowedInstrId = allowedInstrId__;
-	}
-	return allowedInstrId;
-
-}
-
-std::vector<int> ProgLoader::getAllowedModes(int progId, const QVariantList& progItem)
+std::vector<int> ProgLoader::getAllowedModes(const QVariantList& progItem)
 {
 	std::vector<int> allowedModesId;
-	const bool useInlineUserData = (progId == 1000 || m_curLoaderType == ptUser);
-	if (!useInlineUserData) {
-		const int listId = progItem.at(0).toInt();
-		QList<QVariantList> allowedModes
-		        = m_dbReaderPtr->slotSendSelectQuery(QStringList{"EnableModes"},
-		                                             QStringList{"Mode_ID"},
-		                                             QString("Prog_ID = %1").arg(progId));
-		// На части БД рекомендованные режимы привязаны не к Prog_ID, а к List_ID.
-		if (allowedModes.isEmpty()) {
-//			qWarning() << "[ProgFlow] getAllowedModes: пусто по Prog_ID, fallback на List_ID"
-//			           << "progId:" << progId << "listId:" << listId;
-			allowedModes = m_dbReaderPtr->slotSendSelectQuery(QStringList{"EnableModes"},
-			                                                  QStringList{"Mode_ID"},
-			                                                  QString("List_ID = %1").arg(listId));
+	for (int i = 0; i < 8; ++i) {
+		const QString allowed = progItem.at(4 + 3 * i).toString();
+		const QStringList list = allowed.split(',', Qt::SkipEmptyParts);
+		for (const auto& mode : list) {
+			allowedModesId.push_back(mode.toInt());
 		}
-		allowedModesId.reserve(allowedModes.size());
-		for (const auto& item : allowedModes) {
-			allowedModesId.push_back(item.at(0).toInt());
-		}
-		// Последний fallback: извлекаем режимы из строки Lists (как для user-программ),
-		// чтобы загрузка программы не ломалась даже при отсутствующих связях в EnableModes.
-		if (allowedModesId.empty()) {
-//			qWarning() << "[ProgFlow] getAllowedModes: пусто и по List_ID, fallback из Lists полей"
-//			           << "progId:" << progId << "listId:" << listId;
-			for (int i = 0; i < 8; ++i) {
-				QString allowed = progItem.at(4 + 3*i).toString();
-				QStringList list = allowed.split(',', Qt::SkipEmptyParts);
-				for (const auto& mode : list) {
-					allowedModesId.push_back(mode.toInt());
-				}
-			}
-			std::sort(allowedModesId.begin(), allowedModesId.end());
-			auto last = std::unique(allowedModesId.begin(), allowedModesId.end());
-			allowedModesId.erase(last, allowedModesId.end());
-//			qWarning() << "[ProgFlow] getAllowedModes: fallback из Lists дал modeCount:"
-//			           << allowedModesId.size();
-		}
-	} else {
-		// std::vector<int> allowedModesId__;
-		//просто разрешаем все назначенные инструменты и режимы, если такие допустимы на сокетах, без дополнительных масок
-		for (int i = 0; i < 8; ++i) {
-			QString allowed = progItem.at(4 + 3*i).toString();
-			QStringList list = allowed.split(',');
-			for (const auto& mode : list) {
-				allowedModesId.push_back(mode.toInt());
-			}
-		}
-		std::sort(allowedModesId.begin(), allowedModesId.end());
-		if (allowedModesId.size() > 1) {
-			// std::unordered_set<int> check;
-			auto last = std::unique(allowedModesId.begin(), allowedModesId.end());
-			allowedModesId.erase(last, allowedModesId.end());
-		}
-
-		// allowedModesId = QList<int>::fromVector(QVector<int>(allowedModesId__.begin(), allowedModesId__.end()));
 	}
+	std::sort(allowedModesId.begin(), allowedModesId.end());
+	const auto last = std::unique(allowedModesId.begin(), allowedModesId.end());
+	allowedModesId.erase(last, allowedModesId.end());
 	return filterModesForDevice(allowedModesId);
-
 }
 
 void ProgLoader::fillHalfSocket(int halfSocket,
@@ -1680,7 +1587,8 @@ void ProgLoader::fillHalfSocket(int halfSocket,
                                 const QVariantList& progItem,
                                 const QStringList& modeNamesList,
                                 const std::vector<int>& allowedModesId,
-                                const std::map<int, std::map<int, InstrInfo>>& instrumConstraints)
+                                const std::map<int, std::map<int, InstrInfo>>& instrumConstraints,
+                                bool treatLowPowerAsUnselected)
 {
 	bool isCoag = (halfSocket == 0);
 	const int biMonoFlag = (socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1);
@@ -1719,13 +1627,7 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 
 	filterModeMap(modes, modeIdLst);
 
-	// Исключаем режим "Термошов" (ID=7) для сокета БИ2 (i=0)
-	if (socketNumber == 0 && modes.contains(7)) {
-		modes.remove(7);
-	}
-
-	isCoag ? socket->setCoagModes(modes, modeNamesList)
-	       : socket->setCutModes(modes, modeNamesList);
+	excludeBi1RestrictedModes(socketNumber, modes);
 
 	int firstInstrId;
 	int firstModeId;
@@ -1735,6 +1637,29 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 	firstModeId = modeIdLst.size() == 0 ? 1000 : modeIdLst.at(0);
 	defaultPower = progItem.at(start + 2 + 6*socketNumber).toInt();
 	defaultPower = std::max(1, defaultPower);
+
+	// OutEnabled_MASK: 8 цифр MSB→LSB —
+	// БИ1:рез/коаг, БИ2:рез/коаг, МОНО1:рез/коаг, МОНО2:рез/коаг.
+	// Цифра 0 → половина запрещена (нет режимов, редактор не открывается).
+	bool halfEnabled = true;
+	if (progItem.size() > 29) {
+		const int digitPos = isCoag ? (6 - 2 * socketNumber) : (7 - 2 * socketNumber);
+		halfEnabled = hasNonZeroDigit(progItem.at(29).toInt(), digitPos);
+	}
+
+	if (!halfEnabled) {
+		QMap<int, SurgModePtr> disabledModes;
+		if (modes.contains(1000))
+			disabledModes.insert(1000, modes.value(1000));
+		modes = disabledModes;
+		firstModeId = 1000;
+	} else if (treatLowPowerAsUnselected && defaultPower <= 1) {
+		// Только рекомендованные программы: мощность ≤ 1 → «НЕ ВЫБРАН»
+		firstModeId = 1000;
+	}
+
+	isCoag ? socket->setCoagModes(modes, modeNamesList)
+	       : socket->setCutModes(modes, modeNamesList);
 
 	if (!socket->setModeId(firstModeId, isCoag)) {
 		socket->setModeId(1000, isCoag);

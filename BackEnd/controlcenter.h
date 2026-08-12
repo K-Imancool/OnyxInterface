@@ -95,6 +95,7 @@ public:
     Q_INVOKABLE void manageIsn(bool enabled, int voltage, int dacAction = 0);
     Q_INVOKABLE void appendDebugOverlayLine(const QString &line);
     Q_INVOKABLE void clearDebugOverlay();
+    Q_INVOKABLE void stopActivation();
     QString debugOverlayText() const;
     bool debugUartEnabled() const;
     void setDebugUartEnabled(bool enabled);

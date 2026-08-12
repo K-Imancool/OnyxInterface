@@ -19,6 +19,8 @@ Item {
             spacing: 10
             visible: isCoagSide && editorRoot.modeSelectedInSide(true)
                      && ((editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true))
+                         || (editorRoot.socId === 2 && editorRoot.isSprayModeInSide(true))
+                         || (editorRoot.socId === 3 && editorRoot.sprayM1M2Active)
                          || (editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true)))
 
             RowLayout {
@@ -71,6 +73,38 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                     }
                     onPressed: editorRoot.requestAutoMode(2, qsTr("В режиме АВТОСТАРТ/СТОП активация происходит автоматически без нажатия педали!"))
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredHeight: sidePanelRoot.autoRowHeight
+                Layout.minimumHeight: sidePanelRoot.autoRowHeight
+                Layout.maximumHeight: sidePanelRoot.autoRowHeight
+                spacing: 8
+                visible: (editorRoot.socId === 2 && editorRoot.isSprayModeInSide(true))
+                         || (editorRoot.socId === 3 && editorRoot.sprayM1M2Active)
+
+                Button {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    text: qsTr("М1+М2")
+                    flat: true
+                    background: Rectangle {
+                        radius: 14
+                        border.width: editorRoot.sprayM1M2Active ? 2 : 1
+                        border.color: editorRoot.sprayM1M2Active ? editorRoot.autoBtnOnBorder : editorRoot.autoBtnOffBorder
+                        color: editorRoot.sprayM1M2Active ? editorRoot.autoBtnOnFill : editorRoot.autoBtnOffFill
+                    }
+                    contentItem: Text {
+                        text: parent.text
+                        color: editorRoot.sprayM1M2Active ? "black" : editorRoot.autoBtnOffText
+                        font.pixelSize: 26
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    onPressed: editorRoot.requestSprayM1M2Mode()
                 }
             }
 

@@ -14,6 +14,7 @@ Repeater {
     required property int containerHeight
     required property int usedSpacing
     property var activationOverlay: null
+    property bool activationUiAllowed: true
 
     signal socketEditorRequest(int socketId, int modeIndex, bool isCoag)
     signal fullSocketEditorRequest(int socketId)
@@ -62,6 +63,7 @@ Repeater {
         Layout.alignment: Qt.AlignTop
         Layout.preferredHeight: repeatRoot.calculateCollapsedHeight()
         activationOverlay: repeatRoot.activationOverlay
+        activationUiAllowed: repeatRoot.activationUiAllowed
 
         title: model.socketname
         socketId: index

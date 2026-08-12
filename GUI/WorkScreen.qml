@@ -27,7 +27,38 @@ Item {
     property alias saveProgDialog: saveProgDialog
     property alias powerOffConfirmDialog: powerOffConfirmDialog
     property alias keyboardLoader: keyboardLoader
-    property alias systemMonitor: systemMonitor
+
+    // Во время активации режима без ARGON скрываем баллоны и расход на боковой панели.
+    readonly property bool activationHidesArgon: {
+        if (!periphHandle.activation && !activationIndicator.opened)
+            return false
+        var sid = activationIndicator.activeSocketId
+        if (sid < 0 || !theModel)
+            return false
+        var idx = theModel.index(sid, 0)
+        if (!idx.valid)
+            return false
+        var modeId = activationIndicator.isCoag
+                ? theModel.data(idx, SocketModel.CoagModeId)
+                : theModel.data(idx, SocketModel.CutModeId)
+        return !theModel.isArgonMode(Number(modeId))
+    }
+
+    property bool monoSprayM1M2Active: false
+
+    function pedalDrawerBlockedForSocket(socketId) {
+        return monoSprayM1M2Active && (socketId === 2 || socketId === 3)
+    }
+
+    onActivationHidesArgonChanged: {
+        if (activationHidesArgon && argonDrawer.opened)
+            argonDrawer.close()
+    }
+
+    onMonoSprayM1M2ActiveChanged: {
+        if (monoSprayM1M2Active && pedDrawer.opened && pedalDrawerBlockedForSocket(pedDrawer.socketId))
+            pedDrawer.close()
+    }
 
    StatusBar {
       id: statusDummy
@@ -68,50 +99,13 @@ Item {
        }
    }
 
-    Column {
-        id: activationStopWarningList
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: statusDummy.bottom
-        anchors.topMargin: 8
-        spacing: 8
-        z: 12000
-        visible: periphHandle.activationStopWarningVisible
-
-        Repeater {
-            model: periphHandle.activationStopWarningCodes
-
-            delegate: Rectangle {
-                required property var modelData
-
-                readonly property int warningCode: Number(modelData)
-                readonly property string warningText: warningTextForCode(warningCode)
-
-                width: Math.min(host.width - 80, warningTextLabel.implicitWidth + 32)
-                height: warningTextLabel.implicitHeight + 20
-                radius: 8
-                color: warningColorForCode(warningCode)
-                border.color: "#212121"
-                border.width: 1
-
-                Text {
-                    id: warningTextLabel
-                    anchors.centerIn: parent
-                    text: parent.warningText
-                    color: "#111111"
-                    font.pixelSize: 22
-                    font.bold: true
-                    wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
-                }
-            }
-        }
-    }
-
     SocketContainerV2 {
         id: socketsDummy
         objectName: "socketContainer"
         innerModel: theModel
         activationOverlay: activationIndicator
+        activationUiAllowed: host && !host.startupFlowVisible
+        onActivationEnableRequested: host.activationEnable
         anchors {
             left: argNeutralPanel.right
             right: pedalContainer.left
@@ -123,7 +117,7 @@ Item {
     PeripheryPanel {
         id: argNeutralPanel
         width: argNeutralPanelWidth
-        argonAvailable: host.argonAvailable
+        argonAvailable: host.argonAvailable && !workRoot.activationHidesArgon
         anchors {
             left: parent.left
             bottom: parent.bottom
@@ -149,6 +143,7 @@ Item {
     PedalContainer {
         id: pedalContainer
         innerModel: theModel
+        monoSprayM1M2Active: workRoot.monoSprayM1M2Active
         width: pedalPanelWidth
         anchors {
             right: parent.right
@@ -162,9 +157,35 @@ Item {
         anchors.fill: parent
         z: 5000
 
+        MouseArea {
+            id: activationTouchBlocker
+            anchors.fill: parent
+            enabled: activationIndicator.opened
+            propagateComposedEvents: false
+            preventStealing: true
+            z: 0
+
+            onPressed: function(mouse) {
+                var socketId = activationIndicator.activeSocketId
+                if (socketId >= 0 && periphHandle.autoMode(socketId) === 2) {
+                    appControl.stopActivation()
+                }
+                mouse.accepted = true
+            }
+
+            onReleased: function(mouse) {
+                mouse.accepted = true
+            }
+
+            onClicked: function(mouse) {
+                mouse.accepted = true
+            }
+        }
+
         Activation {
             id: activationIndicator
             parent: activationLayer
+            z: 1
 
             onOpenedChanged: {
                 if (opened) {
@@ -182,6 +203,15 @@ Item {
         }
     }
 
+    Connections {
+        target: host
+        function onStartupScreenChanged() {
+            if (host.startupFlowVisible && activationIndicator.opened) {
+                activationIndicator.close()
+            }
+        }
+    }
+
 	PedalDrawer {
 		id: pedDrawer
 		innerModel: theModel
@@ -189,6 +219,16 @@ Item {
 		height: host.height
 		edge: Qt.RightEdge
 	}
+
+    Connections {
+        target: periphHandle
+        function onAutoModeChanged(socketId, mode) {
+            workRoot.monoSprayM1M2Active = (periphHandle.autoMode(2) === 3)
+        }
+    }
+    Component.onCompleted: {
+        monoSprayM1M2Active = (periphHandle.autoMode(2) === 3)
+    }
 
     // Полноэкранное меню (как FullSocketEditor), без выезда сбоку
     Popup {
@@ -520,6 +560,8 @@ Item {
     Connections {
         target: pedalContainer
         function onPedMenuRequest(socketId) {
+            if (workRoot.pedalDrawerBlockedForSocket(socketId))
+                return
             pedDrawer.socketId = socketId
             var targetHeight = pedalContainer.socketHeight(socketId)
             if (targetHeight > 0) {
@@ -702,6 +744,12 @@ Item {
                             expandedSocketId = 0
                         }
                     }
+                    if (workRoot.pedalDrawerBlockedForSocket(expandedSocketId)) {
+                        mouse.accepted = true
+                        isSwipeGesture = false
+                        hadSwipeGesture = false
+                        return
+                    }
                     pedDrawer.socketId = expandedSocketId
                     pedDrawer.open()
                     mouse.accepted = true  // Блокируем событие при успешном свайпе
@@ -804,86 +852,6 @@ Item {
             }
         }
     }
-
-    // Монитор системы в правом верхнем углу
-	SystemMonitor {
-		id: systemMonitor
-        visible: typeof appControl !== "undefined"
-                 && appControl
-                 && appControl.cpuMonitorVisible
-		anchors {
-			right: parent.right
-            top: parent.top
-			margins: 10
-		}
-		z: 9999  // Поверх всего
-		monitoringActive: true
-
-        // MouseArea для пропуска событий сквозь монитор
-        MouseArea {
-            anchors.fill: parent
-            enabled: false  // Отключаем перехват событий - все проходят сквозь
-        }
-    }
-
-    Rectangle {
-        id: debugOverlay
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: parent.top
-            bottom: parent.bottom
-            leftMargin: 800
-            topMargin: 300
-            bottomMargin: 30
-        }
-//        height: Math.min(parent.height * 0.45, debugText.implicitHeight + 20)
-        color: "#99000000"
-        radius: 8
-        border.color: "#66ffffff"
-        border.width: 1
-        visible: typeof appControl !== "undefined"
-                 && appControl
-                 && appControl.debugUartEnabled
-                 && appControl.debugOverlayText !== ""
-        z: 10000
-        clip: true
-
-        readonly property int textPadding: 10
-        readonly property int maxVisibleLines: {
-            var available = height - textPadding * 2
-            var line = Math.max(1, debugFontMetrics.height)
-            return Math.max(1, Math.floor(available / line))
-        }
-        readonly property string visibleDebugText: {
-            var src = appControl && appControl.debugOverlayText ? appControl.debugOverlayText : ""
-            if (src === "")
-                return ""
-            var lines = src.split("\n")
-            var start = Math.max(0, lines.length - maxVisibleLines)
-            return lines.slice(start).join("\n")
-        }
-
-        FontMetrics {
-            id: debugFontMetrics
-            font.family: "monospace"
-            font.pixelSize: 18
-        }
-
-        Text {
-            id: debugText
-            anchors.fill: parent
-            anchors.margins: debugOverlay.textPadding
-            text: debugOverlay.visibleDebugText
-            color: "white"
-            wrapMode: Text.NoWrap
-            font.family: "monospace"
-            font.pixelSize: 18
-            elide: Text.ElideNone
-            clip: true
-        }
-    }
-
 
     // Область для свайпов и закрытия панелей
     // MouseArea {
