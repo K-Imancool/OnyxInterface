@@ -43,7 +43,7 @@ Item {
             fillMode: Image.PreserveAspectFit
             asynchronous: true
             source: modeSelected
-                    ? ("image://modes/" + editorRoot.modeImagePrefix() + "%1").arg(sideState.modeNum) : ""
+                    ? ("image://modes/" + editorRoot.modeImagePrefix() + "%1").arg(sideState.modeId) : ""
         }
 
         Label {

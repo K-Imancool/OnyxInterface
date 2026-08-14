@@ -14,12 +14,14 @@ namespace Onyx {
 
 
 struct SocketState {
-	quint16 cutModeNum;
-	quint16 cutModePower;
-	quint16 coagModeNum;
-	quint16 coagModePower;
-	quint8 pedal;
-	quint8 autoMode;
+	quint16 cutModeNum = 0;
+	quint16 cutModePower = 0;
+	quint16 coagModeNum = 0;
+	quint16 coagModePower = 0;
+	quint16 cutModeId = 0;
+	quint16 coagModeId = 0;
+	quint8 pedal = 0;
+	quint8 autoMode = 0;
 };
 
 struct InstrInfo {

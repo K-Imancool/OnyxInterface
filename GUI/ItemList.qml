@@ -330,15 +330,11 @@ Rectangle {
 						font.pixelSize: itemList.itemFontPixelSize
 						color: isSelected ? selectedTextColor : unselectedTextColor
 					}
-					MouseArea {
-						anchors.fill: parent
-						enabled: !itemRoot.locked
-						onClicked: itemList.selectIndex(index)
-					}
 				}
 				Text {
 					id: lockIcon
 					visible: itemRoot.locked
+					z: 2
 					width: parent.height
 					anchors {
 						top: parent.top
@@ -359,6 +355,7 @@ Rectangle {
                     border.color: "#AA4040C0"
 					border.width: 1
 					radius: 8
+					z: 2
 					width: (itemList.alwaysShowEditActions || !actionsVisible)
 						   ? height
 						   : 3 * height
@@ -486,6 +483,12 @@ Rectangle {
 							}
 						}
 					}
+				}
+				MouseArea {
+					anchors.fill: parent
+					enabled: !itemRoot.locked
+					z: 1
+					onClicked: itemList.selectIndex(index)
 				}
 				Rectangle {
 					id: spacer

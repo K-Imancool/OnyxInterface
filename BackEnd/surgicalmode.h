@@ -1,59 +1,77 @@
 #ifndef SURGICALMODE_H
 #define SURGICALMODE_H
 
+#include <QObject>
 #include <QString>
 #include <QVariantMap>
 #include <QSharedPointer>
-#include <QList>
-#include <QObject>
 
 #include "Structures.h"
 
 #include <map>
 #include <optional>
 
-namespace ESHF {
-enum eshfModes	{ /*NO_MODE = 0, */BI_BLEND=1,
-                 BI_TUR=2, BI_ARTRO=3, BI_GISTERO=4,
-                 BI_COAG=5, BI_COAG_DISS=6, TERMOSHOV=7,
-                 CUT=8, BLEND=9, BLEND1=10, TUR=11, VAP=12,
-                 E_KNIFE1=13, E_KNIFE2=14, E_KNIFE3=15,
-                 E_LOOP1=16, E_LOOP2=17, E_LOOP3=18,
-                 FORCE=19, FULGUR=20, SOFT=21, SPRAY=22,
-                 FULGUR_A=23, SPRAY_A=24,
-                 FULGUR_P=25, SPRAY_P=26, NO_MODE=1000
-                 };
-const QStringList modesNames = { /*QObject::tr("РЕЖИМ РЕЗ НЕ ВЫБРАН"), QObject::tr("РЕЖИМ КОАГ НЕ ВЫБРАН"),*/
+class ESHF : public QObject
+{
+    Q_OBJECT
+public:
+    enum eshfModes {
+    BI_BLEND = 1,
+    BI_TUR = 2,
+    BI_GISTERO = 3,
+    BI_ARTRO = 4,
+    BI_COAG = 5,
+    BI_COAG_DISS = 6,
+    BI_COAG_MICRO = 7,
+    BI_COAG_FORCE = 8,
+    TERMOSHOV = 9,
+    TERMOSHOV_A = 10,
+    BI_ABLATION = 11,
 
-                                 QObject::tr("БИ-СМЕСЬ"),
-                                 QObject::tr("БИ-ТУР"), QObject::tr("БИ-АРТРО"),
-                                 QObject::tr("БИ-ГИСТЕРО"),
-                                 QObject::tr("БИ-КОАГ"), QObject::tr("БИ-КОАГ-ДИССЕКТ"),
-                                 QObject::tr("ТЕРМОШОВ"),
-                                 QObject::tr("РЕЗАНИЕ"), QObject::tr("СМЕСЬ"),
-                                 QObject::tr("СМЕСЬ-1"), QObject::tr("ТУР"), QObject::tr("ВАП"),
-                                 QObject::tr("ЭНДОНОЖ-1"), QObject::tr("ЭНДОНОЖ-2"),
-                                 QObject::tr("ЭНДОНОЖ-3"),
-                                 QObject::tr("ЭНДОПЕТЛЯ-"), QObject::tr("ЭНДОПЕТЛЯ-2"), QObject::tr("ЭНДОПЕТЛЯ-3"),
-                                 QObject::tr("ФОРС"), QObject::tr("ФУЛЬГУР"),
-                                 QObject::tr("МЯГКАЯ"), QObject::tr("СПРЕЙ"),
-                                 QObject::tr("ФУЛЬГУР АРГОН"), QObject::tr("СПРЕЙ АРГОН"),
-                                 QObject::tr("ФУЛЬГУР ПУЛЬС АРГОН"), QObject::tr("СПРЕЙ ПУЛЬС АРГОН"),
-                                 QStringLiteral("НЕ ВЫБРАН")
-                                };
+    CUT = 16,
+    BLEND = 17,
+    BLEND1 = 18,
+    BLEND2 = 19,
+    TUR = 20,
+    VAP = 21,
+    ENDO_I_0 = 22,
+    ENDO_I_1 = 23,
+    ENDO_I_2 = 24,
+    ENDO_I_3 = 25,
+    ENDO_I_FORCE_0 = 26,
+    ENDO_I_FORCE_1 = 27,
+    ENDO_I_FORCE_2 = 28,
+    ENDO_I_FORCE_3 = 29,
+    ENDO_P_0 = 30,
+    ENDO_P_1 = 31,
+    ENDO_P_2 = 32,
+    ENDO_P_3 = 33,
+    ENDO_P_FORCE_0 = 34,
+    ENDO_P_FORCE_1 = 35,
+    ENDO_P_FORCE_2 = 36,
+    ENDO_P_FORCE_3 = 37,
+    BLEND_ARGON = 38,
+    BLEND1_ARGON = 39,
+    BLEND2_ARGON = 40,
 
-const QList<int> modesMaxPowers	{ /*1,*/ /*1,*/ 75,
-                                8, 8, 8,
-                                150, 150, 5,
-                                400, 400, 150, 400, 400,
-                                27, 27, 27,
-                                27, 27, 27,
-                                150, 150, 300, 70,
-                                150, 70,
-                                70, 70,
-                                1 //всегда должно быть последним - мощность заглшуки NoMode
-                                };
-}
+    SOFT = 46,
+    SOFT_A = 47,
+    FORCE = 48,
+    FULGUR = 49,
+    SPRAY = 50,
+    SPRAY1 = 51,
+    MONO_ABLATION = 52,
+    FORCE_ARGON = 53,
+    FULGUR_ARGON = 54,
+    SPRAY_ARGON = 55,
+    SPRAY1_ARGON = 56,
+    FULGUR_PULSE_ARGON = 57,
+    SPRAY_PULSE_ARGON = 58,
+
+    NO_MODE = 1000
+    };
+    Q_ENUM(eshfModes)
+};
 
 // struct InstrInfo {
 //     int id;

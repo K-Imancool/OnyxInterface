@@ -56,7 +56,6 @@ Popup {
                                power: 0,
                                modeName: "",
                                modeId: -1,
-                               modeNum: "0",
                                instrName: "",
                                instrNum: "1000",
                                isEndo: false,
@@ -71,7 +70,6 @@ Popup {
                                 power: 0,
                                 modeName: "",
                                 modeId: -1,
-                                modeNum: "0",
                                 instrName: "",
                                 instrNum: "1000",
                                 isEndo: false,
@@ -105,7 +103,6 @@ Popup {
             power: source.power,
             modeName: source.modeName,
             modeId: source.modeId,
-            modeNum: source.modeNum,
             instrName: source.instrName,
             instrNum: source.instrNum,
             isEndo: source.isEndo,
@@ -118,7 +115,6 @@ Popup {
 
     function captureSideFromEditor() {
         var mode = modeEditor.currentMode
-        var modeNums = modeEditor.modeNamesNums()
         var instrNums = modeEditor.instrListNums()
         var modeIdx = modeEditor.currentModeIndex
         var instrIdx = modeEditor.currentInstrIndex
@@ -129,7 +125,6 @@ Popup {
             power: modeEditor.currentPower,
             modeName: mode && mode.name !== undefined && mode.name !== null ? mode.name : "",
             modeId: mode && mode.id !== undefined && mode.id !== null ? parseInt(mode.id) : -1,
-            modeNum: modeIdx >= 0 && modeIdx < modeNums.length ? modeNums[modeIdx] : "0",
             instrName: instrIdx >= 0 && instrIdx < modeEditor.instrList.length
                     ? modeEditor.instrList[instrIdx] : qsTr("Другой инструмент"),
             instrNum: instrIdx >= 0 && instrIdx < instrNums.length ? instrNums[instrIdx] : "1000",
@@ -143,7 +138,7 @@ Popup {
 
     function normalizeSidePowerIfNeeded(side) {
         var result = cloneSideState(side)
-        if (result.modeId === 1000 || result.modeId < 0)
+        if (result.modeId === ESHF.NO_MODE || result.modeId < 0)
             return result
         if (parseInt(result.instrNum) !== 1000)
             return result
@@ -203,19 +198,14 @@ Popup {
     }
 
     function modeImagePrefix() {
-        var socketName = socketTitle ? String(socketTitle).toUpperCase() : ""
-        if (socketName.indexOf("МОНО") !== -1 || socketName.indexOf("MONO") !== -1)
-            return "monomode"
-        if (socketName.indexOf("БИ") !== -1 || socketName.indexOf("BI") !== -1)
-            return "bimode"
-        return socId <= 1 ? "bimode" : "monomode"
+        return "mode"
     }
 
     function modeSelectedInSide(isCoag) {
         var side = sideRef(isCoag)
         if (side.modeIndex < 0)
             return false
-        if (side.modeId === 1000)
+        if (side.modeId === ESHF.NO_MODE)
             return false
         return side.modeName.length > 0
     }
@@ -327,36 +317,44 @@ Popup {
 
     function isBiCoagModeInSide(isCoag) {
         var modeId = sideRef(isCoag).modeId
-        return modeId === 5 ||
-                modeId === 6 ||
-                modeId === 27 ||
-                modeId === 61 ||
-                modeId === 62 ||
-                modeId === 63 ||
-                modeId === 64
+        return modeId === ESHF.BI_COAG || modeId === ESHF.BI_COAG_DISS || modeId === ESHF.BI_COAG_MICRO
+    }
+
+    function isTermoModeInSide(isCoag) {
+        var modeId = sideRef(isCoag).modeId
+        return modeId === ESHF.TERMOSHOV || modeId === ESHF.TERMOSHOV_A
     }
 
     function isSoftModeInSide(isCoag) {
-        return sideRef(isCoag).modeId === 21
+        return sideRef(isCoag).modeId === ESHF.SOFT
     }
 
     function isSprayModeInSide(isCoag) {
-        return sideRef(isCoag).modeId === 22
+        return sideRef(isCoag).modeId === ESHF.SPRAY
     }
 
-    function endoPulseRateText(modeId) {
-        switch (parseInt(modeId)) {
-        case 13: // ЭНДОНОЖ-1
-        case 16: // ЭНДОПЕТЛЯ-
-            return qsTr("Подача импульсов РЕДКАЯ")
-        case 14: // ЭНДОНОЖ-2
-        case 17: // ЭНДОПЕТЛЯ-2
-            return qsTr("Подача импульсов СРЕДНЯЯ")
-        case 15: // ЭНДОНОЖ-3
-        case 18: // ЭНДОПЕТЛЯ-3
-            return qsTr("Подача импульсов ЧАСТАЯ")
+    function endoPulseVariant(modeId, modeName) {
+        var n = parseInt(modeId)
+        if (n >= ESHF.ENDO_I_0 && n <= ESHF.ENDO_P_FORCE_3)
+            return (n - ESHF.ENDO_I_0) % 4
+        var fromName = String(modeName || "").match(/[\s\-]+([0-3])\s*$/)
+        if (fromName)
+            return parseInt(fromName[1])
+        return 2
+    }
+
+    function endoPulseRateText(modeId, modeName) {
+        switch (endoPulseVariant(modeId, modeName)) {
+        case 0:
+            return qsTr("Подача импульсов: ОДНОКРАТНО")
+        case 1:
+            return qsTr("Подача импульсов: РЕДКО")
+        case 2:
+            return qsTr("Подача импульсов: СРЕДНЕ")
+        case 3:
+            return qsTr("Подача импульсов: ЧАСТО")
         default:
-            return qsTr("Подача импульсов СРЕДНЯЯ")
+            return qsTr("Подача импульсов: СРЕДНЕ")
         }
     }
 
@@ -450,7 +448,7 @@ Popup {
         modeEditor.initialize(targetSocketId, 0, true)
         var ids = modeEditor.modeNamesIds()
         for (var i = 0; i < ids.length; ++i) {
-            if (parseInt(ids[i]) === 22)
+            if (parseInt(ids[i]) === ESHF.SPRAY)
                 return i
         }
         return -1

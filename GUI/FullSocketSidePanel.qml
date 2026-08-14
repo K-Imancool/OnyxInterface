@@ -19,6 +19,7 @@ Item {
             spacing: 10
             visible: isCoagSide && editorRoot.modeSelectedInSide(true)
                      && ((editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true))
+                         || (editorRoot.socId <= 1 && editorRoot.isTermoModeInSide(true))
                          || (editorRoot.socId === 2 && editorRoot.isSprayModeInSide(true))
                          || (editorRoot.socId === 3 && editorRoot.sprayM1M2Active)
                          || (editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true)))
@@ -114,7 +115,8 @@ Item {
                 Layout.minimumHeight: sidePanelRoot.autoRowHeight
                 Layout.maximumHeight: sidePanelRoot.autoRowHeight
                 spacing: 8
-                visible: editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true)
+                visible: (editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true))
+                         || (editorRoot.socId <= 1 && editorRoot.isTermoModeInSide(true))
 
                 Button {
                     Layout.fillWidth: true
@@ -135,7 +137,9 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-                    onPressed: editorRoot.requestAutoMode(1, qsTr("В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.\nПо завершении коагуляции процесс прекращается автоматически"))
+                    onPressed: editorRoot.requestAutoMode(1, editorRoot.isTermoModeInSide(true)
+                               ? qsTr("В режиме АВТОСТОП инструмент активируется с помощью педали.\nПо завершении коагуляции процесс прекращается автоматически")
+                               : qsTr("В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.\nПо завершении коагуляции процесс прекращается автоматически"))
                 }
             }
 
@@ -192,7 +196,7 @@ Item {
         Label {
             Layout.fillWidth: true
             visible: editorRoot.modeSelectedInSide(isCoagSide) && sideState.isEndo
-            text: editorRoot.endoPulseRateText(sideState.modeId)
+            text: editorRoot.endoPulseRateText(sideState.modeId, sideState.modeName)
             horizontalAlignment: Text.AlignHCenter
             color: "black"
             font.pixelSize: 24
@@ -206,6 +210,7 @@ Item {
             cutEffect: editorRoot.endoCutEffect(isCoagSide)
             coagEffect: editorRoot.endoCoagEffect(isCoagSide)
             modeName: sideState.modeName
+            pulseLevel: editorRoot.endoPulseVariant(sideState.modeId, sideState.modeName)
         }
 
         Item { Layout.fillHeight: true }

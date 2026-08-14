@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import BackEnd 1.0
 
 Rectangle {
     id: halfSocketRoot
@@ -18,12 +19,12 @@ Rectangle {
     property bool hasAvailableModes: true
 
     readonly property color socketColor: {
-        if (modeId === 1000) {
+        if (modeId === ESHF.NO_MODE) {
             return "darkgray"
         }
         return isCoag ? "blue" : "yellow"
     }
-    readonly property bool hasInstrImage: modeId !== 1000
+    readonly property bool hasInstrImage: modeId !== ESHF.NO_MODE
                                           && instrumNum > 0
                                           && instrumNum !== 1000
     readonly property int endoCutEffect: Math.floor(modePower / 10)
@@ -52,7 +53,7 @@ Rectangle {
 
     // Резание: уменьшаем только картинку, шрифт режима фиксированный (42)
     readonly property int collapsedInstrSize: {
-        if (halfSocketRoot.isCoag || halfSocketRoot.modeId === 1000)
+        if (halfSocketRoot.isCoag || halfSocketRoot.modeId === ESHF.NO_MODE)
             return halfSocketRoot.hasInstrImage ? collapsedInstrBaseSize : 0
         if (!halfSocketRoot.hasInstrImage)
             return 0
@@ -67,7 +68,7 @@ Rectangle {
     }
 
     readonly property int modeNameFontSize: {
-        if (modeId === 1000)
+        if (modeId === ESHF.NO_MODE)
             return 24
         if (!isCoag)
             return singleLineModeNameFont
@@ -76,9 +77,9 @@ Rectangle {
                 : normalModeNameFont
     }
 
-    readonly property bool cutModeNameSingleLine: !isCoag && modeId !== 1000
+    readonly property bool cutModeNameSingleLine: !isCoag && modeId !== ESHF.NO_MODE
     readonly property string modeLabelText: {
-        if (modeId !== 1000) {
+        if (modeId !== ESHF.NO_MODE) {
             return modeName
         }
         var role = isCoag ? qsTr("коагуляция") : qsTr("резание")
@@ -159,7 +160,7 @@ Rectangle {
         id: modeLabel
         visible: halfSocketRoot.hasAvailableModes
         text: halfSocketRoot.modeLabelText
-        color: (!halfSocketRoot.isCoag || modeId === 1000) ? "black" : "white"
+        color: (!halfSocketRoot.isCoag || modeId === ESHF.NO_MODE) ? "black" : "white"
         font.pixelSize: halfSocketRoot.modeNameFontSize
         font.bold: true
         wrapMode: halfSocketRoot.cutModeNameSingleLine ? Text.NoWrap : Text.Wrap
@@ -202,7 +203,7 @@ Rectangle {
     Label {
         id: powerLabel
         text: halfSocketRoot.modePower
-        visible: !halfSocketRoot.isEndo && halfSocketRoot.modeId !== 1000
+        visible: !halfSocketRoot.isEndo && halfSocketRoot.modeId !== ESHF.NO_MODE
         color: halfSocketRoot.isCoag ? "white" : "black"
         font.pixelSize: 60
         font.bold: true
@@ -226,7 +227,7 @@ Rectangle {
 
     Row {
         id: powerEndoRow
-        visible: halfSocketRoot.isEndo && halfSocketRoot.modeId !== 1000
+        visible: halfSocketRoot.isEndo && halfSocketRoot.modeId !== ESHF.NO_MODE
         spacing: 18
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 5

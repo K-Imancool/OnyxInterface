@@ -95,7 +95,7 @@ QString EshfProgStringBuilder::makeModeString(SockPtr sock, bool isCoag)
 		const int selectedPos = modes.indexOf(selectedModeIdStr);
 		if (selectedPos >= 0) {
 			modes.prepend(modes.takeAt(selectedPos));
-		} else if (selectedModeId > 0 && selectedModeId != 1000) {
+		} else if (selectedModeId > 0 && selectedModeId != ESHF::NO_MODE) {
 			// Если выбранный режим не попал в список (редкий кейс несогласованности),
 			// явно фиксируем его первым, чтобы при загрузке не сместился выбор.
 			modes.prepend(selectedModeIdStr);

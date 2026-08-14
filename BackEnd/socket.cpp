@@ -53,28 +53,28 @@ int SOCKET::cutModeIndex() const
 int SOCKET::coagModeId() const
 {
     if (m_coagHalf.isNull())
-        return 1000;
+        return ESHF::NO_MODE;
     return m_coagHalf->modeId();
 }
 
 int SOCKET::cutModeId() const
 {
     if (m_cutHalf.isNull())
-        return 1000;
+        return ESHF::NO_MODE;
     return m_cutHalf->modeId();
 }
 
 int SOCKET::coagModeNum() const
 {
     if (m_coagHalf.isNull())
-        return 1000;
+        return ESHF::NO_MODE;
     return m_coagHalf->curMode()->num();
 }
 
 int SOCKET::cutModeNum() const
 {
     if (m_cutHalf.isNull())
-        return 1000;
+        return ESHF::NO_MODE;
     return m_cutHalf->curMode()->num();
 }
 
@@ -258,7 +258,7 @@ bool SOCKET::setInstrumId(int id, bool isCoag)
 
     CSurgModePtr cMode = half->curMode();
 
-    if (cMode.isNull() || cMode->id() == 1000)
+    if (cMode.isNull() || cMode->id() == ESHF::NO_MODE)
         return false;
 
     SurgModePtr mode = modes[cMode->id()];
@@ -360,6 +360,8 @@ Onyx::SocketState SOCKET::getInfo() const
     res.cutModeNum = cutModeNum();
     res.cutModePower = cutModePower();
     res.coagModePower = coagModePower();
+    res.cutModeId = cutModeId();
+    res.coagModeId = coagModeId();
     res.pedal = pedal();
     return res;
 }

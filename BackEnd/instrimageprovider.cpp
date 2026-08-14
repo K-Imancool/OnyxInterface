@@ -1,5 +1,6 @@
 #include "instrimageprovider.h"
 #include "apppaths.h"
+#include "surgicalmode.h"
 
 #include <QDir>
 #include <QMutex>
@@ -119,7 +120,7 @@ QPixmap InstrImageProvider::requestPixmap(const QString &id,
         return emptyPixmap.scaled(mySize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
     
-    // Проверка на нулевой индекс (например, monomode0, minstr0, bimode0)
+    // Проверка на нулевой индекс (например, mode0, minstr0)
     // или на 1000 (NO_MODE - режим не выбран)
     // Извлекаем число из конца строки
     QString numPart;
@@ -128,7 +129,7 @@ QPixmap InstrImageProvider::requestPixmap(const QString &id,
     }
     if (!numPart.isEmpty()) {
         int numValue = numPart.toInt();
-        if (numValue == 0 || numValue == 1000) {
+        if (numValue == 0 || numValue == ESHF::NO_MODE) {
             if (size)
                 *size = mySize;
             return emptyPixmap.scaled(mySize, Qt::KeepAspectRatio, Qt::SmoothTransformation);

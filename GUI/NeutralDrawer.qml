@@ -48,7 +48,7 @@ Drawer {
 
             var cutModeId = theModel.data(socketIndex, SocketModel.CutModeId)
             var cutModePower = theModel.data(socketIndex, SocketModel.CutModePower)
-            if (Number(cutModeId) !== 1000 && Number(cutModePower) > maxPower) {
+            if (Number(cutModeId) !== ESHF.NO_MODE && Number(cutModePower) > maxPower) {
                 violations.push({
                                     row: row,
                                     socketName: socketName,
@@ -58,7 +58,7 @@ Drawer {
 
             var coagModeId = theModel.data(socketIndex, SocketModel.CoagModeId)
             var coagModePower = theModel.data(socketIndex, SocketModel.CoagModePower)
-            if (Number(coagModeId) !== 1000 && Number(coagModePower) > maxPower) {
+            if (Number(coagModeId) !== ESHF.NO_MODE && Number(coagModePower) > maxPower) {
                 violations.push({
                                     row: row,
                                     socketName: socketName,

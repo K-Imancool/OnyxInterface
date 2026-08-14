@@ -79,7 +79,7 @@ Repeater {
         cutHasAvailableModes: {
             var ids = model.cutmodeidlist || []
             for (var i = 0; i < ids.length; ++i) {
-                if (Number(ids[i]) !== 1000) {
+                if (Number(ids[i]) !== ESHF.NO_MODE) {
                     return true
                 }
             }
@@ -94,7 +94,7 @@ Repeater {
         coagHasAvailableModes: {
             var ids = model.coagmodeidlist || []
             for (var i = 0; i < ids.length; ++i) {
-                if (Number(ids[i]) !== 1000) {
+                if (Number(ids[i]) !== ESHF.NO_MODE) {
                     return true
                 }
             }

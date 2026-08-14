@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import BackEnd 1.0
 
 Rectangle {
     id: instrumRoot
@@ -106,7 +107,7 @@ Rectangle {
             anchors.rightMargin: 40
             anchors.topMargin: 20
             anchors.bottomMargin: 20
-            enabled: modeId !== 1000  // Игнорируем клики, если режим не выбран
+            enabled: modeId !== ESHF.NO_MODE  // Игнорируем клики, если режим не выбран
             onClicked: instrumRoot.instrumEditDialogRequest()
         }
     }

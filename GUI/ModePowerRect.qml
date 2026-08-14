@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import BackEnd 1.0
 
 Canvas {
     id: modePowerRect
@@ -16,7 +17,7 @@ Canvas {
     signal newPower(int pwr)
 
     function colorFromId() {
-        if (modePowerRect.modeId == 1000)
+        if (modePowerRect.modeId === ESHF.NO_MODE)
             return "darkgray"
         return isCoag ? "blue" : "yellow"
     }
@@ -235,7 +236,7 @@ Canvas {
             Label {
                 id: collapsedPowerLabel
                 text: modePowerRect.modePower
-                visible: modePowerRect.modeId !== 1000
+                visible: modePowerRect.modeId !== ESHF.NO_MODE
                 color: modePowerRect.isCoag ? "white" : "black"
                 font.pixelSize: 46
                 font.bold: true
@@ -325,7 +326,7 @@ Canvas {
             Label {
                 id: powerLabel
                 text: modePower
-                visible: (modeId != 1000)
+                visible: (modeId !== ESHF.NO_MODE)
                 width: fontMetrics.advanceWidth("999")
                 font.pixelSize: 50
                 font.bold: true
@@ -625,7 +626,7 @@ Canvas {
                 Label {
                     id: powerEndoCutLabel
                     text: Math.floor(modePower / 10)
-                    visible: (modeId != 1000)
+                    visible: (modeId !== ESHF.NO_MODE)
                     width: parent.width
                     height: 60
                     anchors.verticalCenter: parent.verticalCenter
@@ -728,7 +729,7 @@ Canvas {
                 Label {
                     id: powerEndoCoagLabel
                     text: modePower % 10
-                    visible: (modeId != 1000)
+                    visible: (modeId !== ESHF.NO_MODE)
                     width: parent.width
                     height: 60
                     anchors.verticalCenter: parent.verticalCenter
@@ -796,7 +797,7 @@ Canvas {
         Label {
             id: powerLabelEndoCollapse
             text: Math.floor(modePower/10) + "-" + (modePower%10)
-            visible: (modeId != 1000)
+            visible: (modeId !== ESHF.NO_MODE)
             width: fontMetrics2.advanceWidth("999")
             height: 31
             font.pixelSize: 50
@@ -900,9 +901,9 @@ Canvas {
             name: "expanded"
             PropertyChanges { target: mode; visible: true }
             PropertyChanges { target: power; visible: true }
-            PropertyChanges { target: powerPlusButton;  visible: (modeId != 1000) }
-            PropertyChanges { target: powerMinusButton; visible: (modeId != 1000) }
-            PropertyChanges { target: powerSlider;      visible: (modeId != 1000) }
+            PropertyChanges { target: powerPlusButton;  visible: (modeId !== ESHF.NO_MODE) }
+            PropertyChanges { target: powerMinusButton; visible: (modeId !== ESHF.NO_MODE) }
+            PropertyChanges { target: powerSlider;      visible: (modeId !== ESHF.NO_MODE) }
             PropertyChanges { target: powerEndo;  visible: false }
             PropertyChanges {
                 target: powerLabel;

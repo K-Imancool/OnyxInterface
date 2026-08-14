@@ -22,7 +22,6 @@ Popup {
     property bool isCoag: false
     readonly property var modeEditor: Editor
 
-    property var modeNums: []
     property var modeIds: []
     property var instrNums: []
     property string centerView: "power" // power, modePreview, instrPreview
@@ -58,15 +57,7 @@ Popup {
     readonly property color listSelectedText: isCoag ? "white" : "black"
 
     function modeImagePrefix() {
-        // Имя сокета локализовано (МОНО1/MONO1), поэтому проверяем оба варианта
-        var socketName = modeEditor.socketName ? String(modeEditor.socketName).toUpperCase() : ""
-        if (socketName.indexOf("МОНО") !== -1 || socketName.indexOf("MONO") !== -1) {
-            return "monomode"
-        }
-        if (socketName.indexOf("БИ") !== -1 || socketName.indexOf("BI") !== -1) {
-            return "bimode"
-        }
-        return socId <= 1 ? "bimode" : "monomode"
+        return "mode"
     }
 
     function isModeLockedAt(index) {
@@ -81,13 +72,11 @@ Popup {
 
     function updateModeModel() {
         modeModel.clear()
-        modeNums = modeEditor.modeNamesNums()
         modeIds = modeEditor.modeNamesIds()
         var modeNames = modeEditor.modeNames
         for (var i = 0; i < modeNames.length; ++i) {
-            var modeNum = i < modeNums.length ? modeNums[i] : "0"
             modeModel.append({
-                                 itemId: modeNum,
+                                 itemId: i < modeIds.length ? modeIds[i] : "0",
                                  itemName: modeNames[i],
                                  locked: isModeLockedAt(i)
                              })
@@ -237,17 +226,17 @@ Popup {
     }
 
     function isSoftMode() {
-        return currentModeId() === 21
+        return currentModeId() === ESHF.SOFT
+    }
+
+    function isTermoMode() {
+        var modeId = currentModeId()
+        return modeId === ESHF.TERMOSHOV || modeId === ESHF.TERMOSHOV_A
     }
 
     function isBiCoagMode() {
-        return currentModeId() === 5 ||
-                currentModeId() === 6 ||
-                currentModeId() === 27 ||
-                currentModeId() === 61 ||
-                currentModeId() === 62 ||
-                currentModeId() === 63 ||
-                currentModeId() === 64
+        var modeId = currentModeId()
+        return modeId === ESHF.BI_COAG || modeId === ESHF.BI_COAG_DISS || modeId === ESHF.BI_COAG_MICRO
     }
 
     function captureAutoModeBaseline() {
@@ -347,7 +336,7 @@ Popup {
         }
         var currentMode = modeEditor.currentMode
         if (currentMode && currentMode.id !== undefined && currentMode.id !== null) {
-            return currentMode.id !== 1000
+            return currentMode.id !== ESHF.NO_MODE
         }
         return true
     }
@@ -592,7 +581,7 @@ Popup {
                     itemBorderWidth: 0
                     itemCornerRadius: 8
                     keepSelectedItemAtTop: true
-                    noAutoScrollItemId: 1000
+                    noAutoScrollItemId: ESHF.NO_MODE
                     itemFontPixelSize: 22
                 }
 
@@ -790,7 +779,7 @@ Popup {
 
                     Item {
                         height: 50
-                        visible: !modeEditor.isEndo && !isBiCoagMode() && !instrumentSelected()
+                        visible: !modeEditor.isEndo && !isBiCoagMode() && !isTermoMode() && !instrumentSelected()
                     }
 
                     Label {
@@ -1014,6 +1003,7 @@ Popup {
                         spacing: 10
                         visible: modeSelected() && isCoag
                                  && ((socId <= 1 && isBiCoagMode())
+                                     || (socId <= 1 && isTermoMode())
                                      || (socId >= 2 && socId <= 3 && isSoftMode()))
 
                         Item {
@@ -1076,7 +1066,8 @@ Popup {
                             Layout.fillWidth: true
                             Layout.preferredHeight: controlButtonHeight
                             spacing: 12
-                            visible: socId >= 2 && socId <= 3 && isSoftMode()
+                            visible: (socId >= 2 && socId <= 3 && isSoftMode())
+                                     || (socId <= 1 && isTermoMode())
 
                             Button {
                                 Layout.fillWidth: true
@@ -1097,7 +1088,9 @@ Popup {
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                 }
-                                onPressed: requestAutoMode(1, qsTr("В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.\nПо завершении коагуляции процесс прекращается автоматически"))
+                                onPressed: requestAutoMode(1, isTermoMode()
+                                           ? qsTr("В режиме АВТОСТОП инструмент активируется с помощью педали.\nПо завершении коагуляции процесс прекращается автоматически")
+                                           : qsTr("В режиме АВТОСТОП инструмент активируется с помощью педали или держателя инструментов.\nПо завершении коагуляции процесс прекращается автоматически"))
                             }
                         }
 
@@ -1263,8 +1256,8 @@ Popup {
                             visible: centerView === "modePreview"
                             fillMode: Image.PreserveAspectFit
                             asynchronous: true
-                            source: modeEditor.currentModeIndex >= 0 && modeEditor.currentModeIndex < modeNums.length
-                                    ? ("image://modes/" + modeImagePrefix() + "%1").arg(modeNums[modeEditor.currentModeIndex]) : ""
+                            source: modeEditor.currentModeIndex >= 0 && modeEditor.currentModeIndex < modeIds.length
+                                    ? ("image://modes/" + modeImagePrefix() + "%1").arg(modeIds[modeEditor.currentModeIndex]) : ""
                         }
 
                         Image {

@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import BackEnd 1.0
 
 Rectangle {
     id: socketRoot
@@ -47,25 +48,25 @@ Rectangle {
     // Сокращённое имя режима для главного экрана при активном авторежиме.
     // Пустая строка — сокращение не нужно, вызывающий код добавит суффикс сам.
     function shortenedModeNameForAuto(modeId, autoMode) {
-        if (modeId === 5) { // БИ-КОАГ
+        if (modeId === ESHF.BI_COAG) { // БИ-КОАГ
             if (autoMode === 1)
                 return qsTr("БИ КОАГ\nАВТОСТОП")
             if (autoMode === 2)
                 return qsTr("БИ КОАГ\nА-СТ-СТОП")
         }
-        else if (modeId === 6) { // БИ-КОАГ-ДИССЕКТ
+        else if (modeId === ESHF.BI_COAG_DISS) { // БИ-КОАГ-ДИССЕКТ
             if (autoMode === 1)
                 return qsTr("БИ КОАГ ДИСС\nАВТОСТОП")
             if (autoMode === 2)
                 return qsTr("БИ КОАГ ДИСС\nА-СТ-СТОП")
         }
-        else if (modeId === 27) { // БИ-КОАГ-МИКРО
+        else if (modeId === ESHF.BI_COAG_MICRO) { // БИ-КОАГ-МИКРО
             if (autoMode === 1)
                 return qsTr("БИ КОАГ МИКРО\nАВТОСТОП")
             if (autoMode === 2)
                 return qsTr("БИ КОАГ МИКР\nА-СТ-СТОП")
         }
-        else if (modeId === 21) { // МЯГКАЯ
+        else if (modeId === ESHF.SOFT) { // МЯГКАЯ
             if (autoMode === 1)
                 return qsTr("МЯГКАЯ\nАВТОСТОП")
         }

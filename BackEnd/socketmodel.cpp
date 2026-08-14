@@ -601,7 +601,7 @@ void SocketModel::qmlSetData(int row, const QVariant &value, const QString &role
 
 bool SocketModel::isArgonMode(int modeId) const
 {
-    if (modeId <= 0 || modeId == 1000 || !m_itemsMapPtr) {
+    if (modeId <= 0 || modeId == ESHF::NO_MODE || !m_itemsMapPtr) {
         return false;
     }
 
@@ -679,7 +679,7 @@ bool SocketModel::clearArgonModes(int socketId)
         if (mode.isNull() || !mode->isArgon()) {
             return;
         }
-        if (!sock->setModeId(1000, isCoag)) {
+        if (!sock->setModeId(ESHF::NO_MODE, isCoag)) {
             return;
         }
         changed = true;
@@ -1449,7 +1449,7 @@ int SocketModel::coagInstrumentButtonValue(int socketRow) const
     }
 
     const CSurgModePtr coagMode = socketIter->second->curCoagMode();
-    if (coagMode.isNull() || coagMode->id() == 1000) {
+    if (coagMode.isNull() || coagMode->id() == ESHF::NO_MODE) {
         return 0;
     }
 

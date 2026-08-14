@@ -20,7 +20,7 @@ int HalfSocket::modeIndex() const
 int HalfSocket::modeId() const
 {
     if (m_curMode.isNull())
-        return 1000;
+        return ESHF::NO_MODE;
     return m_curMode->id();
 }
 
@@ -77,7 +77,7 @@ int HalfSocket::modePower() const
 
 bool HalfSocket::setModePower(int newPower)
 {
-    if (m_curMode.isNull() || m_curMode->id() == 1000)
+    if (m_curMode.isNull() || m_curMode->id() == ESHF::NO_MODE)
         return false;
     SurgModePtr ptr = m_modes[m_curMode->id()];
     return ptr->setCurrentPower(newPower);

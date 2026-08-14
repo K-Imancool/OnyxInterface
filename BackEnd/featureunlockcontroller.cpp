@@ -2,6 +2,7 @@
 #include "jsonstorage.h"
 #include "keygenerator.h"
 #include "databasereader.h"
+#include "surgicalmode.h"
 
 #include <QDebug>
 
@@ -231,7 +232,7 @@ bool FeatureUnlockController::isScopeLocked(int scopeId) const
 
 bool FeatureUnlockController::isModeLocked(int modeId) const
 {
-    if (!m_dbReader || modeId <= 0 || modeId == 1000) {
+    if (!m_dbReader || modeId <= 0 || modeId == ESHF::NO_MODE) {
         return false;
     }
 

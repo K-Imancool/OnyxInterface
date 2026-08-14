@@ -8,28 +8,27 @@ Rectangle {
     property int cutEffect: 1
     property int coagEffect: 1
     property string modeName: ""
+    property int pulseLevel: -1
 
     readonly property int safeCut: Math.max(1, Math.min(3, cutEffect))
     readonly property int safeCoag: Math.max(1, Math.min(3, coagEffect))
-    readonly property string modeNameLower: modeName.toLowerCase()
-    readonly property bool isEndoKnife: modeNameLower.indexOf("\u044d\u043d\u0434\u043e\u043d\u043e\u0436") !== -1
-    readonly property bool isEndoLoop: modeNameLower.indexOf("\u044d\u043d\u0434\u043e\u043f\u0435\u0442\u043b") !== -1
-    readonly property bool usePulseAnimation: isEndoKnife || isEndoLoop
     readonly property int modeLevel: {
-        var match = modeName.match(/([1-3])\s*$/)
+        if (pulseLevel >= 0 && pulseLevel <= 3)
+            return pulseLevel
+        var match = modeName.match(/([0-3])\s*$/)
         return match ? parseInt(match[1]) : 2
     }
-    readonly property int cycleCount: {
-        if (modeLevel === 1) return 2
-        if (modeLevel === 3) return 4
-        return 3
-    }
+    readonly property bool usePulseAnimation: true
+    readonly property bool isSingleShot: modeLevel === 0
+    readonly property int cycleCount: isSingleShot ? 1 : (modeLevel + 1)
     readonly property int cutPulseMs: {
+        if (modeLevel === 0) return 300
         if (modeLevel === 1) return 200
         if (modeLevel === 3) return 100
         return 150
     }
     readonly property int coagPulseMs: {
+        if (modeLevel === 0) return 1400
         if (modeLevel === 1) return 1000
         if (modeLevel === 3) return 450
         return 700
@@ -38,45 +37,69 @@ Rectangle {
     readonly property real blueHeight: height * (safeCoag * 0.1)
     readonly property real sidePadding: Math.max(8, width * 0.04)
     readonly property real availableWidth: Math.max(0, width - sidePadding * 2)
-    readonly property real cycleWidth: cycleCount > 0 ? availableWidth / cycleCount : 0
+    readonly property real chartDrawWidth: isSingleShot ? availableWidth / 2 : availableWidth
+    readonly property real cycleWidth: cycleCount > 0 ? chartDrawWidth / cycleCount : 0
     readonly property real cutRatio: 0.12 + ((safeCut - 1) * 0.06)
     readonly property real yellowWidth: Math.max(4, cycleWidth * cutRatio)
     readonly property real blueWidth: Math.max(4, cycleWidth - yellowWidth)
     property int activeCycle: 0
     property bool activeCutPulse: true
+    property bool singleShotArmed: false
+    property bool singleShotFinished: false
 
     function resetPulseState() {
         activeCycle = 0
         activeCutPulse = true
+        singleShotFinished = false
+    }
+
+    function startPulseAnimation() {
+        resetPulseState()
+        if (isSingleShot)
+            singleShotArmed = true
     }
 
     Timer {
         id: pulseTimer
         running: root.usePulseAnimation && root.cycleCount > 0
+                 && (!root.isSingleShot || (root.singleShotArmed && !root.singleShotFinished))
         repeat: true
         interval: root.activeCutPulse ? root.cutPulseMs : root.coagPulseMs
         onTriggered: {
             if (root.activeCutPulse) {
                 root.activeCutPulse = false
             } else {
+                if (root.isSingleShot) {
+                    root.singleShotFinished = true
+                    root.singleShotArmed = false
+                    return
+                }
                 root.activeCutPulse = true
                 root.activeCycle = (root.activeCycle + 1) % root.cycleCount
             }
         }
     }
 
-    onModeNameChanged: resetPulseState()
-    onCycleCountChanged: resetPulseState()
+    onCutEffectChanged: {
+        if (root.isSingleShot)
+            root.startPulseAnimation()
+    }
+    onCoagEffectChanged: {
+        if (root.isSingleShot)
+            root.startPulseAnimation()
+    }
+    onModeNameChanged: startPulseAnimation()
+    onCycleCountChanged: startPulseAnimation()
+    onPulseLevelChanged: startPulseAnimation()
     onVisibleChanged: {
-        if (visible) {
-            resetPulseState()
-        }
+        if (visible)
+            startPulseAnimation()
     }
 
     Rectangle {
         x: root.sidePadding
         y: 0
-        width: root.availableWidth
+        width: root.chartDrawWidth
         height: parent.height
         color: "transparent"
         border.width: 1
@@ -95,9 +118,13 @@ Rectangle {
                 width: root.yellowWidth
                 height: root.yellowHeight
                 color: "#F9D648"
-                opacity: root.usePulseAnimation
-                         ? ((root.activeCutPulse && root.activeCycle === index) ? 1.0 : 0.35)
-                         : 1.0
+                opacity: {
+                    if (!root.usePulseAnimation)
+                        return 1.0
+                    if (root.isSingleShot && root.singleShotFinished)
+                        return 1.0
+                    return (root.activeCutPulse && root.activeCycle === index) ? 1.0 : 0.35
+                }
                 anchors.left: parent.left
                 anchors.bottom: parent.bottom
             }
@@ -106,9 +133,13 @@ Rectangle {
                 width: root.blueWidth
                 height: root.blueHeight
                 color: "#1565C0"
-                opacity: root.usePulseAnimation
-                         ? ((!root.activeCutPulse && root.activeCycle === index) ? 1.0 : 0.35)
-                         : 1.0
+                opacity: {
+                    if (!root.usePulseAnimation)
+                        return 1.0
+                    if (root.isSingleShot && root.singleShotFinished)
+                        return 1.0
+                    return (!root.activeCutPulse && root.activeCycle === index) ? 1.0 : 0.35
+                }
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
             }

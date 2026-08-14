@@ -2,6 +2,7 @@
 #include "DeviceLogManager.h"
 #include "featureunlockcontroller.h"
 #include "proghandle.h"
+#include "surgicalmode.h"
 #include "uiclicksound.h"
 
 #include <QProcess>
@@ -90,6 +91,8 @@ void ControlCenter::registerHandles()
 	qmlRegisterUncreatableType<ProgHandle>("BackEnd", 1, 0, "ProgHandle", "should be one and exist not only for qml");
 	qmlRegisterUncreatableType<PeriphHandler>("BackEnd", 1, 0, "PeriphHandle", "should be one and exist not only for qml");
 	qmlRegisterUncreatableType<LinkStm>("BackEnd", 1, 0, "LinkStm", "LinkStm is created in C++");
+	qmlRegisterUncreatableType<ESHF>("BackEnd", 1, 0, "ESHF",
+	                                 QStringLiteral("ESHF is an enum type"));
 }
 
 QPointer<SocketModel> ControlCenter::getSocketModel() const
@@ -389,15 +392,13 @@ void ControlCenter::setLinkStm(LinkStm* linkStm)
 				//вызовы data по доке  reenterant так что мы можем предать в арги прям вызовы
 
 				//НУЖНА ЗАЩИТА ОТ ВЫЗОВОВ ВО ВРЕМЯ ОБНОВЛЕНИЯ МОДЕЛИ
+				Onyx::SocketState info =
+				        topLeft.siblingAtRow(i).data(SocketModel::SocketUartInfo).value<Onyx::SocketState>();
 				QMetaObject::invokeMethod(  m_linkStm.data(),
 				                            "updateSocketData",
 				                            Qt::QueuedConnection,
-				                            Q_ARG(int, i),  // socketIndex
-				                            Q_ARG(quint16, topLeft.siblingAtRow(i).data(SocketModel::CutModeNum).value<quint16>()),
-				                            Q_ARG(quint16, topLeft.siblingAtRow(i).data(SocketModel::CoagModeNum).value<quint16>()),
-				                            Q_ARG(quint16, topLeft.siblingAtRow(i).data(SocketModel::CutModePower).value<quint16>()),
-				                            Q_ARG(quint16, topLeft.siblingAtRow(i).data(SocketModel::CoagModePower).value<quint16>()),
-				                            Q_ARG(quint8, topLeft.siblingAtRow(i).data(SocketModel::SocketPedal).value<quint8>()));
+				                            Q_ARG(int, i),
+				                            Q_ARG(Onyx::SocketState, info));
 			}
 		}, Qt::QueuedConnection);
 

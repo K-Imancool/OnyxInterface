@@ -1,5 +1,6 @@
 #include "linkstm.h"
 #include "stmupdater.h"
+#include "surgicalmode.h"
 
 #include <QFileInfo>
 #include <QMetaType>
@@ -9,7 +10,19 @@
 namespace {
 
 constexpr quint8 kAutoModeSprayM1M2 = 3;
-constexpr quint16 kHwModeSprayM1M2 = 50;
+
+bool isEndoCutModeId(int modeId)
+{
+    return modeId >= ESHF::ENDO_I_0 && modeId <= ESHF::ENDO_P_FORCE_3;
+}
+
+int packEndoActivationPower(int modeId, int uiPower)
+{
+    const int variant = (modeId - ESHF::ENDO_I_0) % 4;
+    const int cutEffect = qBound(0, uiPower / 10, 7);
+    const int coagEffect = qBound(0, uiPower % 10, 7);
+    return (variant << 6) | (cutEffect << 3) | coagEffect;
+}
 
 // Тело посылки без FRAME_START (байт 0) и без CRC (2 последних байта).
 QByteArray uartPacketBodyWithoutCrc(const QByteArray &packet)
@@ -54,8 +67,8 @@ LinkStm::LinkStm(QObject *parent)
     qRegisterMetaType<Onyx::UnitState>("UnitState");
     // m_unitState и так с инициализатором по умолчанию
     for (int i = 0; i < 4; i++) {
-        m_socketList[i].cutModeNum = 1000;  // Режим не выбран
-        m_socketList[i].coagModeNum = 1000; // Режим не выбран
+        m_socketList[i].cutModeNum = ESHF::NO_MODE;  // Режим не выбран
+        m_socketList[i].coagModeNum = ESHF::NO_MODE; // Режим не выбран
         m_socketList[i].cutModePower = 0;   // Мощность нулевая
         m_socketList[i].coagModePower = 0;  // Мощность нулевая
         m_socketList[i].pedal = 0;          // Педаль не выбрана
@@ -325,7 +338,7 @@ void LinkStm::sendCommand()
     
     QByteArray txPacket;
     static ActiveSocket activeSocket = {99, false, false, false, false};   // Активированный сокет
-    static int mode = 1000;             // Активированный режим
+    static int mode = ESHF::NO_MODE;             // Активированный режим
     static int power = 0;               // Активированная мощность
     static int updateCounter = 0;       // Счётчик обновления ПО
     static int updateProgr = 0;
@@ -394,6 +407,9 @@ void LinkStm::sendCommand()
             if (activeSocket.isCut) {
                 mode = m_socketList[activeSocket.id].cutModeNum;
                 power = m_socketList[activeSocket.id].cutModePower;
+                if (isEndoCutModeId(m_socketList[activeSocket.id].cutModeId)) {
+                    power = packEndoActivationPower(m_socketList[activeSocket.id].cutModeId, power);
+                }
             }
             else {
                 mode = m_socketList[activeSocket.id].coagModeNum;
@@ -403,10 +419,11 @@ void LinkStm::sendCommand()
                 const PedalKnobPressed knob = m_unitState.pedalKnob;
                 if (sprayM1M2Active
                         && (knob == PRESS_MONO1_B || knob == PRESS_MONO2_B)) {
-                    mode = kHwModeSprayM1M2;
+                    mode = m_socketList[2].coagModeNum;
+                    power = m_socketList[2].coagModePower;
                 }
             }
-            const bool modeAllowed = mode < 32 || mode == kHwModeSprayM1M2;
+            const bool modeAllowed = mode != 0 && mode != ESHF::NO_MODE;
             if (m_enableActivation && modeAllowed && (power > 0) && (power <= 400)) {
                     activeSocket.autoMode = m_socketList[activeSocket.id].autoMode > 0 ? true : false;
                     QElapsedTimer m_elapsedTimer;

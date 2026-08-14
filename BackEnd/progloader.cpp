@@ -63,14 +63,49 @@ std::map<int, InstrPtr> cloneInstrMap(const std::map<int, InstrPtr>& src)
 
 using namespace Onyx;
 
-// БИ1: недоступны Термошов (id=7) и ТЕРМОШОВ А (id=30).
+// БИ1: недоступны ТЕРМОШОВ и ТЕРМОШОВ А; БИ КОАГ МИКРО должен быть в списке коагуляции.
+QString bi1RestrictedModesSql(int socketIndex)
+{
+	if (socketIndex != 0) {
+		return {};
+	}
+	return QStringLiteral(" AND id NOT IN (%1,%2)")
+	        .arg(ESHF::TERMOSHOV)
+	        .arg(ESHF::TERMOSHOV_A);
+}
+
 void excludeBi1RestrictedModes(int socketIndex, QMap<int, SurgModePtr>& modes)
 {
 	if (socketIndex != 0) {
 		return;
 	}
-	modes.remove(7);
-	modes.remove(30);
+	modes.remove(ESHF::TERMOSHOV);
+	modes.remove(ESHF::TERMOSHOV_A);
+}
+
+void keepBi1CoagMicro(int socketIndex, bool isCoag, std::vector<int>& modeIds)
+{
+	if (socketIndex != 0 || !isCoag) {
+		return;
+	}
+	if (std::find(modeIds.begin(), modeIds.end(), ESHF::BI_COAG_MICRO) == modeIds.end()) {
+		modeIds.push_back(ESHF::BI_COAG_MICRO);
+	}
+}
+
+bool isMonoSocketIndex(int socketIndex)
+{
+	return socketIndex == 2 || socketIndex == 3;
+}
+
+void keepMonoCatalogIds(bool isCoag, std::vector<int>& modeIds)
+{
+	const int first = isCoag ? ESHF::SOFT : ESHF::CUT;
+	const int last = isCoag ? ESHF::SPRAY_PULSE_ARGON : ESHF::BLEND2_ARGON;
+	modeIds.erase(std::remove_if(modeIds.begin(), modeIds.end(),
+	                             [first, last](int id) {
+		return id != ESHF::NO_MODE && (id < first || id > last);
+	}), modeIds.end());
 }
 
 bool executePreparedUpdate(const QString& connectionName,
@@ -179,13 +214,13 @@ void makeModes(QMap<int, SurgModePtr>& container,
                bool skipInstrFilter = false) {
 	int start = isCoag ? 6 : 3;
 
-	container.insert(1000, SurgModePtr::create(QCoreApplication::translate("Modes", "НЕ ВЫБРАН"),
+	container.insert(ESHF::NO_MODE, SurgModePtr::create(QCoreApplication::translate("Modes", "НЕ ВЫБРАН"),
                                                                    isCoag,
 	                                           1,
 	                                           1,
-	                                           1000,
+	                                           ESHF::NO_MODE,
 	                                           std::map<int, InstrInfo>(),
-	                                           1000,
+	                                           ESHF::NO_MODE,
 	                                           "",
 	                                           "",
 	                                           false,
@@ -195,16 +230,15 @@ void makeModes(QMap<int, SurgModePtr>& container,
 	for (const auto& item : modes) {
 		int modeId = item.at(2).toInt();
 		QString modeName = item.at(1).toString();
-		int modeNum = item.size() > 3 ? item.at(3).toInt() : 0;  // Num для изображения
+		int modeNum = item.size() > 3 ? item.at(3).toInt() : 0;
 		QString modeBrief = item.size() > 4 ? item.at(4).toString() : "";  // Brief_RU для краткого описания
 		QString modeDescript = item.size() > 5 ? item.at(5).toString() : "";  // Descript_RU для полного описания
 
 		auto instrs = instMap.find(modeId);
-		if (instrs == instMap.end()) {
-			continue;
+		std::map<int, InstrInfo> tmp;
+		if (instrs != instMap.end()) {
+			tmp = instrs->second;
 		}
-
-		std::map<int, InstrInfo> tmp = instrs->second;
 
         // Применяем фильтр только если skipInstrFilter = false
         if (!skipInstrFilter) {
@@ -263,13 +297,17 @@ bool hasNonZeroDigit(int number, int digitPosition) {
 	return (digit != 0);
 }
 
-void filterModeMap(QMap<int, SurgModePtr>& container, const std::vector<int>& allow) {
+void filterModeMap(QMap<int, SurgModePtr>& container, const std::vector<int>& allow,
+                   int socketIndex = -1, bool isCoag = false) {
 	auto iter = container.begin();
 	while (iter != container.end()) {
-		bool contains = iter.key() == 1000;
-		// Аргоновые режимы доступны на обоих МОНО-выходах, даже если в Lists
-		// они указаны только для МОНО1.
-		if (!contains && !iter.value().isNull() && iter.value()->isArgon()) {
+		const int modeId = iter.key();
+		if (socketIndex == 0 && (modeId == ESHF::TERMOSHOV || modeId == ESHF::TERMOSHOV_A)) {
+			iter = container.erase(iter);
+			continue;
+		}
+		bool contains = modeId == ESHF::NO_MODE;
+		if (socketIndex == 0 && isCoag && modeId == ESHF::BI_COAG_MICRO) {
 			contains = true;
 		}
 		for (int a : allow) {
@@ -292,7 +330,7 @@ QString makeDbStringMode( const QModelIndex& idx,
     QStringList list = idx.data(listRole).toStringList();
     int firstItem = idx.data(firstItemRole).toInt();
     list.removeOne(QString::number(firstItem));
-    list.removeOne(QString::number(1000));
+    list.removeOne(QString::number(ESHF::NO_MODE));
     list.prepend(QString::number(firstItem));
     return list.join(',');
 }
@@ -565,13 +603,16 @@ void ProgLoader::defaultSocketInit(bool clear)
 			for (int halfSocket = 0; halfSocket < 2; ++halfSocket ) {
 				bool isCoag = (halfSocket == 0);
 				QMap<int, SurgModePtr> modes;
+				std::vector<int> queryModeIds = allowedModesId;
+				keepBi1CoagMicro(i, isCoag, queryModeIds);
 				QList<QVariantList> modesList = m_dbReaderPtr->slotSendSelectQuery(QStringList{"Modes"},
 				                                                                   QStringList{"MaxPower",DbLocale::column("Name"), "id", "Num", DbLocale::column("Brief"), DbLocale::column("Descript"), "ENDO_REG", "KEY", "Argon"},
 				                                                                   queryConditionModes
 				                                                                   .arg(socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1)
 				                                                                   .arg(halfSocket)
-				                                                                   .arg(makeCommaSeparatedNumbers(allowedModesId))
-				                                                                   + deviceModeFilterCondition());
+				                                                                   .arg(makeCommaSeparatedNumbers(queryModeIds))
+				                                                                   + deviceModeFilterCondition()
+				                                                                   + bi1RestrictedModesSql(i));
 				modesList = filterModesByFeatureKey(modesList, m_featureUnlock);
 
 				// Сортируем по Num (index 3)
@@ -607,7 +648,7 @@ void ProgLoader::defaultSocketInit(bool clear)
 				int defaultPower;
 
 				firstInstrId = 0;
-				firstModeId = 1000;
+				firstModeId = ESHF::NO_MODE;
 				defaultPower = 1;
 
 				socket->setModeId(firstModeId, isCoag);
@@ -795,7 +836,7 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
     const bool keepEndoView = m_socketModelPtr->endoProgramView();
 
     struct HalfSelectionState {
-        int modeId = 1000;
+        int modeId = ESHF::NO_MODE;
         int instrId = 1000;
         int power = 1;
     };
@@ -855,7 +896,8 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
                         queryConditionModes
                                     .arg(socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1)
                                     .arg(halfSocket)
-                                    + deviceModeFilterCondition());
+                                    + deviceModeFilterCondition()
+                                    + bi1RestrictedModesSql(i));
             modesList = filterModesByFeatureKey(modesList, m_featureUnlock);
             
             std::sort(modesList.begin(), modesList.end(),
@@ -882,8 +924,8 @@ bool ProgLoader::freeSettingsSocketInit(bool clear)
             isCoag ? socket->setCoagModes(modes, modeNamesList)
                    : socket->setCutModes(modes, modeNamesList);
             
-            int firstModeId = 1000;
-            if (!modes.isEmpty() && modes.firstKey() != 1000) {
+            int firstModeId = ESHF::NO_MODE;
+            if (!modes.isEmpty() && modes.firstKey() != ESHF::NO_MODE) {
                 firstModeId = modes.firstKey();
             }
 
@@ -1558,7 +1600,7 @@ std::vector<int> ProgLoader::filterModesForDevice(const std::vector<int>& modeId
 	std::vector<int> filtered;
 	filtered.reserve(modeIds.size());
 	for (int modeId : modeIds) {
-		if (modeId == 1000 || allowedModeIds.find(modeId) != allowedModeIds.end()) {
+		if (modeId == ESHF::NO_MODE || allowedModeIds.find(modeId) != allowedModeIds.end()) {
 			filtered.push_back(modeId);
 		}
 	}
@@ -1594,7 +1636,10 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 	const int biMonoFlag = (socket->socketType() <= Onyx::BIPOLAR_2 ? 0 : 1);
 	QMap<int, SurgModePtr> modes;
 	QList<QVariantList> modesList;
-	if (!allowedModesId.empty()) {
+	std::vector<int> queryModeIds = allowedModesId;
+	keepBi1CoagMicro(socketNumber, isCoag, queryModeIds);
+
+	if (!queryModeIds.empty()) {
 		modesList = m_dbReaderPtr->slotSendSelectQuery(
 		            QStringList{"Modes"},
 		            QStringList{"MaxPower",DbLocale::column("Name"), "id", "Num",
@@ -1602,8 +1647,9 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 		            queryConditionModes
 		            .arg(biMonoFlag)
 		            .arg(halfSocket)
-		            .arg(makeCommaSeparatedNumbers(allowedModesId))
-		            + deviceModeFilterCondition());
+		            .arg(makeCommaSeparatedNumbers(queryModeIds))
+		            + deviceModeFilterCondition()
+		            + bi1RestrictedModesSql(socketNumber));
 		modesList = filterModesByFeatureKey(modesList, m_featureUnlock);
 	}
 
@@ -1615,7 +1661,12 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 
 	int start = isCoag ? 6 : 3;
 	std::vector<int> instIdLst = parseCommaSeparatedNumbers(progItem.at(start + 6*socketNumber).toString());;
-	std::vector<int> modeIdLst = parseCommaSeparatedNumbers(progItem.at(start + 1 + 6*socketNumber).toString());
+	std::vector<int> selectedModeIds = parseCommaSeparatedNumbers(progItem.at(start + 1 + 6*socketNumber).toString());
+	std::vector<int> modeIdLst = selectedModeIds;
+	keepBi1CoagMicro(socketNumber, isCoag, modeIdLst);
+	if (isMonoSocketIndex(socketNumber)) {
+		keepMonoCatalogIds(isCoag, modeIdLst);
+	}
 
 	makeModes(modes,
 	          modesList,
@@ -1625,7 +1676,7 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 	          isCoag,
 	          instIdLst);  // Передаём фильтр инструментов
 
-	filterModeMap(modes, modeIdLst);
+	filterModeMap(modes, modeIdLst, socketNumber, isCoag);
 
 	excludeBi1RestrictedModes(socketNumber, modes);
 
@@ -1634,7 +1685,7 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 	int defaultPower;
 
 	firstInstrId = instIdLst.size() == 0 ? 0 : instIdLst.at(0);
-	firstModeId = modeIdLst.size() == 0 ? 1000 : modeIdLst.at(0);
+	firstModeId = selectedModeIds.size() == 0 ? ESHF::NO_MODE : selectedModeIds.at(0);
 	defaultPower = progItem.at(start + 2 + 6*socketNumber).toInt();
 	defaultPower = std::max(1, defaultPower);
 
@@ -1649,20 +1700,20 @@ void ProgLoader::fillHalfSocket(int halfSocket,
 
 	if (!halfEnabled) {
 		QMap<int, SurgModePtr> disabledModes;
-		if (modes.contains(1000))
-			disabledModes.insert(1000, modes.value(1000));
+		if (modes.contains(ESHF::NO_MODE))
+			disabledModes.insert(ESHF::NO_MODE, modes.value(ESHF::NO_MODE));
 		modes = disabledModes;
-		firstModeId = 1000;
+		firstModeId = ESHF::NO_MODE;
 	} else if (treatLowPowerAsUnselected && defaultPower <= 1) {
 		// Только рекомендованные программы: мощность ≤ 1 → «НЕ ВЫБРАН»
-		firstModeId = 1000;
+		firstModeId = ESHF::NO_MODE;
 	}
 
 	isCoag ? socket->setCoagModes(modes, modeNamesList)
 	       : socket->setCutModes(modes, modeNamesList);
 
 	if (!socket->setModeId(firstModeId, isCoag)) {
-		socket->setModeId(1000, isCoag);
+		socket->setModeId(ESHF::NO_MODE, isCoag);
 	}
 	socket->setInstrumId(firstInstrId, isCoag);
 
