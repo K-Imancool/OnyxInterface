@@ -118,7 +118,7 @@ private:
 	std::map<int, QString> m_scopes;
 	std::map<int, QString> m_progs;
 	QList<QList<QPair<int, QString>>> m_progSubLists;
-	bool m_isRecomProgs;
+	bool m_isRecomProgs = true;
 };
 
 

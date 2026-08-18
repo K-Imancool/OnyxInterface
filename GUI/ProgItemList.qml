@@ -225,6 +225,11 @@ Rectangle {
 
     Component.onCompleted: {
         recomHandle.isRecomProgs = recommended
+        // QML не вызывает setter, если значение уже такое — тогда init() не придёт
+        // через onScopeNameListChanged, и экран останется пустым после импорта.
+        recomHandle.updateScopes(recommended)
+        init()
+        updateModel()
     }
 
     Connections {

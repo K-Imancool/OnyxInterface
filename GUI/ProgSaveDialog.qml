@@ -127,7 +127,7 @@ Dialog {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 72
                     visible: root.isNewScope
-                    placeholderText: qsTr("Категория")
+                    placeholderText: qsTr("Название папки")
                     color: "black"
                     font.pixelSize: 28
                     selectByMouse: true

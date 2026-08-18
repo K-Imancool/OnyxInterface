@@ -210,6 +210,7 @@ Item {
                 accentColor: settingsScreen.fotekOrange
                 textColor: settingsScreen.fotekBlue
                 iconSize: settingsScreen.menuActionLargeIconSize
+                iconCenter: false
                 labelPixelSize: settingsScreen.menuActionLargeLabelSize
                 onPressed: settingsScreen.recommendButtonPressed()
             }

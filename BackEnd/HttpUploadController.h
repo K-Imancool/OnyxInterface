@@ -10,9 +10,13 @@
 #include <QMutex>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QHostAddress>
+#include <QVariantList>
+#include <QList>
 
 class JsonStorage;
 class LinkStm;
+class UserProgTransferController;
 
 /// Минимальный HTTP-приём файлов по Wi‑Fi (GET форма + POST multipart) для Qt 5.15.
 class HttpUploadController : public QObject
@@ -32,6 +36,19 @@ class HttpUploadController : public QObject
     Q_PROPERTY(QString accessPointPassword READ accessPointPassword NOTIFY accessPointChanged)
     Q_PROPERTY(QString accessPointStatusText READ accessPointStatusText NOTIFY accessPointStatusTextChanged)
     Q_PROPERTY(QString logDownloadUrl READ logDownloadUrl NOTIFY logDownloadUrlChanged)
+    Q_PROPERTY(bool logDownloadMode READ isLogDownloadMode NOTIFY sessionModeChanged)
+    Q_PROPERTY(bool userProgDownloadMode READ isUserProgDownloadMode NOTIFY sessionModeChanged)
+    Q_PROPERTY(bool userProgUploadMode READ isUserProgUploadMode NOTIFY sessionModeChanged)
+    Q_PROPERTY(bool userProgImportCompleted READ userProgImportCompleted NOTIFY userProgImportCompletedChanged)
+    Q_PROPERTY(QString userProgImportSummary READ userProgImportSummary NOTIFY userProgImportCompletedChanged)
+    Q_PROPERTY(int userProgImportedPrograms READ userProgImportedPrograms NOTIFY userProgImportCompletedChanged)
+    Q_PROPERTY(int userProgImportedNewFolders READ userProgImportedNewFolders NOTIFY userProgImportCompletedChanged)
+    Q_PROPERTY(int userProgImportedExistingFolders READ userProgImportedExistingFolders NOTIFY userProgImportCompletedChanged)
+    Q_PROPERTY(bool logArchiveReady READ logArchiveReady NOTIFY logArchiveStateChanged)
+    Q_PROPERTY(bool logArchiveBuilding READ logArchiveBuilding NOTIFY logArchiveStateChanged)
+    Q_PROPERTY(QString logArchiveError READ logArchiveError NOTIFY logArchiveStateChanged)
+    Q_PROPERTY(bool logDownloadCompleted READ logDownloadCompleted NOTIFY logDownloadCompletedChanged)
+    Q_PROPERTY(QString userProgDownloadFileName READ userProgDownloadFileName NOTIFY userProgDownloadFileNameChanged)
     Q_PROPERTY(bool uploadInProgress READ uploadInProgress NOTIFY uploadProgressChanged)
     Q_PROPERTY(double uploadProgress READ uploadProgress NOTIFY uploadProgressChanged)
     Q_PROPERTY(QString uploadStatusText READ uploadStatusText NOTIFY uploadProgressChanged)
@@ -54,6 +71,7 @@ public:
 
     void setJsonStorage(JsonStorage *storage);
     void setLinkStm(LinkStm *linkStm);
+    void setUserProgTransfer(UserProgTransferController *transfer);
 
     bool isActive() const { return m_active; }
     QString sessionToken() const { return m_sessionToken; }
@@ -69,6 +87,19 @@ public:
     QString accessPointPassword() const { return m_apPassword; }
     QString accessPointStatusText() const { return m_apStatusText; }
     QString logDownloadUrl() const { return m_logDownloadUrl; }
+    bool isLogDownloadMode() const;
+    bool isUserProgDownloadMode() const;
+    bool isUserProgUploadMode() const;
+    bool userProgImportCompleted() const { return m_userProgImportCompleted; }
+    QString userProgImportSummary() const { return m_userProgImportSummary; }
+    int userProgImportedPrograms() const { return m_userProgImportedPrograms; }
+    int userProgImportedNewFolders() const { return m_userProgImportedNewFolders; }
+    int userProgImportedExistingFolders() const { return m_userProgImportedExistingFolders; }
+    bool logArchiveReady() const;
+    bool logArchiveBuilding() const;
+    QString logArchiveError() const;
+    bool logDownloadCompleted() const { return m_logDownloadCompleted; }
+    QString userProgDownloadFileName() const { return m_userProgDownloadFileName; }
     bool uploadInProgress() const { return m_uploadInProgress; }
     double uploadProgress() const { return m_uploadProgress; }
     QString uploadStatusText() const { return m_uploadStatusText; }
@@ -87,6 +118,11 @@ public:
     int mcFirmwareUpdateProgress() const { return m_mcFirmwareUpdateProgress; }
 
     Q_INVOKABLE void startSession();
+    Q_INVOKABLE void startLogDownloadSession();
+    Q_INVOKABLE void startUserProgDownloadSession(const QVariantList &scopeIds,
+                                                  const QString &downloadFileName = QString());
+    Q_INVOKABLE QString buildUserProgExportFileName(const QString &namePrefix) const;
+    Q_INVOKABLE void startUserProgUploadSession();
     Q_INVOKABLE void stopSession();
     Q_INVOKABLE QStringList localIpv4Addresses() const;
     Q_INVOKABLE void refreshReleaseVersions();
@@ -115,6 +151,11 @@ signals:
     void accessPointClientConnectedChanged();
     void accessPointStatusTextChanged();
     void logDownloadUrlChanged();
+    void sessionModeChanged();
+    void logArchiveStateChanged();
+    void logDownloadCompletedChanged();
+    void userProgDownloadFileNameChanged();
+    void userProgImportCompletedChanged();
     void uploadProgressChanged();
     void detectedReleaseChanged();
     void currentMediaVersionChanged();
@@ -139,8 +180,26 @@ private:
     QHostAddress effectiveClientAddress() const;
     QString selectWifiInterface() const;
     QHostAddress addressForInterface(const QString &ifaceName) const;
+    struct AccessPointSetupResult {
+        bool ok = false;
+        bool profileCreated = false;
+        QString errorText;
+        QString interfaceName;
+        QHostAddress address;
+    };
     bool startAccessPoint(QString *errorText);
     void stopAccessPoint();
+    AccessPointSetupResult runAccessPointSetup(const QString &interfaceName,
+                                               const QString &ssid,
+                                               const QString &connectionName,
+                                               const QString &configuredAddress,
+                                               const QString &password) const;
+    void startLogDownloadSessionInternal();
+    void startDeferredAccessPointSession();
+    void launchAccessPointThenActivate(quint64 generation);
+    bool activateHttpAfterAccessPoint();
+    void setLogDownloadCompleted(bool completed);
+    void scheduleAccessPointShutdownAfterLogDownload();
     bool runCommandWithSudoFallback(const QString &program, const QStringList &args,
                                     int timeoutMs, QString *stdoutText = nullptr,
                                     QString *stderrText = nullptr) const;
@@ -153,15 +212,40 @@ private:
     bool hasConnectedAccessPointClient() const;
     QString accessPointIpAddressString() const;
     void loadNetworkSettings();
+    bool wifiAlwaysEnabled() const;
+    bool ensureWifiReadyForSession(QString *errorText = nullptr);
+    void cleanupWifiAfterSession();
     bool invokeUploadFirewallGuard(const QString &action, QString *errorText = nullptr) const;
     void tryProcessBuffer();
     void sendHttpResponse(QTcpSocket *socket, int statusCode, const QByteArray &contentType, const QByteArray &body);
     void sendFileDownloadResponse(QTcpSocket *socket, const QByteArray &downloadFileName, const QByteArray &body);
     void sendJsonResponse(QTcpSocket *socket, int statusCode, const QByteArray &jsonBody);
     void sendSimpleHtml(QTcpSocket *socket, int statusCode, const QString &title, const QString &bodyHtml);
+    enum class SessionKind {
+        FirmwareUpload,
+        LogDownload,
+        UserProgDownload,
+        UserProgUpload
+    };
+    void beginSession(SessionKind kind);
+    void setSessionKind(SessionKind kind);
+    bool isPreparedDownloadMode() const;
+    void setUserProgImportCompleted(bool completed);
+    QString sanitizeUserProgNamePrefix(const QString &raw) const;
+    QString userProgExportSuffix() const;
+    QString sessionDownloadFileName() const;
+    QString sessionPreparedDownloadFetchPath() const;
+    QByteArray sessionDownloadContentType() const;
+    void scheduleAccessPointShutdownAfterUserProgUpload();
+    void fillDeviceIdentityHtml(QString *serialHtml, QString *typeHtml) const;
+    QString uiLanguage() const;
+    QString pageText(const char *key) const;
+    QString deviceTypeFileTag() const;
     QByteArray buildUploadPageHtml() const;
+    QByteArray buildLogDownloadPageHtml() const;
     bool isAuthorizedClient(const QHostAddress &peer) const;
-    void bindAuthorizedClient(const QHostAddress &peer);
+    void bindAuthorizedClient(const QHostAddress &peer, bool allowRebind = false);
+    bool ensureDownloadClientAccess(const QHostAddress &peer, bool allowRebind);
     void sendDownloadForbidden(QTcpSocket *socket, const QString &reason, const QString &message);
     bool parseMultipartAndSave(const QByteArray &body, const QString &contentType, int *filesSaved, QString *errorMessage);
     bool processReleaseArchiveBytes(const QString &sourceFileName, const QByteArray &archiveBytes, QString *errorMessage);
@@ -184,6 +268,7 @@ private:
     bool isValidTokenInPath(const QString &path) const;
     bool buildLogArchiveBundle(const QString &sessionToken, QString *outFilePath, qint64 *outFileSize,
                                QString *errorHtml) const;
+    QString logArchiveDownloadFileName() const;
     bool sendFileDownloadFromPath(QTcpSocket *socket, const QString &filePath);
     void drainPendingConnections();
     void resetLogArchiveCache();
@@ -217,14 +302,25 @@ private:
     QString m_qrStatusText;
     bool m_apActive = false;
     bool m_apClientConnected = false;
-    QString m_apSsid = QStringLiteral("ONYX-TEST");
+    QString m_apSsid = QStringLiteral("ONYX-SERVICE");
     QString m_apPassword = QStringLiteral("Electrosurgical");
     QString m_apInterfaceName;
-    QString m_apConnectionName = QStringLiteral("ONYX-TEST-update");
+    QString m_apConnectionName = QStringLiteral("ONYX-SERVICE-update");
     QString m_apConfiguredAddress = QStringLiteral("192.168.50.1/24");
     QHostAddress m_apAddress;
     QString m_apStatusText;
     QString m_logDownloadUrl;
+    SessionKind m_sessionKind = SessionKind::FirmwareUpload;
+    bool m_logDownloadCompleted = false;
+    bool m_userProgImportCompleted = false;
+    QString m_userProgImportSummary;
+    QString m_userProgImportError;
+    int m_userProgImportedPrograms = 0;
+    int m_userProgImportedNewFolders = 0;
+    int m_userProgImportedExistingFolders = 0;
+    QList<int> m_userProgExportScopeIds;
+    QString m_userProgDownloadFileName;
+    UserProgTransferController *m_userProgTransfer = nullptr;
     bool m_uploadInProgress = false;
     double m_uploadProgress = 0.0;
     QString m_uploadStatusText;
@@ -248,6 +344,7 @@ private:
     QHostAddress m_authorizedClientAddress;
     QTimer m_sessionTimer;
     QTimer m_apClientPollTimer;
+    quint64 m_sessionGeneration = 0;
 
     enum class LogArchiveState {
         Idle,

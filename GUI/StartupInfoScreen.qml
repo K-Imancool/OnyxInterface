@@ -32,12 +32,25 @@ Item {
         return mcFirmware.modules[index]
     }
 
-    function moduleAppVersion(index) {
-        var mod = moduleAt(index)
+    function formatModuleAppVersion(mod, compact) {
         if (!mod) {
-            return "0.0"
+            return compact ? "0.0" : "—"
         }
-        return normalizedVersion(mod.appMain + "." + mod.appSub)
+        if (mod.appStatus === "corrupted" || mod.appCorrupted) {
+            return compact ? qsTr("повр") : qsTr("повреждена")
+        }
+        if (mod.appStatus === "missing") {
+            return compact ? qsTr("нет") : qsTr("нет")
+        }
+        if (mod.appStatus === "unknown") {
+            return compact ? "0.0" : "—"
+        }
+        var text = String(mod.appMain) + "." + String(mod.appSub)
+        return compact ? normalizedVersion(text) : text
+    }
+
+    function moduleAppVersion(index) {
+        return formatModuleAppVersion(moduleAt(index), true)
     }
 
     function moduleBootAndAppVersion(index) {
@@ -46,7 +59,7 @@ Item {
             return "0.0/0.0"
         }
         return normalizedVersion(mod.bootMain + "." + mod.bootSub)
-                + "/" + normalizedVersion(mod.appMain + "." + mod.appSub)
+                + "/" + formatModuleAppVersion(mod, true)
     }
 
     function buildSoftwareVersionsText() {

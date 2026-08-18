@@ -22,21 +22,24 @@ UserProgLoader::UserProgLoader(bool deviceHasArgon, QObject *parent)
 
 std::map<int, QString> UserProgLoader::getPrograms(int scopeID)
 {
-    QString queryCondition = "Scope_ID = %1 AND (Argon = 0 OR Argon = %2)";
+    // В userProg.db нет группировки рекомендуемых (Prog_NUM % 10).
+    // Argon = NULL тоже показываем: иначе импорт без колонки Argon «пропадает».
+    const QString queryCondition =
+            QStringLiteral("Scope_ID = %1 AND (Argon IS NULL OR Argon = 0 OR Argon = %2)")
+            .arg(scopeID)
+            .arg(m_deviceHasArgon ? 2 : 1);
 
-    QList<QVariantList> progListVariant = m_dbReader->slotSendSelectQuery(QStringList{"Progs"},
-                                                                        QStringList{DbLocale::column("Name"),"id", "Prog_NUM", DbLocale::column("Subprog")},
-                                                                        queryCondition.arg(scopeID).arg(m_deviceHasArgon ? 2 : 1));
+    const QList<QVariantList> progListVariant = m_dbReader->slotSendSelectQuery(
+                QStringList{QStringLiteral("Progs")},
+                QStringList{DbLocale::column("Name"), QStringLiteral("id")},
+                queryCondition);
 
     std::map<int, QString> progList;
     for (const auto& item : progListVariant) {
-        const bool isMainProg = item.at(2).toInt() % 10 == 0;
-        if (!isMainProg) {
+        if (item.size() < 2) {
             continue;
         }
-        int id = item.at(1).toInt();
-        QString name = item.at(0).toString();
-        progList.insert_or_assign(id, name);
+        progList.insert_or_assign(item.at(1).toInt(), item.at(0).toString());
     }
     return progList;
 }

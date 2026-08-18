@@ -279,7 +279,7 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
     else {
         m_state = STATE_RX_ERR;
 //        qDebug() << "не тот ответ от stm";      // DEBUG
-        if ((m_fwUpdateSessionActive || m_fwUpdateAwaitingGoApp) && !m_fwUpdateAwaitingBoot) {
+        if (isFirmwareUpdateInProgress()) {
             if (!m_fwRxErrStreakTimer.isValid()) {
                 m_fwRxErrStreakTimer.start();
             } else if (m_fwRxErrStreakTimer.elapsed() >= 4000) {
@@ -344,6 +344,7 @@ void LinkStm::sendCommand()
     static int updateProgr = 0;
     static UartState preState = STATE_OK;   // Предыдущее состояние
     static int errCounter = 0;
+    static int slowNoRxCount = 0;       // NO_RX для GoBoot/GoApp/Erase/StartUpdate (по 1 с)
 
     if (m_abortFirmwareUpdatePending) {
         updateCounter = 0;
@@ -356,30 +357,65 @@ void LinkStm::sendCommand()
     // Не дождались адекватного ответа (unpackRxCommand)
     if (m_waitAnswer)
        m_state = STATE_NO_RX;
+
+    const bool fwInProgress = isFirmwareUpdateInProgress();
+    bool skipCommandBuild = false;
+    const bool lastWasSlowCmd = (m_lastCommand.com == StartUpdate
+                                 || m_lastCommand.com == GoApp
+                                 || m_lastCommand.com == Erase
+                                 || m_lastCommand.com == GoBoot);
+
+    // Нет ответа от МК во время обновления — для «медленных» команд ждём до ~8 с
+    if (fwInProgress && m_state == STATE_NO_RX) {
+        if (!m_fwRxErrStreakTimer.isValid()) {
+            m_fwRxErrStreakTimer.start();
+        } else if (m_fwRxErrStreakTimer.elapsed() >= 8000) {
+            abortFirmwareUpdate(tr("МК не отвечает"));
+            skipCommandBuild = true;
+            slowNoRxCount = 0;
+        }
+    }
+
     //_____________ Проверяем ответ rx__________
-    if (m_state != STATE_OK) {
-        if (m_state != preState) {
+    if (!skipCommandBuild && m_state != STATE_OK) {
+        const bool slowNoRx = (m_state == STATE_NO_RX) && lastWasSlowCmd;
+        if (slowNoRx) {
+            // Тик раз в 1 с: не репортим сразу, только после 8 с суммарно
+            if (slowNoRxCount < 8) {
+                ++slowNoRxCount;
+            }
+            if (slowNoRxCount >= 8 && preState != STATE_NO_RX) {
+                reportError(m_state);
+                preState = STATE_NO_RX;
+                errCounter = 0;
+            }
+        } else if (m_state != preState) {
             // qDebug() << "UART-ошибки: " << m_state;
             reportError(m_state);               // Ошибки ответа
             preState = m_state;                 // Запоминаем предыдущее состояние
             errCounter = 0;                     // Сбрасываем счётчик ошибок
+            slowNoRxCount = 0;
             if (m_state == STATE_NO_RX && m_lastCommand.com == CurrentVersion) {
                 clearMcVersionsForUnit(m_lastCommand.mc);
             }
         }
         else if (errCounter++ > 100) {
-            m_state = STATE_OK;                 // Делаем попытку выйти на нормальную работу
-            errCounter = 0;
+            // Во время прошивки не маскируем NO_RX/RX_ERR «восстановлением» STATE_OK
+            if (!fwInProgress) {
+                m_state = STATE_OK;             // Делаем попытку выйти на нормальную работу
+                errCounter = 0;
+            }
         }
     }
-    else {
+    else if (!skipCommandBuild) {
         if (!m_waitAnswer) {
             preState = STATE_OK;
         }
         errCounter = 0;
+        slowNoRxCount = 0;
     }
 
-    if (m_state == STATE_OK) {
+    if (!skipCommandBuild && m_state == STATE_OK) {
         readRxCommand();                    // Читаем ответ
 
         if (m_readyToPowerOffPending && !m_fwUpdateSessionActive && !m_fwUpdateAwaitingGoApp) {
@@ -502,7 +538,9 @@ void LinkStm::sendCommand()
                     m_txCommand.mc = MC_COM;
                     emit sigUpdateProgress(-1);
                 }
-                setTxCommandBoot();
+                // Не вызываем setTxCommandBoot(): при boot=BOOT_0 это шлёт GoBoot на COM
+                // и ломает цепочку «обновить всё» (ARG/GEN → COM). Только опрос версий.
+                mcVersRequest();
             }
             else if ((m_lastCommand.com == StartUpdate) ||
                      (m_lastCommand.com == SoftData)) {
@@ -566,7 +604,8 @@ void LinkStm::sendCommand()
     case GoApp:
     case Erase:
     case GoBoot:
-        m_uartTimer->setInterval(3000);  // Стирание банка около 6 сек, перезагрузка 3-4 сек
+        // Ответ может занять до ~8 с; тик 1 с, ошибка связи — после 8 промахов
+        m_uartTimer->setInterval(1000);
         break;
     case SoftData:
         m_uartTimer->setInterval(100);
@@ -995,11 +1034,22 @@ const LinkStm::UartRx &LinkStm::rxCommand() const
     return m_rxCommand;
 }
 
+bool LinkStm::isFirmwareUpdateInProgress() const
+{
+    return m_fwUpdateSessionActive
+            || m_fwUpdateAwaitingBoot
+            || m_fwUpdateAwaitingReady
+            || m_fwUpdateAwaitingGoApp;
+}
+
 void LinkStm::updateTransfer(QList<HexString> hexList, QString versionStr)
 {
     m_softSize = hexList.size();
     m_transferredSize = 0;
     m_hexList = hexList;
+    // Хвост спецкоманд (в т.ч. GoBoot/CurrentVersion после предыдущего МК) не должен
+    // перехватываться посередине новой сессии обновления.
+    m_txCommandList.clear();
     m_fwUpdateSessionActive = true;
     m_fwRxErrStreakTimer.invalidate();
     // Организуем отправку
@@ -1026,6 +1076,7 @@ void LinkStm::abortFirmwareUpdate(const QString &message)
     m_softSize = 0;
     m_transferredSize = 0;
     m_versionStr.clear();
+    m_txCommandList.clear();
     m_abortFirmwareUpdatePending = true;
     m_state = STATE_OK;
     m_comState = IDLE;
@@ -1191,6 +1242,7 @@ void LinkStm::clearMcVersionAt(int index)
     mcVersions[index].appVer = 0;
     mcVersions[index].appSubVer = 0;
     m_moduleHasWorkingApp[index] = false;
+    m_moduleAppStatus[index] = AppFwUnknown;
 }
 
 void LinkStm::clearMcVersionsForUnit(McUnit unit)
@@ -1208,55 +1260,102 @@ void LinkStm::clearMcVersionsForUnit(McUnit unit)
     publishFirmwareVersions();
 }
 
+void LinkStm::applyAppFirmwareStatus(int index, quint8 appVer)
+{
+    if (index < 0 || index >= 5) {
+        return;
+    }
+
+    AppFirmwareStatus newStatus = AppFwOk;
+    if (appVer == 0) {
+        newStatus = AppFwMissing;
+    } else if (appVer == 0xFF) {
+        newStatus = AppFwCorrupted;
+    }
+
+    m_moduleHasWorkingApp[index] = (newStatus == AppFwOk);
+
+    if (m_moduleAppStatus[index] == newStatus) {
+        return;
+    }
+    m_moduleAppStatus[index] = newStatus;
+
+    // Ошибки только при переходе в проблемный статус (не на каждый опрос Version)
+    if (newStatus == AppFwMissing) {
+        reportError(ErrApp);
+    } else if (newStatus == AppFwCorrupted) {
+        reportError(ErrUpdate);
+    }
+}
+
 void LinkStm::setMcVersions(const UartRx &rxCom)
 {
     quint8 mc = rxCom.mc >> 5; // модуль связи - 0, аргонник - 1, генератор - 2
-//    bool isErrRx = false;
     if (mc >= 5) {
         qWarning() << "setMcVersions: invalid module index" << mc;
         return;
     }
+    // Version: [boot, bootSub, app, appSub]; для GEN ещё [rask, nel]
     if (rxCom.data.size() < 4) {
         qWarning() << "setMcVersions: packet too short, size =" << rxCom.data.size();
         clearMcVersionsForUnit(static_cast<McUnit>(mc << 5));
         return;
     }
-    mcVersions[mc].bootVer = rxCom.data.at(0);
-    mcVersions[mc].bootSubVer = rxCom.data.at(1);
-    mcVersions[mc].appVer = rxCom.data.at(2);
-    mcVersions[mc].appSubVer = rxCom.data.at(3);
-    m_moduleHasWorkingApp[mc] = mcVersions[mc].appVer == 0 ? false : true;
+    mcVersions[mc].bootVer = static_cast<quint8>(rxCom.data.at(0));
+    mcVersions[mc].bootSubVer = static_cast<quint8>(rxCom.data.at(1));
+    mcVersions[mc].appVer = static_cast<quint8>(rxCom.data.at(2));
+    mcVersions[mc].appSubVer = static_cast<quint8>(rxCom.data.at(3));
+    applyAppFirmwareStatus(static_cast<int>(mc), mcVersions[mc].appVer);
 
-    // Генератор передаёт ещё версии НЭ и раскачки
+    // Генератор передаёт ещё версии МК раскачки и МК НЭ (по одному байту версии)
     if (mc == 2) {
-        if (rxCom.data.size() < 8) {
+        if (rxCom.data.size() < 6) {
             qWarning() << "setMcVersions: generator packet too short, size =" << rxCom.data.size();
             clearMcVersionAt(3);
             clearMcVersionAt(4);
             publishFirmwareVersions();
             return;
         }
-        mcVersions[3].appVer = rxCom.data.at(6);       // Версия раскачки (без подверсий)
-        mcVersions[4].appVer = rxCom.data.at(7);       // Версия НЭ
+        mcVersions[3].appVer = static_cast<quint8>(rxCom.data.at(4)); // раскачка
+        mcVersions[4].appVer = static_cast<quint8>(rxCom.data.at(5)); // НЭ
         mcVersions[3].bootVer = 0;
         mcVersions[3].bootSubVer = 0;
         mcVersions[3].appSubVer = 0;
         mcVersions[4].bootVer = 0;
         mcVersions[4].bootSubVer = 0;
         mcVersions[4].appSubVer = 0;
-        m_moduleHasWorkingApp[3] = mcVersions[3].appVer == 0 ? false : true;
-        m_moduleHasWorkingApp[4] = mcVersions[4].appVer == 0 ? false : true;
+        applyAppFirmwareStatus(3, mcVersions[3].appVer);
+        applyAppFirmwareStatus(4, mcVersions[4].appVer);
     }
 
     publishFirmwareVersions();
 }
 
-static QVariantList packMcVersionsForQml(const LinkStm::McVersions *vs, bool *moduleHasWorkingApp, int count)
+static QString appFirmwareStatusToString(LinkStm::AppFirmwareStatus status)
+{
+    switch (status) {
+    case LinkStm::AppFwOk:
+        return QStringLiteral("ok");
+    case LinkStm::AppFwMissing:
+        return QStringLiteral("missing");
+    case LinkStm::AppFwCorrupted:
+        return QStringLiteral("corrupted");
+    case LinkStm::AppFwUnknown:
+    default:
+        return QStringLiteral("unknown");
+    }
+}
+
+static QVariantList packMcVersionsForQml(const LinkStm::McVersions *vs,
+                                        const bool *moduleHasWorkingApp,
+                                        const LinkStm::AppFirmwareStatus *moduleAppStatus,
+                                        int count)
 {
     QVariantList list;
     list.reserve(count);
     for (int i = 0; i < count; ++i) {
         const LinkStm::McVersions &v = vs[i];
+        const LinkStm::AppFirmwareStatus status = moduleAppStatus[i];
         QVariantMap m;
         m.insert(QStringLiteral("index"), i);
         m.insert(QStringLiteral("mcUnit"), static_cast<int>(v.mc));
@@ -1266,6 +1365,8 @@ static QVariantList packMcVersionsForQml(const LinkStm::McVersions *vs, bool *mo
         m.insert(QStringLiteral("appSub"), static_cast<int>(v.appSubVer));
         m.insert(QStringLiteral("reportsBootAndApp1"), i < 3);
         m.insert(QStringLiteral("hasWorkingApp"), moduleHasWorkingApp[i]);
+        m.insert(QStringLiteral("appCorrupted"), status == LinkStm::AppFwCorrupted);
+        m.insert(QStringLiteral("appStatus"), appFirmwareStatusToString(status));
         list.append(m);
     }
     return list;
@@ -1273,7 +1374,8 @@ static QVariantList packMcVersionsForQml(const LinkStm::McVersions *vs, bool *mo
 
 void LinkStm::publishFirmwareVersions()
 {
-    emit sigFirmwareVersionsChanged(packMcVersionsForQml(mcVersions, m_moduleHasWorkingApp, 5));
+    emit sigFirmwareVersionsChanged(
+                packMcVersionsForQml(mcVersions, m_moduleHasWorkingApp, m_moduleAppStatus, 5));
 }
 
 const LinkStm::UartState &LinkStm::state() const

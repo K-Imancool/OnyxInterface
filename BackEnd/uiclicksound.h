@@ -3,7 +3,12 @@
 
 #include <QElapsedTimer>
 #include <QObject>
-#include <QSoundEffect>
+#include <QPointer>
+
+class ClickAudioEngine;
+class QQuickItem;
+class QQuickWindow;
+class QThread;
 
 /**
  * Глобальный звук касания UI: <fotekRoot>/sounds/button0.wav
@@ -16,6 +21,7 @@ class UiClickSound : public QObject
 
 public:
     explicit UiClickSound(QObject *parent = nullptr);
+    ~UiClickSound() override;
 
     bool enabled() const;
     void setEnabled(bool enabled);
@@ -37,13 +43,16 @@ signals:
 private:
     void loadSource();
     void playClick(bool force = false);
-    bool isOnSettingsVolumeSlider(const QPointF &globalPos) const;
+    bool isOnSettingsVolumeSlider(QQuickWindow *window, const QPointF &globalPos);
 
-    static constexpr qint64 kMinIntervalMs = 180;
+    static constexpr qint64 kMinIntervalMs = 220;
     static constexpr const char *kVolumeSliderObjectName = "settingsVolumeSlider";
 
-    QSoundEffect *m_effect = nullptr;
+    QThread *m_audioThread = nullptr;
+    ClickAudioEngine *m_engine = nullptr;
+    QPointer<QQuickItem> m_volumeSlider;
     bool m_enabled = true;
+    bool m_touchSeen = false;
     qreal m_volume = 1.0;
     QElapsedTimer m_lastPlay;
 };

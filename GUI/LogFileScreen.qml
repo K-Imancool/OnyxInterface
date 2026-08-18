@@ -7,10 +7,11 @@ Item {
     id: logScreen
 
     signal returnButtonPressed()
+    signal logDownloadButtonPressed()
 
     readonly property int actionButtonHeight: 72
     readonly property int actionButtonWidth: 150
-    readonly property int calendarPopupHeight: actionButtonHeight * 2 + 28 + 42 * 6 + 82
+    readonly property int calendarPopupHeight: 750
     readonly property var monthNames: [
         qsTr("Январь"), qsTr("Февраль"), qsTr("Март"), qsTr("Апрель"),
         qsTr("Май"), qsTr("Июнь"), qsTr("Июль"), qsTr("Август"),
@@ -215,6 +216,13 @@ Item {
                 color: "white"
             }
 
+            Text {
+                Layout.fillWidth: true
+                color: "#d0e8e8"
+                font.pixelSize: 22
+                text: qsTr("Дата:")
+            }
+
             SButton {
                 id: openCalendarButton
                 Layout.fillWidth: true
@@ -227,17 +235,17 @@ Item {
                 }
             }
 
-            SButton {
-                id: refreshCalendarButton
-                Layout.fillWidth: true
-                height: logScreen.actionButtonHeight
-                style: "btn-primary lg"
-                text: qsTr("Обновить")
-                onPressed: {
-                    logScreen.refreshDates()
-                    logScreen.refreshLog()
-                }
-            }
+//            SButton {
+//                id: refreshCalendarButton
+//                Layout.fillWidth: true
+//                height: logScreen.actionButtonHeight
+//                style: "btn-primary lg"
+//                text: qsTr("Обновить")
+//                onPressed: {
+//                    logScreen.refreshDates()
+//                    logScreen.refreshLog()
+//                }
+//            }
         }
 
         Text {
@@ -318,7 +326,7 @@ Item {
 
                 SButton {
                     id: closeCalendarButton
-                    width: 110
+                    width: 140
                     height: logScreen.actionButtonHeight
                     style: "btn-secondary"
                     text: qsTr("Закрыть")
@@ -445,13 +453,37 @@ Item {
         }
     }
 
-    SButton {
+    DialogActionButton {
         id: retButton
-        style: "btn-secondary"
-        text: qsTr("Назад")
+        width: 180
+        height: 72
+        text: qsTr("НАЗАД")
+        secondaryColor: "#264093"
+        secondaryBorderWidth: 1
+        secondaryBorderColor: "#1E3274"
+        cornerRadius: 20
+        labelPixelSize: 30
         onPressed: logScreen.returnButtonPressed()
         anchors {
             left: parent.left
+            bottom: parent.bottom
+            margins: 15
+        }
+    }
+
+    DialogActionButton {
+        id: downloadLogButton
+        width: 380
+        height: 72
+        text: qsTr("СКАЧАТЬ ЛОГ-ФАЙЛ")
+        secondaryColor: "#264093"
+        secondaryBorderWidth: 1
+        secondaryBorderColor: "#1E3274"
+        cornerRadius: 20
+        labelPixelSize: 30
+        onPressed: logScreen.logDownloadButtonPressed()
+        anchors {
+            right: parent.right
             bottom: parent.bottom
             margins: 15
         }

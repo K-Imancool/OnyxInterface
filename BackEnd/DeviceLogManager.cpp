@@ -885,8 +885,8 @@ QString DeviceLogManager::warningTextForCode(int code) const
     case 0x87: return QStringLiteral("Ошибка: питание НЭ 5В не соответствует норме");
     case 0x88: return QStringLiteral("Ошибка: питание НЭ 3,3В не соответствует норме");
     case 0x89: return QStringLiteral("Ошибка: перегрев контроллера НЭ");
-    case 0x8D: return QStringLiteral("Ошибка: обновление не выполнено");
-    case 0x8E: return QStringLiteral("Ошибка: нет рабочей прошивки МУС");
+    case 0x8D: return QStringLiteral("Ошибка: прошивка МК повреждена или обновление не выполнено");
+    case 0x8E: return QStringLiteral("Ошибка: нет рабочей прошивки МК");
     case 0x90: return QStringLiteral("Критичная ошибка: ИСН при включении");
     case 0x91: return QStringLiteral("Критичная ошибка: АЦП1 (напряжение контура)");
     case 0x92: return QStringLiteral("Критичная ошибка: АЦП2 (ток контура)");

@@ -97,10 +97,20 @@ Item {
                 || base === "StartupInfoScreen.qml"
     }
 
+    function isLogFileChildScreenBaseName(base) {
+        return base === "WifiLogDownload.qml"
+    }
+
     function isAdditionalSettingsChildScreenBaseName(base) {
         return base === "ServiceMenu.qml"
                 || base === "LogFileScreen.qml"
                 || base === "DateTimeSettings.qml"
+                || base === "UserProgTransferMenu.qml"
+    }
+
+    function isUserProgTransferChildScreenBaseName(base) {
+        return base === "UserProgDownload.qml"
+                || base === "UserProgUpload.qml"
     }
 
     signal returnButtonPressed()
@@ -165,11 +175,23 @@ Item {
                     if (menuLoader.item.logFileButtonPressed) {
                         menuLoader.item.logFileButtonPressed.disconnect()
                     }
+                    if (menuLoader.item.logDownloadButtonPressed) {
+                        menuLoader.item.logDownloadButtonPressed.disconnect()
+                    }
                     if (menuLoader.item.additionalSettingsButtonPressed) {
                         menuLoader.item.additionalSettingsButtonPressed.disconnect()
                     }
                     if (menuLoader.item.dateTimeSettingsButtonPressed) {
                         menuLoader.item.dateTimeSettingsButtonPressed.disconnect()
+                    }
+                    if (menuLoader.item.userProgTransferButtonPressed) {
+                        menuLoader.item.userProgTransferButtonPressed.disconnect()
+                    }
+                    if (menuLoader.item.userProgDownloadButtonPressed) {
+                        menuLoader.item.userProgDownloadButtonPressed.disconnect()
+                    }
+                    if (menuLoader.item.userProgUploadButtonPressed) {
+                        menuLoader.item.userProgUploadButtonPressed.disconnect()
                     }
                     if (menuLoader.item.logUpdateButtonPressed) {
                         menuLoader.item.logUpdateButtonPressed.disconnect()
@@ -331,9 +353,29 @@ Item {
                             navigateTo("qrc:/LogFileScreen.qml")
                         })
                     }
+                    if (menuLoader.item.logDownloadButtonPressed) {
+                        menuLoader.item.logDownloadButtonPressed.connect(function() {
+                            navigateTo("qrc:/WifiLogDownload.qml")
+                        })
+                    }
                     if (menuLoader.item.dateTimeSettingsButtonPressed) {
                         menuLoader.item.dateTimeSettingsButtonPressed.connect(function() {
                             navigateTo("qrc:/DateTimeSettings.qml")
+                        })
+                    }
+                    if (menuLoader.item.userProgTransferButtonPressed) {
+                        menuLoader.item.userProgTransferButtonPressed.connect(function() {
+                            navigateTo("qrc:/UserProgTransferMenu.qml")
+                        })
+                    }
+                    if (menuLoader.item.userProgDownloadButtonPressed) {
+                        menuLoader.item.userProgDownloadButtonPressed.connect(function() {
+                            navigateTo("qrc:/UserProgDownload.qml")
+                        })
+                    }
+                    if (menuLoader.item.userProgUploadButtonPressed) {
+                        menuLoader.item.userProgUploadButtonPressed.connect(function() {
+                            navigateTo("qrc:/UserProgUpload.qml")
                         })
                     }
                     if (menuLoader.item.logUpdateButtonPressed) {
@@ -396,7 +438,15 @@ Item {
                 return
             }
             var base = loaderSourceBaseName()
-            if (isServiceMenuChildScreenBaseName(base)) {
+            if (isUserProgTransferChildScreenBaseName(base)) {
+                if (menuLoader.item && menuLoader.item.wizardCompleted) {
+                    navigateTo("qrc:/MainMenu.qml")
+                } else {
+                    navigateTo("qrc:/UserProgTransferMenu.qml")
+                }
+            } else if (isLogFileChildScreenBaseName(base)) {
+                navigateTo("qrc:/LogFileScreen.qml")
+            } else if (isServiceMenuChildScreenBaseName(base)) {
                 navigateToServiceMenu(serviceMenuAccessLevel)
             } else if (isAdditionalSettingsChildScreenBaseName(base)) {
                 navigateTo("qrc:/AdditionalSettingsMenu.qml")

@@ -23,6 +23,10 @@
         <file>InstrumEditor.qml</file>
         <file>ItemList.qml</file>
         <file>LogFileScreen.qml</file>
+        <file>WifiLogDownload.qml</file>
+        <file>UserProgTransferMenu.qml</file>
+        <file>UserProgDownload.qml</file>
+        <file>UserProgUpload.qml</file>
         <file>logUpdate.qml</file>
         <file>PowerRect.qml</file>
         <file>ModeEditor.qml</file>

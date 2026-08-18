@@ -200,6 +200,14 @@ public:
         quint8 appSubVer;
     };
 
+    /// Состояние рабочей прошивки по ответу Version (appVer).
+    enum AppFirmwareStatus : quint8 {
+        AppFwUnknown = 0,   // ещё не было ответа / сброшено
+        AppFwOk = 1,        // рабочая прошивка есть
+        AppFwMissing = 2,   // appVer == 0 — нет рабочей прошивки
+        AppFwCorrupted = 3  // appVer == 0xFF — прошивка повреждена
+    };
+
     struct HexString {
         uint32_t addr;
         QByteArray data;
@@ -323,6 +331,8 @@ private:
     // Сброс версий модуля в 0.0 (нет ответа / ошибка связи)
     void clearMcVersionAt(int index);
     void clearMcVersionsForUnit(McUnit unit);
+    /// Разбор appVer: 0 — нет прошивки, 0xFF — повреждена; sigError при смене статуса.
+    void applyAppFirmwareStatus(int index, quint8 appVer);
     // Расшифровка команды
     void unpackRxCommand(const QByteArray &rxPacket);
     // Проверка на соответствие
@@ -338,6 +348,7 @@ private:
     void prepareDefaultCommand();
     // Проверка, есть ли команда уже в списке, чтобы не плодить дубликаты
     bool checkCommandList(const UartTx &newTxCommand);
+    bool isFirmwareUpdateInProgress() const;
 
     static const quint8 MAX_PACKET_LEN = 40;        // Длина пакета
      // Команды для байт-стаффинга
@@ -388,6 +399,9 @@ private:
     QElapsedTimer m_fwRxErrStreakTimer;
     bool m_abortFirmwareUpdatePending = false;
     bool m_moduleHasWorkingApp[5] = {false, false, false, false, false};
+    AppFirmwareStatus m_moduleAppStatus[5] = {
+        AppFwUnknown, AppFwUnknown, AppFwUnknown, AppFwUnknown, AppFwUnknown
+    };
     quint8 m_lastReportedUiError = 0;
     QElapsedTimer m_uiErrorReportTimer;
     /// После запуска активации не воспринимать удерживаемую педаль как новое нажатие.

@@ -44,6 +44,7 @@ HEADERS += \
     $$PWD/surgicalmode.h \
     $$PWD/uartqmlbridge.h \
     $$PWD/userprogloader.h \
+    $$PWD/userprogtransfercontroller.h \
     $$PWD/systemmonitor.h 
 
 SOURCES += \
@@ -80,6 +81,7 @@ SOURCES += \
     $$PWD/surgicalmode.cpp \
     $$PWD/uartqmlbridge.cpp \
     $$PWD/userprogloader.cpp \
+    $$PWD/userprogtransfercontroller.cpp \
     $$PWD/systemmonitor.cpp 
 
 RESOURCES += \

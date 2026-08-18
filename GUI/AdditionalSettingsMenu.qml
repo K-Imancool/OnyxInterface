@@ -10,6 +10,7 @@ Item {
     signal serviceMenuButtonPressed(string accessLevel)
     signal logFileButtonPressed()
     signal dateTimeSettingsButtonPressed()
+    signal userProgTransferButtonPressed()
 
     property color fotekBlue: "#264093"
     property color fotekOrange: "#faa731"
@@ -125,7 +126,7 @@ Item {
 
     Item {
         id: footerArea
-        height: 72
+        height: 148
         anchors {
             left: parent.left
             right: parent.right
@@ -137,7 +138,7 @@ Item {
 
         DialogActionButton {
             width: 180
-            height: parent.height
+            height: 72
             text: qsTr("НАЗАД")
             secondaryColor: additionalSettingsRoot.fotekBlue
             secondaryBorderWidth: 1
@@ -147,22 +148,43 @@ Item {
             onPressed: additionalSettingsRoot.returnButtonPressed()
             anchors {
                 left: parent.left
-                verticalCenter: parent.verticalCenter
+                bottom: parent.bottom
             }
         }
 
-        Text {
+        Column {
+            id: footerRightColumn
+            spacing: 10
+            width: 500
             anchors {
                 right: parent.right
-                verticalCenter: parent.verticalCenter
+                bottom: parent.bottom
             }
-            text: (typeof dateTimeController !== "undefined" && dateTimeController)
-                  ? dateTimeController.currentDateTime
-                  : ""
-            color: additionalSettingsRoot.fotekBlue
-            opacity: 0.72
-            font.pixelSize: 24
-            font.bold: false
+
+            Text {
+                width: parent.width
+                horizontalAlignment: Text.AlignRight
+                text: (typeof dateTimeController !== "undefined" && dateTimeController)
+                      ? dateTimeController.currentDateTime
+                      : ""
+                color: additionalSettingsRoot.fotekBlue
+                opacity: 0.72
+                font.pixelSize: 24
+                font.bold: false
+            }
+
+            MenuActionButton {
+                width: parent.width
+                height: 72
+                text: qsTr("СЕРВИСНОЕ МЕНЮ")
+                iconSource: additionalSettingsRoot.iconsBasePath + "iconPass.png"
+                iconSize: 64
+                accentColor: additionalSettingsRoot.fotekOrange
+                textColor: additionalSettingsRoot.fotekBlue
+                labelPixelSize: additionalSettingsRoot.menuActionSmallLabelSize
+                cornerRadius: additionalSettingsRoot.panelRadius
+                onPressed: additionalSettingsRoot.requestServiceMenuAccess()
+            }
         }
     }
 
@@ -173,7 +195,7 @@ Item {
         onTriggered: dateTimeController.refresh()
     }
 
-    ColumnLayout {
+    GridLayout {
         anchors {
             top: headerArea.bottom
             topMargin: 22
@@ -184,15 +206,17 @@ Item {
             leftMargin: additionalSettingsRoot.screenMargin
             rightMargin: additionalSettingsRoot.screenMargin
         }
-        spacing: additionalSettingsRoot.mainSpacing
+        columns: 2
+        rowSpacing: additionalSettingsRoot.mainSpacing
+        columnSpacing: additionalSettingsRoot.mainSpacing
 
         MenuActionButton {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: qsTr("ЖУРНАЛ СОБЫТИЙ")
-            labelCentered: true
+            text: qsTr("ЖУРНАЛ\nСОБЫТИЙ")
             iconSource: additionalSettingsRoot.iconsBasePath + "iconLog.png"
             iconSize: additionalSettingsRoot.menuActionIconSize
+            iconCenter: false
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
@@ -203,10 +227,10 @@ Item {
         MenuActionButton {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: qsTr("НАСТРОЙКА ДАТЫ И ВРЕМЕНИ")
-            labelCentered: true
+            text: qsTr("НАСТРОЙКА\nДАТЫ И ВРЕМЕНИ")
             iconSource: additionalSettingsRoot.iconsBasePath + "iconDate.png"
             iconSize: additionalSettingsRoot.menuActionIconSize
+            iconCenter: false
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
@@ -217,38 +241,31 @@ Item {
         MenuActionButton {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: qsTr("АКТИВАЦИЯ ДОПОЛНИТЕЛЬНЫХ ОПЦИЙ")
-            labelCentered: true
-            iconSource: additionalSettingsRoot.iconsBasePath + "iconOption.png"
+            text: qsTr("ПЕРЕНОС ПРОГРАММ\nПОЛЬЗОВАТЕЛЯ")
+            iconSource: additionalSettingsRoot.iconsBasePath + "iconExchange.png"
             iconSize: additionalSettingsRoot.menuActionIconSize
+            iconCenter: false
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
             maxLabelLines: 2
             cornerRadius: additionalSettingsRoot.panelRadius
-            onPressed: additionalSettingsRoot.requestFeatureUnlock()
-        }
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 1
-            Layout.topMargin: 4
-            Layout.bottomMargin: 4
-            color: "#00000028"
+            onPressed: additionalSettingsRoot.userProgTransferButtonPressed()
         }
 
         MenuActionButton {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: qsTr("СЕРВИСНОЕ МЕНЮ")
-            labelCentered: true
-            iconSource: additionalSettingsRoot.iconsBasePath + "iconPass.png"
+            text: qsTr("АКТИВАЦИЯ\nДОПОЛНИТЕЛЬНЫХ\nОПЦИЙ")
+            iconSource: additionalSettingsRoot.iconsBasePath + "iconOption.png"
             iconSize: additionalSettingsRoot.menuActionIconSize
+            iconCenter: false
             accentColor: additionalSettingsRoot.fotekOrange
             textColor: additionalSettingsRoot.fotekBlue
             labelPixelSize: additionalSettingsRoot.menuActionLabelSize
+            maxLabelLines: 3
             cornerRadius: additionalSettingsRoot.panelRadius
-            onPressed: additionalSettingsRoot.requestServiceMenuAccess()
+            onPressed: additionalSettingsRoot.requestFeatureUnlock()
         }
     }
 

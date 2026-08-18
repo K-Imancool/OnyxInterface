@@ -11,6 +11,7 @@ Button {
     property int iconSize: 88
     property int maxLabelLines: 2
     property bool labelCentered: false
+    property bool iconCenter: true
 
     padding: 0
     topPadding: 10
@@ -33,7 +34,7 @@ Button {
                 right: control.labelCentered || control.iconSize <= 0 ? parent.right : actionIcon.left
                 verticalCenter: parent.verticalCenter
                 leftMargin: control.labelCentered ? 16 : 0
-                rightMargin: control.labelCentered ? 16 : 12
+                rightMargin: control.labelCentered ? 20 : 12
             }
             text: control.text
             color: control.textColor
@@ -52,7 +53,10 @@ Button {
             visible: control.iconSize > 0 && control.iconSource.length > 0
             anchors {
                 right: parent.right
-                verticalCenter: parent.verticalCenter
+                verticalCenter: control.iconCenter ? parent.verticalCenter : undefined
+                top: control.iconCenter ? undefined : parent.top
+                topMargin: control.iconCenter ? 0 : 20
+                rightMargin: 20
             }
             source: control.iconSource
             width: control.iconSize

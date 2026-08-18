@@ -27,6 +27,7 @@
 #include "BackEnd/linkstm.h"
 #include "BackEnd/jsonstorage.h"
 #include "BackEnd/HttpUploadController.h"
+#include "BackEnd/userprogtransfercontroller.h"
 #include "BackEnd/McFirmwareVersionsBridge.h"
 #include "BackEnd/DeviceLogManager.h"
 #include "BackEnd/UpdateLogManager.h"
@@ -269,6 +270,7 @@ int main(int argc, char *argv[])
     initMap->insert("httpUploadListenAddress", "");
     initMap->insert("httpUploadPublicBaseUrl", "");
     initMap->insert("httpUploadTrustProxyHeaders", "0");
+    initMap->insert("wifiAlwaysEnabled", "0");
     initMap->insert("volume", 3);
     initMap->insert("clickSound", 1);
     m_savedJson = new JsonStorage(nullptr, initMap);
@@ -314,7 +316,7 @@ int main(int argc, char *argv[])
         &engine,
         &QQmlApplicationEngine::objectCreated,
         &app,
-        [url, &engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, m_savedJson = m_savedJson](QObject *obj, const QUrl &objUrl) {
+        [url, &engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, ctrl, m_savedJson = m_savedJson](QObject *obj, const QUrl &objUrl) {
             if (url != objUrl) {
                 return;
             }
@@ -322,7 +324,7 @@ int main(int argc, char *argv[])
                 QCoreApplication::exit(-1);
                 return;
             }
-            runAfterFirstFrame(obj, [&engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, m_savedJson]() {
+            runAfterFirstFrame(obj, [&engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, ctrl, m_savedJson]() {
                 // Отложенный GStreamer
                 GError *gstError = nullptr;
                 if (!gst_init_check(nullptr, nullptr, &gstError)) {
@@ -410,7 +412,18 @@ int main(int argc, char *argv[])
 
                 httpUpload = new HttpUploadController(&app);
                 httpUpload->setJsonStorage(m_savedJson);
+                auto *userProgTransfer = new UserProgTransferController(&app);
+                httpUpload->setUserProgTransfer(userProgTransfer);
                 engine.rootContext()->setContextProperty(QStringLiteral("httpUpload"), httpUpload);
+                engine.rootContext()->setContextProperty(QStringLiteral("userProgTransfer"), userProgTransfer);
+
+                QObject::connect(userProgTransfer, &UserProgTransferController::importFinished,
+                                 ctrl->getHandle(), [handle = ctrl->getHandle()]() {
+                    if (handle) {
+                        handle->setIsRecomProgs(false);
+                        emit handle->updateScopes(false);
+                    }
+                }, Qt::QueuedConnection);
 
                 if (m_linkStm) {
                     httpUpload->setLinkStm(m_linkStm);

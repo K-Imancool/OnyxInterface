@@ -15,6 +15,10 @@ DISTFILES += \
     $$PWD/InstrumRect.qml \
     $$PWD/ItemList.qml \
     $$PWD/LogFileScreen.qml \
+    $$PWD/WifiLogDownload.qml \
+    $$PWD/UserProgTransferMenu.qml \
+    $$PWD/UserProgDownload.qml \
+    $$PWD/UserProgUpload.qml \
     $$PWD/logUpdate.qml \
     $$PWD/MainMenu.qml \
     $$PWD/MenuActionButton.qml \

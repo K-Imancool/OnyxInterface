@@ -87,7 +87,7 @@ Item {
             style: "btn-primary lg"
             Layout.preferredWidth: serviceMenuRoot.menuButtonWidth
             Layout.preferredHeight: serviceMenuRoot.menuButtonHeight
-            text: qsTr("Приём файлов по Wi‑Fi")
+            text: qsTr("Приём файлов обновления")
             onPressed: serviceMenuRoot.wifiFileReceiveButtonPressed()
         }
 

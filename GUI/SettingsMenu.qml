@@ -24,10 +24,10 @@ Item {
     readonly property int panelRadius: 20
     readonly property int panelPadding: 20
     readonly property int headerHeight: 70
-    readonly property int menuActionLabelSize: 34
+    readonly property int menuActionLabelSize: 38
     readonly property int sectionTitleSize: 24
     readonly property int controlLabelSize: 22
-    readonly property int menuActionIconSize: 76
+    readonly property int menuActionIconSize: 88
     readonly property string currentLanguage: (typeof container !== "undefined" && container)
             ? container.normalizedLanguage(container.language)
             : "ru"
@@ -436,33 +436,43 @@ Item {
                 }
             }
 
-            MenuActionButton {
+            Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                text: qsTr("СВЕДЕНИЯ ОБ АППАРАТЕ")
-                labelCentered: true
-                iconSource: settingsMenuRoot.iconsBasePath + "iconInfo.png"
-                iconSize: settingsMenuRoot.menuActionIconSize
-                accentColor: settingsMenuRoot.fotekOrange
-                textColor: settingsMenuRoot.fotekBlue
-                labelPixelSize: settingsMenuRoot.menuActionLabelSize
-                cornerRadius: settingsMenuRoot.panelRadius
-                onPressed: settingsMenuRoot.infoButtonPressed()
-            }
 
-            MenuActionButton {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                text: qsTr("ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ")
-                labelCentered: true
-                iconSource: settingsMenuRoot.iconsBasePath + "iconSetting.png"
-                iconSize: settingsMenuRoot.menuActionIconSize
-                accentColor: settingsMenuRoot.fotekOrange
-                textColor: settingsMenuRoot.fotekBlue
-                labelPixelSize: settingsMenuRoot.menuActionLabelSize
-                maxLabelLines: 2
-                cornerRadius: settingsMenuRoot.panelRadius
-                onPressed: settingsMenuRoot.additionalSettingsButtonPressed()
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: settingsMenuRoot.mainSpacing
+
+                    MenuActionButton {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        text: qsTr("СВЕДЕНИЯ\nОБ АППАРАТЕ")
+                        iconSource: settingsMenuRoot.iconsBasePath + "iconInfo.png"
+                        iconSize: settingsMenuRoot.menuActionIconSize
+                        iconCenter: false
+                        accentColor: settingsMenuRoot.fotekOrange
+                        textColor: settingsMenuRoot.fotekBlue
+                        labelPixelSize: settingsMenuRoot.menuActionLabelSize
+                        cornerRadius: settingsMenuRoot.panelRadius
+                        onPressed: settingsMenuRoot.infoButtonPressed()
+                    }
+
+                    MenuActionButton {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        text: qsTr("ДОПОЛНИТЕЛЬНЫЕ\nНАСТРОЙКИ")
+                        iconSource: settingsMenuRoot.iconsBasePath + "iconSetting.png"
+                        iconSize: settingsMenuRoot.menuActionIconSize
+                        iconCenter: false
+                        accentColor: settingsMenuRoot.fotekOrange
+                        textColor: settingsMenuRoot.fotekBlue
+                        labelPixelSize: settingsMenuRoot.menuActionLabelSize
+                        maxLabelLines: 2
+                        cornerRadius: settingsMenuRoot.panelRadius
+                        onPressed: settingsMenuRoot.additionalSettingsButtonPressed()
+                    }
+                }
             }
         }
     }
