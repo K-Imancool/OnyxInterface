@@ -49,14 +49,14 @@ Item {
         if (typeof appControl !== "undefined" && appControl) {
             appControl.setVolumeLevel(clamped)
         }
+        if (typeof savedJson !== "undefined" && savedJson) {
+            savedJson.saveInt("volume", clamped)
+        }
         return clamped
     }
 
     function saveVolumeLevel(level) {
-        var clamped = applyVolumeLevel(level)
-        if (typeof savedJson !== "undefined" && savedJson) {
-            savedJson.saveInt("volume", clamped)
-        }
+        return applyVolumeLevel(level)
     }
 
     function readClickSoundEnabled() {
@@ -210,7 +210,7 @@ Item {
 
                             Text {
                                 id: volumeTitle
-                                text: qsTr("ГРОМКОСТЬ")
+                                text: qsTr("ГРОМКОСТЬ АКТИВАЦИИ")
                                 anchors {
                                     top: parent.top
                                     horizontalCenter: parent.horizontalCenter
@@ -240,10 +240,13 @@ Item {
                                 rightPadding: 18
                                 onPressedChanged: {
                                     if (pressed) {
-                                        settingsMenuRoot.applyVolumeLevel(value)
-                                        if (typeof uiClickSound !== "undefined" && uiClickSound) {
-                                            uiClickSound.play(true)
-                                        }
+                                        // value обновляется после press — клик на следующем тике.
+                                        Qt.callLater(function() {
+                                            settingsMenuRoot.applyVolumeLevel(volumeSlider.value)
+                                            if (typeof uiClickSound !== "undefined" && uiClickSound) {
+                                                uiClickSound.playPreview(Math.round(volumeSlider.value))
+                                            }
+                                        })
                                     } else {
                                         settingsMenuRoot.saveVolumeLevel(value)
                                     }

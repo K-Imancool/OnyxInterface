@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     // Доступные устройства (pactl list sinks):
     // - alsa_output.platform-hdmi-sound.stereo-fallback (HDMI)
     // - alsa_output.platform-rk809-sound.stereo-fallback (Analog/наушники) ✓
-    // qputenv("QT_GSTREAMER_PLAYBIN_AUDIOSINK", "pulsesink");
+    qputenv("QT_GSTREAMER_PLAYBIN_AUDIOSINK", "pulsesink");
     
     // Указываем использовать аналоговый выход (RK809) вместо HDMI
     // qputenv("PULSE_SINK", "alsa_output.platform-rk809-sound.stereo-fallback");

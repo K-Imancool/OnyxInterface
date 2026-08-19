@@ -146,15 +146,17 @@ Popup {
         return backendIndex >= 0 ? backendIndex : 0
     }
 
-    function refreshEndoGroupIcons() {
+    function pinEndoGroupListAppearance() {
         for (var di = 0; di < displayToBackend.length; ++di) {
             var info = displayToBackend[di]
             if (!info || !info.isGroup)
                 continue
-            var v = (di === displayIndex) ? endoVariant : preferredEndoVariant(info)
-            var bi = backendIndexForDisplay(di, v)
-            if (bi >= 0 && bi < itemIdArr.length)
-                combinedModel.setProperty(di, "itemId", itemIdArr[bi])
+            var bi = backendIndexForDisplay(di, preferredEndoVariant(info))
+            if (bi < 0 || bi >= itemIdArr.length)
+                continue
+            combinedModel.setProperty(di, "itemId", itemIdArr[bi])
+            combinedModel.setProperty(di, "itemName",
+                                      endoGroupDisplayName(itemIdArr[bi], itemNameArr[bi]))
         }
     }
 
@@ -173,7 +175,6 @@ Popup {
             modeEditor.currentModeIndex = bi
         if (modeListView.curIndex !== di)
             modeListView.curIndex = di
-        refreshEndoGroupIcons()
     }
 
     function selectDisplayItem(index) {
@@ -283,6 +284,7 @@ Popup {
                                  })
         }
         displayToBackend = mapping
+        pinEndoGroupListAppearance()
         modeListView.innerModel = combinedModel
     }
 

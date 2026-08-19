@@ -81,7 +81,8 @@ Rectangle {
 
 	function nextSelectableIndex(fromIndex, step) {
 		var index = fromIndex + step
-		while (index >= 0 && index < theView.count) {
+        if (index === theView.count) index = 0
+        while (index >= 0 && index < theView.count) {
 			if (!isIndexLocked(index))
 				return index
 			index += step

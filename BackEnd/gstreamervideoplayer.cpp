@@ -473,6 +473,12 @@ bool GStreamerVideoPlayer::ensurePipeline()
                  "volume", static_cast<gdouble>(m_volume),
                  "mute", m_muted,
                  nullptr);
+
+    // Иначе autoaudiosink берёт ALSA напрямую, Pulse/клики получают drain timeout.
+    GstElement *audioSink = gst_element_factory_make("pulsesink", "video-audio-sink");
+    if (audioSink) {
+        g_object_set(G_OBJECT(pipeline), "audio-sink", audioSink, nullptr);
+    }
     gst_object_unref(videoSinkBin);
 
     m_pipeline = pipeline;

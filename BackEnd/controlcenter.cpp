@@ -10,7 +10,6 @@
 // #include <iostream>
 #include <vector>
 
-#include <QAudio>
 #include <QQmlEngine>
 #include <QString>
 #include <QTimer>
@@ -703,20 +702,6 @@ void ControlCenter::setVolumeLevel(int level)
         clamped = qBound(0, clamped, 3);
     }
 
-    // Клики: UI-проценты 10%…60% по шкале sink (кубической, как pactl),
-    // в линейный множитель QSoundEffect.
-    constexpr int kMinVol = 15;
-    constexpr int kMaxVol = 60;
-    const int percent = kMinVol + clamped * (kMaxVol - kMinVol) / 3;
-    if (m_uiClickSound) {
-        const qreal linear = QAudio::convertVolume(
-                    percent / 100.0,
-                    QAudio::CubicVolumeScale,
-                    QAudio::LinearVolumeScale);
-        m_uiClickSound->setVolume(linear);
-    }
-
-    // Sink на 100% один раз — видео не режется настройкой кликов.
     ensureFullSystemMixerVolume();
 
     if (!m_linkStm.isNull()) {
