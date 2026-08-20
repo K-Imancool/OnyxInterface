@@ -108,6 +108,16 @@ void LinkStm::argonBlow()
     setTxCommand(argonBlowCommand);
 }
 
+void LinkStm::stopArgon()
+{
+    m_argonPollStopped = true;
+    UartTx stopArgonCommand;
+    stopArgonCommand.com = StopArgon;
+    stopArgonCommand.mc = MC_COM;
+    stopArgonCommand.data.clear();
+    setTxCommand(stopArgonCommand);
+}
+
 void LinkStm::setLedOutput(LedOutput out, LedColor color)
 {
     UartTx ledOutputCommand;
@@ -690,6 +700,9 @@ QString LinkStm::getHexStr(QByteArray byteArray)
 
 void LinkStm::reportError(quint8 error)
 {
+    if (m_argonPollStopped && error == ErrArgComm) {
+        return;
+    }
     // DeviceLogManager сам объединяет повторы и ограничивает запись на диск,
     // поэтому для журнала передаём каждое событие.
     emit sigErrorForLog(error);

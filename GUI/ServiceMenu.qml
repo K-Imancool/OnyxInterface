@@ -18,13 +18,31 @@ Item {
     signal secretKeysButtonPressed()
     signal featureOptionsButtonPressed()
     signal isnCorrectionButtonPressed()
+    signal deleteAllUserProgsRequested()
 
     property string accessLevel: "full"
     readonly property bool isLimitedAccess: accessLevel === "limited"
     readonly property int menuButtonWidth: 550
     readonly property int menuButtonHeight: 85
     readonly property int menuColumnsSpacing: 24
-    
+
+    function applySettingsReset() {
+        if (typeof savedJson !== "undefined" && savedJson) {
+            savedJson.saveString("serviceMenuNoPassword", "0")
+            savedJson.saveString("fullscreenErrors", "1")
+            savedJson.saveString("wifiAlwaysEnabled", "0")
+        }
+        if (typeof appControl !== "undefined" && appControl) {
+            appControl.uartRate = 50
+            appControl.debugUartEnabled = false
+            appControl.cpuMonitorVisible = false
+        }
+        if (typeof periphHandle !== "undefined" && periphHandle) {
+            periphHandle.fullscreenErrorsEnabled = true
+        }
+        deleteAllUserProgsRequested()
+    }
+
     Rectangle {
         id: background
         anchors.fill: parent
@@ -159,7 +177,7 @@ Item {
             onPressed: serviceMenuRoot.isnCorrectionButtonPressed()
         }
     }
-    
+
     SButton {
         id: retButton
         style: "btn-secondary"
@@ -170,14 +188,33 @@ Item {
             bottom: parent.bottom
             margins: 15
         }
-//        contentItem: Text {
-//            text: retButton.text
-//            font: retButton.font
-//            opacity: enabled ? 1.0 : 0.3
-//            color: "white"
-//            horizontalAlignment: Text.AlignHCenter
-//            verticalAlignment: Text.AlignVCenter
-//            elide: Text.ElideRight
-//        }
+    }
+
+    SButton {
+        id: resetSettingsButton
+        visible: !serviceMenuRoot.isLimitedAccess
+        style: "btn-warning"
+        text: qsTr("СБРОС НАСТРОЕК")
+        onPressed: confirmResetDialog.open()
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+            margins: 15
+        }
+    }
+
+    Dialog {
+        id: confirmResetDialog
+        title: qsTr("Подтверждение сброса")
+        modal: true
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        anchors.centerIn: parent
+
+        Label {
+            text: qsTr("Сбросить настройки?\nВход по паролю — включить, UART 50 мс,\nвывод UART и ЦП — отключить, ошибки на весь экран,\nWiFi всегда включен — отключить.\nПользовательские программы будут удалены.\nЭто действие необратимо.")
+            font.pixelSize: 20
+        }
+
+        onAccepted: serviceMenuRoot.applySettingsReset()
     }
 }

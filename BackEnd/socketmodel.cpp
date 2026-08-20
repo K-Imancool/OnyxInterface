@@ -719,6 +719,19 @@ bool SocketModel::clearArgonModes(int socketId)
     return changed;
 }
 
+void SocketModel::stripArgonModesFromAll()
+{
+    beginResetModel();
+    for (auto& itemsMap : m_itemsMapVect) {
+        for (auto& entry : itemsMap) {
+            if (!entry.second.isNull()) {
+                entry.second->stripArgonModes();
+            }
+        }
+    }
+    endResetModel();
+}
+
 void SocketModel::recalcCollapsed()
 {
     qmlSetData(0, Onyx::S_EXPANDED, "socketdisplaymode");

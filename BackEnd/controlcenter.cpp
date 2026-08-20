@@ -1,6 +1,7 @@
 #include "controlcenter.h"
 #include "DeviceLogManager.h"
 #include "featureunlockcontroller.h"
+#include "jsonstorage.h"
 #include "proghandle.h"
 #include "surgicalmode.h"
 #include "uiclicksound.h"
@@ -322,11 +323,18 @@ void ControlCenter::setDeviceLogManager(DeviceLogManager *deviceLog)
 
 void ControlCenter::setJsonStorage(JsonStorage *jsonStorage)
 {
+	m_jsonStorage = jsonStorage;
 	if (m_progLoader.isNull()) {
 		return;
 	}
 
 	m_progLoader->setJsonStorage(jsonStorage);
+	if (m_periphery && jsonStorage) {
+		const bool fullscreenErrors = jsonStorage->readString(
+		            QStringLiteral("fullscreenErrors"), QStringLiteral("0"))
+		        == QLatin1String("1");
+		m_periphery->setFullscreenErrorsEnabled(fullscreenErrors);
+	}
 	initSockets();
 }
 
@@ -508,6 +516,7 @@ void ControlCenter::setLinkStm(LinkStm* linkStm)
                                       Q_ARG(quint8, static_cast<quint8>(m_periphery->autoMode(socketId))));
         }
 
+		sendStopArgonIfOnyxM();
 		//qDebug() << "LinkStm connected to ControlCenter";
 	}
 }
@@ -681,6 +690,69 @@ void ControlCenter::stopActivation()
         return;
     }
     QMetaObject::invokeMethod(m_linkStm.data(), "requestStopActivation", Qt::QueuedConnection);
+}
+
+bool ControlCenter::argonDisabledByFault() const
+{
+    return m_argonDisabledByFault;
+}
+
+void ControlCenter::disableArgonModule()
+{
+    if (m_argonDisabledByFault) {
+        return;
+    }
+    m_argonDisabledByFault = true;
+    emit argonDisabledByFaultChanged();
+
+    stopActivation();
+
+    if (m_progLoader) {
+        m_progLoader->setArgonDisabledByFault(true);
+    }
+    if (m_socketModel) {
+        m_socketModel->stripArgonModesFromAll();
+    }
+    if (m_periphery) {
+        m_periphery->dismissWarningCode(LinkStm::ErrArgComm);
+    }
+    if (!m_linkStm.isNull()) {
+        QMetaObject::invokeMethod(m_linkStm.data(), "stopArgon", Qt::QueuedConnection);
+    }
+}
+
+bool ControlCenter::deviceTypeIsOnyxM() const
+{
+    if (m_jsonStorage.isNull()) {
+        return false;
+    }
+    const QString deviceType = m_jsonStorage->readString(
+                QStringLiteral("deviceType"), QStringLiteral("ONYX-AM"))
+            .trimmed().toUpper();
+    return deviceType == QStringLiteral("ONYX-M");
+}
+
+void ControlCenter::sendStopArgonIfOnyxM()
+{
+    if (!deviceTypeIsOnyxM() || m_linkStm.isNull()) {
+        return;
+    }
+    QMetaObject::invokeMethod(m_linkStm.data(), "stopArgon", Qt::QueuedConnection);
+}
+
+void ControlCenter::applyStoredDeviceType()
+{
+    if (!deviceTypeIsOnyxM()) {
+        emit deviceTypeApplied();
+        return;
+    }
+
+    stopActivation();
+    sendStopArgonIfOnyxM();
+    if (m_socketModel) {
+        m_socketModel->stripArgonModesFromAll();
+    }
+    emit deviceTypeApplied();
 }
 
 void ControlCenter::setNeutralResistPollEnabled(bool enabled)

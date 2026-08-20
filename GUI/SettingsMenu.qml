@@ -77,6 +77,10 @@ Item {
     }
 
     function setLanguage(langCode) {
+        if (typeof translationController !== "undefined" && translationController
+                && translationController.splashUpdateBusy) {
+            return
+        }
         if (typeof container === "undefined" || !container) {
             return
         }
@@ -417,6 +421,9 @@ Item {
                                     langCode: "ru"
                                     langLabel: "RU"
                                     selected: settingsMenuRoot.currentLanguage === "ru"
+                                    enabled: !(typeof translationController !== "undefined"
+                                               && translationController
+                                               && translationController.splashUpdateBusy)
                                     onChosen: settingsMenuRoot.setLanguage(langCode)
                                 }
 
@@ -424,6 +431,9 @@ Item {
                                     langCode: "en"
                                     langLabel: "EN"
                                     selected: settingsMenuRoot.currentLanguage === "en"
+                                    enabled: !(typeof translationController !== "undefined"
+                                               && translationController
+                                               && translationController.splashUpdateBusy)
                                     onChosen: settingsMenuRoot.setLanguage(langCode)
                                 }
 
@@ -431,6 +441,9 @@ Item {
                                     langCode: "es"
                                     langLabel: "ES"
                                     selected: settingsMenuRoot.currentLanguage === "es"
+                                    enabled: !(typeof translationController !== "undefined"
+                                               && translationController
+                                               && translationController.splashUpdateBusy)
                                     onChosen: settingsMenuRoot.setLanguage(langCode)
                                 }
                             }
@@ -628,6 +641,58 @@ Item {
                     }
                     height: parent.height / 2
                     color: "#F1BF00"
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: splashUpdateOverlay
+        anchors.fill: parent
+        z: 100000
+        visible: typeof translationController !== "undefined"
+                 && translationController
+                 && translationController.splashUpdateBusy
+        enabled: visible
+        color: "#AA1F2A44"
+
+        MouseArea {
+            anchors.fill: parent
+            onPressed: function(mouse) { mouse.accepted = true }
+            onReleased: function(mouse) { mouse.accepted = true }
+            onClicked: function(mouse) { mouse.accepted = true }
+        }
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: Math.min(parent.width - 80, 720)
+            height: 200
+            radius: 24
+            color: "#FFFFFF"
+            border.width: 2
+            border.color: settingsMenuRoot.fotekBlue
+
+            Column {
+                anchors.centerIn: parent
+                width: parent.width - 64
+                spacing: 22
+
+                BusyIndicator {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    running: splashUpdateOverlay.visible
+                    width: 56
+                    height: 56
+                }
+
+                Text {
+                    width: parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    color: settingsMenuRoot.fotekBlue
+                    font.pixelSize: 28
+                    font.bold: true
+                    // Язык уже переключён до появления плашки — qsTr даёт новый язык.
+                    text: qsTr("Смена языка интерфейса, пожалуйста, подождите")
                 }
             }
         }

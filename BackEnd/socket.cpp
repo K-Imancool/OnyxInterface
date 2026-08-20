@@ -330,6 +330,18 @@ void SOCKET::setCutModes(const QMap<int, SurgModePtr > &newCutModes,
     m_cutHalf->setModes(newCutModes, order);
 }
 
+bool SOCKET::stripArgonModes()
+{
+    bool changed = false;
+    if (!m_cutHalf.isNull() && m_cutHalf->stripArgonModes()) {
+        changed = true;
+    }
+    if (!m_coagHalf.isNull() && m_coagHalf->stripArgonModes()) {
+        changed = true;
+    }
+    return changed;
+}
+
 int SOCKET::pedal() const
 {
     return m_pedal.pedalType();

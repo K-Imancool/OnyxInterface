@@ -107,6 +107,7 @@ public:
 	std::map<int, std::map<int, Onyx::InstrInfo>> getConstraints(const std::vector<int> &idList);
 	
 	void setSocketModelPtr(QSharedPointer<SocketModel> newSocketModelPtr);
+	void setArgonDisabledByFault(bool disabled);
 	void setJsonStorage(JsonStorage *jsonStorage);
 	void setFeatureUnlockController(FeatureUnlockController *controller);
 
@@ -140,6 +141,7 @@ private:
 	QSharedPointer<SocketModel> m_socketModelPtr;
 	QPointer<JsonStorage> m_jsonStorage;
 	FeatureUnlockController *m_featureUnlock = nullptr;
+	bool m_argonDisabledByFault = false;
 	progType m_curLoaderType = ptRecom;
 	QList<QList<QPair<int, QString>>> m_lastProgSubLists;
 };

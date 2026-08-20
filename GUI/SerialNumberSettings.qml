@@ -32,6 +32,10 @@ Item {
             remoteUpdater.serialNumber = serialRoot.serialNumber
         }
 
+        if (typeof appControl !== "undefined" && appControl) {
+            appControl.applyStoredDeviceType()
+        }
+
         serialRoot.serialSaveStatus = qsTr("Сохранено")
     }
 

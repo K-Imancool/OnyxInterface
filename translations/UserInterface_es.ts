@@ -1858,6 +1858,10 @@ VACÍO</translation>
         <source>НАЗАД</source>
         <translation>ATRÁS</translation>
     </message>
+    <message>
+        <source>Смена языка интерфейса, пожалуйста, подождите</source>
+        <translation>Cambiando el idioma de la interfaz, espere por favor</translation>
+    </message>
 </context>
 <context>
     <name>SocketContainerV2</name>

@@ -102,6 +102,7 @@ public:
      */
     void setModes(const QMap<int, SurgModePtr > &newModes,
                      const QStringList& order = {""});
+    bool stripArgonModes();
 
     /**
      * @brief имена доступных режимов коагуляции
@@ -135,6 +136,8 @@ public:
 private:
     int getModeIndex(const QString& name) const;
     int getModeIndex(int id) const;
+
+    void rebuildModeNames();
 
     CSurgModePtr m_curMode = nullptr;
     int m_modeIndex = 0;

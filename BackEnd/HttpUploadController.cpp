@@ -422,10 +422,25 @@ void HttpUploadController::setLinkStm(LinkStm *linkStm)
     m_linkStm = linkStm;
 }
 
+void HttpUploadController::loadFavicon()
+{
+    const QString path = AppPaths::instance().iconsDir()
+            + QStringLiteral("/favicon.ico");
+    QFile f(path);
+    if (f.open(QIODevice::ReadOnly)) {
+        m_faviconData = f.readAll();
+        qWarning() << "HttpUploadController: loaded favicon" << path
+                   << "size=" << m_faviconData.size();
+    } else {
+        m_faviconData.clear();
+    }
+}
+
 void HttpUploadController::setJsonStorage(JsonStorage *storage)
 {
     m_json = storage;
     loadNetworkSettings();
+    loadFavicon();
     if (m_json) {
         setCurrentMediaVersion(m_json->readString(QStringLiteral("currentMediaVersion"), QStringLiteral("—")));
     } else {
@@ -2582,6 +2597,7 @@ QByteArray HttpUploadController::buildUploadPageHtml() const
     const QString html = applyPagePlaceholders(QString::fromUtf8(
             "<!DOCTYPE html><html lang=\"{{lang}}\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, "
             "initial-scale=1\"><title>{{title}}</title>"
+            "<link rel=\"icon\" type=\"image/png\" href=\"/favicon.ico\">"
             "<style>"
             ":root{--fotek-blue:#264093;--fotek-orange:#faa731;--bg:#f4f6fb;--card:#fff;--text:#1f2a44;--muted:#5c6b8a;}"
             "*{box-sizing:border-box;}"
@@ -2698,27 +2714,40 @@ QByteArray HttpUploadController::buildUploadPageHtml() const
             "if(pickBtn){ pickBtn.disabled=true; pickBtn.style.opacity='0.7'; }"
             "var xhr=new XMLHttpRequest();"
             "xhr.open('POST','/upload',true);"
+            "xhr.timeout=300000;"
             "xhr.upload.onprogress=function(e){"
             "if(!e.lengthComputable) return;"
             "var p=Math.max(0,Math.min(100,Math.round((e.loaded/e.total)*100)));"
             "bar.style.width=p+'%';"
             "txt.textContent=T.sending+p+'%';"
             "};"
-            "xhr.onload=function(){"
+            "function resetUI(){"
             "if(submitBtn){ submitBtn.disabled=false; submitBtn.style.opacity='1'; }"
             "if(pickBtn){ pickBtn.disabled=false; pickBtn.style.opacity='1'; }"
-            "if(res){ res.innerHTML=xhr.responseText||''; }"
+            "}"
+            "xhr.onload=function(){"
+            "resetUI();"
             "if(xhr.status>=200 && xhr.status<300){"
+            "if(res){ res.innerHTML=xhr.responseText||''; }"
             "bar.style.width='100%'; txt.textContent=T.done;"
             "if(submitBtn){ submitBtn.style.display='none'; }"
             "}else{"
+            "bar.style.width='0%';"
             "txt.textContent=T.sendError+' ('+xhr.status+')';"
+            "showError(xhr.responseText||T.sendError);"
             "}"
             "};"
             "xhr.onerror=function(){"
-            "if(submitBtn){ submitBtn.disabled=false; submitBtn.style.opacity='1'; }"
-            "if(pickBtn){ pickBtn.disabled=false; pickBtn.style.opacity='1'; }"
+            "resetUI();"
+            "bar.style.width='0%';"
             "txt.textContent=T.netError;"
+            "showError(T.netError);"
+            "};"
+            "xhr.ontimeout=function(){"
+            "resetUI();"
+            "bar.style.width='0%';"
+            "txt.textContent=T.netError;"
+            "showError(T.netError);"
             "};"
             "xhr.send(fd);"
             "});"
@@ -2794,6 +2823,7 @@ QByteArray HttpUploadController::buildLogDownloadPageHtml() const
     const QString html = applyPagePlaceholders(QString::fromUtf8(
             "<!DOCTYPE html><html lang=\"{{lang}}\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, "
             "initial-scale=1\"><title>{{title}}</title>"
+            "<link rel=\"icon\" type=\"image/png\" href=\"/favicon.ico\">"
             "<style>"
             ":root{--fotek-blue:#264093;--fotek-orange:#faa731;--bg:#f4f6fb;--card:#fff;--text:#1f2a44;--muted:#5c6b8a;}"
             "*{box-sizing:border-box;}"
@@ -3658,7 +3688,11 @@ void HttpUploadController::tryProcessBuffer()
                     }
                 }
             } else if (m_path == QStringLiteral("/favicon.ico")) {
-                sendHttpResponse(m_client, 204, QByteArray(), QByteArray());
+                if (!m_faviconData.isEmpty()) {
+                    sendHttpResponse(m_client, 200, "image/png", m_faviconData);
+                } else {
+                    sendHttpResponse(m_client, 204, QByteArray(), QByteArray());
+                }
             } else {
                 sendSimpleHtml(m_client, 404, QStringLiteral("Не найдено"), QStringLiteral("<p>Страница не найдена</p>"));
             }

@@ -179,6 +179,7 @@ public:
      */
     void setCoagModes(const QMap<int, SurgModePtr > &newCoagModes,
                       const QStringList& order = {""});
+    bool stripArgonModes();
 
     /**
      * @brief имена доступных режимов коагуляции

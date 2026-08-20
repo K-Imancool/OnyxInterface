@@ -30,6 +30,7 @@ class ControlCenter : public QObject
     Q_PROPERTY(bool debugUartEnabled READ debugUartEnabled WRITE setDebugUartEnabled NOTIFY debugUartEnabledChanged)
     Q_PROPERTY(int uartRate READ uartRate WRITE setUartRate NOTIFY uartRateChanged)
     Q_PROPERTY(bool cpuMonitorVisible READ cpuMonitorVisible WRITE setCpuMonitorVisible NOTIFY cpuMonitorVisibleChanged)
+    Q_PROPERTY(bool argonDisabledByFault READ argonDisabledByFault NOTIFY argonDisabledByFaultChanged)
     Q_PROPERTY(int isnDacValue READ isnDacValue NOTIFY isnDacValueChanged)
     Q_PROPERTY(int isnAdcValue READ isnAdcValue NOTIFY isnAdcValueChanged)
 
@@ -96,12 +97,15 @@ public:
     Q_INVOKABLE void appendDebugOverlayLine(const QString &line);
     Q_INVOKABLE void clearDebugOverlay();
     Q_INVOKABLE void stopActivation();
+    Q_INVOKABLE void disableArgonModule();
+    Q_INVOKABLE void applyStoredDeviceType();
     QString debugOverlayText() const;
     bool debugUartEnabled() const;
     void setDebugUartEnabled(bool enabled);
     int uartRate() const;
     void setUartRate(int rate);
     bool cpuMonitorVisible() const;
+    bool argonDisabledByFault() const;
     void setCpuMonitorVisible(bool visible);
     int isnDacValue() const;
     int isnAdcValue() const;
@@ -111,6 +115,8 @@ signals:
     void debugUartEnabledChanged();
     void uartRateChanged();
     void cpuMonitorVisibleChanged();
+    void argonDisabledByFaultChanged();
+    void deviceTypeApplied();
     void isnDacValueChanged();
     void isnAdcValueChanged();
     void powerOffConfirmationRequested(int timeoutSeconds);
@@ -131,6 +137,7 @@ private:
 	QPointer<PeriphHandler> m_periphery;
 	FeatureUnlockController *m_featureUnlock = nullptr;
 	QPointer<LinkStm> m_linkStm;
+	QPointer<JsonStorage> m_jsonStorage;
 	DeviceLogManager *m_deviceLog = nullptr;
 	UiClickSound *m_uiClickSound = nullptr;
     bool m_systemMixerAtFull = false;
@@ -143,6 +150,7 @@ private:
     bool m_debugUartEnabled = false;
     int m_uartRate = 50;
     bool m_cpuMonitorVisible = false;
+    bool m_argonDisabledByFault = false;
     int m_isnDacValue = -1;
     int m_isnAdcValue = -1;
     static constexpr int kDebugOverlayMaxLines = 40;
@@ -161,6 +169,8 @@ private:
 	void initSockets();
 	void prepareConnectios();
 	void ensureFullSystemMixerVolume();
+	bool deviceTypeIsOnyxM() const;
+	void sendStopArgonIfOnyxM();
 
 	// void uartChat(LinkStm::UartRx* rxData);
 	// void uartError(quint8 errorState);

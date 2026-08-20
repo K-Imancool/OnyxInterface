@@ -1563,6 +1563,9 @@ void ProgLoader::setFeatureUnlockController(FeatureUnlockController *controller)
 
 bool ProgLoader::deviceHasArgon() const
 {
+	if (m_argonDisabledByFault) {
+		return false;
+	}
 	if (m_jsonStorage.isNull()) {
 		return true;
 	}
@@ -1570,6 +1573,11 @@ bool ProgLoader::deviceHasArgon() const
 	const QString deviceType = m_jsonStorage->readString(QStringLiteral("deviceType"),
 	                                                     QStringLiteral("ONYX-AM")).trimmed().toUpper();
 	return deviceType != QStringLiteral("ONYX-M");
+}
+
+void ProgLoader::setArgonDisabledByFault(bool disabled)
+{
+	m_argonDisabledByFault = disabled;
 }
 
 QString ProgLoader::deviceModeFilterCondition() const

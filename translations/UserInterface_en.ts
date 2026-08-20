@@ -1858,6 +1858,10 @@ EMPTY</translation>
         <source>НАЗАД</source>
         <translation>BACK</translation>
     </message>
+    <message>
+        <source>Смена языка интерфейса, пожалуйста, подождите</source>
+        <translation>Changing interface language, please wait</translation>
+    </message>
 </context>
 <context>
     <name>SocketContainerV2</name>

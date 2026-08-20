@@ -4,6 +4,7 @@
 #include "Structures.h"
 
 #include <QByteArray>
+#include <QElapsedTimer>
 #include <QObject>
 #include <QHash>
 #include <QTimer>
@@ -27,6 +28,7 @@ class PeriphHandler : public QObject
 	Q_PROPERTY(bool activationStopWarningVisible READ activationStopWarningVisible NOTIFY activationStopWarningChanged)
 	Q_PROPERTY(int activationStopWarningCode READ activationStopWarningCode NOTIFY activationStopWarningChanged)
     Q_PROPERTY(QVariantList activationStopWarningCodes READ activationStopWarningCodes NOTIFY activationStopWarningChanged)
+    Q_PROPERTY(bool fullscreenErrorsEnabled READ fullscreenErrorsEnabled WRITE setFullscreenErrorsEnabled NOTIFY fullscreenErrorsEnabledChanged)
     Q_PROPERTY(int bi1AutoMode READ bi1AutoMode NOTIFY biAutoModeChanged)
     Q_PROPERTY(int bi2AutoMode READ bi2AutoMode NOTIFY biAutoModeChanged)
     Q_PROPERTY(int autoDelayMs READ autoDelayMs WRITE setAutoDelayMs NOTIFY autoDelayMsChanged)
@@ -127,6 +129,8 @@ public:
 	bool activationStopWarningVisible() const;
 	int activationStopWarningCode() const;
     QVariantList activationStopWarningCodes() const;
+    bool fullscreenErrorsEnabled() const;
+    void setFullscreenErrorsEnabled(bool enabled);
     int bi1AutoMode() const;
     int bi2AutoMode() const;
     int autoDelayMs() const;
@@ -138,6 +142,7 @@ public:
 	 */
 	Q_INVOKABLE void argonBlow();
 	Q_INVOKABLE void clearActivationStopWarning();
+	Q_INVOKABLE void dismissWarningCode(int warningCode);
     Q_INVOKABLE int biAutoMode(int socketId) const;
     Q_INVOKABLE void setBiAutoMode(int socketId, int mode);
     Q_INVOKABLE int autoMode(int socketId) const;
@@ -178,12 +183,16 @@ private:
 	int m_activationStopWarningCode;
     QList<int> m_activeWarningCodes;
     QHash<int, QTimer *> m_warningTimers;
+    QHash<int, qint64> m_warningShownAtMs;
+    QElapsedTimer m_warningClock;
+    bool m_fullscreenErrorsEnabled = false;
     quint8 m_socketAutoModes[4];
     int m_autoDelayMs;
     QString m_neutralResistText;
 
     void recomputeEnableActivation();
     void clearWarningCode(int warningCode);
+    void scheduleWarningClear(int warningCode);
 
 signals:
 	void neutralElConnectedChanged(bool connected);
@@ -199,6 +208,7 @@ signals:
 	void enableActivationChanged(bool enable);
 	void activationChanged(bool active);
 	void activationStopWarningChanged();
+    void fullscreenErrorsEnabledChanged();
     void biAutoModeChanged();
     void autoModeChanged(int socketId, int mode);
     void autoDelayMsChanged(int delayMs);

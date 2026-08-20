@@ -70,6 +70,9 @@ public:
     QString eshfDbPath() const;
     QString userProgDbPath() const;
     QString logoPath() const;
+    QString startSplashDir() const;
+    QString startSplashPath() const;
+    QString startSplashForLanguage(const QString &language) const;
 
     /** ~/OnyxLog — журналы (не внутри FOTEK). */
     QString onyxLogDir() const;

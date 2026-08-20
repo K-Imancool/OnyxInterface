@@ -1,0 +1,2 @@
+# Replace "kikorik" with the real user that runs UserInterface.
+kikorik ALL=(root) NOPASSWD: /usr/local/sbin/fotek-plymouth-splash

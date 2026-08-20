@@ -131,7 +131,7 @@ Item {
 
             Item {
                 Layout.fillWidth: true
-                implicitHeight: receivePanelRow.implicitHeight + 28
+                Layout.preferredHeight: receivePanelRow.implicitHeight + 28
 
                 Rectangle {
                     anchors.fill: parent
@@ -149,7 +149,7 @@ Item {
                     id: receivePanelRow
                     x: 14
                     y: 14
-                    width: parent.width - 28
+                    width: scrollView.width - 28
                     spacing: 18
 
                     ColumnLayout {
@@ -197,7 +197,7 @@ Item {
                                     var ssid = httpUpload.accessPointSsid.length > 0
                                                ? httpUpload.accessPointSsid
                                                : "ONYX-SERVICE"
-                                    return qsTr("Аппарат раздал сеть \"%1\". Отключите мобильный интернет на вашем устройстве.\nОтсканируйте QR-код или выберите сеть %1 в списке Wi‑Fi.\nПосле обнаружения подключения QR-код изменится.").arg(ssid)
+                                    return qsTr("!Отключите мобильный интернет на вашем устройстве!\nОтсканируйте QR-код или выберите сеть %1 в списке Wi‑Fi.\nПосле обнаружения подключения QR-код изменится.").arg(ssid)
                                 }
                                 return httpUpload.logArchiveError.length > 0
                                        ? httpUpload.logArchiveError
@@ -217,7 +217,7 @@ Item {
                         Item {
                             visible: httpUpload.active && root.wizardStep >= 1
                             Layout.fillWidth: true
-                            implicitHeight: activeDetails.implicitHeight + 18
+                            Layout.preferredHeight: activeDetails.implicitHeight + 18
 
                             Rectangle {
                                 anchors.fill: parent
@@ -229,12 +229,9 @@ Item {
 
                             ColumnLayout {
                                 id: activeDetails
-                                anchors {
-                                    left: parent.left
-                                    right: parent.right
-                                    top: parent.top
-                                    margins: 9
-                                }
+                                x: 9
+                                y: 9
+                                width: parent.width - 18
                                 spacing: 8
 
                                 Text {

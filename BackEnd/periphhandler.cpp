@@ -1,6 +1,15 @@
 #include "periphhandler.h"
 
 #include <QDebug>
+#include <QtGlobal>
+
+namespace {
+
+constexpr int kBannerWarningTimeoutMs = 5000;
+constexpr int kFullscreenMinVisibleMs = 5000;
+constexpr int kFullscreenCauseGoneMs = 2000;
+
+} // namespace
 
 PeriphHandler::PeriphHandler(QObject *parent)
     : QObject(parent),
@@ -34,6 +43,7 @@ PeriphHandler::PeriphHandler(QObject *parent)
     m_blowMatchHoldTimer->setSingleShot(true);
     m_blowMatchHoldTimer->setInterval(1000);
     connect(m_blowMatchHoldTimer, &QTimer::timeout, this, &PeriphHandler::stopArgonBlow);
+    m_warningClock.start();
 }
 
 void PeriphHandler::unitStateHandler(Onyx::UnitState state)
@@ -266,6 +276,23 @@ QVariantList PeriphHandler::activationStopWarningCodes() const
     return result;
 }
 
+bool PeriphHandler::fullscreenErrorsEnabled() const
+{
+    return m_fullscreenErrorsEnabled;
+}
+
+void PeriphHandler::setFullscreenErrorsEnabled(bool enabled)
+{
+    if (m_fullscreenErrorsEnabled == enabled) {
+        return;
+    }
+    m_fullscreenErrorsEnabled = enabled;
+    emit fullscreenErrorsEnabledChanged();
+    for (int code : m_activeWarningCodes) {
+        scheduleWarningClear(code);
+    }
+}
+
 int PeriphHandler::bi1AutoMode() const
 {
     return m_socketAutoModes[0];
@@ -361,19 +388,10 @@ void PeriphHandler::showWarningCode(quint8 warningCode)
 
     if (isNew) {
         m_activeWarningCodes.append(code);
+        m_warningShownAtMs.insert(code, m_warningClock.elapsed());
     }
 
-    QTimer *timer = m_warningTimers.value(code, nullptr);
-    if (!timer) {
-        timer = new QTimer(this);
-        timer->setSingleShot(true);
-        connect(timer, &QTimer::timeout, this, [this, code]() {
-            clearWarningCode(code);
-        });
-        m_warningTimers.insert(code, timer);
-    }
-    // Продлеваем показ, пока ошибка повторяется, без лишних QML-перестроек.
-    timer->start(5000);
+    scheduleWarningClear(code);
 
     if (!isNew) {
         return;
@@ -383,6 +401,28 @@ void PeriphHandler::showWarningCode(quint8 warningCode)
     m_activationStopWarningCode = m_activeWarningCodes.first();
     recomputeEnableActivation();
     emit activationStopWarningChanged();
+}
+
+void PeriphHandler::scheduleWarningClear(int warningCode)
+{
+    QTimer *timer = m_warningTimers.value(warningCode, nullptr);
+    if (!timer) {
+        timer = new QTimer(this);
+        timer->setSingleShot(true);
+        connect(timer, &QTimer::timeout, this, [this, warningCode]() {
+            clearWarningCode(warningCode);
+        });
+        m_warningTimers.insert(warningCode, timer);
+    }
+
+    int delayMs = kBannerWarningTimeoutMs;
+    if (m_fullscreenErrorsEnabled) {
+        const qint64 elapsed = m_warningClock.elapsed()
+                - m_warningShownAtMs.value(warningCode, m_warningClock.elapsed());
+        const qint64 remainingMin = qMax(qint64(0), qint64(kFullscreenMinVisibleMs) - elapsed);
+        delayMs = static_cast<int>(qMax(remainingMin, qint64(kFullscreenCauseGoneMs)));
+    }
+    timer->start(delayMs);
 }
 
 void PeriphHandler::clearActivationStopWarning()
@@ -396,10 +436,16 @@ void PeriphHandler::clearActivationStopWarning()
         }
     }
     m_activeWarningCodes.clear();
+    m_warningShownAtMs.clear();
     m_activationStopWarningVisible = false;
     m_activationStopWarningCode = -1;
     recomputeEnableActivation();
     emit activationStopWarningChanged();
+}
+
+void PeriphHandler::dismissWarningCode(int warningCode)
+{
+    clearWarningCode(warningCode);
 }
 
 void PeriphHandler::recomputeEnableActivation()
@@ -420,6 +466,7 @@ void PeriphHandler::clearWarningCode(int warningCode)
         return;
     }
     m_activeWarningCodes.removeAt(index);
+    m_warningShownAtMs.remove(warningCode);
     if (m_activeWarningCodes.isEmpty()) {
         m_activationStopWarningVisible = false;
         m_activationStopWarningCode = -1;

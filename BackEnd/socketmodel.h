@@ -97,6 +97,7 @@ public:
      * @brief Сбрасывает аргоновые режимы сокета в «не выбран» (modeId = 1000)
      */
     Q_INVOKABLE bool clearArgonModes(int socketId);
+    void stripArgonModesFromAll();
 
     /**
      * @brief Это костыль по дерганью состояний сокетов после ресета модели

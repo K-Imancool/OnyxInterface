@@ -65,23 +65,9 @@ Item {
             style: specialCommandsRoot.serviceMenuNoPassword ? "btn-danger lg" : "btn-primary lg"
             Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
             Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
-            text: qsTr("Вход без пароля")
+            text: specialCommandsRoot.serviceMenuNoPassword
+                      ? qsTr("Вход по паролю: ОТКЛ") : qsTr("Вход по паролю: ВКЛ")
             onPressed: specialCommandsRoot.saveServiceMenuNoPassword(!specialCommandsRoot.serviceMenuNoPassword)
-        }
-
-        SButton {
-            id: debugButton
-            style: (typeof appControl !== "undefined" && appControl && appControl.debugUartEnabled)
-                   ? "btn-danger lg" : "btn-primary lg"
-            Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
-            Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
-            text: (typeof appControl !== "undefined" && appControl && appControl.debugUartEnabled)
-                  ? qsTr("UART: ВКЛ") : qsTr("Вывод UART")
-            onPressed: {
-                if (typeof appControl === "undefined" || !appControl)
-                    return
-                appControl.debugUartEnabled = !appControl.debugUartEnabled
-            }
         }
 
         SButton {
@@ -100,13 +86,29 @@ Item {
         }
 
         SButton {
+            id: debugButton
+            style: (typeof appControl !== "undefined" && appControl && appControl.debugUartEnabled)
+                   ? "btn-outline-success lg" : "btn-primary lg"
+            Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
+            Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
+            text: (typeof appControl !== "undefined" && appControl && appControl.debugUartEnabled)
+                  ? qsTr("Вывод UART: ВКЛ") : qsTr("Вывод UART: ОТКЛ")
+            onPressed: {
+                if (typeof appControl === "undefined" || !appControl)
+                    return
+                appControl.debugUartEnabled = !appControl.debugUartEnabled
+            }
+        }
+
+
+        SButton {
             id: monitorButton
             style: (typeof appControl !== "undefined" && appControl && appControl.cpuMonitorVisible)
-                   ? "btn-danger lg" : "btn-primary lg"
+                   ? "btn-outline-success lg" : "btn-primary lg"
             Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
             Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
             text: (typeof appControl !== "undefined" && appControl && appControl.cpuMonitorVisible)
-                  ? qsTr("ЦП: ВКЛ") : qsTr("Вывод загрузки ЦП")
+                  ? qsTr("Вывод % ЦП: ВКЛ") : qsTr("Вывод % ЦП: ОТКЛ")
             onPressed: {
                 if (typeof appControl === "undefined" || !appControl)
                     return
@@ -115,11 +117,30 @@ Item {
         }
 
         SButton {
-            id: poweroffButton
-            style: "btn-danger lg"
+            id: fullscreenErrorsButton
+            style: (typeof periphHandle !== "undefined" && periphHandle && periphHandle.fullscreenErrorsEnabled)
+                   ? "btn-primary lg" : "btn-danger lg"
             Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
             Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
-            text: qsTr("ВЫКЛ одноплатника")
+            text: periphHandle.fullscreenErrorsEnabled
+                ? qsTr("Ошибки на весь экран") : qsTr("Ошибки мини-списком")
+            onPressed: {
+                if (typeof periphHandle === "undefined" || !periphHandle)
+                    return
+                var enabled = !periphHandle.fullscreenErrorsEnabled
+                periphHandle.fullscreenErrorsEnabled = enabled
+                if (typeof savedJson !== "undefined" && savedJson) {
+                    savedJson.saveString("fullscreenErrors", enabled ? "1" : "0")
+                }
+            }
+        }
+
+        SButton {
+            id: poweroffButton
+            style: "btn-warning lg"
+            Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
+            Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
+            text: qsTr("ВЫКЛ питания модуля")
             onPressed: {
                 if (typeof appControl === "undefined" || !appControl)
                     return
@@ -129,10 +150,10 @@ Item {
 
         SButton {
             id: resetButton
-            style: "btn-danger lg"
+            style: "btn-warning lg"
             Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
             Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
-            text: qsTr("RESET одноплатника")
+            text: qsTr("Перезагрузка модуля")
             onPressed: {
                 if (typeof appControl === "undefined" || !appControl)
                     return
@@ -142,7 +163,7 @@ Item {
 
         SButton {
             id: exitButton
-            style: "btn-danger lg"
+            style: "btn-success lg"
             Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
             Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
             text: qsTr("Выход в Linux")
@@ -155,7 +176,7 @@ Item {
 
         SButton {
             id: deleteAllUserProgsButton
-            style: "btn-danger lg"
+            style: "btn-warning lg"
             Layout.preferredWidth: specialCommandsRoot.menuButtonWidth
             Layout.preferredHeight: specialCommandsRoot.menuButtonHeight
             text: qsTr("Удалить программы\nпользователя")

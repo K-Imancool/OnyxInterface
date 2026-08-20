@@ -283,7 +283,10 @@ private:
     bool applyMcFirmwareFromReleases(const QString &version, const QString &releasesSubdir,
                                      const QString &filePrefixUpper, int mcUnitRaw);
 
+    void loadFavicon();
+
     JsonStorage *m_json = nullptr;
+    QByteArray m_faviconData;
     LinkStm *m_linkStm = nullptr;
     int m_mcFirmwareUpdateProgress = -1;
     QTcpServer *m_server = nullptr;

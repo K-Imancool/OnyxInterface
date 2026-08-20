@@ -177,6 +177,21 @@ QString AppPaths::logoPath() const
     return imagesDir() + QStringLiteral("/logo.png");
 }
 
+QString AppPaths::startSplashDir() const
+{
+    return imagesDir() + QStringLiteral("/start");
+}
+
+QString AppPaths::startSplashPath() const
+{
+    return startSplashDir() + QStringLiteral("/start.png");
+}
+
+QString AppPaths::startSplashForLanguage(const QString &language) const
+{
+    return startSplashDir() + QStringLiteral("/start-%1.png").arg(language);
+}
+
 QString AppPaths::onyxLogDir() const
 {
     return QDir::homePath() + QStringLiteral("/OnyxLog");

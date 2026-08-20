@@ -56,6 +56,24 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 namespace {
 
 bool g_deferredStartupDone = false;
+bool g_plymouthQuitRequested = false;
+
+void requestPlymouthQuit()
+{
+    if (g_plymouthQuitRequested) {
+        return;
+    }
+    g_plymouthQuitRequested = true;
+
+    const QString plymouthPath = QStringLiteral("/usr/bin/plymouth");
+    if (!QFileInfo::exists(plymouthPath)) {
+        return;
+    }
+
+    if (!QProcess::startDetached(plymouthPath, {QStringLiteral("quit")})) {
+        qWarning() << "Failed to stop Plymouth";
+    }
+}
 
 void runAfterFirstFrame(QObject *rootObject, const std::function<void()> &onFirstFrame)
 {
@@ -325,6 +343,8 @@ int main(int argc, char *argv[])
                 return;
             }
             runAfterFirstFrame(obj, [&engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, ctrl, m_savedJson]() {
+                requestPlymouthQuit();
+
                 // Отложенный GStreamer
                 GError *gstError = nullptr;
                 if (!gst_init_check(nullptr, nullptr, &gstError)) {

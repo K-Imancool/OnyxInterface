@@ -8,7 +8,7 @@ Window {
 	height: 800
 	visible: true
 	title: qsTr("Ты волшебник, Гарри!")
-	color: "black"
+	color: "#F3F5F9"
 
 	// Константы для анимации панелей
 	readonly property int panelAnimationDuration: 150
@@ -38,6 +38,7 @@ Window {
     property bool hasUnsavedChanges: false
     property string language: "ru"
     property bool argonAvailable: true
+    property bool argonFaultPromptHandled: false
     readonly property color fotekBlue: "#264093"
     readonly property color fotekOrange: "#faa731"
     readonly property color fotekGreen: "#77dd77"
@@ -95,7 +96,8 @@ Window {
                                           | work.socketsDummy.fullSocketEditorOpened
                                           | startupFlowVisible
                                           | powerOffShutdownPending
-                                          | work.powerOffConfirmDialog.opened)
+                                          | work.powerOffConfirmDialog.opened
+                                          | argonModuleFaultDialog.opened)
     }
 
     function openMainMenuFromStatus() {
@@ -108,6 +110,9 @@ Window {
     }
 
     function readArgonAvailable() {
+        if (typeof appControl !== "undefined" && appControl && appControl.argonDisabledByFault) {
+            return false
+        }
         if (typeof savedJson === "undefined" || !savedJson) {
             return true
         }
@@ -131,6 +136,32 @@ Window {
             return
         }
         work.argonDrawer.open()
+    }
+
+    function warningCodesContain(code) {
+        if (typeof periphHandle === "undefined" || !periphHandle)
+            return false
+        var codes = periphHandle.activationStopWarningCodes
+        for (var i = 0; i < 16; ++i) {
+            if (codes === undefined || codes === null)
+                break
+            var item = codes[i]
+            if (item === undefined || item === null)
+                break
+            if (Number(item) === code)
+                return true
+        }
+        return false
+    }
+
+    function maybePromptArgonModuleFault() {
+        if (container.argonFaultPromptHandled || argonModuleFaultDialog.opened)
+            return
+        if (!container.readArgonAvailable())
+            return
+        if (!container.warningCodesContain(0x82))
+            return
+        argonModuleFaultDialog.showWarning()
     }
 
     function setCurrentProgram(scopeName, progName, isUserProgram, isRecomProgram, scopeId, progId) {
@@ -481,6 +512,7 @@ Window {
         refreshArgonAvailability()
         activationEnable()
         Qt.callLater(ensureWorkScreenLoading)
+        Qt.callLater(maybePromptArgonModuleFault)
     }
 
     onStartupScreenChanged: activationEnable()
@@ -710,6 +742,45 @@ Window {
         }
     }
 
+    FullscreenErrorOverlay {
+        id: fullscreenErrorOverlay
+        parent: Overlay.overlay ? Overlay.overlay : container
+        anchors.fill: parent
+        z: 500000
+    }
+
+    ArgonModuleFaultDialog {
+        id: argonModuleFaultDialog
+        onOpened: container.activationEnable()
+        onClosed: container.activationEnable()
+        onAcceptChosen: {
+            container.argonFaultPromptHandled = true
+            if (typeof appControl !== "undefined" && appControl)
+                appControl.disableArgonModule()
+            container.refreshArgonAvailability()
+        }
+        onCancelChosen: {
+            container.argonFaultPromptHandled = true
+        }
+    }
+
+    Connections {
+        target: periphHandle
+        function onActivationStopWarningChanged() {
+            container.maybePromptArgonModuleFault()
+        }
+    }
+
+    Connections {
+        target: appControl
+        function onArgonDisabledByFaultChanged() {
+            container.refreshArgonAvailability()
+        }
+        function onDeviceTypeApplied() {
+            container.refreshArgonAvailability()
+        }
+    }
+
     // Индикация поверх Popup/Drawer: не перехватывает тач (enabled: false).
     Item {
         id: globalHudLayer
@@ -784,11 +855,13 @@ Window {
         }
 
         Column {
+            id: warningList
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             anchors.topMargin: 83
             spacing: 8
             visible: periphHandle.activationStopWarningVisible
+                     && !periphHandle.fullscreenErrorsEnabled
 
             Repeater {
                 model: periphHandle.activationStopWarningCodes

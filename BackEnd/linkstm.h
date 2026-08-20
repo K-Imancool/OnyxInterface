@@ -264,6 +264,7 @@ public slots:
     /// Загрузка hex из файла (вызов из потока LinkStm)
     void startFirmwareUpdateFromFile(const QString &filePath, const QString &versionStr, int mcUnitRaw);
     void argonBlow();                                   // Передать команду на продувку
+    void stopArgon();                                   // Остановить опрос газового тракта (0x6B)
     void setLedOutput(LedOutput out, LedColor color);   // Передать команду на включение/выключение подсветки
     /// Управление ИСН: voltage=0 и dacAction=0 — выкл; иначе voltage 0..110, dacAction — IsnDacAction
     void manageIsn(quint8 voltage, quint8 dacAction);
@@ -390,6 +391,7 @@ private:
     bool m_neutralElDivided;
     quint8 m_argonFlowRate;
     bool m_activCylinderFirst;
+    bool m_argonPollStopped = false;
 
     UnitState m_unitState;
     Onyx::SocketState m_socketList[4];

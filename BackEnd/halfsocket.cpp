@@ -87,26 +87,51 @@ void HalfSocket::setModes(const QMap<int, SurgModePtr> &newModes, const QStringL
 {
     Q_UNUSED(order)
     m_modes = newModes;
-    
-    // Создаём вектор пар (Num, SurgModePtr) для сортировки
+    rebuildModeNames();
+    setModeIndex(0);
+}
+
+bool HalfSocket::stripArgonModes()
+{
+    const int currentId = modeId();
+    bool removed = false;
+    for (auto it = m_modes.begin(); it != m_modes.end(); ) {
+        if (!it.value().isNull() && it.value()->isArgon() && it.value()->id() != ESHF::NO_MODE) {
+            it = m_modes.erase(it);
+            removed = true;
+        } else {
+            ++it;
+        }
+    }
+    if (!removed) {
+        return false;
+    }
+    rebuildModeNames();
+    if (!setModeId(currentId) && !setModeId(ESHF::NO_MODE) && !m_modeNames.isEmpty()) {
+        setModeIndex(0);
+    }
+    return true;
+}
+
+void HalfSocket::rebuildModeNames()
+{
     std::vector<std::pair<int, SurgModePtr>> modesVector;
     for (auto it = m_modes.begin(); it != m_modes.end(); ++it) {
+        if (it.value().isNull()) {
+            continue;
+        }
         modesVector.push_back(std::make_pair(it.value()->num(), it.value()));
     }
-    
-    // Сортируем по Num
-    std::sort(modesVector.begin(), modesVector.end(), 
+
+    std::sort(modesVector.begin(), modesVector.end(),
         [](const std::pair<int, SurgModePtr>& a, const std::pair<int, SurgModePtr>& b) {
             return a.first < b.first;
         });
-    
-    // Заполняем m_modeNames в отсортированном порядке
+
     m_modeNames.clear();
     for (const auto& pair : modesVector) {
         m_modeNames.append(pair.second->modeName());
     }
-    
-    setModeIndex(0);
 }
 
 CSurgModePtr HalfSocket::curMode() const
