@@ -936,27 +936,27 @@ bool HttpUploadController::buildLogArchiveBundle(const QString &sessionToken, QS
 
     if (!QDir(onyxLogDir).exists()) {
         qWarning() << "HttpUploadController: buildLogArchiveBundle OnyxLog missing:" << onyxLogDir;
-        *errorHtml = QStringLiteral("<p>Каталог журналов не найден: %1</p>").arg(onyxLogDir.toHtmlEscaped());
+        *errorHtml = QStringLiteral("<p>%1</p>").arg(pageText("archive.noLogDir").arg(onyxLogDir.toHtmlEscaped()));
         return false;
     }
 
     const QString zipProgram = resolveZipProgramPath();
     if (zipProgram.isEmpty()) {
         qWarning() << "HttpUploadController: buildLogArchiveBundle zip not found in PATH";
-        *errorHtml = QStringLiteral("<p>Не найдена утилита <code>zip</code> для сборки архива.</p>");
+        *errorHtml = htmlP("archive.noZip");
         return false;
     }
 
     QTemporaryDir bundleDir;
     if (!bundleDir.isValid()) {
-        *errorHtml = QStringLiteral("<p>Не удалось создать временный каталог для архива.</p>");
+        *errorHtml = htmlP("archive.noTempDir");
         return false;
     }
 
     const QString stageRoot = QDir(bundleDir.path()).filePath(QStringLiteral("stage"));
     const QString stageOnyxLog = QDir(stageRoot).filePath(QStringLiteral("OnyxLog"));
     if (!copyDirectoryRecursive(onyxLogDir, stageOnyxLog)) {
-        *errorHtml = QStringLiteral("<p>Не удалось подготовить копию каталога OnyxLog.</p>");
+        *errorHtml = htmlP("archive.copyOnyxLog");
         return false;
     }
 
@@ -995,13 +995,13 @@ bool HttpUploadController::buildLogArchiveBundle(const QString &sessionToken, QS
 
     zipProc.start(zipProgram, args);
     if (!zipProc.waitForStarted(3000)) {
-        *errorHtml = QStringLiteral("<p>Не удалось запустить <code>zip</code>.</p>");
+        *errorHtml = htmlP("archive.zipStartFail");
         return false;
     }
     if (!zipProc.waitForFinished(300000)) {
         zipProc.kill();
         zipProc.waitForFinished(1000);
-        *errorHtml = QStringLiteral("<p>Превышено время ожидания при создании архива.</p>");
+        *errorHtml = htmlP("archive.zipTimeout");
         return false;
     }
 
@@ -1020,27 +1020,28 @@ bool HttpUploadController::buildLogArchiveBundle(const QString &sessionToken, QS
             details += zipStdout;
         }
         *errorHtml = details.isEmpty()
-                ? QStringLiteral("<p>Ошибка при создании архива (код %1).</p>").arg(zipExit)
-                : QStringLiteral("<p>Ошибка при создании архива (код %1): %2</p>")
+                ? QStringLiteral("<p>%1</p>").arg(pageText("archive.zipFail").arg(zipExit).toHtmlEscaped())
+                : QStringLiteral("<p>%1</p>").arg(pageText("archive.zipFailDetails")
                       .arg(zipExit)
-                      .arg(details.toHtmlEscaped());
+                      .arg(details)
+                      .toHtmlEscaped());
         return false;
     }
 
     const QString cachePath = logArchiveCacheFilePath(sessionToken);
     if (QFile::exists(cachePath) && !QFile::remove(cachePath)) {
-        *errorHtml = QStringLiteral("<p>Не удалось подготовить файл архива.</p>");
+        *errorHtml = htmlP("archive.prepareFile");
         return false;
     }
     if (!QFile::copy(zipPath, cachePath)) {
-        *errorHtml = QStringLiteral("<p>Не удалось сохранить архив.</p>");
+        *errorHtml = htmlP("archive.saveFail");
         return false;
     }
     const qint64 size = QFileInfo(cachePath).size();
     if (size <= 0) {
         qWarning() << "HttpUploadController: buildLogArchiveBundle result empty";
         QFile::remove(cachePath);
-        *errorHtml = QStringLiteral("<p>Архив пуст.</p>");
+        *errorHtml = htmlP("archive.empty");
         return false;
     }
     *outFilePath = cachePath;
@@ -1152,7 +1153,7 @@ void HttpUploadController::startLogArchiveBuildIfNeeded(bool forceRestart)
                 m_logArchiveFileSize = 0;
                 m_logArchiveState = LogArchiveState::Error;
                 m_logArchiveErrorText = result.errorHtml.isEmpty()
-                        ? QStringLiteral("Не удалось создать архив.")
+                        ? htmlP("archive.createFail")
                         : result.errorHtml;
                 const QString plain = QString(m_logArchiveErrorText)
                         .remove(QRegularExpression(QStringLiteral("<[^>]*>")));
@@ -1177,7 +1178,7 @@ void HttpUploadController::startLogArchiveBuildIfNeeded(bool forceRestart)
                 result.fileSize = QFileInfo(cachePath).size();
                 if (result.fileSize <= 0) {
                     result.ok = false;
-                    result.errorHtml = QStringLiteral("<p>Файл программ пуст.</p>");
+                    result.errorHtml = htmlP("archive.userprogEmpty");
                     QFile::remove(cachePath);
                 }
             }
@@ -1929,14 +1930,121 @@ QString HttpUploadController::pageText(const char *key) const
                              "El archivo de programas se ha guardado en este dispositivo.\nEl punto de acceso ONYX-SERVICE se ha desconectado."}},
         {"userprog.ul.title", {"Загрузка программ пользователя", "Upload user programs", "Carga de programas de usuario"}},
         {"userprog.ul.hint", {"Выберите файл программ пользователя (например, xxx_onyx-m.db), ранее скачанный с аппарата ONYX. По умолчанию он загружается в папку \"Загрузки\", можно использовать поиск по слову \"onyx\".",
-                              "Select a user programs file (.db) previously downloaded from an ONYX device.",
-                              "Seleccione un archivo de programas de usuario (.db) descargado previamente de un aparato ONYX."}},
+                              "Select a user programs file (for example, xxx_onyx-m.db) previously downloaded from an ONYX unit. By default it is saved in Downloads; you can search for \"onyx\".",
+                              "Seleccione un archivo de programas de usuario (por ejemplo, xxx_onyx-m.db) descargado previamente de un aparato ONYX. Por defecto se guarda en Descargas; puede buscar \"onyx\"."}},
         {"userprog.ul.badName", {"Выберите файл программ с расширением .db или .sqlite",
                                  "Select a programs file with a .db or .sqlite extension",
                                  "Seleccione un archivo de programas con extensión .db o .sqlite"}},
         {"userprog.ul.success", {"Программы успешно загружены на аппарат",
                                  "Programs were imported to the device",
-                                 "Los programas se importaron al aparato"}}
+                                 "Los programas se importaron al aparato"}},
+        {"http.title.error", {"Ошибка", "Error", "Error"}},
+        {"http.title.notFound", {"Не найдено", "Not found", "No encontrado"}},
+        {"http.title.forbidden", {"Доступ запрещён", "Access denied", "Acceso denegado"}},
+        {"http.title.tooLarge", {"Слишком большой", "Too large", "Demasiado grande"}},
+        {"http.headersTooLong", {"Слишком длинные заголовки", "Headers too long", "Cabeceras demasiado largas"}},
+        {"http.badRequest", {"Некорректный запрос", "Invalid request", "Solicitud no válida"}},
+        {"http.badRequestLine", {"Некорректная строка запроса", "Invalid request line", "Línea de solicitud no válida"}},
+        {"http.pageNotFound", {"Страница не найдена", "Page not found", "Página no encontrada"}},
+        {"http.methodNotSupported", {"Метод не поддерживается", "Method not supported", "Método no admitido"}},
+        {"http.uploadSessionInactive", {"Сессия загрузки не активна. Откройте страницу заново с устройства.",
+                                        "The upload session is not active. Open the page again from the unit.",
+                                        "La sesión de carga no está activa. Abra la página de nuevo desde el aparato."}},
+        {"http.uploadWrongClient", {"Загрузка доступна только с устройства, открывшего сессию.",
+                                    "Upload is only available from the device that opened the session.",
+                                    "La carga solo está disponible desde el dispositivo que abrió la sesión."}},
+        {"http.needContentLength", {"Нужен заголовок Content-Length",
+                                    "Content-Length header is required",
+                                    "Se necesita la cabecera Content-Length"}},
+        {"http.bodyTooLarge", {"Размер запроса превышает допустимый",
+                               "The request is too large",
+                               "El tamaño de la solicitud supera el límite"}},
+        {"http.extraBody", {"Лишние данные в теле запроса",
+                            "Unexpected extra data in the request body",
+                            "Datos adicionales inesperados en el cuerpo de la solicitud"}},
+        {"http.expectMultipart", {"Ожидается multipart/form-data",
+                                  "multipart/form-data is required",
+                                  "Se espera multipart/form-data"}},
+        {"http.badToken", {"Неверный или устаревший токен. Откройте страницу снова с устройства.",
+                           "Invalid or expired token. Open the page again from the unit.",
+                           "Token no válido o caducado. Abra la página de nuevo desde el aparato."}},
+        {"http.noFiles", {"Файлы не выбраны", "No files selected", "No se han seleccionado archivos"}},
+        {"http.tooManyFiles", {"Слишком много файлов за один раз",
+                               "Too many files in one request",
+                               "Demasiados archivos en una sola solicitud"}},
+        {"http.manifestMissing", {"В архиве не найден update-manifest.json",
+                                  "update-manifest.json was not found in the archive",
+                                  "No se encontró update-manifest.json en el archivo"}},
+        {"http.manifestInvalid", {"update-manifest.json повреждён или не является JSON-объектом",
+                                  "update-manifest.json is damaged or is not a JSON object",
+                                  "update-manifest.json está dañado o no es un objeto JSON"}},
+        {"http.manifestDeploypaths", {"В архиве нет файлов для раскладки (deployPaths пуст и payload пуст)",
+                                      "The archive has no files to deploy (deployPaths and payload are empty)",
+                                      "El archivo no contiene ficheros para desplegar (deployPaths y payload están vacíos)"}},
+        {"http.manifestShaMissing", {"В update-manifest.json отсутствует поле payloadSha256",
+                                     "payloadSha256 is missing from update-manifest.json",
+                                     "Falta el campo payloadSha256 en update-manifest.json"}},
+        {"http.manifestPath", {"Пути из update-manifest.json некорректны или отсутствуют в payload",
+                               "Paths from update-manifest.json are invalid or missing from the payload",
+                               "Las rutas de update-manifest.json no son válidas o faltan en el payload"}},
+        {"http.checksum", {"Контрольная сумма payloadSha256 не прошла проверку",
+                           "payloadSha256 checksum verification failed",
+                           "La suma de comprobación payloadSha256 no es válida"}},
+        {"http.unzip", {"Не удалось открыть zip-архив. Проверьте пароль/целостность архива.",
+                        "Could not open the zip archive. Check the password and archive integrity.",
+                        "No se pudo abrir el archivo zip. Compruebe la contraseña y la integridad del archivo."}},
+        {"http.userprogImportFail", {"Не удалось импортировать программы пользователя.",
+                                     "Failed to import user programs.",
+                                     "No se pudieron importar los programas de usuario."}},
+        {"http.parseForm", {"Не удалось разобрать данные формы",
+                            "Failed to parse the form data",
+                            "No se pudieron analizar los datos del formulario"}},
+        {"http.sessionExpiredQr", {"Сессия устарела. Откройте страницу заново по QR.",
+                                   "The session has expired. Open the page again via the QR code.",
+                                   "La sesión ha caducado. Abra la página de nuevo con el código QR."}},
+        {"http.downloadWrongClient", {"Скачивание доступно только с устройства, открывшего страницу.",
+                                      "Download is only available from the device that opened the page.",
+                                      "La descarga solo está disponible desde el dispositivo que abrió la página."}},
+        {"http.confirmWrongClient", {"Подтверждение доступно только с устройства, открывшего страницу.",
+                                     "Confirmation is only available from the device that opened the page.",
+                                     "La confirmación solo está disponible desde el dispositivo que abrió la página."}},
+        {"archive.noLogDir", {"Каталог журналов не найден: %1",
+                              "Log directory not found: %1",
+                              "No se encontró el directorio de registros: %1"}},
+        {"archive.noZip", {"Не найдена утилита zip для сборки архива.",
+                           "The zip utility was not found.",
+                           "No se encontró la utilidad zip para crear el archivo."}},
+        {"archive.noTempDir", {"Не удалось создать временный каталог для архива.",
+                               "Failed to create a temporary directory for the archive.",
+                               "No se pudo crear un directorio temporal para el archivo."}},
+        {"archive.copyOnyxLog", {"Не удалось подготовить копию каталога OnyxLog.",
+                                 "Failed to prepare a copy of the OnyxLog directory.",
+                                 "No se pudo preparar una copia del directorio OnyxLog."}},
+        {"archive.zipStartFail", {"Не удалось запустить zip.",
+                                  "Failed to start zip.",
+                                  "No se pudo iniciar zip."}},
+        {"archive.zipTimeout", {"Превышено время ожидания при создании архива.",
+                                "Timed out while creating the archive.",
+                                "Se agotó el tiempo de espera al crear el archivo."}},
+        {"archive.zipFail", {"Ошибка при создании архива (код %1).",
+                             "Archive creation failed (code %1).",
+                             "Error al crear el archivo (código %1)."}},
+        {"archive.zipFailDetails", {"Ошибка при создании архива (код %1): %2",
+                                    "Archive creation failed (code %1): %2",
+                                    "Error al crear el archivo (código %1): %2"}},
+        {"archive.prepareFile", {"Не удалось подготовить файл архива.",
+                                 "Failed to prepare the archive file.",
+                                 "No se pudo preparar el archivo."}},
+        {"archive.saveFail", {"Не удалось сохранить архив.",
+                              "Failed to save the archive.",
+                              "No se pudo guardar el archivo."}},
+        {"archive.empty", {"Архив пуст.", "The archive is empty.", "El archivo está vacío."}},
+        {"archive.createFail", {"Не удалось создать архив.",
+                                "Failed to create the archive.",
+                                "No se pudo crear el archivo."}},
+        {"archive.userprogEmpty", {"Файл программ пуст.",
+                                   "The programs file is empty.",
+                                   "El archivo de programas está vacío."}}
     };
     for (const auto &row : rows) {
         if (qstrcmp(row.id, key) == 0) {
@@ -1944,6 +2052,17 @@ QString HttpUploadController::pageText(const char *key) const
         }
     }
     return QString::fromUtf8(key);
+}
+
+QString HttpUploadController::htmlP(const char *key) const
+{
+    return QStringLiteral("<p>%1</p>").arg(pageText(key).toHtmlEscaped());
+}
+
+void HttpUploadController::sendTranslatedHtml(QTcpSocket *socket, int statusCode,
+                                              const char *titleKey, const char *bodyKey)
+{
+    sendSimpleHtml(socket, statusCode, pageText(titleKey), htmlP(bodyKey));
 }
 
 static QString applyPagePlaceholders(QString html, QHash<QString, QString> values)
@@ -3578,7 +3697,7 @@ void HttpUploadController::tryProcessBuffer()
         const int sep = m_rxBuffer.indexOf("\r\n\r\n");
         if (sep < 0) {
             if (m_rxBuffer.size() > 65536) {
-                sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"), QStringLiteral("<p>Слишком длинные заголовки</p>"));
+                sendTranslatedHtml(m_client, 400, "http.title.error", "http.headersTooLong");
                 if (m_client) {
                     m_client->disconnectFromHost();
                 }
@@ -3591,7 +3710,7 @@ void HttpUploadController::tryProcessBuffer()
 
         const QList<QByteArray> lines = headerBlob.split('\n');
         if (lines.isEmpty()) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"), QStringLiteral("<p>Некорректный запрос</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.badRequest");
             if (m_client) {
                 m_client->disconnectFromHost();
             }
@@ -3601,7 +3720,7 @@ void HttpUploadController::tryProcessBuffer()
         const QByteArray reqLine = lines.first().trimmed();
         const QList<QByteArray> parts = reqLine.split(' ');
         if (parts.size() < 2) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"), QStringLiteral("<p>Некорректная строка запроса</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.badRequestLine");
             if (m_client) {
                 m_client->disconnectFromHost();
             }
@@ -3638,12 +3757,12 @@ void HttpUploadController::tryProcessBuffer()
                                << "got=" << requestQueryValue(requestTarget, QStringLiteral("token"))
                                << "expected=" << m_sessionToken;
                     sendDownloadForbidden(m_client, QStringLiteral("token"),
-                                          QStringLiteral("Сессия устарела. Откройте страницу заново по QR."));
+                                          pageText("http.sessionExpiredQr"));
                 } else if (!ensureDownloadClientAccess(peerAddress, true)) {
                     qWarning() << "HttpUploadController: /download/status client mismatch from" << peerText
                                << "bound=" << m_authorizedClientAddress.toString();
                     sendDownloadForbidden(m_client, QStringLiteral("client"),
-                                          QStringLiteral("Скачивание доступно только с устройства, открывшего страницу."));
+                                          pageText("http.downloadWrongClient"));
                 } else {
                     const bool forceRestart = requestQueryValue(requestTarget, QStringLiteral("fresh"))
                             == QStringLiteral("1");
@@ -3656,10 +3775,10 @@ void HttpUploadController::tryProcessBuffer()
             } else if (isPreparedDownloadMode() && m_path.startsWith(QStringLiteral("/download/complete"))) {
                 if (!isValidTokenInPath(requestTarget)) {
                     sendDownloadForbidden(m_client, QStringLiteral("token"),
-                                          QStringLiteral("Сессия устарела. Откройте страницу заново по QR."));
+                                          pageText("http.sessionExpiredQr"));
                 } else if (!ensureDownloadClientAccess(peerAddress, true)) {
                     sendDownloadForbidden(m_client, QStringLiteral("client"),
-                                          QStringLiteral("Подтверждение доступно только с устройства, открывшего страницу."));
+                                          pageText("http.confirmWrongClient"));
                 } else {
                     qWarning() << "HttpUploadController: log archive download completed by" << peerText;
                     scheduleAccessPointShutdownAfterLogDownload();
@@ -3672,12 +3791,12 @@ void HttpUploadController::tryProcessBuffer()
                 if (!isValidTokenInPath(requestTarget)) {
                     qWarning() << "HttpUploadController: GET download zip invalid token from" << peerText;
                     sendDownloadForbidden(m_client, QStringLiteral("token"),
-                                          QStringLiteral("Сессия устарела. Откройте страницу заново по QR."));
+                                          pageText("http.sessionExpiredQr"));
                 } else if (!ensureDownloadClientAccess(peerAddress, true)) {
                     qWarning() << "HttpUploadController: rejected log download from unauthorized client" << peerText
                                << "bound=" << m_authorizedClientAddress.toString();
                     sendDownloadForbidden(m_client, QStringLiteral("client"),
-                                          QStringLiteral("Скачивание доступно только с устройства, открывшего страницу."));
+                                          pageText("http.downloadWrongClient"));
                 } else {
                     qWarning() << "HttpUploadController: GET download zip from" << peerText
                                << "path=" << m_path
@@ -3694,50 +3813,46 @@ void HttpUploadController::tryProcessBuffer()
                     sendHttpResponse(m_client, 204, QByteArray(), QByteArray());
                 }
             } else {
-                sendSimpleHtml(m_client, 404, QStringLiteral("Не найдено"), QStringLiteral("<p>Страница не найдена</p>"));
+                sendTranslatedHtml(m_client, 404, "http.title.notFound", "http.pageNotFound");
             }
             releaseClientSocket();
             return;
         }
 
         if (m_method != QStringLiteral("POST")) {
-            sendSimpleHtml(m_client, 404, QStringLiteral("Не найдено"), QStringLiteral("<p>Метод не поддерживается</p>"));
+            sendTranslatedHtml(m_client, 404, "http.title.notFound", "http.methodNotSupported");
             releaseClientSocket();
             return;
         }
 
         if (m_path != QStringLiteral("/upload") || isPreparedDownloadMode()) {
-            sendSimpleHtml(m_client, 404, QStringLiteral("Не найдено"), QStringLiteral("<p>Страница не найдена</p>"));
+            sendTranslatedHtml(m_client, 404, "http.title.notFound", "http.pageNotFound");
             releaseClientSocket();
             return;
         }
         if (!m_active || m_sessionToken.isEmpty()) {
             qWarning() << "HttpUploadController: rejected upload without active session from" << peerText;
-            sendSimpleHtml(m_client, 403, QStringLiteral("Доступ запрещён"),
-                           QStringLiteral("<p>Сессия загрузки не активна. Откройте страницу заново с устройства.</p>"));
+            sendTranslatedHtml(m_client, 403, "http.title.forbidden", "http.uploadSessionInactive");
             releaseClientSocket();
             return;
         }
         if (!ensureDownloadClientAccess(peerAddress, true)) {
             qWarning() << "HttpUploadController: rejected upload from unauthorized client" << peerText;
-            sendSimpleHtml(m_client, 403, QStringLiteral("Доступ запрещён"),
-                           QStringLiteral("<p>Загрузка доступна только с устройства, открывшего сессию.</p>"));
+            sendTranslatedHtml(m_client, 403, "http.title.forbidden", "http.uploadWrongClient");
             releaseClientSocket();
             return;
         }
 
         const QString cl = m_requestHeaders.value(QStringLiteral("content-length"));
         if (cl.isEmpty()) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>Нужен заголовок Content-Length</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.needContentLength");
             releaseClientSocket();
             return;
         }
         bool okLen = false;
         m_contentLength = cl.toLongLong(&okLen);
         if (!okLen || m_contentLength < 0 || m_contentLength > kMaxBodyBytes) {
-            sendSimpleHtml(m_client, 413, QStringLiteral("Слишком большой"),
-                           QStringLiteral("<p>Размер запроса превышает допустимый</p>"));
+            sendTranslatedHtml(m_client, 413, "http.title.tooLarge", "http.bodyTooLarge");
             releaseClientSocket();
             return;
         }
@@ -3752,7 +3867,7 @@ void HttpUploadController::tryProcessBuffer()
         return;
     }
     if (m_rxBuffer.size() > m_contentLength) {
-        sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"), QStringLiteral("<p>Лишние данные в теле запроса</p>"));
+        sendTranslatedHtml(m_client, 400, "http.title.error", "http.extraBody");
         releaseClientSocket();
         return;
     }
@@ -3774,7 +3889,7 @@ void HttpUploadController::tryProcessBuffer()
 
     const QString ct = m_requestHeaders.value(QStringLiteral("content-type"));
     if (!ct.contains(QStringLiteral("multipart/form-data"), Qt::CaseInsensitive)) {
-        sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"), QStringLiteral("<p>Ожидается multipart/form-data</p>"));
+        sendTranslatedHtml(m_client, 400, "http.title.error", "http.expectMultipart");
         releaseClientSocket();
         return;
     }
@@ -3787,48 +3902,39 @@ void HttpUploadController::tryProcessBuffer()
         m_uploadStatusText = tr("Ошибка загрузки");
         emit uploadProgressChanged();
         if (err == QStringLiteral("token")) {
-            sendSimpleHtml(m_client, 403, QStringLiteral("Доступ запрещён"),
-                           QStringLiteral("<p>Неверный или устаревший токен. Откройте страницу снова с устройства.</p>"));
+            sendTranslatedHtml(m_client, 403, "http.title.forbidden", "http.badToken");
         } else if (err == QStringLiteral("no files")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"), QStringLiteral("<p>Файлы не выбраны</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.noFiles");
         } else if (err == QStringLiteral("too many files")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"), QStringLiteral("<p>Слишком много файлов за один раз</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.tooManyFiles");
         } else if (err == QStringLiteral("invalid release name")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>Имя файла должно быть в формате name-a.b-c.d-e.zip</p>"));
+            sendSimpleHtml(m_client, 400, pageText("http.title.error"),
+                           QStringLiteral("<p>%1</p>").arg(pageText("upload.badName").toHtmlEscaped()));
         } else if (err == QStringLiteral("manifest-missing")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>В архиве не найден update-manifest.json</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.manifestMissing");
         } else if (err == QStringLiteral("manifest-invalid")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>update-manifest.json повреждён или не является JSON-объектом</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.manifestInvalid");
         } else if (err == QStringLiteral("manifest-deploypaths")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>В архиве нет файлов для раскладки (deployPaths пуст и payload пуст)</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.manifestDeploypaths");
         } else if (err == QStringLiteral("manifest-sha-missing")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>В update-manifest.json отсутствует поле payloadSha256</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.manifestShaMissing");
         } else if (err == QStringLiteral("manifest-path")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>Пути из update-manifest.json некорректны или отсутствуют в payload</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.manifestPath");
         } else if (err == QStringLiteral("checksum")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>Контрольная сумма payloadSha256 не прошла проверку</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.checksum");
         } else if (err == QStringLiteral("unzip")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>Не удалось открыть zip-архив. Проверьте пароль/целостность архива.</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.unzip");
         } else if (err == QStringLiteral("invalid userprog name")) {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>Выберите файл программ с расширением .db или .sqlite</p>"));
+            sendSimpleHtml(m_client, 400, pageText("http.title.error"),
+                           QStringLiteral("<p>%1</p>").arg(pageText("userprog.ul.badName").toHtmlEscaped()));
         } else if (err == QStringLiteral("userprog-import")) {
             const QString importText = m_userProgImportError.isEmpty()
-                    ? QStringLiteral("Не удалось импортировать программы пользователя.")
+                    ? pageText("http.userprogImportFail")
                     : m_userProgImportError;
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
+            sendSimpleHtml(m_client, 400, pageText("http.title.error"),
                            QStringLiteral("<p>%1</p>").arg(importText.toHtmlEscaped()));
         } else {
-            sendSimpleHtml(m_client, 400, QStringLiteral("Ошибка"),
-                           QStringLiteral("<p>Не удалось разобрать данные формы</p>"));
+            sendTranslatedHtml(m_client, 400, "http.title.error", "http.parseForm");
         }
         releaseClientSocket();
         return;

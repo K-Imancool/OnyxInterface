@@ -746,7 +746,7 @@ void LinkStm::readRxCommand()
             command.data.clear();
             command.mc = MC_COM;
             m_txCommandList.append(command);
-            quint8 stopReason = GenLinkModuleErr;
+            quint8 stopReason = GenStop;
             if (rxType == RxErrors || rxType == RxCritical) {
                 stopReason = m_rxCommand.com;
             }

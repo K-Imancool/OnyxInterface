@@ -261,24 +261,24 @@ bool UserProgTransferController::exportScopesToFile(const QList<int> &scopeIds,
     std::sort(ids.begin(), ids.end());
     ids.erase(std::unique(ids.begin(), ids.end()), ids.end());
     if (ids.isEmpty()) {
-        setError(QStringLiteral("Не выбраны папки программ."));
+        setError(tr("Не выбраны папки программ."));
         return false;
     }
 
     const QString srcPath = AppPaths::instance().userProgDbPath();
     if (!QFileInfo::exists(srcPath)) {
-        setError(QStringLiteral("База программ пользователя не найдена."));
+        setError(tr("База программ пользователя не найдена."));
         return false;
     }
 
     QTemporaryDir tmp;
     if (!tmp.isValid()) {
-        setError(QStringLiteral("Не удалось создать временный каталог."));
+        setError(tr("Не удалось создать временный каталог."));
         return false;
     }
     const QString snapshotPath = QDir(tmp.path()).filePath(QStringLiteral("snapshot.db"));
     if (!copySqliteDatabase(srcPath, snapshotPath)) {
-        setError(QStringLiteral("Не удалось скопировать базу программ."));
+        setError(tr("Не удалось скопировать базу программ."));
         return false;
     }
 
@@ -288,10 +288,10 @@ bool UserProgTransferController::exportScopesToFile(const QList<int> &scopeIds,
         QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), conn);
         db.setDatabaseName(snapshotPath);
         if (!db.open()) {
-            setError(QStringLiteral("Не удалось открыть копию базы программ."));
+            setError(tr("Не удалось открыть копию базы программ."));
         } else if (!tableExists(db, QStringLiteral("Scopes"))
                    || !tableExists(db, QStringLiteral("Progs"))) {
-            setError(QStringLiteral("В базе нет таблиц Scopes/Progs."));
+            setError(tr("В базе нет таблиц Scopes/Progs."));
         } else {
             const QString inList = sqlInList(ids);
             QSqlQuery q(db);
@@ -317,7 +317,7 @@ bool UserProgTransferController::exportScopesToFile(const QList<int> &scopeIds,
                 scopeCount = check.value(0).toInt();
             }
             if (scopeCount <= 0) {
-                setError(QStringLiteral("В выбранных папках нет данных для экспорта."));
+                setError(tr("В выбранных папках нет данных для экспорта."));
             } else {
                 QFile::remove(destPath);
                 QString escaped = destPath;
@@ -332,7 +332,7 @@ bool UserProgTransferController::exportScopesToFile(const QList<int> &scopeIds,
                             && QFileInfo::exists(destPath)
                             && QFileInfo(destPath).size() > 0;
                     if (!ok) {
-                        setError(QStringLiteral("Не удалось сохранить файл программ."));
+                        setError(tr("Не удалось сохранить файл программ."));
                     }
                 }
             }
@@ -372,18 +372,18 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
     }
 
     if (!QFileInfo::exists(srcPath) || QFileInfo(srcPath).size() <= 0) {
-        setError(QStringLiteral("Файл программ пуст или не найден."));
+        setError(tr("Файл программ пуст или не найден."));
         return false;
     }
 
     auto *app = qobject_cast<OnyxApp *>(qApp);
     if (!app) {
-        setError(QStringLiteral("Приложение недоступно."));
+        setError(tr("Приложение недоступно."));
         return false;
     }
     const QSharedPointer<DataBaseReader> destReader = app->getUserProgDbReader();
     if (destReader.isNull()) {
-        setError(QStringLiteral("База программ пользователя недоступна."));
+        setError(tr("База программ пользователя недоступна."));
         return false;
     }
 
@@ -397,16 +397,16 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
         srcDb.setDatabaseName(srcPath);
         srcDb.setConnectOptions(QStringLiteral("QSQLITE_OPEN_READONLY"));
         if (!srcDb.open()) {
-            setError(QStringLiteral("Не удалось открыть файл программ."));
+            setError(tr("Не удалось открыть файл программ."));
         } else if (!tableExists(srcDb, QStringLiteral("Scopes"))
                    || !tableExists(srcDb, QStringLiteral("Progs"))) {
-            setError(QStringLiteral("Файл не содержит программы пользователя."));
+            setError(tr("Файл не содержит программы пользователя."));
         } else {
             QSqlDatabase destDb = QSqlDatabase::database(destReader->connectionName());
             if (!destDb.isValid() || !destDb.open()) {
-                setError(QStringLiteral("Не удалось открыть базу программ на аппарате."));
+                setError(tr("Не удалось открыть базу программ на аппарате."));
             } else if (!destReader->beginTransaction()) {
-                setError(QStringLiteral("Не удалось начать запись в базу программ."));
+                setError(tr("Не удалось начать запись в базу программ."));
             } else {
 
                 const QStringList srcScopeCols = tableColumns(srcDb, QStringLiteral("Scopes"));
@@ -428,7 +428,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                         || !progCols.contains(QStringLiteral("id"))
                         || !progCols.contains(QStringLiteral("Scope_ID"))) {
                     destReader->rollback();
-                    setError(QStringLiteral("Несовместимая структура файла программ."));
+                    setError(tr("Несовместимая структура файла программ."));
                 } else {
                     QSqlQuery countQ(srcDb);
                     countQ.exec(QStringLiteral("SELECT COUNT(*) FROM Scopes WHERE id > 1000"));
@@ -456,7 +456,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                     if (!scopeQ.exec(QStringLiteral("SELECT %1 FROM Scopes WHERE %2 ORDER BY id")
                                      .arg(quotedJoin(srcScopeCols), scopeWhere))) {
                         failed = true;
-                        setError(QStringLiteral("Не удалось прочитать папки из файла."));
+                        setError(tr("Не удалось прочитать папки из файла."));
                     }
 
                     while (!failed && scopeQ.next()) {
@@ -495,7 +495,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                             }
                             if (!insertRow(destDb, QStringLiteral("Scopes"), scopeCols, insertVals)) {
                                 failed = true;
-                                setError(QStringLiteral("Не удалось добавить папку «%1».").arg(folderName));
+                                setError(tr("Не удалось добавить папку «%1».").arg(folderName));
                                 break;
                             }
                             ++importedScopes;
@@ -521,7 +521,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                         progQ.addBindValue(srcScopeId);
                         if (!progQ.exec()) {
                             failed = true;
-                            setError(QStringLiteral("Не удалось прочитать программы папки «%1».")
+                            setError(tr("Не удалось прочитать программы папки «%1».")
                                      .arg(folderName));
                             break;
                         }
@@ -576,7 +576,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                             }
                             if (!insertRow(destDb, QStringLiteral("Progs"), progCols, srcProg)) {
                                 failed = true;
-                                setError(QStringLiteral("Не удалось добавить программу «%1».")
+                                setError(tr("Не удалось добавить программу «%1».")
                                          .arg(uniqueRu));
                                 break;
                             }
@@ -594,7 +594,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                             if (!listQ.exec(QStringLiteral("SELECT %1 FROM Lists WHERE Prog_ID IN (%2)")
                                             .arg(quotedJoin(srcListCols), progIn))) {
                                 failed = true;
-                                setError(QStringLiteral("Не удалось прочитать настройки программ."));
+                                setError(tr("Не удалось прочитать настройки программ."));
                                 break;
                             }
                             while (listQ.next()) {
@@ -606,7 +606,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                                 srcList.insert(QStringLiteral("Prog_ID"), progIdMap.value(srcProgId));
                                 if (!insertRow(destDb, QStringLiteral("Lists"), listCols, srcList)) {
                                     failed = true;
-                                    setError(QStringLiteral("Не удалось добавить настройки программы."));
+                                    setError(tr("Не удалось добавить настройки программы."));
                                     break;
                                 }
                             }
@@ -617,10 +617,10 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
                         destReader->rollback();
                     } else if (importedProgs == 0 && importedScopes == 0 && reusedScopes == 0) {
                         destReader->rollback();
-                        setError(QStringLiteral("В файле нет папок программ для загрузки."));
+                        setError(tr("В файле нет папок программ для загрузки."));
                     } else if (!destDb.commit()) {
                         destReader->rollback();
-                        setError(QStringLiteral("Не удалось сохранить загруженные программы."));
+                        setError(tr("Не удалось сохранить загруженные программы."));
                     } else {
                         QSqlQuery checkpoint(destDb);
                         checkpoint.exec(QStringLiteral("PRAGMA wal_checkpoint(TRUNCATE)"));
@@ -649,7 +649,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
         *existingFolders = reusedScopes;
     }
     if (summary) {
-        *summary = QStringLiteral("Загружено программ: %1. Новых папок: %2. В существующие папки: %3.")
+        *summary = tr("Загружено программ: %1. Новых папок: %2. В существующие папки: %3.")
                    .arg(importedProgs)
                    .arg(importedScopes)
                    .arg(reusedScopes);

@@ -240,6 +240,9 @@ private:
     void fillDeviceIdentityHtml(QString *serialHtml, QString *typeHtml) const;
     QString uiLanguage() const;
     QString pageText(const char *key) const;
+    QString htmlP(const char *key) const;
+    void sendTranslatedHtml(QTcpSocket *socket, int statusCode,
+                            const char *titleKey, const char *bodyKey);
     QString deviceTypeFileTag() const;
     QByteArray buildUploadPageHtml() const;
     QByteArray buildLogDownloadPageHtml() const;

@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import BackEnd 1.0
 
 Rectangle {
     id: overlayRoot
@@ -6,12 +7,20 @@ Rectangle {
     property bool dismissedBySecret: false
     property bool latchedCritical: false
     property var latchedCodes: []
+    property int lastActivationModeId: -1
+    property bool lastActivationIsCoag: false
+
+    readonly property int socketStateActiveCoag: 3
+    readonly property int socketStateActiveCut: 4
+    readonly property bool lastActivationIsTermoCoag: lastActivationIsCoag
+            && (lastActivationModeId === ESHF.TERMOSHOV
+                || lastActivationModeId === ESHF.TERMOSHOV_A)
 
     readonly property bool fullscreenOn: typeof periphHandle !== "undefined"
                                          && periphHandle
                                          && periphHandle.fullscreenErrorsEnabled
     readonly property bool liveVisible: fullscreenOn && periphHandle.activationStopWarningVisible
-    readonly property var liveCodes: liveVisible ? periphHandle.activationStopWarningCodes : []
+    readonly property var liveCodes: liveVisible ? overlayRoot.filterWarningCodes(periphHandle.activationStopWarningCodes) : []
     readonly property var warningCodes: liveVisible ? liveCodes : latchedCodes
     readonly property bool hasCriticalError: {
         if (overlayRoot.latchedCritical)
@@ -30,7 +39,7 @@ Rectangle {
     }
     readonly property bool overlayActive: fullscreenOn
                                           && !dismissedBySecret
-                                          && (liveVisible || latchedCritical)
+                                          && ((liveVisible && liveCodes.length > 0) || latchedCritical)
 
     visible: overlayActive
     enabled: overlayActive
@@ -51,12 +60,81 @@ Rectangle {
         return copy
     }
 
+    function captureActiveMode() {
+        if (typeof theModel === "undefined" || !theModel)
+            return
+        var n = theModel.rowCount()
+        for (var i = 0; i < n; ++i) {
+            var idx = theModel.index(i, 0)
+            if (!idx.valid)
+                continue
+            var status = Number(theModel.data(idx, SocketModel.SocketStatus))
+            if (status === overlayRoot.socketStateActiveCoag) {
+                overlayRoot.lastActivationModeId = Number(theModel.data(idx, SocketModel.CoagModeId))
+                overlayRoot.lastActivationIsCoag = true
+                return
+            }
+            if (status === overlayRoot.socketStateActiveCut) {
+                overlayRoot.lastActivationModeId = Number(theModel.data(idx, SocketModel.CutModeId))
+                overlayRoot.lastActivationIsCoag = false
+                return
+            }
+        }
+    }
+
+    function codesContain(codes, code) {
+        if (codes === undefined || codes === null)
+            return false
+        for (var i = 0; i < 16; ++i) {
+            var item = codes[i]
+            if (item === undefined || item === null)
+                break
+            if (Number(item) === code)
+                return true
+        }
+        return false
+    }
+
+    function filterWarningCodes(codes) {
+        var result = []
+        if (codes === undefined || codes === null)
+            return result
+        for (var i = 0; i < 16; ++i) {
+            var item = codes[i]
+            if (item === undefined || item === null)
+                break
+            if (Number(item) === 0x41 && !overlayRoot.lastActivationIsTermoCoag)
+                continue
+            result.push(item)
+        }
+        return result
+    }
+
+    Connections {
+        target: (typeof theModel !== "undefined") ? theModel : null
+        function onDataChanged(topLeft, bottomRight, roles) {
+            overlayRoot.captureActiveMode()
+        }
+    }
+
     Connections {
         target: (typeof periphHandle !== "undefined") ? periphHandle : null
+        function onActivationChanged(active) {
+            if (active)
+                overlayRoot.captureActiveMode()
+        }
         function onActivationStopWarningChanged() {
-            if (!periphHandle || !periphHandle.activationStopWarningVisible)
+            if (!periphHandle)
                 return
-            var codes = periphHandle.activationStopWarningCodes
+            if (periphHandle.activationStopWarningVisible
+                    && overlayRoot.codesContain(periphHandle.activationStopWarningCodes, 0x41)
+                    && !overlayRoot.lastActivationIsTermoCoag) {
+                periphHandle.dismissWarningCode(0x41)
+                return
+            }
+            if (!periphHandle.activationStopWarningVisible)
+                return
+            var codes = overlayRoot.filterWarningCodes(periphHandle.activationStopWarningCodes)
             if (overlayRoot.codesHaveCritical(codes)) {
                 overlayRoot.latchedCritical = true
                 overlayRoot.latchedCodes = overlayRoot.copyCodes(codes)
@@ -73,12 +151,15 @@ Rectangle {
 //        case 0x04: return qsTr("ОШИБКА Е4. ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ")  //"Ошибка связи: неверная длина пакета")
 //        case 0x05: return qsTr("ОШИБКА Е5. ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ")  //"Ошибка связи: CRC не совпадает")
 
-        case 0x41: return qsTr("ДЛИТЕЛЬНАЯ РАБОТА БЕЗ КАСАНИЯ ТКАНИ И/ИЛИ ОБРАЗОВАНИЯ ДУГИ.\nОТПУСКАЙТЕ ПЕДАЛЬ (КНОПКУ ДЕРЖАТЕЛЯ), КОГДА ВОЗДЕЙСТВИЕ НЕ ПРОИЗВОДИТСЯ.\nПРОВЕРЬТЕ ИСПРАВНОСТЬ ПЕДАЛИ И/ИЛИ ДЕРЖАТЕЛЯ С КНОПКАМИ.")
+        case 0x41: return qsTr("КОАГУЛЯЦИЯ ЗАВЕРШЕНА")
+//            return qsTr("ДЛИТЕЛЬНАЯ РАБОТА БЕЗ КАСАНИЯ ТКАНИ И/ИЛИ ОБРАЗОВАНИЯ ДУГИ.\nОТПУСКАЙТЕ ПЕДАЛЬ (КНОПКУ ДЕРЖАТЕЛЯ), КОГДА ВОЗДЕЙСТВИЕ НЕ ПРОИЗВОДИТСЯ.\nПРОВЕРЬТЕ ИСПРАВНОСТЬ ПЕДАЛИ И/ИЛИ ДЕРЖАТЕЛЯ С КНОПКАМИ.")
         case 0x42: return qsTr("ЗАМЫКАНИЕ ИНСТРУМЕНТА.\nПЕРЕУСТАНОВИТЕ ИНСТРУМЕНТ НА ТКАНЬ И ПОВТОРИТЕ АКТИВАЦИЮ")
         case 0x43: return qsTr("ПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ ДЕРЖАТЕЛЯ И НЕЙТРАЛЬНОГО ЭЛЕКТРОДА.\nПРОВЕРЬТЕ НАЛОЖЕНИЕ НЕЙТРАЛЬНОГО ЭЛЕКТРОДА НА ПАЦИЕНТА.")
         case 0x44: return qsTr("ПРОВЕРЬТЕ ДАВЛЕНИЕ В БАЛЛОНАХ. ПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ БАЛЛОНОВ.\nПОЛНОСТЬЮ ОТКРОЙТЕ ВЕНТИЛИ БАЛЛОНОВ.")
         case 0x45: return qsTr("НЕПРОХОДИМОСТЬ ГАЗОВОГО ТРАКТА ИНСТРУМЕНТА. ПРОВЕРЬТЕ ИНСТРУМЕНТ И ДЕРЖАТЕЛЬ.")
-//        case 0x46: return qsTr("Активация остановлена: ошибка модуля связи")
+        case 0x46: return qsTr("ПРОВЕРЬТЕ ИСПОЛЬЗУЕМЫЙ РАСТВОР (0,9% NaCl)\nВ СЛУЧАЕ ПОВТОРЕНИЯ ОШИБКИ, ЗАМЕНИТЕ ИНСТРУМЕНТ И (ИЛИ) РЕЗЕКТОСКОП.\nПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ ДЕРЖАТЕЛЯ И РЕЗЕКТОСКОПА.")
+        case 0x47: return qsTr("ПРОВЕРЬТЕ, ЧТО РАСТВОР НЕ ПОПАЛ В РЕЗЕКТОСКОП ИЛИ РАЗЪЁМ ПОДКЛЮЧЕНИЯ ДЕРЖАТЕЛЯ. ПРОСУШИТЕ РЕЗЕКТОСКОП И ДЕРЖАТЕЛЬ.\nВ СЛУЧАЕ ПОВТОРЕНИЯ ОШИБКИ, ЗАМЕНИТЕ РЕЗЕКТОСКОП.")
+        case 0x48: return qsTr("ЗАХВАЧЕН СЛИШКОМ БОЛЬШОЙ ОБЪЁМ ТКАНИ И/ИЛИ ВЫБРАН РЕЖИМ НЕДОСТАТОЧНОЙ МОЩНОСТИ.")
 //        case 0x4F: return qsTr("Активация остановлена: ошибка генератора")
 
 //        case 0x80: return qsTr("ОШИБКА Е80. ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ")  //"Ошибка: модуль связи не принимает сигналы от МИФ")
@@ -105,15 +186,19 @@ Rectangle {
 //        case 0x98: return qsTr("ОШИБКА Е98. ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ")  //"Критичная ошибка: АЦП схемы НЭ")
 
         default:
-            return qsTr("ОШИБКА Е") + code.toString(16).toUpperCase() + ". ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ"
+            return qsTr("ОШИБКА Е%1. ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ").arg(code.toString(16).toUpperCase())
         }
     }
     function isRedStripeCode(code) {
         var c = Number(code)
-        return c === 0x41 || c === 0x42 || c === 0x44 || c === 0x45
+        if (c === 0x41)
+            return !overlayRoot.lastActivationIsTermoCoag
+        return c === 0x42 || c === 0x44 || c === 0x45
     }
 
     function fullscreenErrorColor(code) {
+        if (Number(code) === 0x41 && overlayRoot.lastActivationIsTermoCoag)
+            return "#70F870"
         return overlayRoot.isRedStripeCode(code) ? "#b8a400" : "#FF8A80"
     }
 

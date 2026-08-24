@@ -45,7 +45,7 @@
     </message>
     <message>
         <source>Версия приложения</source>
-        <translation>Versión de la aplicación</translation>
+        <translation type="vanished">Versión de la aplicación</translation>
     </message>
     <message>
         <source>Версии ПО модулей</source>
@@ -62,6 +62,26 @@
     <message>
         <source>Назад</source>
         <translation>atrás</translation>
+    </message>
+    <message>
+        <source>повреждена</source>
+        <translation>dañada</translation>
+    </message>
+    <message>
+        <source>нет</source>
+        <translation>no</translation>
+    </message>
+    <message>
+        <source>Модуль интерфейса</source>
+        <translation>Módulo de interfaz</translation>
+    </message>
+    <message>
+        <source>Медиафайлы</source>
+        <translation>Archivos multimedia</translation>
+    </message>
+    <message>
+        <source>Модуль</source>
+        <translation>Módulo</translation>
     </message>
 </context>
 <context>
@@ -99,11 +119,11 @@ ef.</translation>
     </message>
     <message>
         <source>ЖУРНАЛ СОБЫТИЙ</source>
-        <translation>REGISTRO DE EVENTOS</translation>
+        <translation type="vanished">REGISTRO DE EVENTOS</translation>
     </message>
     <message>
         <source>НАСТРОЙКА ДАТЫ И ВРЕМЕНИ</source>
-        <translation>FECHA Y HORA</translation>
+        <translation type="vanished">FECHA Y HORA</translation>
     </message>
     <message>
         <source>НАЗАД</source>
@@ -131,7 +151,7 @@ ef.</translation>
     </message>
     <message>
         <source>АКТИВАЦИЯ ДОПОЛНИТЕЛЬНЫХ ОПЦИЙ</source>
-        <translation>ACTIVAR OPCIONES ADICIONALES</translation>
+        <translation type="vanished">ACTIVAR OPCIONES ADICIONALES</translation>
     </message>
     <message>
         <source>Для активации дополнительных опций введите ключ</source>
@@ -163,7 +183,33 @@ ef.</translation>
     </message>
     <message>
         <source>123456789012</source>
-        <translation type="unfinished">123456789012</translation>
+        <translation>123456789012</translation>
+    </message>
+    <message>
+        <source>ЖУРНАЛ
+СОБЫТИЙ</source>
+        <translation>REGISTRO
+DE EVENTOS</translation>
+    </message>
+    <message>
+        <source>НАСТРОЙКА
+ДАТЫ И ВРЕМЕНИ</source>
+        <translation>FECHA Y
+HORA</translation>
+    </message>
+    <message>
+        <source>ПЕРЕНОС ПРОГРАММ
+ПОЛЬЗОВАТЕЛЯ</source>
+        <translation>TRANSFERENCIA DE
+PROGRAMAS DE USUARIO</translation>
+    </message>
+    <message>
+        <source>АКТИВАЦИЯ
+ДОПОЛНИТЕЛЬНЫХ
+ОПЦИЙ</source>
+        <translation>ACTIVAR
+OPCIONES
+ADICIONALES</translation>
     </message>
 </context>
 <context>
@@ -198,6 +244,21 @@ ef.</translation>
     </message>
 </context>
 <context>
+    <name>ArgonConflictWarningDialog</name>
+    <message>
+        <source>Режим с аргоном уже установлен на выходе %1, хотите отключить его?</source>
+        <translation>Ya hay un modo con argón en la salida %1. ¿Desea desactivarlo?</translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCELAR</translation>
+    </message>
+    <message>
+        <source>ПРИНЯТЬ</source>
+        <translation>ACEPTAR</translation>
+    </message>
+</context>
+<context>
     <name>ArgonDrawer</name>
     <message>
         <source>НАСТРОЙКА ГАЗОВОГО ТРАКТА</source>
@@ -206,6 +267,21 @@ ef.</translation>
     <message>
         <source>X</source>
         <translation>X</translation>
+    </message>
+</context>
+<context>
+    <name>ArgonModuleFaultDialog</name>
+    <message>
+        <source>Неисправность газового модуля. Продолжить работу без него? Режимы с аргоном будут недоступны.</source>
+        <translation>Fallo del módulo de gas. ¿Continuar sin él? Los modos con argón no estarán disponibles.</translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCELAR</translation>
+    </message>
+    <message>
+        <source>ПРОДОЛЖИТЬ</source>
+        <translation>CONTINUAR</translation>
     </message>
 </context>
 <context>
@@ -351,15 +427,15 @@ ef.</translation>
     </message>
     <message>
         <source>Подача импульсов СРЕДНЯЯ</source>
-        <translation>Pulso MEDIO</translation>
+        <translation type="vanished">Pulso MEDIO</translation>
     </message>
     <message>
         <source>Подача импульсов РЕДКАЯ</source>
-        <translation>Pulso LENTO</translation>
+        <translation type="vanished">Pulso LENTO</translation>
     </message>
     <message>
         <source>Подача импульсов ЧАСТАЯ</source>
-        <translation>Pulso RÁPIDO</translation>
+        <translation type="vanished">Pulso RÁPIDO</translation>
     </message>
     <message>
         <source>РЕЗАНИЕ</source>
@@ -404,6 +480,22 @@ ef.</translation>
     <message>
         <source>ПРИНЯТЬ</source>
         <translation>ACEPTAR</translation>
+    </message>
+    <message>
+        <source>Подача импульсов: ОДНОКРАТНО</source>
+        <translation>Pulsos: ÚNICO</translation>
+    </message>
+    <message>
+        <source>Подача импульсов: РЕДКО</source>
+        <translation>Pulsos: LENTO</translation>
+    </message>
+    <message>
+        <source>Подача импульсов: СРЕДНЕ</source>
+        <translation>Pulsos: MEDIO</translation>
+    </message>
+    <message>
+        <source>Подача импульсов: ЧАСТО</source>
+        <translation>Pulsos: RÁPIDO</translation>
     </message>
 </context>
 <context>
@@ -491,6 +583,10 @@ s</translation>
         <translation>1.5
 s</translation>
     </message>
+    <message>
+        <source>М1+М2</source>
+        <translation>M1+M2</translation>
+    </message>
 </context>
 <context>
     <name>FullSocketStepHint</name>
@@ -501,6 +597,96 @@ s</translation>
     <message>
         <source>→</source>
         <translation>→</translation>
+    </message>
+</context>
+<context>
+    <name>FullscreenErrorOverlay</name>
+    <message>
+        <source>ДЛИТЕЛЬНАЯ РАБОТА БЕЗ КАСАНИЯ ТКАНИ И/ИЛИ ОБРАЗОВАНИЯ ДУГИ.
+ОТПУСКАЙТЕ ПЕДАЛЬ (КНОПКУ ДЕРЖАТЕЛЯ), КОГДА ВОЗДЕЙСТВИЕ НЕ ПРОИЗВОДИТСЯ.
+ПРОВЕРЬТЕ ИСПРАВНОСТЬ ПЕДАЛИ И/ИЛИ ДЕРЖАТЕЛЯ С КНОПКАМИ.</source>
+        <translation>FUNCIONAMIENTO PROLONGADO SIN CONTACTO CON EL TEJIDO Y/O SIN ARCO.
+SUELTE EL PEDAL (BOTÓN DEL MANGO) CUANDO NO SE APLIQUE ENERGÍA.
+COMPRUEBE EL PEDAL Y/O EL MANGO CON BOTONES.</translation>
+    </message>
+    <message>
+        <source>ЗАМЫКАНИЕ ИНСТРУМЕНТА.
+ПЕРЕУСТАНОВИТЕ ИНСТРУМЕНТ НА ТКАНЬ И ПОВТОРИТЕ АКТИВАЦИЮ</source>
+        <translation>CORTOCIRCUITO DEL INSTRUMENTO.
+COLOQUE DE NUEVO EL INSTRUMENTO SOBRE EL TEJIDO Y REACTIVE</translation>
+    </message>
+    <message>
+        <source>ПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ ДЕРЖАТЕЛЯ И НЕЙТРАЛЬНОГО ЭЛЕКТРОДА.
+ПРОВЕРЬТЕ НАЛОЖЕНИЕ НЕЙТРАЛЬНОГО ЭЛЕКТРОДА НА ПАЦИЕНТА.</source>
+        <translation>COMPRUEBE LA CONEXIÓN DEL MANGO Y DEL ELECTRODO NEUTRO.
+COMPRUEBE LA COLOCACIÓN DEL ELECTRODO NEUTRO EN EL PACIENTE.</translation>
+    </message>
+    <message>
+        <source>ПРОВЕРЬТЕ ДАВЛЕНИЕ В БАЛЛОНАХ. ПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ БАЛЛОНОВ.
+ПОЛНОСТЬЮ ОТКРОЙТЕ ВЕНТИЛИ БАЛЛОНОВ.</source>
+        <translation>COMPRUEBE LA PRESIÓN DE LAS BOTELLAS. COMPRUEBE LA CONEXIÓN DE LAS BOTELLAS.
+ABRA COMPLETAMENTE LAS VÁLVULAS DE LAS BOTELLAS.</translation>
+    </message>
+    <message>
+        <source>НЕПРОХОДИМОСТЬ ГАЗОВОГО ТРАКТА ИНСТРУМЕНТА. ПРОВЕРЬТЕ ИНСТРУМЕНТ И ДЕРЖАТЕЛЬ.</source>
+        <translation>OBSTRUCCIÓN DE LA VÍA DE GAS DEL INSTRUMENTO. COMPRUEBE EL INSTRUMENTO Y EL MANGO.</translation>
+    </message>
+    <message>
+        <source>ОШИБКА Е%1. ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ</source>
+        <translation>ERROR E%1. ACUDA AL SERVICIO TÉCNICO</translation>
+    </message>
+    <message>
+        <source>Выключите питание аппарата и включите его повторно через 15 секунд.
+Если ошибка повторится, обратитесь в сервисную службу.</source>
+        <translation>Apague el aparato y vuelva a encenderlo transcurridos 15 segundos.
+Si el error continúa, acuda al servicio técnico.</translation>
+    </message>
+</context>
+<context>
+    <name>GStreamerVideoPlayer</name>
+    <message>
+        <source>Не удалось приостановить воспроизведение</source>
+        <translation>No se pudo pausar la reproducción</translation>
+    </message>
+    <message>
+        <source>Не удалось остановить воспроизведение</source>
+        <translation>No se pudo detener la reproducción</translation>
+    </message>
+    <message>
+        <source>Не удалось запустить воспроизведение</source>
+        <translation>No se pudo iniciar la reproducción</translation>
+    </message>
+    <message>
+        <source>Истекло время ожидания запуска воспроизведения</source>
+        <translation>Tiempo de espera agotado al iniciar la reproducción</translation>
+    </message>
+    <message>
+        <source>Компонент GStreamer playbin недоступен</source>
+        <translation>El componente GStreamer playbin no está disponible</translation>
+    </message>
+    <message>
+        <source>qmlglsink не удалось подключиться к QML-сцене</source>
+        <translation>qmlglsink no pudo conectarse a la escena QML</translation>
+    </message>
+    <message>
+        <source>Не удалось подготовить видео к воспроизведению</source>
+        <translation>No se pudo preparar el vídeo para la reproducción</translation>
+    </message>
+    <message>
+        <source>Отсутствует компонент GStreamer: %1</source>
+        <translation>Falta el componente GStreamer: %1</translation>
+    </message>
+    <message>
+        <source>Не удалось связать GL-компоненты GStreamer</source>
+        <translation>No se pudieron enlazar los componentes GL de GStreamer</translation>
+    </message>
+    <message>
+        <source>Не удалось создать вход видеосинка GStreamer</source>
+        <translation>No se pudo crear la entrada del sumidero de vídeo GStreamer</translation>
+    </message>
+    <message>
+        <source>Неизвестная ошибка GStreamer</source>
+        <translation>Error desconocido de GStreamer</translation>
     </message>
 </context>
 <context>
@@ -580,7 +766,7 @@ s</translation>
     </message>
     <message>
         <source>Если телефон уже подключён к ONYX-TEST, откройте этот QR для страницы загрузки.</source>
-        <translation>Si el teléfono ya está conectado a ONYX-TEST, abra este QR para la página de carga.</translation>
+        <translation type="vanished">Si el teléfono ya está conectado a ONYX-TEST, abra este QR para la página de carga.</translation>
     </message>
     <message>
         <source>Устройство подключено. Отсканируйте QR для открытия страницы загрузки.</source>
@@ -694,6 +880,34 @@ s</translation>
         <source>Команда перезагрузки после обновления</source>
         <translation>Comando de reinicio tras la actualización</translation>
     </message>
+    <message>
+        <source>Не удалось включить Wi-Fi.</source>
+        <translation>No se pudo activar el Wi-Fi.</translation>
+    </message>
+    <message>
+        <source>Не удалось включить Wi-Fi: %1</source>
+        <translation>No se pudo activar el Wi-Fi: %1</translation>
+    </message>
+    <message>
+        <source>Адрес страницы ещё не готов.</source>
+        <translation>La dirección de la página aún no está lista.</translation>
+    </message>
+    <message>
+        <source>Устройство подключено. Отсканируйте QR для открытия страницы скачивания.</source>
+        <translation>Dispositivo conectado. Escanee el código QR para abrir la página de descarga.</translation>
+    </message>
+    <message>
+        <source>Не удалось сохранить загруженный файл.</source>
+        <translation>No se pudo guardar el archivo cargado.</translation>
+    </message>
+    <message>
+        <source>Не удалось записать загруженный файл.</source>
+        <translation>No se pudo escribir el archivo cargado.</translation>
+    </message>
+    <message>
+        <source>Не удалось импортировать программы пользователя.</source>
+        <translation>No se pudieron importar los programas de usuario.</translation>
+    </message>
 </context>
 <context>
     <name>InstrumEditor</name>
@@ -727,7 +941,7 @@ s</translation>
     </message>
     <message>
         <source>Другой инструмент</source>
-        <translation>Otro electrodo</translation>
+        <translation type="vanished">Otro electrodo</translation>
     </message>
     <message>
         <source>ПРИНЯТЬ</source>
@@ -736,6 +950,10 @@ s</translation>
     <message>
         <source>Рекомендуемый уровень</source>
         <translation>Nivel recomendado</translation>
+    </message>
+    <message>
+        <source>ДРУГОЙ ИНСТРУМЕНТ</source>
+        <translation>OTRO ELECTRODO</translation>
     </message>
 </context>
 <context>
@@ -746,14 +964,69 @@ s</translation>
     </message>
 </context>
 <context>
+    <name>IsnCorrection</name>
+    <message>
+        <source>Управление ИСН</source>
+        <translation>Control de ISN</translation>
+    </message>
+    <message>
+        <source>ИСН: Включен</source>
+        <translation>ISN: Activado</translation>
+    </message>
+    <message>
+        <source>ИСН: Отключен</source>
+        <translation>ISN: Desactivado</translation>
+    </message>
+    <message>
+        <source>Напряжение</source>
+        <translation>Tensión</translation>
+    </message>
+    <message>
+        <source>−5</source>
+        <translation>−5</translation>
+    </message>
+    <message>
+        <source>%1 В</source>
+        <translation>%1 V</translation>
+    </message>
+    <message>
+        <source>+5</source>
+        <translation>+5</translation>
+    </message>
+    <message>
+        <source>ЦАП</source>
+        <translation>DAC</translation>
+    </message>
+    <message>
+        <source>−</source>
+        <translation>−</translation>
+    </message>
+    <message>
+        <source>+</source>
+        <translation>+</translation>
+    </message>
+    <message>
+        <source>АЦП</source>
+        <translation>ADC</translation>
+    </message>
+    <message>
+        <source>Запомнить значение ЦАП</source>
+        <translation>Guardar valor DAC</translation>
+    </message>
+    <message>
+        <source>Назад</source>
+        <translation>atrás</translation>
+    </message>
+</context>
+<context>
     <name>ItemList</name>
     <message>
         <source>Редактирование названия</source>
-        <translation>Editar nombre</translation>
+        <translation type="vanished">Editar nombre</translation>
     </message>
     <message>
         <source>Укажите новое имя:</source>
-        <translation>Introduzca un nombre nuevo:</translation>
+        <translation type="vanished">Introduzca un nombre nuevo:</translation>
     </message>
     <message>
         <source>ОТМЕНА</source>
@@ -762,6 +1035,18 @@ s</translation>
     <message>
         <source>ПРИНЯТЬ</source>
         <translation>ACEPTAR</translation>
+    </message>
+    <message>
+        <source>Редактирование</source>
+        <translation>Editar</translation>
+    </message>
+    <message>
+        <source>Укажите новое название:</source>
+        <translation>Indique el nuevo nombre:</translation>
+    </message>
+    <message>
+        <source>УДАЛИТЬ</source>
+        <translation>ELIMINAR</translation>
     </message>
 </context>
 <context>
@@ -777,6 +1062,10 @@ s</translation>
     <message>
         <source>Пустой или некорректный hex</source>
         <translation>Hex vacío o no válido</translation>
+    </message>
+    <message>
+        <source>МК не отвечает</source>
+        <translation>El MC no responde</translation>
     </message>
 </context>
 <context>
@@ -891,7 +1180,7 @@ s</translation>
     </message>
     <message>
         <source>Обновить</source>
-        <translation>Actualizar</translation>
+        <translation type="vanished">Actualizar</translation>
     </message>
     <message>
         <source>Записей: %1</source>
@@ -911,7 +1200,19 @@ s</translation>
     </message>
     <message>
         <source>Назад</source>
-        <translation>atrás</translation>
+        <translation type="vanished">atrás</translation>
+    </message>
+    <message>
+        <source>Дата:</source>
+        <translation>Fecha:</translation>
+    </message>
+    <message>
+        <source>НАЗАД</source>
+        <translation>ATRÁS</translation>
+    </message>
+    <message>
+        <source>СКАЧАТЬ ЛОГ-ФАЙЛ</source>
+        <translation>DESCARGAR ARCHIVO DE REGISTRO</translation>
     </message>
 </context>
 <context>
@@ -951,6 +1252,12 @@ DE USUARIO</translation>
 УСТАНОВКА</source>
         <translation>CONFIGURACIÓN DEL
 MODO LIBRE</translation>
+    </message>
+    <message>
+        <source>СОХРАНИТЬ
+ПРОГРАММУ</source>
+        <translation>GUARDAR
+PROGRAMA</translation>
     </message>
 </context>
 <context>
@@ -995,6 +1302,26 @@ MODO LIBRE</translation>
 
 (DESACTIVADO)</translation>
     </message>
+    <message>
+        <source>ЭНДО И</source>
+        <translation>ENDO I</translation>
+    </message>
+    <message>
+        <source>ЭНДО И ФОРС</source>
+        <translation>ENDO I FORZADA</translation>
+    </message>
+    <message>
+        <source>ЭНДО П</source>
+        <translation>ENDO P</translation>
+    </message>
+    <message>
+        <source>ЭНДО П ФОРС</source>
+        <translation>ENDO P FORZADA</translation>
+    </message>
+    <message>
+        <source>Выберите тип подачи импульсов</source>
+        <translation>Seleccione el tipo de pulsos</translation>
+    </message>
 </context>
 <context>
     <name>ModePowerRect</name>
@@ -1023,6 +1350,10 @@ MODO LIBRE</translation>
     <message>
         <source>Не удалось отключить Wi-Fi</source>
         <translation>No se pudo desconectar la red Wi-Fi</translation>
+    </message>
+    <message>
+        <source>Не удалось переключить Wi-Fi</source>
+        <translation>No se pudo cambiar el Wi-Fi</translation>
     </message>
 </context>
 <context>
@@ -1056,28 +1387,29 @@ Máx. 75</translation>
     </message>
     <message>
         <source>Пациент:</source>
-        <translation type="unfinished"></translation>
+        <translation>Paciente:</translation>
     </message>
     <message>
         <source>Максимальная
 мощность:</source>
-        <translation type="unfinished"></translation>
+        <translation>Potencia
+máxima:</translation>
     </message>
     <message>
         <source>&gt; 15кг</source>
-        <translation type="unfinished"></translation>
+        <translation>&gt; 15 kg</translation>
     </message>
     <message>
         <source>&amp;gt; 15 кг</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;gt; 15 kg</translation>
     </message>
     <message>
         <source>5-15 кг</source>
-        <translation type="unfinished"></translation>
+        <translation>5-15 kg</translation>
     </message>
     <message>
         <source>&amp;lt; 5 кг</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;lt; 5 kg</translation>
     </message>
 </context>
 <context>
@@ -1199,7 +1531,27 @@ VACÍO</translation>
     </message>
     <message>
         <source>Выберите вариант</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione una opción</translation>
+    </message>
+    <message>
+        <source>Выберите папку</source>
+        <translation>Seleccione una carpeta</translation>
+    </message>
+    <message>
+        <source>ДОБАВИТЬ НОВУЮ ПАПКУ</source>
+        <translation>AÑADIR CARPETA NUEVA</translation>
+    </message>
+    <message>
+        <source>Новая папка</source>
+        <translation>Carpeta nueva</translation>
+    </message>
+    <message>
+        <source>Укажите название папки:</source>
+        <translation>Indique el nombre de la carpeta:</translation>
+    </message>
+    <message>
+        <source>Название</source>
+        <translation>Nombre</translation>
     </message>
 </context>
 <context>
@@ -1222,7 +1574,7 @@ VACÍO</translation>
     </message>
     <message>
         <source>Категория</source>
-        <translation>Categoría</translation>
+        <translation type="vanished">Categoría</translation>
     </message>
     <message>
         <source>Укажите название программы</source>
@@ -1232,112 +1584,116 @@ VACÍO</translation>
         <source>Название</source>
         <translation>Nombre</translation>
     </message>
+    <message>
+        <source>Название папки</source>
+        <translation>Nombre de carpeta</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
         <source>БИ-СМЕСЬ</source>
-        <translation>BI-MEZCLA</translation>
+        <translation type="vanished">BI-MEZCLA</translation>
     </message>
     <message>
         <source>БИ-ТУР</source>
-        <translation>BI-TUR</translation>
+        <translation type="vanished">BI-TUR</translation>
     </message>
     <message>
         <source>БИ-АРТРО</source>
-        <translation>BI-ARTRO</translation>
+        <translation type="vanished">BI-ARTRO</translation>
     </message>
     <message>
         <source>БИ-ГИСТЕРО</source>
-        <translation>BI-HISTERO</translation>
+        <translation type="vanished">BI-HISTERO</translation>
     </message>
     <message>
         <source>БИ-КОАГ</source>
-        <translation>BI-COAG</translation>
+        <translation type="vanished">BI-COAG</translation>
     </message>
     <message>
         <source>БИ-КОАГ-ДИССЕКТ</source>
-        <translation>BI-COAG-DISECC</translation>
+        <translation type="vanished">BI-COAG-DISECC</translation>
     </message>
     <message>
         <source>ТЕРМОШОВ</source>
-        <translation>TERMOSELLADO</translation>
+        <translation type="vanished">TERMOSELLADO</translation>
     </message>
     <message>
         <source>РЕЗАНИЕ</source>
-        <translation>CORTE</translation>
+        <translation type="vanished">CORTE</translation>
     </message>
     <message>
         <source>СМЕСЬ</source>
-        <translation>MEZCLA</translation>
+        <translation type="vanished">MEZCLA</translation>
     </message>
     <message>
         <source>СМЕСЬ-1</source>
-        <translation>MEZCLA-1</translation>
+        <translation type="vanished">MEZCLA-1</translation>
     </message>
     <message>
         <source>ТУР</source>
-        <translation>TUR</translation>
+        <translation type="vanished">TUR</translation>
     </message>
     <message>
         <source>ВАП</source>
-        <translation>VAP</translation>
+        <translation type="vanished">VAP</translation>
     </message>
     <message>
         <source>ЭНДОНОЖ-1</source>
-        <translation>ENDOBISTURÍ-1</translation>
+        <translation type="vanished">ENDOBISTURÍ-1</translation>
     </message>
     <message>
         <source>ЭНДОНОЖ-2</source>
-        <translation>ENDOBISTURÍ-2</translation>
+        <translation type="vanished">ENDOBISTURÍ-2</translation>
     </message>
     <message>
         <source>ЭНДОНОЖ-3</source>
-        <translation>ENDOBISTURÍ-3</translation>
+        <translation type="vanished">ENDOBISTURÍ-3</translation>
     </message>
     <message>
         <source>ЭНДОПЕТЛЯ-</source>
-        <translation>ENDOASA-</translation>
+        <translation type="vanished">ENDOASA-</translation>
     </message>
     <message>
         <source>ЭНДОПЕТЛЯ-2</source>
-        <translation>ENDOASA-2</translation>
+        <translation type="vanished">ENDOASA-2</translation>
     </message>
     <message>
         <source>ЭНДОПЕТЛЯ-3</source>
-        <translation>ENDOASA-3</translation>
+        <translation type="vanished">ENDOASA-3</translation>
     </message>
     <message>
         <source>ФОРС</source>
-        <translation>FORZADA</translation>
+        <translation type="vanished">FORZADA</translation>
     </message>
     <message>
         <source>ФУЛЬГУР</source>
-        <translation>FULGUR</translation>
+        <translation type="vanished">FULGUR</translation>
     </message>
     <message>
         <source>МЯГКАЯ</source>
-        <translation>SUAVE</translation>
+        <translation type="vanished">SUAVE</translation>
     </message>
     <message>
         <source>СПРЕЙ</source>
-        <translation>SPRAY</translation>
+        <translation type="vanished">SPRAY</translation>
     </message>
     <message>
         <source>ФУЛЬГУР АРГОН</source>
-        <translation>FULGUR ARGÓN</translation>
+        <translation type="vanished">FULGUR ARGÓN</translation>
     </message>
     <message>
         <source>СПРЕЙ АРГОН</source>
-        <translation>SPRAY ARGÓN</translation>
+        <translation type="vanished">SPRAY ARGÓN</translation>
     </message>
     <message>
         <source>ФУЛЬГУР ПУЛЬС АРГОН</source>
-        <translation>FULGUR PULSO ARGÓN</translation>
+        <translation type="vanished">FULGUR PULSO ARGÓN</translation>
     </message>
     <message>
         <source>СПРЕЙ ПУЛЬС АРГОН</source>
-        <translation>SPRAY PULSO ARGÓN</translation>
+        <translation type="vanished">SPRAY PULSO ARGÓN</translation>
     </message>
 </context>
 <context>
@@ -1801,7 +2157,7 @@ VACÍO</translation>
     </message>
     <message>
         <source>Приём файлов по Wi‑Fi</source>
-        <translation>Recepción de archivos por Wi‑Fi</translation>
+        <translation type="vanished">Recepción de archivos por Wi‑Fi</translation>
     </message>
     <message>
         <source>Настройки WiFi</source>
@@ -1829,7 +2185,37 @@ VACÍO</translation>
     </message>
     <message>
         <source>Назад</source>
-        <translation type="unfinished">atrás</translation>
+        <translation>atrás</translation>
+    </message>
+    <message>
+        <source>Приём файлов обновления</source>
+        <translation>Recepción de archivos de actualización</translation>
+    </message>
+    <message>
+        <source>Управление ИСН</source>
+        <translation>Control de ISN</translation>
+    </message>
+    <message>
+        <source>СБРОС НАСТРОЕК</source>
+        <translation>RESTAURAR AJUSTES</translation>
+    </message>
+    <message>
+        <source>Подтверждение сброса</source>
+        <translation>Confirmar restablecimiento</translation>
+    </message>
+    <message>
+        <source>Сбросить настройки?
+Вход по паролю — включить, UART 50 мс,
+вывод UART и ЦП — отключить, ошибки на весь экран,
+WiFi всегда включен — отключить.
+Пользовательские программы будут удалены.
+Это действие необратимо.</source>
+        <translation>¿Restablecer los ajustes?
+Acceso con contraseña — activar, UART 50 ms,
+salida UART y CPU — desactivar, errores a pantalla completa,
+Wi-Fi siempre activo — desactivar.
+Se eliminarán los programas de usuario.
+Esta acción no se puede deshacer.</translation>
     </message>
 </context>
 <context>
@@ -1840,7 +2226,7 @@ VACÍO</translation>
     </message>
     <message>
         <source>СВЕДЕНИЯ ОБ АППАРАТЕ</source>
-        <translation>INFORMACIÓN DEL EQUIPO</translation>
+        <translation type="vanished">INFORMACIÓN DEL EQUIPO</translation>
     </message>
     <message>
         <source>ЯЗЫК</source>
@@ -1848,11 +2234,11 @@ VACÍO</translation>
     </message>
     <message>
         <source>ГРОМКОСТЬ</source>
-        <translation>VOLUMEN</translation>
+        <translation type="vanished">VOLUMEN</translation>
     </message>
     <message>
         <source>ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ</source>
-        <translation>AJUSTES ADICIONALES</translation>
+        <translation type="vanished">AJUSTES ADICIONALES</translation>
     </message>
     <message>
         <source>НАЗАД</source>
@@ -1861,6 +2247,26 @@ VACÍO</translation>
     <message>
         <source>Смена языка интерфейса, пожалуйста, подождите</source>
         <translation>Cambiando el idioma de la interfaz, espere por favor</translation>
+    </message>
+    <message>
+        <source>ГРОМКОСТЬ АКТИВАЦИИ</source>
+        <translation>VOLUMEN DE ACTIVACIÓN</translation>
+    </message>
+    <message>
+        <source>ЗВУК КАСАНИЯ</source>
+        <translation>SONIDO TÁCTIL</translation>
+    </message>
+    <message>
+        <source>СВЕДЕНИЯ
+ОБ АППАРАТЕ</source>
+        <translation>INFORMACIÓN
+DEL APARATO</translation>
+    </message>
+    <message>
+        <source>ДОПОЛНИТЕЛЬНЫЕ
+НАСТРОЙКИ</source>
+        <translation>AJUSTES
+ADICIONALES</translation>
     </message>
 </context>
 <context>
@@ -2037,19 +2443,19 @@ VACÍO</translation>
     </message>
     <message>
         <source>UART: ВКЛ</source>
-        <translation>UART: ON</translation>
+        <translation type="vanished">UART: ON</translation>
     </message>
     <message>
         <source>Вывод UART</source>
-        <translation>Salida UART</translation>
+        <translation type="vanished">Salida UART</translation>
     </message>
     <message>
         <source>ЦП: ВКЛ</source>
-        <translation>CPU: ON</translation>
+        <translation type="vanished">CPU: ON</translation>
     </message>
     <message>
         <source>Вывод загрузки ЦП</source>
-        <translation>Indicador de carga de CPU</translation>
+        <translation type="vanished">Indicador de carga de CPU</translation>
     </message>
     <message>
         <source>Выход в Linux</source>
@@ -2070,28 +2476,80 @@ VACÍO</translation>
     </message>
     <message>
         <source>Вход без пароля</source>
-        <translation type="unfinished">Acceso sin contraseña</translation>
+        <translation type="obsolete">Acceso sin contraseña</translation>
     </message>
     <message>
         <source>UART 500 мс</source>
-        <translation type="unfinished"></translation>
+        <translation>UART 500 ms</translation>
     </message>
     <message>
         <source>UART 50 мс</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ВЫКЛ одноплатника</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>RESET одноплатника</source>
-        <translation type="unfinished"></translation>
+        <translation>UART 50 ms</translation>
     </message>
     <message>
         <source>Удалить программы
 пользователя</source>
-        <translation type="unfinished"></translation>
+        <translation>Eliminar programas
+de usuario</translation>
+    </message>
+    <message>
+        <source>Вход по паролю: ОТКЛ</source>
+        <translation>Acceso con contraseña: OFF</translation>
+    </message>
+    <message>
+        <source>Вход по паролю: ВКЛ</source>
+        <translation>Acceso con contraseña: ON</translation>
+    </message>
+    <message>
+        <source>Вывод UART: ВКЛ</source>
+        <translation>Salida UART: ON</translation>
+    </message>
+    <message>
+        <source>Вывод UART: ОТКЛ</source>
+        <translation>Salida UART: OFF</translation>
+    </message>
+    <message>
+        <source>Вывод % ЦП: ВКЛ</source>
+        <translation>Indicación de CPU: ON</translation>
+    </message>
+    <message>
+        <source>Вывод % ЦП: ОТКЛ</source>
+        <translation>Indicación de CPU: OFF</translation>
+    </message>
+    <message>
+        <source>Ошибки на весь экран</source>
+        <translation>Errores a pantalla completa</translation>
+    </message>
+    <message>
+        <source>Ошибки мини-списком</source>
+        <translation>Lista mini de errores</translation>
+    </message>
+    <message>
+        <source>ВЫКЛ питания модуля</source>
+        <translation>APAGAR alimentación del módulo</translation>
+    </message>
+    <message>
+        <source>Перезагрузка модуля</source>
+        <translation>Reinicio del módulo</translation>
+    </message>
+</context>
+<context>
+    <name>SprayM1M2WarningDialog</name>
+    <message>
+        <source>При включенной функции М1+М2 режим СПРЕЙ без подачи аргона может активироваться одновременно с выходов МОНО1 и МОНО2 синими кнопками держателей!
+Педали блокируются!
+Мощность каждого выхода может изменяться, в зависимости от работы второго выхода, поскольку поддерживается только суммарная мощность!</source>
+        <translation>Con la función M1+M2 activada, el modo SPRAY sin argón puede activarse a la vez desde MONO1 y MONO2 con los botones azules de los mangos.
+¡Los pedales quedan bloqueados!
+La potencia de cada salida puede variar según la otra, porque solo se admite la potencia total.</translation>
+    </message>
+    <message>
+        <source>ПРИНЯТЬ</source>
+        <translation>ACEPTAR</translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCELAR</translation>
     </message>
 </context>
 <context>
@@ -2120,6 +2578,18 @@ VACÍO</translation>
         <source>НАЗАД</source>
         <translation>ATRÁS</translation>
     </message>
+    <message>
+        <source>повр</source>
+        <translation>dañ.</translation>
+    </message>
+    <message>
+        <source>повреждена</source>
+        <translation>dañada</translation>
+    </message>
+    <message>
+        <source>нет</source>
+        <translation>no</translation>
+    </message>
 </context>
 <context>
     <name>StatesSocket</name>
@@ -2129,32 +2599,49 @@ VACÍO</translation>
     </message>
     <message>
         <source> АВТОСТОП</source>
-        <translation> AUTOSTOP</translation>
-    </message>
-    <message>
-        <source>БИ КОАГ ДИСС А-СТОП</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>БИ КОАГ ДИСС А-СТ-СТОП</source>
-        <translation type="unfinished"></translation>
+        <translation type="vanished"> AUTOSTOP</translation>
     </message>
     <message>
         <source>БИ КОАГ МИКРО
 АВТОСТОП</source>
-        <translation type="unfinished"></translation>
+        <translation>BI COAG MICRO
+AUTOSTOP</translation>
     </message>
     <message>
-        <source>БИ КОАГ МИКР А-СТ-СТОП</source>
-        <translation type="unfinished"></translation>
+        <source>БИ КОАГ
+АВТОСТОП</source>
+        <translation>BI COAG
+AUTOSTOP</translation>
     </message>
     <message>
-        <source> А-СТОП</source>
-        <translation type="unfinished"></translation>
+        <source>БИ КОАГ
+А-СТ-СТОП</source>
+        <translation>BI COAG
+A-ST-STOP</translation>
     </message>
     <message>
-        <source> А-СТ-СТОП</source>
-        <translation type="unfinished"></translation>
+        <source>БИ КОАГ ДИСС
+АВТОСТОП</source>
+        <translation>BI COAG DIS
+AUTOSTOP</translation>
+    </message>
+    <message>
+        <source>БИ КОАГ ДИСС
+А-СТ-СТОП</source>
+        <translation>BI COAG DIS
+A-ST-STOP</translation>
+    </message>
+    <message>
+        <source>БИ КОАГ МИКР
+А-СТ-СТОП</source>
+        <translation>BI COAG MICR
+A-ST-STOP</translation>
+    </message>
+    <message>
+        <source>МЯГКАЯ
+АВТОСТОП</source>
+        <translation>SUAVE
+AUTOSTOP</translation>
     </message>
 </context>
 <context>
@@ -2289,10 +2776,436 @@ VACÍO</translation>
     </message>
 </context>
 <context>
+    <name>UserProgDownload</name>
+    <message>
+        <source> программа</source>
+        <translation> programa</translation>
+    </message>
+    <message>
+        <source> программы</source>
+        <translation> programas</translation>
+    </message>
+    <message>
+        <source> программ</source>
+        <translation> programas</translation>
+    </message>
+    <message>
+        <source>СКАЧИВАНИЕ ПРОГРАММ ПОЛЬЗОВАТЕЛЯ</source>
+        <translation>DESCARGA DE PROGRAMAS DE USUARIO</translation>
+    </message>
+    <message>
+        <source>ВЫБОР ПАПОК ДЛЯ СКАЧИВАНИЯ</source>
+        <translation>SELECCIÓN DE CARPETAS PARA DESCARGAR</translation>
+    </message>
+    <message>
+        <source>Отметьте папки, программы из которых нужно скачать.</source>
+        <translation>Marque las carpetas cuyos programas desea descargar.</translation>
+    </message>
+    <message>
+        <source>Нет папок пользовательских программ</source>
+        <translation>No hay carpetas de programas de usuario</translation>
+    </message>
+    <message>
+        <source>Выбрать все</source>
+        <translation>Seleccionar todo</translation>
+    </message>
+    <message>
+        <source>Снять все</source>
+        <translation>Quitar todo</translation>
+    </message>
+    <message>
+        <source>Далее</source>
+        <translation>Siguiente</translation>
+    </message>
+    <message>
+        <source>4. Успешно передано</source>
+        <translation>4. Transferencia correcta</translation>
+    </message>
+    <message>
+        <source>3. Откройте страницу скачивания</source>
+        <translation>3. Abra la página de descarga</translation>
+    </message>
+    <message>
+        <source>2. Подключитесь к Wi‑Fi</source>
+        <translation>2. Conéctese a la red Wi‑Fi</translation>
+    </message>
+    <message>
+        <source>1. Подготовка файла</source>
+        <translation>1. Preparación del archivo</translation>
+    </message>
+    <message>
+        <source>Не удалось подготовить файл</source>
+        <translation>No se pudo preparar el archivo</translation>
+    </message>
+    <message>
+        <source>Не удалось включить точку доступа</source>
+        <translation>No se pudo activar el punto de acceso</translation>
+    </message>
+    <message>
+        <source>Файл программ сохранён на устройство.
+Точка доступа ONYX-SERVICE отключена.</source>
+        <translation>El archivo de programas se ha guardado en el dispositivo.
+El punto de acceso ONYX-SERVICE se ha desconectado.</translation>
+    </message>
+    <message>
+        <source>Соединение установлено! Отсканируйте новый QR-код или откройте адрес вручную в любом браузере.</source>
+        <translation>¡Conexión establecida! Escanee el nuevo código QR o abra la dirección manualmente en cualquier navegador.</translation>
+    </message>
+    <message>
+        <source>!Отключите мобильный интернет на вашем устройстве!
+Отсканируйте QR-код или выберите сеть %1 в списке Wi‑Fi.
+После обнаружения подключения QR-код изменится.</source>
+        <translation>¡Desactive los datos móviles en su dispositivo!
+Escanee el código QR o seleccione la red %1 en la lista Wi‑Fi.
+Cuando se detecte la conexión, el código QR cambiará.</translation>
+    </message>
+    <message>
+        <source>Проверьте Wi‑Fi и повторите включение точки доступа.</source>
+        <translation>Compruebe el Wi‑Fi y vuelva a activar el punto de acceso.</translation>
+    </message>
+    <message>
+        <source>Идёт подготовка файла программ. Подождите.</source>
+        <translation>Se está preparando el archivo de programas. Espere.</translation>
+    </message>
+    <message>
+        <source>Файл: </source>
+        <translation>Archivo: </translation>
+    </message>
+    <message>
+        <source>Адрес страницы</source>
+        <translation>Dirección de la página</translation>
+    </message>
+    <message>
+        <source>Параметры Wi‑Fi</source>
+        <translation>Parámetros de Wi‑Fi</translation>
+    </message>
+    <message>
+        <source> · пароль: </source>
+        <translation> · contraseña: </translation>
+    </message>
+    <message>
+        <source>Серийный номер: </source>
+        <translation>Número de serie: </translation>
+    </message>
+    <message>
+        <source> · </source>
+        <translation> · </translation>
+    </message>
+    <message>
+        <source>Тип аппарата: </source>
+        <translation>Tipo de equipo: </translation>
+    </message>
+    <message>
+        <source> · Wi‑Fi: </source>
+        <translation> · Wi‑Fi: </translation>
+    </message>
+    <message>
+        <source>вкл</source>
+        <translation>activado</translation>
+    </message>
+    <message>
+        <source>выкл</source>
+        <translation>desactivado</translation>
+    </message>
+    <message>
+        <source>Повторить</source>
+        <translation>Reintentar</translation>
+    </message>
+    <message>
+        <source>Подготовка файла</source>
+        <translation>Preparación del archivo</translation>
+    </message>
+    <message>
+        <source>Готово</source>
+        <translation>Listo</translation>
+    </message>
+    <message>
+        <source>QR появится после создания точки доступа</source>
+        <translation>El código QR aparecerá después de crear el punto de acceso</translation>
+    </message>
+    <message>
+        <source>НАЗАД</source>
+        <translation>ATRÁS</translation>
+    </message>
+    <message>
+        <source>Имя файла для сохранения</source>
+        <translation>Nombre de archivo para guardar</translation>
+    </message>
+    <message>
+        <source>Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип аппарата.</source>
+        <translation>Introduzca un nombre de archivo. Los espacios y caracteres no válidos se sustituirán por «_»; al final se añade el tipo de aparato.</translation>
+    </message>
+    <message>
+        <source>Например: ИВАНОВ ХИРУРГИЯ</source>
+        <translation>Ejemplo: IVANOV CIRUGIA</translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCELAR</translation>
+    </message>
+    <message>
+        <source>ПРИНЯТЬ</source>
+        <translation>ACEPTAR</translation>
+    </message>
+</context>
+<context>
+    <name>UserProgTransferController</name>
+    <message>
+        <source>Не выбраны папки программ.</source>
+        <translation>No se han seleccionado carpetas de programas.</translation>
+    </message>
+    <message>
+        <source>База программ пользователя не найдена.</source>
+        <translation>No se encontró la base de programas de usuario.</translation>
+    </message>
+    <message>
+        <source>Не удалось создать временный каталог.</source>
+        <translation>No se pudo crear un directorio temporal.</translation>
+    </message>
+    <message>
+        <source>Не удалось скопировать базу программ.</source>
+        <translation>No se pudo copiar la base de programas.</translation>
+    </message>
+    <message>
+        <source>Не удалось открыть копию базы программ.</source>
+        <translation>No se pudo abrir la copia de la base de programas.</translation>
+    </message>
+    <message>
+        <source>В базе нет таблиц Scopes/Progs.</source>
+        <translation>La base no contiene las tablas Scopes/Progs.</translation>
+    </message>
+    <message>
+        <source>В выбранных папках нет данных для экспорта.</source>
+        <translation>Las carpetas seleccionadas no tienen datos para exportar.</translation>
+    </message>
+    <message>
+        <source>Не удалось сохранить файл программ.</source>
+        <translation>No se pudo guardar el archivo de programas.</translation>
+    </message>
+    <message>
+        <source>Файл программ пуст или не найден.</source>
+        <translation>El archivo de programas está vacío o no se encontró.</translation>
+    </message>
+    <message>
+        <source>Приложение недоступно.</source>
+        <translation>La aplicación no está disponible.</translation>
+    </message>
+    <message>
+        <source>База программ пользователя недоступна.</source>
+        <translation>La base de programas de usuario no está disponible.</translation>
+    </message>
+    <message>
+        <source>Не удалось открыть файл программ.</source>
+        <translation>No se pudo abrir el archivo de programas.</translation>
+    </message>
+    <message>
+        <source>Файл не содержит программы пользователя.</source>
+        <translation>El archivo no contiene programas de usuario.</translation>
+    </message>
+    <message>
+        <source>Не удалось открыть базу программ на аппарате.</source>
+        <translation>No se pudo abrir la base de programas en el aparato.</translation>
+    </message>
+    <message>
+        <source>Не удалось начать запись в базу программ.</source>
+        <translation>No se pudo iniciar la escritura en la base de programas.</translation>
+    </message>
+    <message>
+        <source>Несовместимая структура файла программ.</source>
+        <translation>Estructura incompatible del archivo de programas.</translation>
+    </message>
+    <message>
+        <source>Не удалось прочитать папки из файла.</source>
+        <translation>No se pudieron leer las carpetas del archivo.</translation>
+    </message>
+    <message>
+        <source>Не удалось добавить папку «%1».</source>
+        <translation>No se pudo añadir la carpeta «%1».</translation>
+    </message>
+    <message>
+        <source>Не удалось прочитать программы папки «%1».</source>
+        <translation>No se pudieron leer los programas de la carpeta «%1».</translation>
+    </message>
+    <message>
+        <source>Не удалось добавить программу «%1».</source>
+        <translation>No se pudo añadir el programa «%1».</translation>
+    </message>
+    <message>
+        <source>Не удалось прочитать настройки программ.</source>
+        <translation>No se pudieron leer los ajustes de los programas.</translation>
+    </message>
+    <message>
+        <source>Не удалось добавить настройки программы.</source>
+        <translation>No se pudieron añadir los ajustes del programa.</translation>
+    </message>
+    <message>
+        <source>В файле нет папок программ для загрузки.</source>
+        <translation>El archivo no contiene carpetas de programas para cargar.</translation>
+    </message>
+    <message>
+        <source>Не удалось сохранить загруженные программы.</source>
+        <translation>No se pudieron guardar los programas cargados.</translation>
+    </message>
+    <message>
+        <source>Загружено программ: %1. Новых папок: %2. В существующие папки: %3.</source>
+        <translation>Programas cargados: %1. Carpetas nuevas: %2. En carpetas existentes: %3.</translation>
+    </message>
+</context>
+<context>
+    <name>UserProgTransferMenu</name>
+    <message>
+        <source>ПЕРЕНОС ПРОГРАММ ПОЛЬЗОВАТЕЛЯ</source>
+        <translation>TRANSFERENCIA DE PROGRAMAS DE USUARIO</translation>
+    </message>
+    <message>
+        <source>НАЗАД</source>
+        <translation>ATRÁS</translation>
+    </message>
+    <message>
+        <source>При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-(A)M на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон</source>
+        <translation>Si necesita transferir sus programas de usuario de un aparato ONYX-(A)M a otro, use un dispositivo con Wi-Fi, por ejemplo un teléfono</translation>
+    </message>
+    <message>
+        <source>СКАЧАТЬ
+С АППАРАТА
+НА УСТРОЙСТВО</source>
+        <translation>DESCARGAR
+DEL APARATO
+AL DISPOSITIVO</translation>
+    </message>
+    <message>
+        <source>ЗАГРУЗИТЬ
+С УСТРОЙСТВА
+НА АППАРАТ</source>
+        <translation>CARGAR
+DEL DISPOSITIVO
+AL APARATO</translation>
+    </message>
+</context>
+<context>
+    <name>UserProgUpload</name>
+    <message>
+        <source>ЗАГРУЗКА ПРОГРАММ ПОЛЬЗОВАТЕЛЯ</source>
+        <translation>CARGA DE PROGRAMAS DE USUARIO</translation>
+    </message>
+    <message>
+        <source>4. Программы загружены</source>
+        <translation>4. Programas cargados</translation>
+    </message>
+    <message>
+        <source>3. Откройте страницу и отправьте файл</source>
+        <translation>3. Abra la página y envíe el archivo</translation>
+    </message>
+    <message>
+        <source>2. Подключитесь к Wi‑Fi</source>
+        <translation>2. Conéctese a la red Wi‑Fi</translation>
+    </message>
+    <message>
+        <source>1. Подготовка</source>
+        <translation>1. Preparación</translation>
+    </message>
+    <message>
+        <source>Не удалось включить точку доступа</source>
+        <translation>No se pudo activar el punto de acceso</translation>
+    </message>
+    <message>
+        <source>Соединение установлено! Отсканируйте новый QR-код или откройте адрес вручную.</source>
+        <translation>¡Conexión establecida! Escanee el nuevo código QR o abra la dirección manualmente.</translation>
+    </message>
+    <message>
+        <source>!Отключите мобильный интернет на вашем устройстве!
+Отсканируйте QR-код или выберите сеть %1 в списке Wi‑Fi.
+После обнаружения подключения QR-код изменится.</source>
+        <translation>¡Desactive los datos móviles en su dispositivo!
+Escanee el código QR o seleccione la red %1 en la lista Wi‑Fi.
+Cuando se detecte la conexión, el código QR cambiará.</translation>
+    </message>
+    <message>
+        <source>Проверьте Wi‑Fi и повторите включение точки доступа.</source>
+        <translation>Compruebe el Wi‑Fi y vuelva a activar el punto de acceso.</translation>
+    </message>
+    <message>
+        <source>Идёт подготовка. Подождите.</source>
+        <translation>Preparando. Espere.</translation>
+    </message>
+    <message>
+        <source>Загружено программ</source>
+        <translation>Programas cargados</translation>
+    </message>
+    <message>
+        <source>Новых папок</source>
+        <translation>Carpetas nuevas</translation>
+    </message>
+    <message>
+        <source>В существующие</source>
+        <translation>En existentes</translation>
+    </message>
+    <message>
+        <source>Адрес страницы</source>
+        <translation>Dirección de la página</translation>
+    </message>
+    <message>
+        <source>Параметры Wi‑Fi</source>
+        <translation>Parámetros de Wi‑Fi</translation>
+    </message>
+    <message>
+        <source> · пароль: </source>
+        <translation> · contraseña: </translation>
+    </message>
+    <message>
+        <source>Серийный номер: </source>
+        <translation>Número de serie: </translation>
+    </message>
+    <message>
+        <source> · </source>
+        <translation> · </translation>
+    </message>
+    <message>
+        <source>Тип аппарата: </source>
+        <translation>Tipo de equipo: </translation>
+    </message>
+    <message>
+        <source> · Wi‑Fi: </source>
+        <translation> · Wi‑Fi: </translation>
+    </message>
+    <message>
+        <source>вкл</source>
+        <translation>activado</translation>
+    </message>
+    <message>
+        <source>выкл</source>
+        <translation>desactivado</translation>
+    </message>
+    <message>
+        <source>Повторить</source>
+        <translation>Reintentar</translation>
+    </message>
+    <message>
+        <source>Подготовка</source>
+        <translation>Preparación</translation>
+    </message>
+    <message>
+        <source>Готово</source>
+        <translation>Listo</translation>
+    </message>
+    <message>
+        <source>QR появится после создания точки доступа</source>
+        <translation>El código QR aparecerá después de crear el punto de acceso</translation>
+    </message>
+    <message>
+        <source>Получение файла...</source>
+        <translation>Recibiendo archivo...</translation>
+    </message>
+    <message>
+        <source>НАЗАД</source>
+        <translation>ATRÁS</translation>
+    </message>
+</context>
+<context>
     <name>VideoPlayer</name>
     <message>
         <source>Ошибка: Неподдерживаемый формат видео</source>
-        <translation>Error: formato de vídeo no compatible</translation>
+        <translation type="vanished">Error: formato de vídeo no compatible</translation>
     </message>
     <message>
         <source>Ошибка воспроизведения: </source>
@@ -2304,15 +3217,35 @@ VACÍO</translation>
     </message>
     <message>
         <source>Нажмите ▶ для воспроизведения</source>
-        <translation>Pulse ▶ para reproducir</translation>
+        <translation type="vanished">Pulse ▶ para reproducir</translation>
     </message>
     <message>
         <source>Нет видеофайлов в папке </source>
-        <translation>No hay archivos de vídeo en la carpeta </translation>
+        <translation type="vanished">No hay archivos de vídeo en la carpeta </translation>
     </message>
     <message>
         <source>Нет видео</source>
-        <translation>Sin vídeo</translation>
+        <translation type="vanished">Sin vídeo</translation>
+    </message>
+    <message>
+        <source>Видеозаписи</source>
+        <translation>Vídeos</translation>
+    </message>
+    <message>
+        <source>В папке нет видеофайлов</source>
+        <translation>No hay archivos de vídeo en la carpeta</translation>
+    </message>
+    <message>
+        <source>Нажмите для воспроизведения</source>
+        <translation>Pulse para reproducir</translation>
+    </message>
+    <message>
+        <source>Видео не выбрано</source>
+        <translation>No hay vídeo seleccionado</translation>
+    </message>
+    <message>
+        <source>НА ВЕСЬ ЭКРАН</source>
+        <translation>PANTALLA COMPLETA</translation>
     </message>
 </context>
 <context>
@@ -2331,11 +3264,11 @@ VACÍO</translation>
     </message>
     <message>
         <source>Wi-Fi</source>
-        <translation>Wi-Fi</translation>
+        <translation type="vanished">Wi-Fi</translation>
     </message>
     <message>
         <source>VPN FOTEK</source>
-        <translation>VPN FOTEK</translation>
+        <translation type="vanished">VPN FOTEK</translation>
     </message>
     <message>
         <source>Текущий IP-адрес устройства:</source>
@@ -2348,6 +3281,10 @@ VACÍO</translation>
     <message>
         <source>Назад</source>
         <translation>atrás</translation>
+    </message>
+    <message>
+        <source>WiFi всегда включен</source>
+        <translation>Wi-Fi siempre activo</translation>
     </message>
 </context>
 <context>
@@ -2389,19 +3326,19 @@ VACÍO</translation>
     </message>
     <message>
         <source>Приём файлов обновления</source>
-        <translation>Recepción de archivos de actualización</translation>
+        <translation type="vanished">Recepción de archivos de actualización</translation>
     </message>
     <message>
         <source>1. Включите приём</source>
-        <translation>1. Active la recepción</translation>
+        <translation type="vanished">1. Active la recepción</translation>
     </message>
     <message>
         <source>2. Подключитесь к Wi‑Fi</source>
-        <translation>2. Conéctese a la red Wi‑Fi</translation>
+        <translation type="vanished">2. Conéctese a la red Wi‑Fi</translation>
     </message>
     <message>
         <source>3. Откройте страницу загрузки</source>
-        <translation>3. Abra la página de carga</translation>
+        <translation type="vanished">3. Abra la página de carga</translation>
     </message>
     <message>
         <source>Адрес загрузки</source>
@@ -2441,19 +3378,19 @@ VACÍO</translation>
     </message>
     <message>
         <source>Выключить приём</source>
-        <translation>Desactivar recepción</translation>
+        <translation type="vanished">Desactivar recepción</translation>
     </message>
     <message>
         <source>Включить приём</source>
-        <translation>Activar recepción</translation>
+        <translation type="vanished">Activar recepción</translation>
     </message>
     <message>
         <source>QR появится после включения приёма</source>
-        <translation>El QR aparecerá tras activar la recepción</translation>
+        <translation type="vanished">El QR aparecerá tras activar la recepción</translation>
     </message>
     <message>
         <source>Обнаружен релиз: </source>
-        <translation>Versión detectada: </translation>
+        <translation type="vanished">Versión detectada: </translation>
     </message>
     <message>
         <source>Компонент</source>
@@ -2480,20 +3417,230 @@ VACÍO</translation>
         <translation>atrás</translation>
     </message>
     <message>
-        <source>Аппарат создаст временную точку доступа &quot;ONYX-TEST&quot;
-и сформирует QR-код для подключения вашего устройства (смартфон/ноутбук)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Отключите приём по мобильной сети на вашем устройстве.
-Отсканируйте QR-код или выберите сеть ONYX-TEST в списке Wi‑Fi.
-После обнаружения подключения, QR-код изменится.
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Соединение установлено! Отсканируйте новый QR-код или откройте адрес вручную в любом браузере</source>
-        <translation type="unfinished"></translation>
+        <translation>¡Conexión establecida! Escanee el nuevo código QR o abra la dirección manualmente en cualquier navegador</translation>
+    </message>
+    <message>
+        <source>повреждена</source>
+        <translation>dañada</translation>
+    </message>
+    <message>
+        <source>нет</source>
+        <translation>no</translation>
+    </message>
+    <message>
+        <source>ПРИЁМ ФАЙЛОВ ОБНОВЛЕНИЯ</source>
+        <translation>RECEPCIÓN DE ARCHIVOS DE ACTUALIZACIÓN</translation>
+    </message>
+    <message>
+        <source>3. Применение обновления</source>
+        <translation>3. Aplicación de la actualización</translation>
+    </message>
+    <message>
+        <source>2. Откройте страницу загрузки</source>
+        <translation>3. Abra la página de carga {2.?}</translation>
+    </message>
+    <message>
+        <source>1. Подключитесь к Wi‑Fi</source>
+        <translation>2. Conéctese a la red Wi‑Fi {1.?}</translation>
+    </message>
+    <message>
+        <source>Не удалось включить точку доступа</source>
+        <translation>No se pudo activar el punto de acceso</translation>
+    </message>
+    <message>
+        <source>Создание точки доступа...</source>
+        <translation>Creando el punto de acceso...</translation>
+    </message>
+    <message>
+        <source>!Отключите мобильный интернет на вашем устройстве!
+Отсканируйте QR-код или выберите сеть %1 в списке Wi‑Fi.
+После обнаружения подключения QR-код изменится.</source>
+        <translation>¡Desactive los datos móviles en su dispositivo!
+Escanee el código QR o seleccione la red %1 en la lista Wi‑Fi.
+Cuando se detecte la conexión, el código QR cambiará.</translation>
+    </message>
+    <message>
+        <source>Проверьте Wi‑Fi и повторите включение точки доступа.</source>
+        <translation>Compruebe el Wi‑Fi y vuelva a activar el punto de acceso.</translation>
+    </message>
+    <message>
+        <source>Аппарат создаёт временную точку доступа и QR-код для подключения.</source>
+        <translation>El aparato está creando un punto de acceso temporal y un código QR para la conexión.</translation>
+    </message>
+    <message>
+        <source>Обнаружен файл обновления: </source>
+        <translation>Archivo de actualización detectado: </translation>
+    </message>
+    <message>
+        <source>Повторить</source>
+        <translation>Reintentar</translation>
+    </message>
+    <message>
+        <source>Перейти к обновлению ПО</source>
+        <translation>Ir a la actualización de software</translation>
+    </message>
+    <message>
+        <source>QR появится после создания точки доступа</source>
+        <translation>El código QR aparecerá después de crear el punto de acceso</translation>
+    </message>
+</context>
+<context>
+    <name>WifiLogDownload</name>
+    <message>
+        <source>СКАЧИВАНИЕ ЛОГ-ФАЙЛА</source>
+        <translation>DESCARGA DEL ARCHIVO DE REGISTRO</translation>
+    </message>
+    <message>
+        <source>3. Успешно передано</source>
+        <translation>3. Transferencia correcta</translation>
+    </message>
+    <message>
+        <source>3. Откройте страницу скачивания</source>
+        <translation>3. Abra la página de descarga</translation>
+    </message>
+    <message>
+        <source>2. Подключитесь к Wi‑Fi</source>
+        <translation>2. Conéctese a la red Wi‑Fi</translation>
+    </message>
+    <message>
+        <source>1. Подготовка архива</source>
+        <translation>1. Preparación del archivo</translation>
+    </message>
+    <message>
+        <source>Не удалось подготовить архив</source>
+        <translation>No se pudo preparar el archivo</translation>
+    </message>
+    <message>
+        <source>Не удалось включить точку доступа</source>
+        <translation>No se pudo activar el punto de acceso</translation>
+    </message>
+    <message>
+        <source>Архив успешно передан. Точка доступа ONYX-SERVICE отключена.
+Подключитесь к сети Интернет и перешлите лог-файл в сервисную службу ООО «ФОТЕК».
+Спасибо!</source>
+        <translation>El archivo se ha transferido. El punto de acceso ONYX-SERVICE se ha desconectado.
+Conéctese a Internet y reenvíe el archivo de registro al servicio técnico de FOTEK.
+¡Gracias!</translation>
+    </message>
+    <message>
+        <source>Соединение установлено! Отсканируйте новый QR-код или откройте адрес вручную в любом браузере.</source>
+        <translation>¡Conexión establecida! Escanee el nuevo código QR o abra la dirección manualmente en cualquier navegador.</translation>
+    </message>
+    <message>
+        <source>!Отключите мобильный интернет на вашем устройстве!
+Отсканируйте QR-код или выберите сеть %1 в списке Wi‑Fi.
+После обнаружения подключения QR-код изменится.</source>
+        <translation>¡Desactive los datos móviles en su dispositivo!
+Escanee el código QR o seleccione la red %1 en la lista Wi‑Fi.
+Cuando se detecte la conexión, el código QR cambiará.</translation>
+    </message>
+    <message>
+        <source>Проверьте Wi‑Fi и повторите включение точки доступа.</source>
+        <translation>Compruebe el Wi‑Fi y vuelva a activar el punto de acceso.</translation>
+    </message>
+    <message>
+        <source>Идёт подготовка архива журналов. Подождите, это может занять некоторое время.</source>
+        <translation>Se está preparando el archivo de registros. Espere, puede tardar un poco.</translation>
+    </message>
+    <message>
+        <source>Адрес страницы</source>
+        <translation>Dirección de la página</translation>
+    </message>
+    <message>
+        <source>Параметры Wi‑Fi</source>
+        <translation>Parámetros de Wi‑Fi</translation>
+    </message>
+    <message>
+        <source> · пароль: </source>
+        <translation> · contraseña: </translation>
+    </message>
+    <message>
+        <source>Серийный номер: </source>
+        <translation>Número de serie: </translation>
+    </message>
+    <message>
+        <source> · </source>
+        <translation> · </translation>
+    </message>
+    <message>
+        <source>Тип аппарата: </source>
+        <translation>Tipo de equipo: </translation>
+    </message>
+    <message>
+        <source> · Wi‑Fi: </source>
+        <translation> · Wi‑Fi: </translation>
+    </message>
+    <message>
+        <source>вкл</source>
+        <translation>activado</translation>
+    </message>
+    <message>
+        <source>выкл</source>
+        <translation>desactivado</translation>
+    </message>
+    <message>
+        <source>Повторить</source>
+        <translation>Reintentar</translation>
+    </message>
+    <message>
+        <source>Подготовка архива</source>
+        <translation>Preparación del archivo</translation>
+    </message>
+    <message>
+        <source>Готово</source>
+        <translation>Listo</translation>
+    </message>
+    <message>
+        <source>QR появится после создания точки доступа</source>
+        <translation>El código QR aparecerá después de crear el punto de acceso</translation>
+    </message>
+    <message>
+        <source>НАЗАД</source>
+        <translation>ATRÁS</translation>
+    </message>
+</context>
+<context>
+    <name>WorkScreen</name>
+    <message>
+        <source></source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Питание будет выключено через %1 секунд</source>
+        <translation>La alimentación se apagará en %1 segundos</translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCELAR</translation>
+    </message>
+    <message>
+        <source>ВЫКЛЮЧИТЬ</source>
+        <translation>APAGAR</translation>
+    </message>
+    <message>
+        <source>Внимание! Программа
+
+%1
+
+будет перезаписана</source>
+        <translation>¡Atención! El programa
+
+%1
+
+se sobrescribirá</translation>
+    </message>
+    <message>
+        <source>ПРИНЯТЬ</source>
+        <translation>ACEPTAR</translation>
+    </message>
+    <message>
+        <source>Эндоскопические программы не могут быть использованы совместно с другими программами</source>
+        <translation>Los programas endoscópicos no pueden usarse junto con otros programas</translation>
+    </message>
+    <message>
+        <source>СВОБОДНЫЕ УСТАНОВКИ</source>
+        <translation>CONFIGURACIÓN DEL MODO LIBRE</translation>
     </message>
 </context>
 <context>
@@ -2607,11 +3754,11 @@ VACÍO</translation>
     </message>
     <message>
         <source>Ошибка: обновление не выполнено</source>
-        <translation>Error: actualización no realizada</translation>
+        <translation type="vanished">Error: actualización no realizada</translation>
     </message>
     <message>
         <source>Ошибка: нет рабочей прошивки МУС</source>
-        <translation>Error: no hay firmware operativo del MUS</translation>
+        <translation type="vanished">Error: no hay firmware operativo del MUS</translation>
     </message>
     <message>
         <source>Критичная ошибка: ИСН при включении</source>
@@ -2667,15 +3814,15 @@ VACÍO</translation>
     </message>
     <message>
         <source>Питание будет выключено через %1 секунд</source>
-        <translation>La alimentación se apagará en %1 segundos</translation>
+        <translation type="vanished">La alimentación se apagará en %1 segundos</translation>
     </message>
     <message>
         <source>ОТМЕНА</source>
-        <translation>CANCELAR</translation>
+        <translation type="vanished">CANCELAR</translation>
     </message>
     <message>
         <source>ВЫКЛЮЧИТЬ</source>
-        <translation>APAGAR</translation>
+        <translation type="vanished">APAGAR</translation>
     </message>
     <message>
         <source>Внимание! Текущая программа
@@ -2683,7 +3830,7 @@ VACÍO</translation>
 %1
 
 будет перезаписана</source>
-        <translation>¡ATENCIÓN! El programa actual
+        <translation type="vanished">¡ATENCIÓN! El programa actual
 
 %1
 
@@ -2691,11 +3838,23 @@ se sobrescribirá</translation>
     </message>
     <message>
         <source>ПРИНЯТЬ</source>
-        <translation>ACEPTAR</translation>
+        <translation type="vanished">ACEPTAR</translation>
     </message>
     <message>
         <source>Эндоскопические программы не могут быть использованы совместно с другими программами</source>
-        <translation>Los programas endoscópicos no pueden usarse junto con otros programas</translation>
+        <translation type="vanished">Los programas endoscópicos no pueden usarse junto con otros programas</translation>
+    </message>
+    <message>
+        <source>Ошибка модуля связи</source>
+        <translation>Error del módulo de comunicación</translation>
+    </message>
+    <message>
+        <source>Ошибка: прошивка МК повреждена или обновление не выполнено</source>
+        <translation>Error: el firmware del MC está dañado o la actualización no se completó</translation>
+    </message>
+    <message>
+        <source>Ошибка: нет рабочей прошивки МК</source>
+        <translation>Error: no hay firmware operativo del MC</translation>
     </message>
 </context>
 <context>
@@ -2794,11 +3953,11 @@ se sobrescribirá</translation>
     </message>
     <message>
         <source>Перезапуск</source>
-        <translation>Reiniciar</translation>
+        <translation type="vanished">Reiniciar</translation>
     </message>
     <message>
         <source>В одном или нескольких модулях отсутствует рабочая прошивка.</source>
-        <translation>Uno o varios módulos no tienen firmware operativo.</translation>
+        <translation type="vanished">Uno o varios módulos no tienen firmware operativo.</translation>
     </message>
     <message>
         <source>Передача прошивки МК: </source>
@@ -2818,15 +3977,87 @@ se sobrescribirá</translation>
     </message>
     <message>
         <source>Список версий: текущие и доступные</source>
-        <translation type="unfinished"></translation>
+        <translation>Lista de versiones: actuales y disponibles</translation>
     </message>
     <message>
         <source>Доступные</source>
-        <translation type="unfinished"></translation>
+        <translation>Disponibles</translation>
     </message>
     <message>
         <source>Обновить всё до последних версий</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizar todo a las últimas versiones</translation>
+    </message>
+    <message>
+        <source>повреждена</source>
+        <translation>dañada</translation>
+    </message>
+    <message>
+        <source>нет</source>
+        <translation>no</translation>
+    </message>
+    <message>
+        <source>модуль связи</source>
+        <translation>módulo de comunicación</translation>
+    </message>
+    <message>
+        <source>аргоновый модуль</source>
+        <translation>módulo de argón</translation>
+    </message>
+    <message>
+        <source>модуль генератора</source>
+        <translation>módulo generador</translation>
+    </message>
+    <message>
+        <source>МК раскачки</source>
+        <translation>MCU del excitador</translation>
+    </message>
+    <message>
+        <source>МК НЭ</source>
+        <translation>MC EN</translation>
+    </message>
+    <message>
+        <source>модуль</source>
+        <translation>módulo</translation>
+    </message>
+    <message>
+        <source>Нет рабочей прошивки: </source>
+        <translation>Sin firmware operativo: </translation>
+    </message>
+    <message>
+        <source>Повреждена прошивка: </source>
+        <translation>Firmware dañado: </translation>
+    </message>
+    <message>
+        <source>Все доступные модули обновлены до последних версий</source>
+        <translation>Todos los módulos disponibles se han actualizado a las últimas versiones</translation>
+    </message>
+    <message>
+        <source>Пауза перед следующим модулем…</source>
+        <translation>Pausa antes del siguiente módulo…</translation>
+    </message>
+    <message>
+        <source>Обновление: </source>
+        <translation>Actualización: </translation>
+    </message>
+    <message>
+        <source> → </source>
+        <translation> → </translation>
+    </message>
+    <message>
+        <source> (</source>
+        <translation> (</translation>
+    </message>
+    <message>
+        <source>Не удалось запустить обновление МК</source>
+        <translation>No se pudo iniciar la actualización del MC</translation>
+    </message>
+    <message>
+        <source>Все модули уже на последних доступных версиях</source>
+        <translation>Todos los módulos ya están en las últimas versiones disponibles</translation>
+    </message>
+    <message>
+        <source>!ПЕРЕЗАГРУЗКА!</source>
+        <translation>¡REINICIO!</translation>
     </message>
 </context>
 </TS>

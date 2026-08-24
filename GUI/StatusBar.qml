@@ -24,7 +24,6 @@ Rectangle {
         width: 1
         color: "black"
     }
-    radius: 8
 
     Button {
         id: drawerButton

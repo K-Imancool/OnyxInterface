@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QSaveFile>
@@ -118,6 +119,13 @@ void TranslationController::writeSplashLanguageMarker(const QString &language) c
 void TranslationController::updatePlymouthStartSplash(const QString &language)
 {
     if (m_splashUpdateBusy) {
+        return;
+    }
+
+    // Desktop Ubuntu (xcb/wayland): не трогаем Plymouth и start.png.
+    // На ROC сервис запускает UI с QT_QPA_PLATFORM=eglfs.
+    const QString platform = QGuiApplication::platformName();
+    if (!platform.startsWith(QLatin1String("eglfs"))) {
         return;
     }
 
