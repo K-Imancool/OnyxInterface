@@ -468,6 +468,9 @@ void ControlCenter::setLinkStm(LinkStm* linkStm)
 		connect(m_periphery, &PeriphHandler::sigArgonBlow,
 		        m_linkStm, &LinkStm::argonBlow,
 		        Qt::QueuedConnection);
+		connect(m_periphery, &PeriphHandler::argonBlowingChanged,
+		        m_linkStm, &LinkStm::setArgonBlowing,
+		        Qt::QueuedConnection);
 		connect(m_linkStm, &LinkStm::sigNeutralResistReceived,
 		        m_periphery, &PeriphHandler::onNeutralResistReceived,
 		        Qt::QueuedConnection);

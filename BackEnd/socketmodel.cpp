@@ -1311,40 +1311,38 @@ void SocketModel::loadProgs(const std::vector<std::map<int, SockPtr> > &itemsMap
 
 void SocketModel::removeSubProg(int index)
 {
-    if (m_itemsMapVect.size() == 1
+    if (m_itemsMapVect.size() <= 1
         || index < 0
         || static_cast<size_t>(index) >= m_itemsMapVect.size()) {
         return;
     }
-    //сначала вычисляем новый индекс подстраницы
 
-    int tmpIndex = 0;
-    bool needIdxUpd = false;
+    const int oldIdx = m_subProgIdx;
+    // Удаляем последнюю — остаёмся на предыдущей.
+    // Иначе следующий лист сдвигается на место удалённого.
+    const int newIdx = (index == static_cast<int>(m_itemsMapVect.size()) - 1)
+            ? index - 1
+            : index;
 
-    if (index == m_itemsMapVect.size() - 1) {// удаляем последнюю
-        tmpIndex = index - 1;
-    } else { //непоследнюю (для юзер индекс останется как был)
-        tmpIndex = index + 1;
-        needIdxUpd = true;
+    beginResetModel();
+
+    m_itemsMapVect.erase(m_itemsMapVect.begin() + index);
+    m_instrMapVect.erase(m_instrMapVect.begin() + index);
+
+    m_subProgIdx = newIdx;
+    m_itemsMapPtr = &m_itemsMapVect.at(m_subProgIdx);
+    m_instrMapPtr = &m_instrMapVect.at(m_subProgIdx);
+    rebuildSocketNames();
+
+    endResetModel();
+
+    emit subProgCountChanged();
+    if (m_subProgIdx != oldIdx) {
+        emit subProgIdxChanged();
     }
 
-    //переходим на какую-то страницу безопасную
-    setSubProgIdx(tmpIndex);
-
-    //безопасно удаляем утраницу
-    auto itemIter = m_itemsMapVect.begin();
-    itemIter += index;
-    m_itemsMapVect.erase(itemIter);
-
-    auto instrIter = m_instrMapVect.begin();
-    instrIter += index;
-    m_instrMapVect.erase(instrIter);
-
-    //обновляем число страниц
-    emit subProgCountChanged();
-    if (needIdxUpd) {
-        m_subProgIdx--;
-        emit subProgIdxChanged();
+    for (int row = 0; row < m_socketNames.size(); ++row) {
+        syncBi2HandlePedal(row);
     }
 }
 

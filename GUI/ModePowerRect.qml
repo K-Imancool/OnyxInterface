@@ -22,46 +22,37 @@ Canvas {
         return isCoag ? "blue" : "yellow"
     }
 
+    function usesUnitPowerStep() {
+        return modePowerRect.modeId === ESHF.BI_COAG_MICRO
+    }
+
     function changePower(direction) {
-        var changedPower = modePower
-        if (direction === "up") {
-            if (modePower < 20) changedPower += 1
-            else if (modePower < 50) changedPower +=2
-            else if (modePower < 100) changedPower +=5
-            else if (modePower < 200) changedPower +=10
-            else if (modePower < 400) changedPower +=25
-        }
-        if (direction === "down") {
-            if (modePower <= 1) changedPower = 1
-            else if (modePower <= 20) changedPower -= 1
-            else if (modePower <= 50) changedPower -=2
-            else if (modePower <= 100) changedPower -=5
-            else if (modePower <= 200) changedPower -=10
-            else if (modePower <= 400) changedPower -=25
-        }
-        return changedPower
+        return changePowerFromValue(modePower, direction)
     }
 
     // Функция изменения мощности на основе переданного значения (для автоповтора)
     function changePowerFromValue(currentValue, direction) {
         var changedPower = currentValue
+        var unitStep = usesUnitPowerStep()
         if (direction === "up") {
-            if (currentValue < 20) changedPower += 1
+            if (unitStep)
+                changedPower += 1
+            else if (currentValue < 20) changedPower += 1
             else if (currentValue < 50) changedPower += 2
             else if (currentValue < 100) changedPower += 5
             else if (currentValue < 200) changedPower += 10
             else if (currentValue < 400) changedPower += 25
-            // Ограничиваем максимальным значением
             if (changedPower > maxPower) changedPower = maxPower
         }
         if (direction === "down") {
-            if (currentValue <= 1) changedPower = 1
+            if (unitStep)
+                changedPower = Math.max(currentValue - 1, 1)
+            else if (currentValue <= 1) changedPower = 1
             else if (currentValue <= 20) changedPower -= 1
             else if (currentValue <= 50) changedPower -= 2
             else if (currentValue <= 100) changedPower -= 5
             else if (currentValue <= 200) changedPower -= 10
             else if (currentValue <= 400) changedPower -= 25
-            // Ограничиваем минимальным значением
             if (changedPower < 1) changedPower = 1
         }
         return changedPower

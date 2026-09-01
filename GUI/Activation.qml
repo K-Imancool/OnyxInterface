@@ -16,9 +16,10 @@ Popup {
     readonly property color foregroundOutlineColor: isCoag ? "black" : "white"
 
     modal: true
-    dim: true
+    dim: false
     closePolicy: Popup.NoAutoClose
     padding: 0
+    Overlay.modal: Item {}
 
     onClosed: {
         activeSocketId = -1
@@ -189,6 +190,7 @@ Popup {
         }
 
         Rectangle {
+            id: pulseBorder
             anchors.fill: parent
             anchors.margins: 10
             color: "transparent"
@@ -197,19 +199,21 @@ Popup {
             radius: 15
             opacity: 0.7
 
-            SequentialAnimation on border.width {
-                running: activationPopup.visible
+            SequentialAnimation {
+                running: activationPopup.opened
                 loops: Animation.Infinite
 
-                NumberAnimation {
-                    from: 3
-                    to: 6
+                OpacityAnimator {
+                    target: pulseBorder
+                    from: 0.35
+                    to: 1.0
                     duration: 800
                     easing.type: Easing.InOutQuad
                 }
-                NumberAnimation {
-                    from: 6
-                    to: 3
+                OpacityAnimator {
+                    target: pulseBorder
+                    from: 1.0
+                    to: 0.35
                     duration: 800
                     easing.type: Easing.InOutQuad
                 }

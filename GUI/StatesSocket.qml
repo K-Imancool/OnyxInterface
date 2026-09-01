@@ -50,25 +50,23 @@ Rectangle {
     function shortenedModeNameForAuto(modeId, autoMode) {
         if (modeId === ESHF.BI_COAG) { // БИ-КОАГ
             if (autoMode === 1)
-                return qsTr("БИ КОАГ\nАВТОСТОП")
+                return qsTr("БИ КОАГ\nА-СТОП")
             if (autoMode === 2)
                 return qsTr("БИ КОАГ\nА-СТ-СТОП")
         }
         else if (modeId === ESHF.BI_COAG_DISS) { // БИ-КОАГ-ДИССЕКТ
-            if (autoMode === 1)
-                return qsTr("БИ КОАГ ДИСС\nАВТОСТОП")
             if (autoMode === 2)
                 return qsTr("БИ КОАГ ДИСС\nА-СТ-СТОП")
         }
         else if (modeId === ESHF.BI_COAG_MICRO) { // БИ-КОАГ-МИКРО
             if (autoMode === 1)
-                return qsTr("БИ КОАГ МИКРО\nАВТОСТОП")
+                return qsTr("БИ КОАГ МИКРО\nА-СТОП")
             if (autoMode === 2)
                 return qsTr("БИ КОАГ МИКР\nА-СТ-СТОП")
         }
         else if (modeId === ESHF.SOFT) { // МЯГКАЯ
             if (autoMode === 1)
-                return qsTr("МЯГКАЯ\nАВТОСТОП")
+                return qsTr("МЯГКАЯ\nА-СТОП")
         }
         return ""
     }

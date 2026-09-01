@@ -26,6 +26,12 @@ Drawer {
                 return
             pedalUiRev++
         }
+        function onModelReset() {
+            pedalUiRev++
+        }
+        function onSubProgIdxChanged() {
+            pedalUiRev++
+        }
     }
 
     function currentShownPedals() {

@@ -101,11 +101,12 @@ void LinkStm::start()
 
 void LinkStm::argonBlow()
 {
-    UartTx argonBlowCommand;
-    argonBlowCommand.com = ArgonBlow;
-    argonBlowCommand.mc = MC_COM;
-    argonBlowCommand.data.clear();
-    setTxCommand(argonBlowCommand);
+    setArgonBlowing(true);
+}
+
+void LinkStm::setArgonBlowing(bool blowing)
+{
+    m_argonBlowing = blowing;
 }
 
 void LinkStm::stopArgon()
@@ -505,8 +506,24 @@ void LinkStm::sendCommand()
             }
         }
 
+        //__________________Команда продувки_________________
+        if (m_argonBlowing
+            && m_comState != ACTIVATION
+            && m_comState != START_ACTIVATION
+            && m_comState != UPDATING
+            && m_comState != SPECIAL
+            && !m_fwUpdateAwaitingBoot && !m_fwUpdateAwaitingReady
+            && !m_fwUpdateAwaitingGoApp) {
+            m_txCommand.com = ArgonBlow;
+            m_txCommand.mc = MC_COM;
+            m_txCommand.data.clear();
+            m_txCommand.data.append(static_cast<char>(0x00));
+            // Старший бит второго байта: 0 — первый баллон, 1 — второй
+            m_txCommand.data.append(static_cast<char>(m_activCylinderFirst ? 0x00 : 0x80));
+        }
+
         //__________________Команда по умолчанию_________________
-        if (m_comState == IDLE && !m_fwUpdateAwaitingBoot && !m_fwUpdateAwaitingReady
+        if (m_comState == IDLE && !m_argonBlowing && !m_fwUpdateAwaitingBoot && !m_fwUpdateAwaitingReady
             && !m_fwUpdateAwaitingGoApp) {
             if (m_neutralResistPollEnabled) {
                 m_txCommand.com = AckNeutralResist;

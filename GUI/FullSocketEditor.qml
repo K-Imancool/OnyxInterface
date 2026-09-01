@@ -258,17 +258,30 @@ Popup {
         }
     }
 
-    function nextPowerUp(power, maxPower) {
+    function usesUnitPowerStep(modeId) {
+        return modeId === ESHF.BI_COAG_MICRO
+    }
+
+    function nextPowerUp(power, maxPower, unitStep) {
         var value = power
-        if (value < 20) value += 1
-        else if (value < 50) value += 2
-        else if (value < 100) value += 5
-        else if (value < 200) value += 10
-        else if (value < 400) value += 25
+        if (unitStep)
+            value += 1
+        else if (value < 20)
+            value += 1
+        else if (value < 50)
+            value += 2
+        else if (value < 100)
+            value += 5
+        else if (value < 200)
+            value += 10
+        else if (value < 400)
+            value += 25
         return Math.min(value, maxPower)
     }
 
-    function nextPowerDown(power) {
+    function nextPowerDown(power, unitStep) {
+        if (unitStep)
+            return Math.max(power - 1, 1)
         var value = power
         if (value <= 1) value = 1
         else if (value <= 20) value -= 1
@@ -284,10 +297,11 @@ Popup {
         var side = sideRef(isCoag)
         if (!modeSelectedInSide(isCoag) || side.isEndo || side.maxPower <= 0)
             return
+        var unitStep = usesUnitPowerStep(side.modeId)
         if (increase)
-            modeEditor.updateParameter("currentpower", nextPowerUp(side.power, side.maxPower))
+            modeEditor.updateParameter("currentpower", nextPowerUp(side.power, side.maxPower, unitStep))
         else
-            modeEditor.updateParameter("currentpower", nextPowerDown(side.power))
+            modeEditor.updateParameter("currentpower", nextPowerDown(side.power, unitStep))
         copyEditorToSide(isCoag)
         refreshDirtyFlags()
     }
@@ -318,6 +332,21 @@ Popup {
     function isBiCoagModeInSide(isCoag) {
         var modeId = sideRef(isCoag).modeId
         return modeId === ESHF.BI_COAG || modeId === ESHF.BI_COAG_DISS || modeId === ESHF.BI_COAG_MICRO
+    }
+
+    function isBiCoagDissInSide(isCoag) {
+        return sideRef(isCoag).modeId === ESHF.BI_COAG_DISS
+    }
+
+    function allowsBiAutoStopInSide(isCoag) {
+        return isBiCoagModeInSide(isCoag) && !isBiCoagDissInSide(isCoag)
+    }
+
+    function dropDisallowedAutoStop() {
+        if (socId > 1)
+            return
+        if (isBiCoagDissInSide(true) && socketAutoModeState === 1)
+            setSocketAutoMode(0)
     }
 
     function isTermoModeInSide(isCoag) {
@@ -398,6 +427,8 @@ Popup {
     }
 
     function requestAutoMode(mode, confirmationText) {
+        if (mode === 1 && isBiCoagDissInSide(true))
+            return
         if (socketAutoModeState === mode) {
             setSocketAutoMode(0)
             return
@@ -556,6 +587,7 @@ Popup {
         applySideToEditor(false)
         socketAutoModeState = periphHandle.autoMode(socId)
         sprayM1M2Active = periphHandle.autoMode(2) === autoModeSprayM1M2
+        dropDisallowedAutoStop()
         captureAutoModeBaseline()
         autoModeDirty = false
         refreshDirtyFlags()
@@ -661,6 +693,7 @@ Popup {
             // При смене режима АВТОСТОП / АВТОСТАРТСТОП сбрасываются обязательно
             if (side.modeIndex !== prevModeIndex || side.modeId !== prevModeId)
                 clearSocketAutoModes()
+            dropDisallowedAutoStop()
             refreshDirtyFlags()
         } else {
             applySideToEditor(pendingSubEditorCoag)

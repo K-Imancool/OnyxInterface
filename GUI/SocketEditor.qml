@@ -97,17 +97,30 @@ Popup {
         instrListView.innerModel = instrModel
     }
 
-    function nextPowerUp(power, maxPower) {
+    function usesUnitPowerStep(modeId) {
+        return modeId === ESHF.BI_COAG_MICRO
+    }
+
+    function nextPowerUp(power, maxPower, unitStep) {
         var value = power
-        if (value < 20) value += 1
-        else if (value < 50) value += 2
-        else if (value < 100) value += 5
-        else if (value < 200) value += 10
-        else if (value < 400) value += 25
+        if (unitStep)
+            value += 1
+        else if (value < 20)
+            value += 1
+        else if (value < 50)
+            value += 2
+        else if (value < 100)
+            value += 5
+        else if (value < 200)
+            value += 10
+        else if (value < 400)
+            value += 25
         return Math.min(value, maxPower)
     }
 
-    function nextPowerDown(power) {
+    function nextPowerDown(power, unitStep) {
+        if (unitStep)
+            return Math.max(power - 1, 1)
         var value = power
         if (value <= 1) value = 1
         else if (value <= 20) value -= 1
@@ -124,11 +137,14 @@ Popup {
         if (!modeSelected() || modeEditor.isEndo || modeEditor.currentMode.maxpower <= 0) {
             return
         }
+        var unitStep = usesUnitPowerStep(currentModeId())
         if (increase) {
             modeEditor.updateParameter("currentpower",
-                                       nextPowerUp(modeEditor.currentPower, modeEditor.currentMode.maxpower))
+                                       nextPowerUp(modeEditor.currentPower,
+                                                   modeEditor.currentMode.maxpower,
+                                                   unitStep))
         } else {
-            modeEditor.updateParameter("currentpower", nextPowerDown(modeEditor.currentPower))
+            modeEditor.updateParameter("currentpower", nextPowerDown(modeEditor.currentPower, unitStep))
         }
     }
 
@@ -215,6 +231,8 @@ Popup {
     }
 
     function requestAutoMode(mode, confirmationText) {
+        if (mode === 1 && isBiCoagDissMode())
+            return
         var currentMode = socketAutoMode()
         if (currentMode === mode) {
             setSocketAutoMode(0)
@@ -237,6 +255,21 @@ Popup {
     function isBiCoagMode() {
         var modeId = currentModeId()
         return modeId === ESHF.BI_COAG || modeId === ESHF.BI_COAG_DISS || modeId === ESHF.BI_COAG_MICRO
+    }
+
+    function isBiCoagDissMode() {
+        return currentModeId() === ESHF.BI_COAG_DISS
+    }
+
+    function allowsBiAutoStop() {
+        return isBiCoagMode() && !isBiCoagDissMode()
+    }
+
+    function dropDisallowedAutoStop() {
+        if (socId > 1 || !isCoag)
+            return
+        if (isBiCoagDissMode() && socketAutoModeState === 1)
+            setSocketAutoMode(0)
     }
 
     function captureAutoModeBaseline() {
@@ -456,6 +489,7 @@ Popup {
         committedInstrIndex = modeEditor.currentInstrIndex
         centerView = "power"
         socketAutoModeState = periphHandle.autoMode(socId)
+        dropDisallowedAutoStop()
         captureAutoModeBaseline()
         modeEditor.setAutoModeDirty(false)
         modeListView.curIndex = modeEditor.currentModeIndex
@@ -1020,6 +1054,7 @@ Popup {
                             Button {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: controlButtonHeight
+                                visible: allowsBiAutoStop()
                                 text: qsTr("АВТОСТОП")
                                 flat: true
                                 background: Rectangle {

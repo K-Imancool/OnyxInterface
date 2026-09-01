@@ -188,18 +188,24 @@ Item {
             z: 1
 
             onOpenedChanged: {
-                if (opened) {
+                if (opened)
                     Qt.callLater(host.updateActivationOverlayGeometry)
-                }
             }
         }
 
-        Timer {
-            id: activationGeometryTimer
-            interval: 50
-            repeat: true
-            running: activationIndicator.opened
-            onTriggered: host.updateActivationOverlayGeometry()
+        Connections {
+            target: socketsDummy
+            enabled: activationIndicator.opened
+            function onXChanged() { host.updateActivationOverlayGeometry() }
+            function onYChanged() { host.updateActivationOverlayGeometry() }
+            function onWidthChanged() { host.updateActivationOverlayGeometry() }
+            function onHeightChanged() { host.updateActivationOverlayGeometry() }
+        }
+        Connections {
+            target: pedalContainer
+            enabled: activationIndicator.opened
+            function onXChanged() { host.updateActivationOverlayGeometry() }
+            function onWidthChanged() { host.updateActivationOverlayGeometry() }
         }
     }
 

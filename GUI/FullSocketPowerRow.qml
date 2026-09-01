@@ -24,11 +24,15 @@ Item {
     implicitHeight: showEndo ? (btnH + endoLabelHeight + 6) : btnH
     implicitWidth: 200
 
-    // Подсветка нажатия как у кнопок расхода аргона: фон fotekOrange, текст чёрный
+    // Подсветка нажатия как у кнопок расхода аргона: фон fotekOrange, текст чёрный.
+    // Автоповтор привязан к down, а не к pressed: при соскальзывании пальца
+    // Button остаётся pressed до отпускания, но down (и цвет) уже сбрасываются.
     component StepButton: Button {
         id: stepBtn
         flat: true
         property int labelPixelSize: 52
+        property bool holdRepeat: false
+        property bool increase: false
 
         background: Rectangle {
             radius: 16
@@ -48,6 +52,19 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
+
+        onDownChanged: {
+            if (!holdRepeat || !editorRoot)
+                return
+            if (down)
+                editorRoot.startMainPowerRepeat(control.isCoagSide, increase)
+            else
+                editorRoot.stopMainPowerRepeat()
+        }
+        onEnabledChanged: {
+            if (!enabled && holdRepeat && editorRoot)
+                editorRoot.stopMainPowerRepeat()
+        }
     }
 
     RowLayout {
@@ -65,9 +82,8 @@ Item {
             text: qsTr("−")
             enabled: control.canDecreasePower
             labelPixelSize: 52
-            onPressed: editorRoot.startMainPowerRepeat(isCoagSide, false)
-            onReleased: editorRoot.stopMainPowerRepeat()
-            onCanceled: editorRoot.stopMainPowerRepeat()
+            holdRepeat: true
+            increase: false
         }
 
         Label {
@@ -87,9 +103,8 @@ Item {
             text: qsTr("+")
             enabled: control.canIncreasePower
             labelPixelSize: 50
-            onPressed: editorRoot.startMainPowerRepeat(isCoagSide, true)
-            onReleased: editorRoot.stopMainPowerRepeat()
-            onCanceled: editorRoot.stopMainPowerRepeat()
+            holdRepeat: true
+            increase: true
         }
 
         Item { Layout.fillWidth: true }

@@ -35,6 +35,7 @@ Item {
                 Button {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    visible: editorRoot.allowsBiAutoStopInSide(true)
                     text: qsTr("АВТОСТОП")
                     flat: true
                     background: Rectangle {
