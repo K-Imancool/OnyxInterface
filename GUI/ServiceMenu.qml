@@ -32,6 +32,9 @@ Item {
             savedJson.saveString("fullscreenErrors", "1")
             savedJson.saveString("wifiAlwaysEnabled", "0")
         }
+        if (typeof httpUpload !== "undefined" && httpUpload) {
+            httpUpload.applyIdleWifiRadio()
+        }
         if (typeof appControl !== "undefined" && appControl) {
             appControl.uartRate = 50
             appControl.debugUartEnabled = false

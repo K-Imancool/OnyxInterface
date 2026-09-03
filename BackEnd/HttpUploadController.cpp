@@ -447,6 +447,7 @@ void HttpUploadController::setJsonStorage(JsonStorage *storage)
         setCurrentMediaVersion(QStringLiteral("—"));
     }
     refreshReleaseVersions();
+    QTimer::singleShot(0, this, [this]() { applyIdleWifiRadio(); });
 }
 
 void HttpUploadController::setUserProgTransfer(UserProgTransferController *transfer)
@@ -770,24 +771,40 @@ bool HttpUploadController::wifiAlwaysEnabled() const
                                                         QStringLiteral("0")));
 }
 
-bool HttpUploadController::ensureWifiReadyForSession(QString *errorText)
+bool HttpUploadController::setWifiRadioEnabled(bool enabled, QString *errorText)
 {
-    if (wifiAlwaysEnabled()) {
-        return true;
-    }
-
     QString stderrText;
-    if (runNmcli({QStringLiteral("radio"), QStringLiteral("wifi"), QStringLiteral("on")},
+    if (runNmcli({QStringLiteral("radio"), QStringLiteral("wifi"),
+                  enabled ? QStringLiteral("on") : QStringLiteral("off")},
                  5000, nullptr, &stderrText)) {
+        qInfo("Wi-Fi radio %s", enabled ? "on" : "off");
         return true;
     }
 
     if (errorText) {
         *errorText = stderrText.isEmpty()
-                ? tr("Не удалось включить Wi-Fi.")
-                : tr("Не удалось включить Wi-Fi: %1").arg(stderrText);
+                ? (enabled ? tr("Не удалось включить Wi-Fi.")
+                           : tr("Не удалось выключить Wi-Fi."))
+                : (enabled ? tr("Не удалось включить Wi-Fi: %1").arg(stderrText)
+                           : tr("Не удалось выключить Wi-Fi: %1").arg(stderrText));
     }
     return false;
+}
+
+void HttpUploadController::applyIdleWifiRadio()
+{
+    if (m_active) {
+        return;
+    }
+    QString error;
+    if (!setWifiRadioEnabled(wifiAlwaysEnabled(), &error) && !error.isEmpty()) {
+        qWarning() << "HttpUploadController: idle Wi-Fi radio:" << error;
+    }
+}
+
+bool HttpUploadController::ensureWifiReadyForSession(QString *errorText)
+{
+    return setWifiRadioEnabled(true, errorText);
 }
 
 void HttpUploadController::cleanupWifiAfterSession()
@@ -796,10 +813,9 @@ void HttpUploadController::cleanupWifiAfterSession()
         return;
     }
 
-    QString stderrText;
-    if (!runNmcli({QStringLiteral("radio"), QStringLiteral("wifi"), QStringLiteral("off")},
-                  5000, nullptr, &stderrText) && !stderrText.isEmpty()) {
-        qWarning() << "HttpUploadController: failed to disable Wi-Fi after session:" << stderrText;
+    QString error;
+    if (!setWifiRadioEnabled(false, &error) && !error.isEmpty()) {
+        qWarning() << "HttpUploadController: failed to disable Wi-Fi after session:" << error;
     }
 }
 

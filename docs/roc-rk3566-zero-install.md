@@ -532,6 +532,29 @@ polkit.addRule(function(action, subject) {
 sudo chmod 644 /etc/polkit-1/rules.d/50-onyx-device-control.rules
 ```
 
+### Выключение без splash и без разброса 2–4 с
+
+Мягкий `systemctl poweroff` оставляем. Разброс давали холодный polkit, teardown Wi‑Fi, plymouth на shutdown и зависший `apt` в `/tmp`.
+
+На target из репозитория UI:
+
+```bash
+sudo deploy/shutdown/install-onyx-shutdown.sh
+```
+
+Скрипт:
+
+- маскирует `plymouth-poweroff` / reboot / halt и `bootsplash-show-on-shutdown` (заставка **на загрузке** не трогается);
+- включает `polkit` сразу, чтобы не поднимать его в момент poweroff;
+- ставит `TimeoutStopSec=500ms` на NetworkManager, wpa_supplicant, networking, cron;
+- ставит `DefaultTimeoutStopSec=3s` вместо 90 с.
+
+Если корень не с SD и при shutdown есть `Unmounting media-mmcboot`:
+
+```bash
+sudo systemctl mask media-mmcboot.mount
+```
+
 ### Upload firewall
 
 Файлы: `deploy/firewall/` в репозитории UI.
@@ -618,8 +641,9 @@ sudo apt update --allow-releaseinfo-change
 6. Plymouth fotek-theme + early DRM + `uInitrd` = `uname -r`.
 7. Helper языка + sudoers.
 8. nmcli / polkit.
-9. Звук на SPK при необходимости.
-10. `reboot` → splash ~4 с → UI.
+9. `install-onyx-shutdown.sh` (без splash на poweroff).
+10. Звук на SPK при необходимости.
+11. `reboot` → splash ~4 с → UI.
 
 ---
 

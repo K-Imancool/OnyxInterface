@@ -124,6 +124,8 @@ public:
     Q_INVOKABLE QString buildUserProgExportFileName(const QString &namePrefix) const;
     Q_INVOKABLE void startUserProgUploadSession();
     Q_INVOKABLE void stopSession();
+    /// По флагу wifiAlwaysEnabled: radio on на старте / off в простое. Сессию AP не трогает.
+    Q_INVOKABLE void applyIdleWifiRadio();
     Q_INVOKABLE QStringList localIpv4Addresses() const;
     Q_INVOKABLE void refreshReleaseVersions();
     Q_INVOKABLE bool applyMainVersion(const QString &version);
@@ -213,6 +215,7 @@ private:
     QString accessPointIpAddressString() const;
     void loadNetworkSettings();
     bool wifiAlwaysEnabled() const;
+    bool setWifiRadioEnabled(bool enabled, QString *errorText = nullptr);
     bool ensureWifiReadyForSession(QString *errorText = nullptr);
     void cleanupWifiAfterSession();
     bool invokeUploadFirewallGuard(const QString &action, QString *errorText = nullptr) const;
