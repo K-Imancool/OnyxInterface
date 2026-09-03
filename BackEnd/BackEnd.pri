@@ -45,7 +45,8 @@ HEADERS += \
     $$PWD/uartqmlbridge.h \
     $$PWD/userprogloader.h \
     $$PWD/userprogtransfercontroller.h \
-    $$PWD/systemmonitor.h 
+    $$PWD/systemmonitor.h \
+    $$PWD/gpiomonitor.h 
 
 SOURCES += \
     $$PWD/dblocale.cpp \
@@ -82,7 +83,8 @@ SOURCES += \
     $$PWD/uartqmlbridge.cpp \
     $$PWD/userprogloader.cpp \
     $$PWD/userprogtransfercontroller.cpp \
-    $$PWD/systemmonitor.cpp 
+    $$PWD/systemmonitor.cpp \
+    $$PWD/gpiomonitor.cpp 
 
 RESOURCES += \
     $$PWD/backend.qrc

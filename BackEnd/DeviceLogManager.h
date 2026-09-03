@@ -23,7 +23,8 @@ public:
         ServiceReboot = 3,
         PowerOffCancelled = 4,
         PowerOffFailed = 5,
-        RebootFailed = 6
+        RebootFailed = 6,
+        EmergencyPowerLoss = 7  ///< GPIO0_D5 LOW ≥ 100 мс, компактная запись P|7
     };
 
     explicit DeviceLogManager(JsonStorage *jsonStorage,
@@ -81,7 +82,7 @@ private:
     void migrateLegacyLogFile() const;
     bool isDailyLogOverSizeLimit(const QString &filePath) const;
     void appendEvent(const QString &category, const QString &message);
-    void appendCompactEvent(const QStringList &fields);
+    void appendCompactEvent(const QStringList &fields, bool syncToDisk = false);
     void appendBootEvent(const QString &deviceType,
                          const QString &serialNumber,
                          qint64 runtimeMs,

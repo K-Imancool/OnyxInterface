@@ -8,6 +8,7 @@
 #include "BackEnd/controlcenter.h"
 #include "BackEnd/instrimageprovider.h"
 #include "BackEnd/systemmonitor.h"
+#include "BackEnd/gpiomonitor.h"
 #include "BackEnd/keygenerator.h"
 #include "BackEnd/onyxapp.h"
 #include "qqmlcontext.h"
@@ -246,6 +247,23 @@ int main(int argc, char *argv[])
     QSharedPointer<ControlCenter> ctrl  = QSharedPointer<ControlCenter>::create(nullptr);
 
     SystemMonitor *sysMonitor = new SystemMonitor();
+    auto *gpio0d5 = new GpioMonitor(
+                QStringLiteral("GPIO0_D5"),
+                QByteArrayLiteral("gpio0"),
+                QByteArrayLiteral("fdd60000"),
+                29,   // D5 = 3*8+5; контакт J1 / 1.8 В; вход монитора питания
+                &app);
+    auto *gpio4c5 = new GpioMonitor(
+                QStringLiteral("GPIO4_C5"),
+                QByteArrayLiteral("gpio4"),
+                QByteArrayLiteral("fe770000"),
+                21,   // C5 = 2*8+5; только наблюдение уровня
+                &app);
+    // HIGH = питание в норме, LOW ≥ 100 мс = авария. start() — после DeviceLog,
+    // иначе P|7 некуда писать. Диалог на дисплее не показываем: HDMI уже погас.
+    gpio0d5->setLowHoldMs(100);
+    QObject::connect(gpio0d5, &GpioMonitor::lowHeld,
+                     ctrl.data(), &ControlCenter::onEmergencyPowerLoss);
     KeyGenerator *keyGen = new KeyGenerator();
 
     auto *featureUnlock = new FeatureUnlockController(&app);
@@ -265,6 +283,8 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("periphHandle", ctrl->getPeripheryHandle());
 
     engine.rootContext()->setContextProperty("sysMonitor", sysMonitor);
+    engine.rootContext()->setContextProperty("gpio0d5", gpio0d5);
+    engine.rootContext()->setContextProperty("gpio4c5", gpio4c5);
     engine.rootContext()->setContextProperty("keyGenerator", keyGen);
     engine.rootContext()->setContextProperty("dateTimeController", dateTimeController);
     engine.rootContext()->setContextProperty("translationController", translationController);
@@ -307,6 +327,10 @@ int main(int argc, char *argv[])
 
     auto *deviceLog = new DeviceLogManager(m_savedJson, ctrl->getSocketModel(), &app);
     engine.rootContext()->setContextProperty(QStringLiteral("deviceLog"), deviceLog);
+    ctrl->setDeviceLogManager(deviceLog);
+    // После журнала: 100 мс LOW на GPIO0_D5 сразу даст P|7, а не пустой logPowerOff.
+    gpio0d5->start();
+    gpio4c5->start();
     // beginSession — после firstFrame (запись на диск не блокирует меню)
 
     // Тяжёлые сервисы сервиса/обновлений — создаём после firstFrame

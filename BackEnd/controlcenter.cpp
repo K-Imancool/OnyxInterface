@@ -624,6 +624,27 @@ void ControlCenter::shutdownSystemFromUi()
     shutdownSystem();
 }
 
+void ControlCenter::onEmergencyPowerLoss()
+{
+    // Дисплей к этому моменту уже без сигнала — powerOffConfirmationRequested
+    // и UART-подтверждение не показываем. Только журнал и systemctl poweroff.
+    if (m_shutdownStarted) {
+        return;
+    }
+
+    m_powerOffConfirmationActive = false;
+    m_powerOffRequested = true;
+    if (m_periphery) {
+        m_periphery->setEnableActivation(false);
+    }
+    if (m_deviceLog) {
+        m_deviceLog->finalizeSession();
+    }
+    logPowerOff(DeviceLogManager::EmergencyPowerLoss);
+    qInfo("GPIO0_D5: аварийное выключение питания");
+    shutdownSystem();
+}
+
 void ControlCenter::resetSystemFromUi()
 {
     if (m_shutdownStarted) {
@@ -674,15 +695,30 @@ void ControlCenter::shutdownSystem()
 
     m_shutdownStarted = true;
 
-    if (QProcess::startDetached(QStringLiteral("systemctl"), QStringList{QStringLiteral("poweroff")})) {
-        return;
+    // --no-block: при аварии питания systemctl poweroff иначе может не вернуться.
+    // User-сервис: polkit login1.power-off для kikorik (см. roc-rk3566-zero-install).
+    const QList<QPair<QString, QStringList>> powerOffActions = {
+        {QStringLiteral("/usr/bin/systemctl"), {QStringLiteral("poweroff"), QStringLiteral("--no-block")}},
+        {QStringLiteral("systemctl"), {QStringLiteral("poweroff"), QStringLiteral("--no-block")}},
+        {QStringLiteral("/usr/bin/loginctl"), {QStringLiteral("poweroff")}},
+        {QStringLiteral("loginctl"), {QStringLiteral("poweroff")}},
+        {QStringLiteral("/sbin/shutdown"), {QStringLiteral("-h"), QStringLiteral("now")}},
+        {QStringLiteral("shutdown"), {QStringLiteral("-h"), QStringLiteral("now")}},
+        {QStringLiteral("/sbin/poweroff"), {}},
+        {QStringLiteral("poweroff"), {}},
+    };
+
+    for (const auto &action : powerOffActions) {
+        qInfo("poweroff: запуск %s %s",
+              qPrintable(action.first),
+              qPrintable(action.second.join(QLatin1Char(' '))));
+        if (QProcess::startDetached(action.first, action.second)) {
+            return;
+        }
+        qWarning("poweroff: не удалось стартовать %s", qPrintable(action.first));
     }
-    if (QProcess::startDetached(QStringLiteral("shutdown"), QStringList{QStringLiteral("-h"), QStringLiteral("now")})) {
-        return;
-    }
-    if (QProcess::startDetached(QStringLiteral("poweroff"), QStringList{})) {
-        return;
-    }
+
+    logPowerOff(DeviceLogManager::PowerOffFailed);
 
     logPowerOff(DeviceLogManager::PowerOffFailed);
 }

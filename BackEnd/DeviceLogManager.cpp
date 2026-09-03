@@ -11,8 +11,13 @@
 #include <QMutexLocker>
 #include <QHash>
 #include <QTextStream>
+#include <QDebug>
 
 #include <algorithm>
+
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
 
 namespace {
 const char *kTotalRuntimeMsKey = "totalRuntimeMs";
@@ -459,7 +464,7 @@ void DeviceLogManager::appendEvent(const QString &category, const QString &messa
         << Qt::endl;
 }
 
-void DeviceLogManager::appendCompactEvent(const QStringList &fields)
+void DeviceLogManager::appendCompactEvent(const QStringList &fields, bool syncToDisk)
 {
     if (fields.isEmpty()) {
         return;
@@ -467,16 +472,19 @@ void DeviceLogManager::appendCompactEvent(const QStringList &fields)
 
     QMutexLocker locker(&m_mutex);
     if (!ensureLogDir()) {
+        qWarning("DeviceLog: не удалось создать каталог журнала");
         return;
     }
 
     const QString filePath = logFilePathForDate(QDate::currentDate());
     if (isDailyLogOverSizeLimit(filePath)) {
+        qWarning("DeviceLog: дневной журнал превысил лимит, запись пропущена");
         return;
     }
 
     QFile file(filePath);
     if (!file.open(QIODevice::Append | QIODevice::Text)) {
+        qWarning("DeviceLog: не удалось открыть %s", qPrintable(filePath));
         return;
     }
 
@@ -485,6 +493,15 @@ void DeviceLogManager::appendCompactEvent(const QStringList &fields)
         << QLatin1Char('|')
         << fields.join(QLatin1Char('|'))
         << Qt::endl;
+    out.flush();
+    file.flush();
+    if (syncToDisk) {
+#ifdef Q_OS_UNIX
+        if (file.handle() >= 0) {
+            ::fsync(file.handle());
+        }
+#endif
+    }
 }
 
 void DeviceLogManager::appendBootEvent(const QString &deviceType,
@@ -522,10 +539,11 @@ void DeviceLogManager::appendActivationEvent(const ActivationInfo &activation,
 
 void DeviceLogManager::appendPowerOffEvent(quint8 reasonCode)
 {
+    // Компактный журнал: P|<код>. Код 7 — авария по GPIO0_D5. fsync: питание уже падает.
     appendCompactEvent({
         QStringLiteral("P"),
         QString::number(reasonCode)
-    });
+    }, true);
 }
 
 void DeviceLogManager::appendWarningEvent(quint8 warningCode,
@@ -919,6 +937,8 @@ QString DeviceLogManager::powerOffTextForCode(int code) const
         return QStringLiteral("Не удалось запустить системную команду выключения");
     case RebootFailed:
         return QStringLiteral("Не удалось запустить системную команду перезагрузки");
+    case EmergencyPowerLoss:
+        return QStringLiteral("Аварийное выключение: пропадание питания");
     default:
         return QStringLiteral("Причина выключения: код %1").arg(code);
     }

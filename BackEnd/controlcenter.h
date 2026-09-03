@@ -123,6 +123,8 @@ signals:
 
 public slots:
     void onPowerOffCommand();
+    /// GPIO0_D5 LOW 100 мс: журнал P|7 и poweroff без диалога на экране.
+    void onEmergencyPowerLoss();
 
 private slots:
     void shutdownSystem();
