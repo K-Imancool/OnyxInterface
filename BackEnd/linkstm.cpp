@@ -10,6 +10,16 @@
 namespace {
 
 constexpr quint8 kAutoModeSprayM1M2 = 3;
+constexpr quint8 kAutoModeAutoStartStop = 2;
+
+int bipolarAccSocketId(const SocketState sockets[4])
+{
+    if (sockets[0].autoMode == kAutoModeAutoStartStop)
+        return 0;
+    if (sockets[1].autoMode == kAutoModeAutoStartStop)
+        return 1;
+    return -1;
+}
 
 bool isEndoCutModeId(int modeId)
 {
@@ -449,42 +459,53 @@ void LinkStm::sendCommand()
         //______________Подготовка активации________________
         if (m_comState == START_ACTIVATION) {
             m_comState = IDLE;
-            activeSocket = determineSocket(m_unitState.pedalKnob);
-
-            if (activeSocket.isCut) {
-                mode = m_socketList[activeSocket.id].cutModeNum;
-                power = m_socketList[activeSocket.id].cutModePower;
-                if (isEndoCutModeId(m_socketList[activeSocket.id].cutModeId)) {
-                    power = packEndoActivationPower(m_socketList[activeSocket.id].cutModeId, power);
-                }
+            if (m_unitState.tissueGrab) {        // Захват ткани в АСС
+                const int accId = bipolarAccSocketId(m_socketList);
+                activeSocket.autoMode = true;
+                activeSocket.isCut = false;
+                activeSocket.is3rdKnob = false;
+                activeSocket.isEnable = accId >= 0;
+                activeSocket.id = accId >= 0 ? static_cast<quint8>(accId) : 99;
+            } else {
+                activeSocket = determineSocket(m_unitState.pedalKnob);
             }
-            else {
-                mode = m_socketList[activeSocket.id].coagModeNum;
-                power = m_socketList[activeSocket.id].coagModePower;
 
-                const bool sprayM1M2Active = (m_socketList[2].autoMode == kAutoModeSprayM1M2);
-                const PedalKnobPressed knob = m_unitState.pedalKnob;
-                if (sprayM1M2Active
-                        && (knob == PRESS_MONO1_B || knob == PRESS_MONO2_B)) {
-                    mode = m_socketList[2].coagModeNum;
-                    power = m_socketList[2].coagModePower;
-                }
-            }
-            const bool modeAllowed = mode != 0 && mode != ESHF::NO_MODE;
-            if (m_enableActivation && modeAllowed && (power > 0) && (power <= 400)) {
-                    activeSocket.autoMode = m_socketList[activeSocket.id].autoMode > 0 ? true : false;
-                    QElapsedTimer m_elapsedTimer;
-                    m_elapsedTimer.start();
-                    emit sigActivationStartedDetails(activeSocket.id, activeSocket.isCut,
-                                                     mode, power, activeSocket.autoMode,
-                                                     static_cast<quint8>(m_unitState.pedalKnob));
-                    emit sigStartActivation(activeSocket.id, activeSocket.isCut);
-                    qint64 afterEmit = m_elapsedTimer.elapsed();
-                    if (afterEmit > 5) {
-                        qDebug() << "Activation emit took" << (afterEmit) << "ms";
+            if (activeSocket.id < 4) {
+                if (activeSocket.isCut) {
+                    mode = m_socketList[activeSocket.id].cutModeNum;
+                    power = m_socketList[activeSocket.id].cutModePower;
+                    if (isEndoCutModeId(m_socketList[activeSocket.id].cutModeId)) {
+                        power = packEndoActivationPower(m_socketList[activeSocket.id].cutModeId, power);
                     }
+                }
+                else {
+                    mode = m_socketList[activeSocket.id].coagModeNum;
+                    power = m_socketList[activeSocket.id].coagModePower;
+
+                    const bool sprayM1M2Active = (m_socketList[2].autoMode == kAutoModeSprayM1M2);
+                    const PedalKnobPressed knob = m_unitState.pedalKnob;
+                    if (sprayM1M2Active
+                            && (knob == PRESS_MONO1_B || knob == PRESS_MONO2_B)) {
+                        mode = m_socketList[2].coagModeNum;
+                        power = m_socketList[2].coagModePower;
+                    }
+                }
+                const bool modeAllowed = mode != 0 && mode != ESHF::NO_MODE;
+                if (m_enableActivation && modeAllowed && (power > 0) && (power <= 400)) {
+                        activeSocket.autoMode = m_socketList[activeSocket.id].autoMode > 0 ? true : false;
+                        QElapsedTimer m_elapsedTimer;
+                        m_elapsedTimer.start();
+                        emit sigActivationStartedDetails(activeSocket.id, activeSocket.isCut,
+                                                         mode, power, activeSocket.autoMode,
+                                                         static_cast<quint8>(m_unitState.pedalKnob));
+                        emit sigStartActivation(activeSocket.id, activeSocket.isCut);
+                        qint64 afterEmit = m_elapsedTimer.elapsed();
+                        if (afterEmit > 5) {
+                            qDebug() << "Activation emit took" << (afterEmit) << "ms";
+                        }
 //                    qDebug() << "Activation " << mode << power;
-                    m_comState = ACTIVATION;
+                        m_comState = ACTIVATION;
+                }
             }
         }
         //__________________Команда активации_________________
@@ -790,9 +811,23 @@ void LinkStm::readRxCommand()
         unitState.neutraElConnected = m_rxCommand.com & 0x01 ? true : false;
 
 //        qDebug() << "баллон 1: " << unitState.argonCylinder1 << " баллон 2: " << unitState.argonCylinder2;
-
+        // Обрабатываем захват ткани в режимах АСС
+        if (unitState.tissueGrab && bipolarAccSocketId(m_socketList) >= 0) {
+            if (!m_activationInputConsumedUntilRelease
+                && m_enableActivation
+                && !m_neutralResistPollEnabled
+                && m_comState != ACTIVATION) {
+                m_activationInputConsumedUntilRelease = true;
+                m_comState = START_ACTIVATION;
+                qDebug() << "Autostart Ткань Захвачена, мой Генерал!";
+//                    qDebug() << m_rxCommand.com << " " << getHexStr(m_rxCommand.data);
+            } else {
+//                    qDebug() << "m_comState is ACTIVATION, not setting START_ACTIVATION";
+            }
+            break;
+        }
         // Преобразуем байт в enum PedalKnobPressed
-        if (!m_rxCommand.data.isEmpty() && m_comState != ACTIVATION) {
+        else if (!m_rxCommand.data.isEmpty() && m_comState != ACTIVATION) {
             quint8 pressValue = static_cast<quint8>(m_rxCommand.data.at(0));
 
             // Проверяем, соответствует ли значение одному из допустимых enum

@@ -166,10 +166,7 @@ Item {
             z: 0
 
             onPressed: function(mouse) {
-                var socketId = activationIndicator.activeSocketId
-                if (socketId >= 0 && periphHandle.autoMode(socketId) === 2) {
-                    appControl.stopActivation()
-                }
+                activationIndicator.stopIfAccTouch()
                 mouse.accepted = true
             }
 

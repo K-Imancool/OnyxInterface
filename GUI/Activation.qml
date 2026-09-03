@@ -11,6 +11,7 @@ Popup {
     property bool isCoag: false
     property bool isEndo: false
     property int activeSocketId: -1
+    readonly property int autoModeAcc: 2
 
     readonly property color foregroundColor: isCoag ? "white" : "black"
     readonly property color foregroundOutlineColor: isCoag ? "black" : "white"
@@ -21,8 +22,32 @@ Popup {
     padding: 0
     Overlay.modal: Item {}
 
+    function stopIfAccTouch() {
+        if (activeSocketId >= 0 && periphHandle.autoMode(activeSocketId) === autoModeAcc)
+            appControl.stopActivation()
+    }
+
     onClosed: {
         activeSocketId = -1
+    }
+
+    // Popup рисуется в Overlay поверх WorkScreen; без этого касание вне плашки
+    // глотается модальным слоем и не останавливает АСС.
+    MouseArea {
+        parent: Overlay.overlay
+        anchors.fill: parent
+        z: 1000000
+        enabled: activationPopup.opened
+        visible: activationPopup.opened
+        propagateComposedEvents: false
+        preventStealing: true
+
+        onPressed: function(mouse) {
+            activationPopup.stopIfAccTouch()
+            mouse.accepted = true
+        }
+        onReleased: function(mouse) { mouse.accepted = true }
+        onClicked: function(mouse) { mouse.accepted = true }
     }
 
     MouseArea {
@@ -31,10 +56,7 @@ Popup {
         preventStealing: true
 
         onPressed: function(mouse) {
-            if (activationPopup.activeSocketId >= 0
-                    && periphHandle.autoMode(activationPopup.activeSocketId) === 2) {
-                appControl.stopActivation()
-            }
+            activationPopup.stopIfAccTouch()
             mouse.accepted = true
         }
 

@@ -110,8 +110,8 @@ int openNamedGpioChip(const QByteArray &chipLabel,
                 .arg(info.lines);
 
         if (labelMatches(QByteArray(info.label), chipLabel, mmioPrefix)) {
-            qInfo("%s: найден контроллер %s (%s), линий %u",
-                  qPrintable(pinName), path.constData(), info.label, info.lines);
+//            qInfo("%s: найден контроллер %s (%s), линий %u",
+//                  qPrintable(pinName), path.constData(), info.label, info.lines);
             return fd;
         }
         ::close(fd);
@@ -426,8 +426,8 @@ bool GpioMonitor::requestCharDevLine()
         ::fcntl(m_lineFd, F_SETFL, flags | O_NONBLOCK);
     }
 
-    qInfo("%s: контроль линии %s offset %u запущен",
-          qPrintable(m_pinName), m_chipLabel.constData(), m_lineOffset);
+//    qInfo("%s: контроль линии %s offset %u запущен",
+//          qPrintable(m_pinName), m_chipLabel.constData(), m_lineOffset);
     return true;
 #else
     return false;
@@ -558,7 +558,7 @@ void GpioMonitor::applyValue(bool high, const char *reason)
         return;
     }
     m_high = high;
-    qInfo("%s: %s (%s)", qPrintable(m_pinName), high ? "HIGH" : "LOW", reason);
+//    qInfo("%s: %s (%s)", qPrintable(m_pinName), high ? "HIGH" : "LOW", reason);
     emit highChanged();
 }
 
@@ -649,8 +649,8 @@ void GpioMonitor::startHoldThread()
     m_holdThread = QThread::create([this]() { lowHoldLoop(); });
     m_holdThread->setObjectName(QStringLiteral("gpio-hold-%1").arg(m_pinName));
     m_holdThread->start();
-    qInfo("%s: поток выдержки LOW %d мс запущен",
-          qPrintable(m_pinName), m_lowHoldMs);
+//    qInfo("%s: поток выдержки LOW %d мс запущен",
+//          qPrintable(m_pinName), m_lowHoldMs);
 }
 
 void GpioMonitor::stopHoldThread()
