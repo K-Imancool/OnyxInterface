@@ -1,0 +1,1 @@
+kikorik ALL=(root) NOPASSWD: /usr/local/sbin/cut-vcc3v3-pcie

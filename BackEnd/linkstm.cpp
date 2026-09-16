@@ -564,11 +564,13 @@ void LinkStm::sendCommand()
                     }
                 }
                 m_txCommand.com = Allright;
-                if (m_socketList[0].autoMode == 2) {            // Режим АСС на выходе БИ1
-                    m_txCommand.com |= 1 << 2;
-                }
-                if (m_socketList[1].autoMode == 2) {            // Режим АСС на выходе БИ2
-                    m_txCommand.com |= 3 << 2;
+                if (m_enableActivation) {
+                    if (m_socketList[0].autoMode == kAutoModeAutoStartStop) {  // АСС на БИ1
+                        m_txCommand.com |= 1 << 2;
+                    }
+                    if (m_socketList[1].autoMode == kAutoModeAutoStartStop) {  // АСС на БИ2
+                        m_txCommand.com |= 3 << 2;
+                    }
                 }
                 m_txCommand.com |= m_neutralElDivided ? (1 << 1) : 0;
                 m_txCommand.com |= m_enableActivation ? 0 : 1;  // Запрет активации
@@ -654,6 +656,9 @@ void LinkStm::sendCommand()
     case GoBoot:
         // Ответ может занять до ~8 с; тик 1 с, ошибка связи — после 8 промахов
         m_uartTimer->setInterval(1000);
+        break;
+    case CurrentVersion:                    // Т.к. спрашиваем другие МК через МС, то дадим побольше времени
+        m_uartTimer->setInterval(300);
         break;
     case SoftData:
         m_uartTimer->setInterval(100);

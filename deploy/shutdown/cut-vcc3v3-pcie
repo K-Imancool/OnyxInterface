@@ -1,0 +1,50 @@
+#!/bin/sh
+# Снять 3.3 В M.2 и погасить LED.
+#   sudo /usr/local/sbin/cut-vcc3v3-pcie     — авария GPIO (halt из RAM)
+#   systemd system-shutdown halt|poweroff    — только рельс
+emergency=0
+if [ -z "${1:-}" ]; then
+  emergency=1
+  set -- poweroff
+fi
+case "$1" in
+  poweroff|halt) ;;
+  *) exit 0 ;;
+esac
+
+ram=/run/onyx-off
+if [ "$emergency" = 1 ]; then
+  mkdir -p "$ram"
+  cp /sbin/halt "$ram/halt" 2>/dev/null || cp /bin/halt "$ram/halt" 2>/dev/null || true
+  chmod 700 "$ram/halt" 2>/dev/null || true
+  # Пока NVMe жив: дать systemd снять сервисы и LED (~2 с на ионисторах).
+  sleep 2
+fi
+
+for t in /sys/class/leds/*/trigger; do
+  echo none > "$t" 2>/dev/null || true
+done
+for b in /sys/class/leds/*/brightness; do
+  echo 0 > "$b" 2>/dev/null || true
+done
+
+for d in /sys/bus/pci/devices/*/remove; do
+  [ -w "$d" ] || continue
+  echo 1 > "$d" 2>/dev/null || true
+done
+
+dev=/sys/bus/platform/devices/3c0000000.pcie
+if [ -e "$dev/driver" ]; then
+  drv=$(readlink -f "$dev/driver")
+  echo 3c0000000.pcie > "$drv/unbind" 2>/dev/null || true
+fi
+
+for r in /sys/class/regulator/regulator.*; do
+  [ -r "$r/name" ] || continue
+  [ "$(cat "$r/name" 2>/dev/null)" = "vcc3v3_pcie_p" ] || continue
+  echo 0 > "$r/enable" 2>/dev/null || true
+done
+
+if [ "$emergency" = 1 ] && [ -x "$ram/halt" ]; then
+  exec "$ram/halt" -f
+fi
