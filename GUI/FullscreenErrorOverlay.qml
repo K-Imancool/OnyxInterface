@@ -6,6 +6,8 @@ Rectangle {
     property bool dismissedBySecret: false
     property bool latchedCritical: false
     property var latchedCodes: []
+    // На стартовом меню не перехватываем тач: ошибки видны баннерами, кнопки должны работать.
+    property bool blockInput: true
 
     readonly property bool fullscreenOn: typeof periphHandle !== "undefined"
                                          && periphHandle
@@ -32,8 +34,8 @@ Rectangle {
                                           && !dismissedBySecret
                                           && (liveVisible || latchedCritical)
 
-    visible: overlayActive
-    enabled: overlayActive
+    visible: overlayActive && blockInput
+    enabled: overlayActive && blockInput
     color: "#AAFFFFFF"
 
     function codesHaveCritical(codes) {
@@ -157,12 +159,17 @@ Rectangle {
     }
 
     MouseArea {
+        objectName: "fullscreenTouchBlocker"
         anchors.fill: parent
         z: 10
-        enabled: overlayRoot.visible
+        enabled: overlayRoot.visible && overlayRoot.blockInput
         hoverEnabled: true
         preventStealing: true
-        onPressed: function(mouse) { mouse.accepted = true }
+        onPressed: function(mouse) {
+            if (typeof touchDebug !== "undefined" && touchDebug)
+                console.warn("fullscreenTouchBlocker pressed", mouse.x, mouse.y)
+            mouse.accepted = true
+        }
         onReleased: function(mouse) { mouse.accepted = true }
         onClicked: function(mouse) { mouse.accepted = true }
     }

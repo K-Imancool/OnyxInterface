@@ -44,7 +44,7 @@ Drawer {
             horizontalAlignment: Qt.AlignHCenter
             text: qsTr("НАСТРОЙКА ГАЗОВОГО ТРАКТА")
             color: fotekBlue
-            font.pixelSize: 24
+            font.pixelSize: 30
             font.bold: true
         }
 
@@ -131,11 +131,13 @@ Drawer {
 
         contentItem: Text {
             text: qsTr("X")
-            font.pixelSize: 34
+            font.pixelSize: 32
             font.bold: true
-            color: fotekBlue
+            color: "black"
+//            color: fotekBlue
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
+            visible: false          // сделал невидимой, а то плохо смотрится
         }
     }
 

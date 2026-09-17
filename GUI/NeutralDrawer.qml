@@ -273,6 +273,7 @@ Drawer {
             color: fotekBlue
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
+            visible: false              // Сделал невидимой, для совпадения с ArgonDrawer
         }
     }
 

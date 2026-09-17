@@ -10,7 +10,7 @@ Item {
 
     readonly property bool modeSelected: editorRoot && editorRoot.modeSelectedInSide(isCoagSide)
     readonly property bool instrSelected: editorRoot && editorRoot.instrumentSelectedInSide(isCoagSide)
-    readonly property string displayName: instrSelected ? sideState.instrName : qsTr("Другой инструмент")
+    readonly property string displayName: instrSelected ? sideState.instrName : qsTr("Выбрать инструмент")
     readonly property int nameMaxFont: 30
     readonly property int nameMinFont: 16
 

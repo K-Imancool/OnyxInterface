@@ -674,7 +674,7 @@ Rectangle {
                 Label {
                     Layout.fillWidth: true
                     text: recProgs.pendingDeleteIsScope
-                          ? qsTr("Область \"%1\" будет удалена. Продолжить?").arg(recProgs.pendingDeleteName)
+                          ? qsTr("Папка \"%1\" будет удалена. Продолжить?").arg(recProgs.pendingDeleteName)
                           : qsTr("Программа \"%1\" будет удалена. Продолжить?").arg(recProgs.pendingDeleteName)
                     horizontalAlignment: Qt.AlignHCenter
                     wrapMode: Text.WordWrap
@@ -710,7 +710,7 @@ Rectangle {
                 DialogActionButton {
                     Layout.preferredWidth: 240
                     Layout.fillHeight: true
-                    text: qsTr("ПРИНЯТЬ")
+                    text: qsTr("УДАЛИТЬ")
                     primary: true
                     labelPixelSize: 34
                     onPressed: {
@@ -740,7 +740,7 @@ Rectangle {
         height: 360
         x: parent ? (parent.width - width) / 2 : 0
         y: 80
-        title: qsTr("Новая папка")
+        title: qsTr("НОВАЯ ПАПКА")
         Overlay.modal: Rectangle {
             color: "#70000000"
         }

@@ -49,7 +49,8 @@ Item {
     Rectangle {
         id: background
         anchors.fill: parent
-        color: "darkslategray"
+        color: "#F3F5F9"
+//        color: "darkslategray"
     }
     
     SLabel {

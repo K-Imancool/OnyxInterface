@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 
 Window {
 	id: container
+	objectName: "rootWindow"
 	width: 1280
 	height: 800
 	visible: true
@@ -511,8 +512,14 @@ Window {
         restoreCurrentProgramInfo()
         refreshArgonAvailability()
         activationEnable()
-        Qt.callLater(ensureWorkScreenLoading)
         Qt.callLater(maybePromptArgonModuleFault)
+    }
+
+    Timer {
+        interval: 50
+        running: true
+        repeat: false
+        onTriggered: container.ensureWorkScreenLoading()
     }
 
     onStartupScreenChanged: activationEnable()
@@ -578,18 +585,31 @@ Window {
         }
     }
 
+    Binding {
+        target: Overlay.overlay
+        property: "enabled"
+        value: !container.startupFlowVisible
+    }
+
     Item {
         id: startupOverlay
+        objectName: "startupOverlay"
         anchors.fill: parent
         z: 20000
         visible: startupFlowVisible
         enabled: startupFlowVisible
 
         MouseArea {
+            id: startupTouchShield
+            objectName: "startupTouchShield"
             anchors.fill: parent
             propagateComposedEvents: true
             z: 0
-            onPressed: function(mouse) { mouse.accepted = true }
+            onPressed: function(mouse) {
+                if (typeof touchDebug !== "undefined" && touchDebug)
+                    console.warn("startupTouchShield pressed", mouse.x, mouse.y)
+                mouse.accepted = true
+            }
             onReleased: function(mouse) { mouse.accepted = true }
             onClicked: function(mouse) { mouse.accepted = true }
 
@@ -655,12 +675,14 @@ Window {
                         container.showStartupScreen("userProgramList")
                     }
                     function onFreeSettingsButtonPressed() {
+                        container.ensureWorkScreenLoading()
                         recomHandle.loadEmptyFreeSettings()
                         container.setCurrentProgramTitle(qsTr("СВОБОДНЫЕ УСТАНОВКИ"), "free")
                         container.resetUnsavedChanges()
                         container.showMainScreen()
                     }
                     function onLastSettingsButtonPressed() {
+                        container.ensureWorkScreenLoading()
                         recomHandle.loadLastSettings()
                         if (!container.restoreCurrentProgramInfo()) {
                             container.setCurrentProgramTitle(qsTr("Последние установки"), "last")
@@ -740,13 +762,51 @@ Window {
                 }
             }
         }
+
+        Rectangle {
+            id: workScreenLoadBar
+            anchors {
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+            }
+            height: 10
+            z: 1000
+            color: "#D7DCE6"
+            visible: container.workScreenLoadStarted && !container.workReady
+            clip: true
+
+            Rectangle {
+                id: workScreenLoadBarFill
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+                width: 0
+                color: container.fotekBlue
+
+                SequentialAnimation on width {
+                    running: workScreenLoadBar.visible
+                    loops: Animation.Infinite
+                    NumberAnimation {
+                        from: 0
+                        to: workScreenLoadBar.width
+                        duration: 4000
+                        easing.type: Easing.InOutCubic
+                    }
+                    PauseAnimation { duration: 150 }
+                }
+            }
+        }
     }
 
     FullscreenErrorOverlay {
         id: fullscreenErrorOverlay
-        parent: Overlay.overlay ? Overlay.overlay : container
+        objectName: "fullscreenErrorOverlay"
         anchors.fill: parent
         z: 500000
+        blockInput: !container.startupFlowVisible
     }
 
     ArgonModuleFaultDialog {
@@ -784,7 +844,7 @@ Window {
     // Индикация поверх Popup/Drawer: не перехватывает тач (enabled: false).
     Item {
         id: globalHudLayer
-        parent: Overlay.overlay ? Overlay.overlay : container
+        objectName: "globalHudLayer"
         anchors.fill: parent
         z: 1000000
         enabled: false
@@ -856,12 +916,14 @@ Window {
 
         Column {
             id: warningList
+            objectName: "warningList"
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             anchors.topMargin: 83
             spacing: 8
             visible: periphHandle.activationStopWarningVisible
-                     && !periphHandle.fullscreenErrorsEnabled
+                     && (!periphHandle.fullscreenErrorsEnabled
+                         || container.startupFlowVisible)
 
             Repeater {
                 model: periphHandle.activationStopWarningCodes

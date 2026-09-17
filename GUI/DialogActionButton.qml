@@ -6,7 +6,7 @@ Button {
 
     property bool primary: false
     property color primaryEnabledColor: "#2E7D32"
-    property color primaryDisabledColor: "#2E7D3270"
+    property color primaryDisabledColor: "#702E7D32"
     property color primaryBorderColor: "transparent"
     property int primaryBorderWidth: 0
     property color secondaryColor: "#808080"

@@ -214,17 +214,17 @@ void makeModes(QMap<int, SurgModePtr>& container,
                bool skipInstrFilter = false) {
 	int start = isCoag ? 6 : 3;
 
-	container.insert(ESHF::NO_MODE, SurgModePtr::create(QCoreApplication::translate("Modes", "НЕ ВЫБРАН"),
+    container.insert(ESHF::NO_MODE, SurgModePtr::create(QCoreApplication::translate("Modes", "НЕ ВЫБРАН"),
                                                                    isCoag,
-	                                           1,
-	                                           1,
-	                                           ESHF::NO_MODE,
-	                                           std::map<int, InstrInfo>(),
-	                                           ESHF::NO_MODE,
-	                                           "",
-	                                           "",
-	                                           false,
-	                                           false));  // Num = 1000, Brief = "", Descript = "", isEndo = false, isArgon = false
+                                               1,
+                                               1,
+                                               ESHF::NO_MODE,
+                                               std::map<int, InstrInfo>(),
+                                               ESHF::NO_MODE,
+                                               "",
+                                               "",
+                                               false,
+                                               false));  // Num = 1000, Brief = "", Descript = "", isEndo = false, isArgon = false
 
 
 	for (const auto& item : modes) {

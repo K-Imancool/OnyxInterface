@@ -157,6 +157,25 @@ Rectangle {
         // z: 1
 //        visible: !showControls
         
+        Rectangle {
+            anchors.top: parent.top
+            anchors.topMargin: 30
+            visible: showControls && !anyCylinderConnected
+            height: 50
+            width: parent.width
+            color: "#DDDDDD"
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("ПОДКЛЮЧИТЕ БАЛЛОН!")
+                font.pixelSize: 30
+                font.bold: true
+                color: "black"
+//                color: fotekBlue
+            }
+        }
+
         // Иконка баллона
         Text {
             id: realFlowLabel
@@ -172,10 +191,10 @@ Rectangle {
         Text {
             id: arLabel
             anchors.top: parent.top
-            anchors.topMargin: showControls ? 120 : Math.round(7 * compactLayoutScale)
+            anchors.topMargin: showControls ? 150 : Math.round(7 * compactLayoutScale)
             anchors.horizontalCenter: parent.horizontalCenter
             text: showControls ? qsTr("РАСХОД АРГОНА") : qsTr("АРГОН")
-            font.pixelSize: showControls ? 24 : Math.round(18 * compactLayoutScale)
+            font.pixelSize: showControls ? 32 : Math.round(18 * compactLayoutScale)
             font.bold: true
             color: showControls ? fotekBlue : argonRoot.compactLabelColor
         }
@@ -186,7 +205,7 @@ Rectangle {
             width: showControls ? 120 : compactCylinderWidth
             height: showControls ? (step * 20) : compactCylinderHeight
             anchors.top: showControls ? parent.top : arLabel.bottom
-            anchors.topMargin: showControls ? 80 : Math.round(6 * compactLayoutScale)
+            anchors.topMargin: showControls ? 110 : Math.round(6 * compactLayoutScale)
             x: showControls ? 20 : Math.round(2 * compactLayoutScale)
             cylConnected: cylinder1Connected
             cylSelected: activCylinderFirst
@@ -296,7 +315,7 @@ Rectangle {
                 anchors.topMargin: showControls ? 0 : -15
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: argonRoot.formatFlowRate(argonRoot.displayedArgonRate)
-                font.pixelSize: 56
+                font.pixelSize: showControls ? 66 : 56
 //                font.pixelSize: step * 3
                 font.bold: true
                 // В развернутом виде — тёмный текст, в свернутом (PeripheryPanel) — светлый для тёмного фона
@@ -310,8 +329,8 @@ Rectangle {
                 anchors.topMargin: showControls ? 20 : -10
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("л/мин")
-                font.pixelSize: 24
-//                font.pixelSize: showControls ? 20 : Math.round(20 * compactLayoutScale)
+//                font.pixelSize: 24
+                font.pixelSize: showControls ? 30 : 24
                 font.bold: true
                 color: argonRoot.showControls ? fotekBlue: argonRoot.compactLabelColor
             }
@@ -385,7 +404,7 @@ Rectangle {
             width: firstCylinder.width
             height: firstCylinder.height
             anchors.top: showControls ? parent.top : arLabel.bottom
-            anchors.topMargin: showControls ? 80 : Math.round(7 * compactLayoutScale)
+            anchors.topMargin: showControls ? 110 : Math.round(7 * compactLayoutScale)
             x: showControls ? (parent.width - width - 20)
                             : (parent.width - width - Math.round(2 * compactLayoutScale))
             isFirst: false;
@@ -405,17 +424,6 @@ Rectangle {
             }
         }
 
-        Text {
-            anchors.top: firstCylinder.bottom
-            anchors.topMargin: 16
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: showControls && !anyCylinderConnected
-            text: qsTr("ПОДКЛЮЧИТЕ БАЛЛОН")
-            font.pixelSize: 22
-            font.bold: true
-            color: fotekBlue
-        }
-        
         Column {
             id: blowProgressBlock
             width: blowButton.width

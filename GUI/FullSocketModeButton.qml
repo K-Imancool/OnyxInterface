@@ -49,7 +49,7 @@ Item {
         Label {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: modeSelected ? sideState.modeName : qsTr("Выберите режим")
+            text: modeSelected ? sideState.modeName : qsTr("Выбрать режим")
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter

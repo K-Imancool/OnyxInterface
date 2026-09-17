@@ -37,6 +37,11 @@ Popup {
     property var displayToBackend: []
     property int displayIndex: -1
     property int endoVariant: 1
+    property bool detailsExpanded: false
+
+    readonly property bool hasModeDescript: String(modeEditor.modeDescript).trim().length > 0
+
+    onDisplayIndexChanged: detailsExpanded = false
 
     readonly property int endoCutIdFirst: ESHF.ENDO_I_0
     readonly property int endoCutIdLast: ESHF.ENDO_P_FORCE_3
@@ -143,7 +148,15 @@ Popup {
                     return di
             }
         }
-        return backendIndex >= 0 ? backendIndex : 0
+        return -1
+    }
+
+    function noModeBackendIndex() {
+        for (var i = 0; i < itemIdArr.length; i++) {
+            if (parseInt(itemIdArr[i]) === ESHF.NO_MODE)
+                return i
+        }
+        return -1
     }
 
     function pinEndoGroupListAppearance() {
@@ -233,10 +246,12 @@ Popup {
     function deselectMode() {
         if (openingInProgress)
             return
-        var idx = combinedModel.count - 1
+        var idx = noModeBackendIndex()
         if (idx < 0)
             return
-        modeListView.selectIndex(idx)
+        modeEditor.currentModeIndex = idx
+        displayIndex = -1
+        modeListView.curIndex = -1
     }
 
     function updateModel() {
@@ -252,6 +267,8 @@ Popup {
         var groupDisplayIndex = ({})
         for (var i = 0; i < itemIdArr.length; i++) {
             var id = parseInt(itemIdArr[i])
+            if (id === ESHF.NO_MODE)
+                continue
             if (isEndoCutId(id)) {
                 var key = endoCutGroupKey(id)
                 var variant = endoCutVariantOf(id)
@@ -314,6 +331,7 @@ Popup {
 
     onOpened: {
         openingInProgress = true
+        detailsExpanded = false
         modeEditor.initialize(socId, modeIndex, isCoag)
 
         itemNameArr = modeEditor.modeNames
@@ -328,11 +346,18 @@ Popup {
             idx = 0
 
         var di = displayIndexForBackend(idx)
-        var info = displayToBackend[di]
-        var variant = endoCutDefaultVariant
-        if (info && info.isGroup)
-            variant = endoCutVariantOf(itemIdArr[idx])
-        applyDisplaySelection(di, variant)
+        if (di < 0) {
+            displayIndex = -1
+            modeListView.curIndex = -1
+            if (idx >= 0 && idx < itemIdArr.length)
+                modeEditor.currentModeIndex = idx
+        } else {
+            var info = displayToBackend[di]
+            var variant = endoCutDefaultVariant
+            if (info && info.isGroup)
+                variant = endoCutVariantOf(itemIdArr[idx])
+            applyDisplaySelection(di, variant)
+        }
 
         Qt.callLater(function() {
             if (modeListView.curIndex !== displayIndex)
@@ -593,10 +618,33 @@ Popup {
                     }
                 }
 
-                Rectangle {
+                DialogActionButton {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 420
+                    Layout.preferredHeight: 62
+                    Layout.maximumHeight: 62
+                    visible: root.modeSelected && !root.detailsExpanded && root.hasModeDescript
+                    text: qsTr("ПОДРОБНЕЕ")
+                    secondaryColor: "white"
+                    secondaryBorderWidth: 2
+                    secondaryBorderColor: root.fotekBlue
+                    cornerRadius: 20
+                    labelPixelSize: 30
+                    labelColor: root.fotekBlue
+                    onPressed: root.detailsExpanded = true
+                }
+
+                Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    visible: root.modeSelected
+                    visible: root.modeSelected && !root.detailsExpanded
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: root.detailsExpanded
+                    Layout.preferredHeight: root.detailsExpanded ? -1 : 138
+                    visible: root.modeSelected && (root.detailsExpanded || root.showEndoVariantButtons)
                     radius: 20
                     color: "white"
                     border.width: 1
@@ -610,6 +658,7 @@ Popup {
                         Label {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
+                            visible: root.detailsExpanded
                             text: modeEditor.modeDescript
                             color: root.fotekBlue
                             font.pixelSize: 24

@@ -283,6 +283,7 @@ Item {
         anchors.fill: parent
         z: 1000
         active: settingsScreen.videoPlayerVisible && qmlGlAvailable
+        visible: active
         source: active ? "qrc:/VideoPlayer.qml" : ""
     }
 

@@ -123,6 +123,7 @@ Item {
     // Перехват касаний по пустым зонам; дочерние кнопки/поля — через propagateComposedEvents
     MouseArea {
         id: menuTouchShield
+        objectName: "menuTouchShield"
         anchors.fill: parent
         propagateComposedEvents: true
         z: 0

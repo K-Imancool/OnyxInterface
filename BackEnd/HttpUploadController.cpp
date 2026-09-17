@@ -414,7 +414,6 @@ HttpUploadController::HttpUploadController(QObject *parent)
     m_apClientPollTimer.setInterval(2000);
     connect(&m_apClientPollTimer, &QTimer::timeout, this, &HttpUploadController::pollAccessPointClient);
     connect(m_server, &QTcpServer::newConnection, this, &HttpUploadController::onNewConnection);
-    refreshReleaseVersions();
 }
 
 void HttpUploadController::setLinkStm(LinkStm *linkStm)
@@ -446,8 +445,10 @@ void HttpUploadController::setJsonStorage(JsonStorage *storage)
     } else {
         setCurrentMediaVersion(QStringLiteral("—"));
     }
-    refreshReleaseVersions();
-    QTimer::singleShot(0, this, [this]() { applyIdleWifiRadio(); });
+    QTimer::singleShot(0, this, [this]() {
+        refreshReleaseVersions();
+        applyIdleWifiRadio();
+    });
 }
 
 void HttpUploadController::setUserProgTransfer(UserProgTransferController *transfer)
@@ -791,15 +792,69 @@ bool HttpUploadController::setWifiRadioEnabled(bool enabled, QString *errorText)
     return false;
 }
 
+void HttpUploadController::startIdleWifiRadio(bool enabled)
+{
+    if (m_idleWifiRadioProcess) {
+        return;
+    }
+
+    const QString nmcliPath = QStandardPaths::findExecutable(QStringLiteral("nmcli"));
+    if (nmcliPath.isEmpty()) {
+        qWarning() << "HttpUploadController: idle Wi-Fi radio skipped, nmcli не найден";
+        return;
+    }
+
+    auto *proc = new QProcess(this);
+    m_idleWifiRadioProcess = proc;
+    proc->setProgram(nmcliPath);
+    proc->setArguments({
+        QStringLiteral("radio"),
+        QStringLiteral("wifi"),
+        enabled ? QStringLiteral("on") : QStringLiteral("off")
+    });
+
+    const auto finishIdle = [this, proc]() {
+        if (proc->property("idleDone").toBool()) {
+            return;
+        }
+        proc->setProperty("idleDone", true);
+        if (m_idleWifiRadioProcess == proc) {
+            m_idleWifiRadioProcess = nullptr;
+        }
+        proc->deleteLater();
+    };
+
+    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [this, proc, enabled, finishIdle](int code, QProcess::ExitStatus status) {
+        if (status == QProcess::NormalExit && code == 0) {
+            qInfo("Wi-Fi radio %s", enabled ? "on" : "off");
+        } else {
+            qWarning() << "HttpUploadController: idle Wi-Fi radio skipped";
+        }
+        finishIdle();
+    });
+    connect(proc, &QProcess::errorOccurred, this,
+            [proc, finishIdle](QProcess::ProcessError) {
+        if (proc->state() != QProcess::NotRunning) {
+            return;
+        }
+        qWarning() << "HttpUploadController: idle Wi-Fi radio skipped:" << proc->errorString();
+        finishIdle();
+    });
+    QTimer::singleShot(5000, proc, [proc]() {
+        if (proc->state() != QProcess::NotRunning) {
+            proc->kill();
+        }
+    });
+    proc->start();
+}
+
 void HttpUploadController::applyIdleWifiRadio()
 {
     if (m_active) {
         return;
     }
-    QString error;
-    if (!setWifiRadioEnabled(wifiAlwaysEnabled(), &error) && !error.isEmpty()) {
-        qWarning() << "HttpUploadController: idle Wi-Fi radio:" << error;
-    }
+    startIdleWifiRadio(wifiAlwaysEnabled());
 }
 
 bool HttpUploadController::ensureWifiReadyForSession(QString *errorText)

@@ -21,7 +21,8 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: "#8A929E"
+        color: "#F3F5F9"
+//        color: "#8A929E"
     }
 
     Item {
@@ -107,7 +108,7 @@ Item {
                     id: hintText
                     anchors.centerIn: parent
                     width: parent.width - 32
-                    text: qsTr("При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-(A)M на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон")
+                    text: qsTr("При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-M/ONYX-AM на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон")
                     color: "black"
                     font.pixelSize: 28
                     horizontalAlignment: Text.AlignHCenter

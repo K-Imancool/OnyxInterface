@@ -1415,7 +1415,7 @@ power:</translation>
 <context>
     <name>NeutralPowerWarningDialog</name>
     <message>
-        <source>Опасность перегрева области наложения нейтрального электрода (НЭ)! Мощность выхода %1 превышает безопасный уровень для выбранного НЭ (макс %2).
+        <source>ОПАСНОСТЬ ПЕРЕГРЕВА\n в области наложения нейтрального электрода (НЭ)! Мощность выхода %1 превышает безопасный уровень для выбранного НЭ (макс %2).
 ПРОДОЛЖИТЬ с текущим уровнем мощности?
 ИЛИ
 ПОНИЗИТЬ мощность до безопасного уровня?</source>
@@ -3062,8 +3062,8 @@ After a connection is detected, the QR code will change.</translation>
         <translation>BACK</translation>
     </message>
     <message>
-        <source>При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-(A)M на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон</source>
-        <translation>To transfer your user programs from one ONYX-(A)M unit to another, use a Wi-Fi device such as a smartphone</translation>
+        <source>При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-M/ONYX-AM на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон</source>
+        <translation>To transfer your user programs from one ONYX-M/ONYX-AM unit to another, use a Wi-Fi device such as a smartphone</translation>
     </message>
     <message>
         <source>СКАЧАТЬ

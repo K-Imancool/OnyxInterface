@@ -16,6 +16,7 @@
 
 class JsonStorage;
 class LinkStm;
+class QProcess;
 class UserProgTransferController;
 
 /// Минимальный HTTP-приём файлов по Wi‑Fi (GET форма + POST multipart) для Qt 5.15.
@@ -216,6 +217,7 @@ private:
     void loadNetworkSettings();
     bool wifiAlwaysEnabled() const;
     bool setWifiRadioEnabled(bool enabled, QString *errorText = nullptr);
+    void startIdleWifiRadio(bool enabled);
     bool ensureWifiReadyForSession(QString *errorText = nullptr);
     void cleanupWifiAfterSession();
     bool invokeUploadFirewallGuard(const QString &action, QString *errorText = nullptr) const;
@@ -353,6 +355,7 @@ private:
     QHostAddress m_authorizedClientAddress;
     QTimer m_sessionTimer;
     QTimer m_apClientPollTimer;
+    QProcess *m_idleWifiRadioProcess = nullptr;
     quint64 m_sessionGeneration = 0;
 
     enum class LogArchiveState {

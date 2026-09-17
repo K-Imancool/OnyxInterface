@@ -80,6 +80,22 @@ Popup {
         return brief
     }
 
+    function unselectedInstrBackendIndex() {
+        for (var i = 0; i < itemNumArr.length; i++) {
+            if (parseInt(itemNumArr[i]) === 1000)
+                return i
+        }
+        return -1
+    }
+
+    function listIndexForInstr(backendIndex) {
+        if (backendIndex < 0 || backendIndex >= itemNumArr.length)
+            return -1
+        if (parseInt(itemNumArr[backendIndex]) === 1000)
+            return -1
+        return backendIndex
+    }
+
     function updateModel() {
         combinedModel.clear()
 
@@ -88,6 +104,8 @@ Popup {
             return
         }
         for (var i = 0; i < itemIdArr.length; i++) {
+            if (parseInt(itemNumArr[i]) === 1000)
+                continue
             combinedModel.append({
                                      itemId: itemNumArr[i],
                                      itemName: itemNameArr[i],
@@ -137,10 +155,11 @@ Popup {
     function deselectInstrument() {
         if (openingInProgress)
             return
-        var idx = itemNameArr.length - 1
+        var idx = unselectedInstrBackendIndex()
         if (idx < 0)
             return
-        instrumListView.selectIndex(idx)
+        modeEditor.currentInstrIndex = idx
+        instrumListView.curIndex = -1
     }
 
     onAboutToShow: dialogAccepted = false
@@ -168,12 +187,14 @@ Popup {
         if (idx < 0 || idx >= itemNameArr.length)
             idx = modeEditor.currentInstrIndex
         if (idx < 0 || idx >= itemNameArr.length)
-            idx = itemNameArr.length > 0 ? itemNameArr.length - 1 : 0
+            idx = unselectedInstrBackendIndex()
+        if (idx < 0)
+            idx = 0
         modeEditor.currentInstrIndex = idx
-        instrumListView.curIndex = idx
+        instrumListView.curIndex = listIndexForInstr(idx)
 
         Qt.callLater(function() {
-            instrumListView.curIndex = modeEditor.currentInstrIndex
+            instrumListView.curIndex = listIndexForInstr(modeEditor.currentInstrIndex)
             instrumListView.positionSelectedItem()
             Qt.callLater(function() {
                 instrumListView.positionSelectedItem()
@@ -285,7 +306,7 @@ Popup {
                     anchors.right: parent.right
                     anchors.bottom: instrScrollDown.top
                     anchors.bottomMargin: 10
-                    curIndex: modeEditor.currentInstrIndex
+                    curIndex: -1
                     imageSourceTemplate: "image://instruments/" + root.instrImagePrefix + "%1"
                     selectedBackgroundColor: root.listSelectedBackground
                     selectedTextColor: root.listSelectedText
@@ -405,7 +426,7 @@ Popup {
                         Label {
                             Layout.fillWidth: true
                             Layout.fillHeight: false
-                            text: qsTr("Рекомендуемый уровень")
+                            text: qsTr("Рекомендуемый уровень мощности")
                             horizontalAlignment: Text.AlignHCenter
                             color: uiMidGray
                             font.pixelSize: 24

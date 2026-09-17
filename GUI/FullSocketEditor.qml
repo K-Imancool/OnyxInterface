@@ -32,7 +32,8 @@ Popup {
     readonly property color autoBtnOnBorder: "#1E3274"
     readonly property color autoBtnOffFill: "white"
     readonly property color autoBtnOffBorder: "#C7CEDA"
-    readonly property color autoBtnOffText: fotekBlue
+    readonly property color autoBtnOffText: "gray"
+//    readonly property color autoBtnOffText: fotekBlue
 
     property bool activeIsCoag: false
     property string socketTitle: ""
@@ -877,7 +878,7 @@ Popup {
                     Layout.column: 0
                     Layout.fillWidth: true
                     Layout.preferredHeight: instrRowHeight
-                    visible: cutHasAvailableModes
+                    visible: cutHasAvailableModes && modeSelectedInSide(false)
                     editorRoot: root
                     isCoagSide: false
                     sideState: cutLive
@@ -901,7 +902,7 @@ Popup {
                     Layout.column: 2
                     Layout.fillWidth: true
                     Layout.preferredHeight: instrRowHeight
-                    visible: coagHasAvailableModes
+                    visible: coagHasAvailableModes && modeSelectedInSide(true)
                     editorRoot: root
                     isCoagSide: true
                     sideState: coagLive

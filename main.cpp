@@ -1,6 +1,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQuickItem>
 #include <QQuickWindow>
+#include <QMouseEvent>
+#include <QTouchEvent>
 
 #include "SettingsScreen/wifimodule/NetworkDiscover.h"
 #include "SettingsScreen/updatemodule/updateclient.h"
@@ -19,11 +22,16 @@
 #include <QResource>
 #include <QSaveFile>
 #include <QScopedPointer>
+#include <QSharedPointer>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QTextStream>
 #include <QThread>
+#include <QTimer>
 #include <QProcess>
 #include <functional>
+#include <QVector>
+#include <QPair>
 #include "BackEnd/loggingcategories.h"
 #include "BackEnd/linkstm.h"
 #include "BackEnd/jsonstorage.h"
@@ -58,6 +66,180 @@ namespace {
 
 bool g_deferredStartupDone = false;
 bool g_plymouthQuitRequested = false;
+
+QString touchDebugItemInfo(QQuickItem *item)
+{
+    if (!item) {
+        return QStringLiteral("null");
+    }
+    return QStringLiteral("%1 name=%2 vis=%3 en=%4 z=%5 op=%6 %7x%8 acceptBtns=%9 childFilter=%10")
+            .arg(QString::fromLatin1(item->metaObject()->className()))
+            .arg(item->objectName().isEmpty() ? QStringLiteral("?") : item->objectName())
+            .arg(item->isVisible())
+            .arg(item->isEnabled())
+            .arg(item->z())
+            .arg(item->opacity())
+            .arg(item->width())
+            .arg(item->height())
+            .arg(int(item->acceptedMouseButtons()))
+            .arg(item->filtersChildMouseEvents());
+}
+
+void touchDebugWalkHits(QQuickItem *item, const QPointF &scenePos, int depth,
+                        QVector<QPair<int, QQuickItem *>> *hits)
+{
+    if (!item) {
+        return;
+    }
+    const QPointF local = item->mapFromScene(scenePos);
+    if (QRectF(0, 0, item->width(), item->height()).contains(local)) {
+        hits->append(qMakePair(depth, item));
+    }
+    const QList<QQuickItem *> children = item->childItems();
+    for (QQuickItem *child : children) {
+        touchDebugWalkHits(child, scenePos, depth + 1, hits);
+    }
+}
+
+class TouchHitLogger : public QObject
+{
+public:
+    explicit TouchHitLogger(QQuickWindow *window)
+        : QObject(window)
+        , m_window(window)
+    {
+        m_clock.start();
+        window->installEventFilter(this);
+        dumpNamedState(QStringLiteral("attach"));
+
+        auto *timer = new QTimer(this);
+        timer->setInterval(1000);
+        connect(timer, &QTimer::timeout, this, [this, timer]() {
+            ++m_ticks;
+            dumpNamedState(m_gotInput ? QStringLiteral("tick") : QStringLiteral("waiting-input"));
+            if (m_ticks >= 8) {
+                timer->stop();
+            }
+        });
+        timer->start();
+    }
+
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        if (watched != m_window) {
+            return false;
+        }
+
+        QPointF scenePos;
+        const char *kind = nullptr;
+        if (event->type() == QEvent::TouchBegin) {
+            const auto *touchEvent = static_cast<const QTouchEvent *>(event);
+            if (touchEvent->touchPoints().isEmpty()) {
+                return false;
+            }
+            scenePos = touchEvent->touchPoints().first().pos();
+            kind = "touch";
+        } else if (event->type() == QEvent::MouseButtonPress) {
+            const auto *mouseEvent = static_cast<const QMouseEvent *>(event);
+            if (mouseEvent->button() != Qt::LeftButton) {
+                return false;
+            }
+            scenePos = mouseEvent->localPos();
+            kind = (mouseEvent->source() == Qt::MouseEventNotSynthesized)
+                    ? "mouse"
+                    : "synth-mouse";
+        } else {
+            return false;
+        }
+
+        m_gotInput = true;
+        qWarning() << "touch-debug" << m_clock.elapsed() << "ms" << kind
+                   << "pos" << scenePos;
+        dumpHits(scenePos);
+        dumpNamedState(QStringLiteral("press"));
+        QTimer::singleShot(0, this, [this]() {
+            qWarning() << "touch-debug grabber"
+                       << touchDebugItemInfo(m_window->mouseGrabberItem());
+        });
+        return false;
+    }
+
+private:
+    void dumpHits(const QPointF &scenePos)
+    {
+        QVector<QPair<int, QQuickItem *>> hits;
+        touchDebugWalkHits(m_window->contentItem(), scenePos, 0, &hits);
+        const int from = qMax(0, hits.size() - 12);
+        for (int i = from; i < hits.size(); ++i) {
+            QQuickItem *item = hits.at(i).second;
+            qWarning() << "touch-debug hit" << i << "d" << hits.at(i).first
+                       << touchDebugItemInfo(item)
+                       << "qml" << item->property("overlayActive")
+                       << item->property("blockInput");
+        }
+        if (hits.isEmpty()) {
+            qWarning() << "touch-debug hit: none under point";
+        }
+    }
+
+    void dumpNamedState(const QString &why)
+    {
+        static const char *kNames[] = {
+            "fullscreenErrorOverlay",
+            "fullscreenTouchBlocker",
+            "startupOverlay",
+            "startupTouchShield",
+            "globalHudLayer",
+            "warningList"
+        };
+        qWarning() << "touch-debug state" << why << m_clock.elapsed() << "ms"
+                   << "gotInput" << m_gotInput;
+        for (const char *name : kNames) {
+            auto *item = m_window->findChild<QQuickItem *>(QString::fromLatin1(name));
+            if (!item) {
+                qWarning() << "touch-debug" << name << "NOT FOUND";
+                continue;
+            }
+            qWarning() << "touch-debug" << name << touchDebugItemInfo(item)
+                       << "overlayActive" << item->property("overlayActive")
+                       << "blockInput" << item->property("blockInput");
+        }
+
+        const auto items = m_window->findChildren<QQuickItem *>();
+        for (QQuickItem *item : items) {
+            const QString cls = QString::fromLatin1(item->metaObject()->className());
+            if (cls.contains(QLatin1String("Overlay"))) {
+                qWarning() << "touch-debug overlay-class" << touchDebugItemInfo(item);
+            }
+        }
+    }
+
+    QQuickWindow *m_window = nullptr;
+    QElapsedTimer m_clock;
+    int m_ticks = 0;
+    bool m_gotInput = false;
+};
+
+void attachTouchHitLogger(QObject *rootObject)
+{
+    if (qEnvironmentVariableIntValue("ONYX_TOUCH_DEBUG") <= 0) {
+        return;
+    }
+    auto *window = qobject_cast<QQuickWindow *>(rootObject);
+    if (!window) {
+        window = rootObject ? rootObject->findChild<QQuickWindow *>() : nullptr;
+    }
+    if (!window) {
+        qWarning() << "touch-debug: window not found";
+        return;
+    }
+    if (window->property("touchHitLogger").toBool()) {
+        return;
+    }
+    window->setProperty("touchHitLogger", true);
+    new TouchHitLogger(window);
+    qWarning() << "touch-debug: logger attached";
+}
 
 void requestPlymouthQuit()
 {
@@ -106,6 +288,154 @@ void runAfterFirstFrame(QObject *rootObject, const std::function<void()> &onFirs
                 Qt::QueuedConnection);
 }
 
+bool probeBundledQmlGl(const QString &bundledQmlGlPath)
+{
+    GError *gstError = nullptr;
+    if (!gst_init_check(nullptr, nullptr, &gstError)) {
+        qWarning() << "GStreamer initialization failed:"
+                   << (gstError ? gstError->message : "unknown error");
+        if (gstError) {
+            g_error_free(gstError);
+        }
+        return false;
+    }
+
+    if (!bundledQmlGlPath.isEmpty()) {
+        GError *pluginError = nullptr;
+        GstPlugin *plugin = gst_plugin_load_file(
+                    bundledQmlGlPath.toLocal8Bit().constData(), &pluginError);
+        if (plugin) {
+            gst_object_unref(plugin);
+        } else {
+            qWarning() << "Bundled qmlglsink failed to load:"
+                       << (pluginError ? pluginError->message : "unknown error");
+        }
+        if (pluginError) {
+            g_error_free(pluginError);
+        }
+    }
+
+    GstElement *qmlGlSinkProbe =
+            gst_element_factory_make("qmlglsink", "qml-registration-probe");
+    bool qmlGlAvailable = false;
+    if (qmlGlSinkProbe) {
+        GstElementFactory *factory = gst_element_get_factory(qmlGlSinkProbe);
+        GstPlugin *plugin = factory
+                ? gst_plugin_feature_get_plugin(GST_PLUGIN_FEATURE(factory))
+                : nullptr;
+        const QString loadedPluginPath = plugin && gst_plugin_get_filename(plugin)
+                ? QFileInfo(QString::fromLocal8Bit(
+                                gst_plugin_get_filename(plugin)))
+                  .canonicalFilePath()
+                : QString();
+        qmlGlAvailable = !bundledQmlGlPath.isEmpty()
+                && loadedPluginPath
+                == QFileInfo(bundledQmlGlPath).canonicalFilePath();
+
+        if (qmlGlAvailable) {
+            qInfo() << "Using bundled qmlglsink:" << loadedPluginPath;
+        } else {
+            qWarning() << "Refusing incompatible qmlglsink:"
+                       << loadedPluginPath;
+        }
+
+        if (plugin) {
+            gst_object_unref(plugin);
+        }
+        gst_object_unref(qmlGlSinkProbe);
+    }
+    if (!qmlGlAvailable) {
+        qWarning() << "GStreamer qmlglsink plugin is unavailable;"
+                      " video player is disabled";
+    }
+    return qmlGlAvailable;
+}
+
+void startGStreamerInitAsync(QQmlApplicationEngine *engine, const QString &bundledQmlGlPath)
+{
+    QThread *thread = QThread::create([engine, bundledQmlGlPath]() {
+        const bool available = probeBundledQmlGl(bundledQmlGlPath);
+        QTimer::singleShot(0, engine, [engine, available]() {
+            engine->rootContext()->setContextProperty(
+                        QStringLiteral("qmlGlAvailable"), available);
+        });
+    });
+    if (!thread) {
+        qWarning() << "Failed to create GStreamer init thread";
+        engine->rootContext()->setContextProperty(
+                    QStringLiteral("qmlGlAvailable"), false);
+        return;
+    }
+    thread->setObjectName(QStringLiteral("gst-init"));
+    QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
+}
+
+void scheduleDeferredBackend(QQmlApplicationEngine *engine,
+                             DeviceLogManager *deviceLog,
+                             HttpUploadController **httpUpload,
+                             RemoteUpdater **globalRemoteUpdater,
+                             UpdateLogManager **updateLog,
+                             QObject *appParent,
+                             const QSharedPointer<ControlCenter> &ctrl,
+                             JsonStorage *savedJson)
+{
+    QTimer::singleShot(0, appParent, [=]() {
+        deviceLog->beginSession();
+
+        QTimer::singleShot(0, appParent, [=]() {
+            *updateLog = new UpdateLogManager(appParent);
+            engine->rootContext()->setContextProperty(
+                        QStringLiteral("updateLog"), *updateLog);
+
+            *globalRemoteUpdater = new RemoteUpdater(appParent);
+            (*globalRemoteUpdater)->setSerialNumber(
+                        savedJson->readString(QStringLiteral("serialNumber")));
+            const QString savedApiUrl =
+                    savedJson->readString(QStringLiteral("uiUpdaterApiBaseUrl"));
+            if (!savedApiUrl.isEmpty()) {
+                (*globalRemoteUpdater)->setApiBaseUrl(savedApiUrl);
+            }
+            const QString savedTunnelHost =
+                    savedJson->readString(QStringLiteral("uiUpdaterTunnelHost"));
+            if (!savedTunnelHost.isEmpty()) {
+                (*globalRemoteUpdater)->setTunnelUserHost(savedTunnelHost);
+            }
+            engine->rootContext()->setContextProperty(
+                        QStringLiteral("remoteUpdater"), *globalRemoteUpdater);
+
+            QTimer::singleShot(0, appParent, [=]() {
+                *httpUpload = new HttpUploadController(appParent);
+                (*httpUpload)->setJsonStorage(savedJson);
+                auto *userProgTransfer = new UserProgTransferController(appParent);
+                (*httpUpload)->setUserProgTransfer(userProgTransfer);
+                engine->rootContext()->setContextProperty(
+                            QStringLiteral("httpUpload"), *httpUpload);
+                engine->rootContext()->setContextProperty(
+                            QStringLiteral("userProgTransfer"), userProgTransfer);
+
+                QObject::connect(userProgTransfer, &UserProgTransferController::importFinished,
+                                 ctrl->getHandle(), [handle = ctrl->getHandle()]() {
+                    if (handle) {
+                        handle->setIsRecomProgs(false);
+                        emit handle->updateScopes(false);
+                    }
+                }, Qt::QueuedConnection);
+
+                if (m_linkStm) {
+                    (*httpUpload)->setLinkStm(m_linkStm);
+                    QObject::connect(m_linkStm, &LinkStm::firmwareUpdateParseError,
+                                     *httpUpload, &HttpUploadController::onMcFirmwareParseError,
+                                     Qt::QueuedConnection);
+                    QObject::connect(m_linkStm, &LinkStm::sigUpdateProgress,
+                                     *httpUpload, &HttpUploadController::setMcFirmwareUpdateProgress,
+                                     Qt::QueuedConnection);
+                }
+            });
+        });
+    });
+}
+
 } // namespace
 
 QString extractBundledQmlGlPlugin()
@@ -116,19 +446,33 @@ QString extractBundledQmlGlPlugin()
         return QString();
     }
 
-    const QString pluginDir = QDir::tempPath()
-            + QStringLiteral("/qtpr-gstreamer");
+    const QByteArray pluginBytes = resource.readAll();
+    QString pluginDir = QDir::homePath() + QStringLiteral("/.cache/qtpr-gstreamer");
     if (!QDir().mkpath(pluginDir)) {
-        qWarning() << "Cannot create bundled GStreamer plugin directory:"
-                   << pluginDir;
-        return QString();
+        pluginDir = QDir::tempPath() + QStringLiteral("/qtpr-gstreamer");
+        if (!QDir().mkpath(pluginDir)) {
+            qWarning() << "Cannot create bundled GStreamer plugin directory:"
+                       << pluginDir;
+            return QString();
+        }
     }
 
     const QString pluginPath = pluginDir
             + QStringLiteral("/libgstqmlgl.so");
+    const QFileInfo existing(pluginPath);
+    if (existing.exists() && existing.size() == pluginBytes.size()) {
+        QFile::setPermissions(
+                    pluginPath,
+                    QFileDevice::ReadOwner | QFileDevice::WriteOwner
+                    | QFileDevice::ExeOwner | QFileDevice::ReadGroup
+                    | QFileDevice::ExeGroup | QFileDevice::ReadOther
+                    | QFileDevice::ExeOther);
+        return pluginPath;
+    }
+
     QSaveFile output(pluginPath);
     if (!output.open(QIODevice::WriteOnly)
-            || output.write(resource.readAll()) < 0
+            || output.write(pluginBytes) < 0
             || !output.commit()) {
         qWarning() << "Cannot extract bundled qmlglsink to:" << pluginPath;
         return QString();
@@ -276,6 +620,9 @@ int main(int argc, char *argv[])
     // До deferred gst_init кнопка видео будет disabled; обновим после firstFrame.
     engine.rootContext()->setContextProperty(
                 QStringLiteral("qmlGlAvailable"), false);
+    engine.rootContext()->setContextProperty(
+                QStringLiteral("touchDebug"),
+                qEnvironmentVariableIntValue("ONYX_TOUCH_DEBUG") > 0);
     engine.rootContext()->setContextProperty("theModel", ctrl->getSocketModel());
     engine.rootContext()->setContextProperty("Editor", ctrl->getModeEditor());
     engine.rootContext()->setContextProperty("recomHandle", ctrl->getHandle());
@@ -366,118 +713,18 @@ int main(int argc, char *argv[])
                 QCoreApplication::exit(-1);
                 return;
             }
+            attachTouchHitLogger(obj);
             runAfterFirstFrame(obj, [&engine, bundledQmlGlPath, deviceLog, &httpUpload, &globalRemoteUpdater, &updateLog, &app, ctrl, m_savedJson]() {
                 requestPlymouthQuit();
-
-                // Отложенный GStreamer
-                GError *gstError = nullptr;
-                if (!gst_init_check(nullptr, nullptr, &gstError)) {
-                    qWarning() << "GStreamer initialization failed:"
-                               << (gstError ? gstError->message : "unknown error");
-                    if (gstError) {
-                        g_error_free(gstError);
-                    }
-                    engine.rootContext()->setContextProperty(
-                                QStringLiteral("qmlGlAvailable"), false);
-                } else {
-                    if (!bundledQmlGlPath.isEmpty()) {
-                        GError *pluginError = nullptr;
-                        GstPlugin *plugin = gst_plugin_load_file(
-                                    bundledQmlGlPath.toLocal8Bit().constData(), &pluginError);
-                        if (plugin) {
-                            gst_object_unref(plugin);
-                        } else {
-                            qWarning() << "Bundled qmlglsink failed to load:"
-                                       << (pluginError ? pluginError->message : "unknown error");
-                        }
-                        if (pluginError) {
-                            g_error_free(pluginError);
-                        }
-                    }
-
-                    GstElement *qmlGlSinkProbe =
-                            gst_element_factory_make("qmlglsink", "qml-registration-probe");
-                    bool qmlGlAvailable = false;
-                    if (qmlGlSinkProbe) {
-                        GstElementFactory *factory = gst_element_get_factory(qmlGlSinkProbe);
-                        GstPlugin *plugin = factory
-                                ? gst_plugin_feature_get_plugin(GST_PLUGIN_FEATURE(factory))
-                                : nullptr;
-                        const QString loadedPluginPath = plugin && gst_plugin_get_filename(plugin)
-                                ? QFileInfo(QString::fromLocal8Bit(
-                                                gst_plugin_get_filename(plugin)))
-                                  .canonicalFilePath()
-                                : QString();
-                        qmlGlAvailable = !bundledQmlGlPath.isEmpty()
-                                && loadedPluginPath
-                                == QFileInfo(bundledQmlGlPath).canonicalFilePath();
-
-                        if (qmlGlAvailable) {
-                            qInfo() << "Using bundled qmlglsink:" << loadedPluginPath;
-                        } else {
-                            qWarning() << "Refusing incompatible qmlglsink:"
-                                       << loadedPluginPath;
-                        }
-
-                        if (plugin) {
-                            gst_object_unref(plugin);
-                        }
-                        gst_object_unref(qmlGlSinkProbe);
-                    }
-                    if (!qmlGlAvailable) {
-                        qWarning() << "GStreamer qmlglsink plugin is unavailable;"
-                                      " video player is disabled";
-                    }
-                    engine.rootContext()->setContextProperty(
-                                QStringLiteral("qmlGlAvailable"), qmlGlAvailable);
-                }
-
-                // Лог сессии и сервисные контроллеры
-                deviceLog->beginSession();
-
-                updateLog = new UpdateLogManager(&app);
-                engine.rootContext()->setContextProperty(QStringLiteral("updateLog"), updateLog);
-
-                globalRemoteUpdater = new RemoteUpdater(&app);
-                globalRemoteUpdater->setSerialNumber(
-                            m_savedJson->readString(QStringLiteral("serialNumber")));
-                const QString savedApiUrl =
-                        m_savedJson->readString(QStringLiteral("uiUpdaterApiBaseUrl"));
-                if (!savedApiUrl.isEmpty()) {
-                    globalRemoteUpdater->setApiBaseUrl(savedApiUrl);
-                }
-                const QString savedTunnelHost =
-                        m_savedJson->readString(QStringLiteral("uiUpdaterTunnelHost"));
-                if (!savedTunnelHost.isEmpty()) {
-                    globalRemoteUpdater->setTunnelUserHost(savedTunnelHost);
-                }
-                engine.rootContext()->setContextProperty(
-                            QStringLiteral("remoteUpdater"), globalRemoteUpdater);
-
-                httpUpload = new HttpUploadController(&app);
-                httpUpload->setJsonStorage(m_savedJson);
-                auto *userProgTransfer = new UserProgTransferController(&app);
-                httpUpload->setUserProgTransfer(userProgTransfer);
-                engine.rootContext()->setContextProperty(QStringLiteral("httpUpload"), httpUpload);
-                engine.rootContext()->setContextProperty(QStringLiteral("userProgTransfer"), userProgTransfer);
-
-                QObject::connect(userProgTransfer, &UserProgTransferController::importFinished,
-                                 ctrl->getHandle(), [handle = ctrl->getHandle()]() {
-                    if (handle) {
-                        handle->setIsRecomProgs(false);
-                        emit handle->updateScopes(false);
-                    }
-                }, Qt::QueuedConnection);
-
-                if (m_linkStm) {
-                    httpUpload->setLinkStm(m_linkStm);
-                    QObject::connect(m_linkStm, &LinkStm::firmwareUpdateParseError,
-                                     httpUpload, &HttpUploadController::onMcFirmwareParseError,
-                                     Qt::QueuedConnection);
-                    QObject::connect(m_linkStm, &LinkStm::sigUpdateProgress,
-                                     httpUpload, &HttpUploadController::setMcFirmwareUpdateProgress,
-                                     Qt::QueuedConnection);
-                }
+                startGStreamerInitAsync(&engine, bundledQmlGlPath);
+                scheduleDeferredBackend(&engine,
+                                        deviceLog,
+                                        &httpUpload,
+                                        &globalRemoteUpdater,
+                                        &updateLog,
+                                        &app,
+                                        ctrl,
+                                        m_savedJson);
             });
         },
         Qt::DirectConnection);
