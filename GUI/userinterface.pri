@@ -28,6 +28,9 @@ DISTFILES += \
     $$PWD/NeutralButton.qml \
     $$PWD/NeutralEl.qml \
     $$PWD/SerialNumberSettings.qml \
+    $$PWD/ServiceMenu.qml \
+    $$PWD/ServiceFrame.qml \
+    $$PWD/SpecialCommands.qml \
     $$PWD/Pedal.qml \
     $$PWD/PedalContainer.qml \
     $$PWD/PedalDrawer.qml \

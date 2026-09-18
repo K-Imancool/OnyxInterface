@@ -34,6 +34,9 @@ int packEndoActivationPower(int modeId, int uiPower)
     return (variant << 6) | (cutEffect << 3) | coagEffect;
 }
 
+constexpr int kNoRxErrorLimit = 3;       // E2 только после 3 промахов подряд
+constexpr int kSlowNoRxErrorLimit = 8;   // GoBoot/GoApp/Erase/StartUpdate: ~8 с
+
 // Тело посылки без FRAME_START (байт 0) и без CRC (2 последних байта).
 QByteArray uartPacketBodyWithoutCrc(const QByteArray &packet)
 {
@@ -365,7 +368,7 @@ void LinkStm::sendCommand()
     static int updateProgr = 0;
     static UartState preState = STATE_OK;   // Предыдущее состояние
     static int errCounter = 0;
-    static int slowNoRxCount = 0;       // NO_RX для GoBoot/GoApp/Erase/StartUpdate (по 1 с)
+    static int noRxCount = 0;           // Подряд идущие NO_RX до вывода E2
 
     if (m_abortFirmwareUpdatePending) {
         updateCounter = 0;
@@ -393,32 +396,36 @@ void LinkStm::sendCommand()
         } else if (m_fwRxErrStreakTimer.elapsed() >= 8000) {
             abortFirmwareUpdate(tr("МК не отвечает"));
             skipCommandBuild = true;
-            slowNoRxCount = 0;
+            noRxCount = 0;
         }
     }
 
     //_____________ Проверяем ответ rx__________
     if (!skipCommandBuild && m_state != STATE_OK) {
-        const bool slowNoRx = (m_state == STATE_NO_RX) && lastWasSlowCmd;
-        if (slowNoRx) {
-            // Тик раз в 1 с: не репортим сразу, только после 8 с суммарно
-            if (slowNoRxCount < 8) {
-                ++slowNoRxCount;
-            }
-            if (slowNoRxCount >= 8 && preState != STATE_NO_RX) {
+        if (m_state == STATE_NO_RX) {
+            const int noRxLimit = lastWasSlowCmd ? kSlowNoRxErrorLimit : kNoRxErrorLimit;
+            if (noRxCount < noRxLimit)
+                ++noRxCount;
+            if (noRxCount >= noRxLimit && preState != STATE_NO_RX) {
                 reportError(m_state);
                 preState = STATE_NO_RX;
                 errCounter = 0;
+                if (m_lastCommand.com == CurrentVersion) {
+                    clearMcVersionsForUnit(m_lastCommand.mc);
+                }
+            } else if (!lastWasSlowCmd && preState == STATE_NO_RX && errCounter++ > 100) {
+                // Во время прошивки не маскируем NO_RX «восстановлением» STATE_OK
+                if (!fwInProgress) {
+                    m_state = STATE_OK;             // Делаем попытку выйти на нормальную работу
+                    errCounter = 0;
+                }
             }
         } else if (m_state != preState) {
             // qDebug() << "UART-ошибки: " << m_state;
             reportError(m_state);               // Ошибки ответа
             preState = m_state;                 // Запоминаем предыдущее состояние
             errCounter = 0;                     // Сбрасываем счётчик ошибок
-            slowNoRxCount = 0;
-            if (m_state == STATE_NO_RX && m_lastCommand.com == CurrentVersion) {
-                clearMcVersionsForUnit(m_lastCommand.mc);
-            }
+            noRxCount = 0;
         }
         else if (errCounter++ > 100) {
             // Во время прошивки не маскируем NO_RX/RX_ERR «восстановлением» STATE_OK
@@ -433,7 +440,7 @@ void LinkStm::sendCommand()
             preState = STATE_OK;
         }
         errCounter = 0;
-        slowNoRxCount = 0;
+        noRxCount = 0;
     }
 
     if (!skipCommandBuild && m_state == STATE_OK) {

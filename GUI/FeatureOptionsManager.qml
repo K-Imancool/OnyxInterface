@@ -4,14 +4,14 @@ import QtQuick.Controls 2.15
 
 import StratifyLabs.UI 2.0
 
-Item {
+ServiceFrame {
     id: featureOptionsRoot
 
-    signal returnButtonPressed()
+    title: qsTr("УПРАВЛЕНИЕ ОПЦИЯМИ")
 
     property int refreshCounter: 0
 
-    readonly property int menuButtonWidth: 550
+    readonly property int menuButtonWidth: 420
     readonly property int menuButtonHeight: 96
     readonly property int menuColumnsSpacing: 24
 
@@ -53,22 +53,6 @@ Item {
         }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: "darkslategray"
-    }
-
-    SLabel {
-        id: screenTitle
-        style: "label-primary lg"
-        text: qsTr("Управление опциями")
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-    }
-
     GridLayout {
         anchors {
             top: screenTitle.bottom
@@ -77,7 +61,7 @@ Item {
         }
         columns: 2
         columnSpacing: featureOptionsRoot.menuColumnsSpacing
-        rowSpacing: 20
+        rowSpacing: 15
         width: featureOptionsRoot.menuButtonWidth * 2 + featureOptionsRoot.menuColumnsSpacing
 
         SButton {
@@ -114,17 +98,5 @@ Item {
                 onPressed: featureOptionsRoot.toggleKey(keyNumber)
             }
         }
-    }
-
-    SButton {
-        id: returnButton
-        style: "btn-secondary"
-        text: qsTr("Назад")
-        anchors {
-            left: parent.left
-            bottom: parent.bottom
-            margins: 15
-        }
-        onPressed: featureOptionsRoot.returnButtonPressed()
     }
 }

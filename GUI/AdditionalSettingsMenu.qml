@@ -98,7 +98,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: "#8A929E"
+        color: "#F3F5F9"
     }
 
     Item {
@@ -115,7 +115,7 @@ Item {
             text: qsTr("ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ")
             anchors.centerIn: parent
             color: additionalSettingsRoot.fotekBlue
-            font.pixelSize: 36
+            font.pixelSize: 44
             font.bold: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap

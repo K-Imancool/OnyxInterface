@@ -781,6 +781,10 @@ Si el error continúa, acuda al servicio técnico.</translation>
         <translation>Iniciando el punto de acceso %1...</translation>
     </message>
     <message>
+        <source>Подготовка...</source>
+        <translation>Preparando...</translation>
+    </message>
+    <message>
         <source>Не удалось создать профиль точки доступа.</source>
         <translation>No se pudo crear el perfil del punto de acceso.</translation>
     </message>
@@ -1354,6 +1358,30 @@ PROGRAMA</translation>
     <message>
         <source>Не удалось переключить Wi-Fi</source>
         <translation>No se pudo cambiar el Wi-Fi</translation>
+    </message>
+    <message>
+        <source>Интернет доступен</source>
+        <translation>Internet disponible</translation>
+    </message>
+    <message>
+        <source>Интернет доступен, среднее %1 мс</source>
+        <translation>Internet disponible, media %1 ms</translation>
+    </message>
+    <message>
+        <source>Интернет доступен, среднее %1 мс (%2 из 4)</source>
+        <translation>Internet disponible, media %1 ms (%2 de 4)</translation>
+    </message>
+    <message>
+        <source>Нет прав на ping (нужен sudo)</source>
+        <translation>Sin permiso para ping (se necesita sudo)</translation>
+    </message>
+    <message>
+        <source>Нет ответа (таймаут)</source>
+        <translation>Sin respuesta (tiempo agotado)</translation>
+    </message>
+    <message>
+        <source>Нет доступа в интернет</source>
+        <translation>Sin acceso a internet</translation>
     </message>
 </context>
 <context>
@@ -2575,6 +2603,10 @@ La potencia de cada salida puede variar según la otra, porque solo se admite la
         <translation>Versiones de software</translation>
     </message>
     <message>
+        <source>Дополнительно</source>
+        <translation>Adicional</translation>
+    </message>
+    <message>
         <source>НАЗАД</source>
         <translation>ATRÁS</translation>
     </message>
@@ -3286,6 +3318,30 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <source>WiFi всегда включен</source>
         <translation>Wi-Fi siempre activo</translation>
     </message>
+    <message>
+        <source>НАСТРОЙКИ WI-FI</source>
+        <translation>AJUSTES DE WI-FI</translation>
+    </message>
+    <message>
+        <source>Адрес Ethernet:</source>
+        <translation>Dirección Ethernet:</translation>
+    </message>
+    <message>
+        <source>кабель подключен, адрес не получен</source>
+        <translation>cable conectado, sin dirección</translation>
+    </message>
+    <message>
+        <source>Ping</source>
+        <translation>Ping</translation>
+    </message>
+    <message>
+        <source>Проверка...</source>
+        <translation>Comprobando...</translation>
+    </message>
+    <message>
+        <source>Проверка доступа в интернет…</source>
+        <translation>Comprobando el acceso a internet…</translation>
+    </message>
 </context>
 <context>
     <name>WiFiPassRequest</name>
@@ -3447,6 +3503,18 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
     <message>
         <source>Не удалось включить точку доступа</source>
         <translation>No se pudo activar el punto de acceso</translation>
+    </message>
+    <message>
+        <source>1. Подготовка</source>
+        <translation>1. Preparación</translation>
+    </message>
+    <message>
+        <source>Идёт подготовка. Подождите.</source>
+        <translation>Preparando. Espere.</translation>
+    </message>
+    <message>
+        <source>Подготовка</source>
+        <translation>Preparación</translation>
     </message>
     <message>
         <source>Создание точки доступа...</source>

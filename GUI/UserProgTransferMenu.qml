@@ -39,7 +39,7 @@ Item {
             text: qsTr("ПЕРЕНОС ПРОГРАММ ПОЛЬЗОВАТЕЛЯ")
             anchors.centerIn: parent
             color: transferMenuRoot.fotekBlue
-            font.pixelSize: 36
+            font.pixelSize: 44
             font.bold: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap

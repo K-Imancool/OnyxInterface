@@ -5,9 +5,9 @@ import QtQuick.Controls 2.15
 import StratifyLabs.UI 2.0
 import BackEnd 1.0
 
-Item {
+ServiceFrame {
     id: isnRoot
-    signal returnButtonPressed()
+    title: qsTr("УПРАВЛЕНИЕ ИСН")
 
     property bool isnEnabled: false
     property int voltage: 0
@@ -40,22 +40,6 @@ Item {
     Component.onDestruction: {
         if (isnRoot.isnEnabled && typeof appControl !== "undefined" && appControl)
             appControl.manageIsn(false, 0, 0)
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        color: "darkslategray"
-    }
-
-    SLabel {
-        id: screenTitle
-        style: "label-primary lg"
-        text: qsTr("Управление ИСН")
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
     }
 
     ColumnLayout {
@@ -228,17 +212,5 @@ Item {
         }
 
         Item { Layout.fillHeight: true }
-    }
-
-    SButton {
-        id: retButton
-        style: "btn-secondary"
-        text: qsTr("Назад")
-        onPressed: returnButtonPressed()
-        anchors {
-            left: parent.left
-            bottom: parent.bottom
-            margins: 15
-        }
     }
 }

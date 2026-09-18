@@ -39,6 +39,7 @@
         <file>AdditionalSettingsMenu.qml</file>
         <file>DateTimeSettings.qml</file>
         <file>ServiceMenu.qml</file>
+        <file>ServiceFrame.qml</file>
         <file>SpecialCommands.qml</file>
         <file>FullscreenErrorOverlay.qml</file>
         <file>SerialNumberSettings.qml</file>

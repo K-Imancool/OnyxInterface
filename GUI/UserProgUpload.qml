@@ -151,27 +151,23 @@ Item {
             width: scrollView.width
             spacing: 14
 
-            Item {
+            Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: receivePanelRow.implicitHeight + 28
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 12
-                    color: "#122323"
-                    border.width: 1
-                    border.color: root.wizardStep === 4
-                                  ? "#66bb6a"
-                                  : (httpUpload.active && httpUpload.accessPointClientConnected
-                                     ? "#66bb6a"
-                                     : (root.wizardStep >= 1 ? "#ffca28" : "#42a5f5"))
-                }
+                implicitHeight: receivePanelRow.implicitHeight + 28
+                radius: 12
+                color: "#122323"
+                border.width: 1
+                border.color: root.wizardStep === 4
+                              ? "#66bb6a"
+                              : (httpUpload.active && httpUpload.accessPointClientConnected
+                                 ? "#66bb6a"
+                                 : (root.wizardStep >= 1 ? "#ffca28" : "#42a5f5"))
 
                 RowLayout {
                     id: receivePanelRow
                     x: 14
                     y: 14
-                    width: scrollView.width - 28
+                    width: parent.width - 28
                     spacing: 18
 
                     ColumnLayout {
@@ -252,24 +248,20 @@ Item {
                             }
                         }
 
-                        Item {
+                        Rectangle {
                             visible: httpUpload.active && root.wizardStep >= 1 && root.wizardStep !== 4
                             Layout.fillWidth: true
-                            Layout.preferredHeight: activeDetails.implicitHeight + 18
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: 8
-                                color: httpUpload.accessPointClientConnected ? "#17331d" : "#3a2f12"
-                                border.width: 1
-                                border.color: httpUpload.accessPointClientConnected ? "#66bb6a" : "#ffca28"
-                            }
+                            implicitHeight: activeDetails.implicitHeight + 18
+                            radius: 8
+                            color: httpUpload.accessPointClientConnected ? "#17331d" : "#3a2f12"
+                            border.width: 1
+                            border.color: httpUpload.accessPointClientConnected ? "#66bb6a" : "#ffca28"
 
                             ColumnLayout {
                                 id: activeDetails
                                 x: 9
                                 y: 9
-                                width: receivePanelRow.width - 260 - 18 - 18
+                                width: parent.width - 18
                                 spacing: 8
 
                                 Text {
@@ -403,19 +395,15 @@ Item {
                 text: httpUpload.lastError
             }
 
-            Item {
+            Rectangle {
                 visible: root.wizardStep !== 4
                          && (httpUpload.uploadInProgress || httpUpload.uploadStatusText.length > 0)
                 Layout.fillWidth: true
                 implicitHeight: uploadCol.implicitHeight + 12
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 6
-                    color: "#263238"
-                    border.color: "#546e7a"
-                    border.width: 1
-                }
+                radius: 6
+                color: "#263238"
+                border.color: "#546e7a"
+                border.width: 1
 
                 ColumnLayout {
                     id: uploadCol

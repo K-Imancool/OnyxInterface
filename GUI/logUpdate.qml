@@ -2,10 +2,10 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import StratifyLabs.UI 2.0
 
-Item {
+ServiceFrame {
     id: updateLogScreen
 
-    signal returnButtonPressed()
+    title: qsTr("ЛОГ ОБНОВЛЕНИЙ")
 
     property var logLines: []
 
@@ -26,14 +26,9 @@ Item {
 
     Component.onCompleted: refreshLog()
 
-    Rectangle {
-        anchors.fill: parent
-        color: "darkslategray"
-    }
-
     ColumnLayout {
         anchors {
-            top: parent.top
+            top: screenTitle.bottom
             left: parent.left
             right: parent.right
             bottom: retButton.top
@@ -41,11 +36,6 @@ Item {
         }
         spacing: 12
 
-        SLabel {
-            Layout.fillWidth: true
-            style: "label-primary lg"
-            text: qsTr("Лог обновлений")
-        }
 
         Rectangle {
             Layout.fillWidth: true
@@ -77,18 +67,6 @@ Item {
                     wrapMode: Text.WordWrap
                 }
             }
-        }
-    }
-
-    SButton {
-        id: retButton
-        style: "btn-secondary"
-        text: qsTr("Назад")
-        onPressed: updateLogScreen.returnButtonPressed()
-        anchors {
-            left: parent.left
-            bottom: parent.bottom
-            margins: 15
         }
     }
 }

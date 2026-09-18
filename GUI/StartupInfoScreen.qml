@@ -17,7 +17,12 @@ Item {
         var value = String(savedJson.readString("serialNumber", "")).trim()
         return value === "" ? qsTr("Не указан") : value
     }
+    readonly property string featureNotesText: String(savedJson.readString("featureNotes", "")).trim()
+    readonly property bool hasFeatureNotes: featureNotesText.length > 0
     readonly property string softwareVersionsText: buildSoftwareVersionsText()
+    readonly property int fieldLabelSize: 28
+    readonly property int fieldValueSize: 34
+    readonly property int versionsValueSize: 28
 
     function normalizedVersion(value) {
         var text = (value === undefined || value === null) ? "" : String(value).trim()
@@ -115,70 +120,79 @@ Item {
                 Layout.fillWidth: true
 
                 ColumnLayout {
-                    anchors.centerIn: parent
+                    anchors {
+                        top: parent.top
+                        bottom: parent.bottom
+                        horizontalCenter: parent.horizontalCenter
+                    }
                     width: Math.min(parent.width, 920)
                     spacing: 14
 
-                    Rectangle {
+                    RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 130
-                        radius: 22
-                        color: "#F7F9FD"
-                        border.width: 1
-                        border.color: "#D3D9E6"
+                        spacing: 14
 
-                        Column {
-                            anchors.fill: parent
-                            anchors.margins: 24
-                            spacing: 12
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 140
+                            radius: 22
+                            color: "#F7F9FD"
+                            border.width: 1
+                            border.color: "#D3D9E6"
 
-                            Label {
-                                width: parent.width
-                                text: qsTr("Тип аппарата")
-                                color: "#616161"
-                                font.pixelSize: 22
-                                font.bold: true
-                            }
+                            Column {
+                                anchors.fill: parent
+                                anchors.margins: 22
+                                spacing: 10
 
-                            Label {
-                                width: parent.width
-                                text: startupInfo.deviceTypeText
-                                color: "black"
-                                font.pixelSize: 34
-                                font.bold: true
-                                wrapMode: Text.WordWrap
+                                Label {
+                                    width: parent.width
+                                    text: qsTr("Тип аппарата")
+                                    color: "#616161"
+                                    font.pixelSize: startupInfo.fieldLabelSize
+                                    font.bold: true
+                                }
+
+                                Label {
+                                    width: parent.width
+                                    text: startupInfo.deviceTypeText
+                                    color: "black"
+                                    font.pixelSize: startupInfo.fieldValueSize
+                                    font.bold: true
+                                    wrapMode: Text.WordWrap
+                                }
                             }
                         }
-                    }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 130
-                        radius: 22
-                        color: "#F7F9FD"
-                        border.width: 1
-                        border.color: "#D3D9E6"
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 140
+                            radius: 22
+                            color: "#F7F9FD"
+                            border.width: 1
+                            border.color: "#D3D9E6"
 
-                        Column {
-                            anchors.fill: parent
-                            anchors.margins: 24
-                            spacing: 12
+                            Column {
+                                anchors.fill: parent
+                                anchors.margins: 22
+                                spacing: 10
 
-                            Label {
-                                width: parent.width
-                                text: qsTr("Серийный номер")
-                                color: "#616161"
-                                font.pixelSize: 22
-                                font.bold: true
-                            }
+                                Label {
+                                    width: parent.width
+                                    text: qsTr("Серийный номер")
+                                    color: "#616161"
+                                    font.pixelSize: startupInfo.fieldLabelSize
+                                    font.bold: true
+                                }
 
-                            Label {
-                                width: parent.width
-                                text: startupInfo.serialNumberText
-                                color: "black"
-                                font.pixelSize: 34
-                                font.bold: true
-                                wrapMode: Text.WordWrap
+                                Label {
+                                    width: parent.width
+                                    text: startupInfo.serialNumberText
+                                    color: "black"
+                                    font.pixelSize: startupInfo.fieldValueSize
+                                    font.bold: true
+                                    wrapMode: Text.WordWrap
+                                }
                             }
                         }
                     }
@@ -200,7 +214,7 @@ Item {
                                 Layout.fillWidth: true
                                 text: qsTr("Версии ПО")
                                 color: "#616161"
-                                font.pixelSize: 22
+                                font.pixelSize: startupInfo.fieldLabelSize
                                 font.bold: true
                             }
 
@@ -209,12 +223,53 @@ Item {
                                 Layout.fillHeight: true
                                 text: startupInfo.softwareVersionsText
                                 color: "black"
-                                font.pixelSize: 26
+                                font.pixelSize: startupInfo.versionsValueSize
                                 font.bold: true
                                 wrapMode: Text.WrapAnywhere
                                 verticalAlignment: Text.AlignVCenter
                             }
                         }
+                    }
+
+                    Rectangle {
+                        visible: startupInfo.hasFeatureNotes
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.minimumHeight: 140
+                        radius: 22
+                        color: "#F7F9FD"
+                        border.width: 1
+                        border.color: "#D3D9E6"
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 20
+                            spacing: 10
+
+                            Label {
+                                Layout.fillWidth: true
+                                text: qsTr("Дополнительно")
+                                color: "#616161"
+                                font.pixelSize: startupInfo.fieldLabelSize
+                                font.bold: true
+                            }
+
+                            Label {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                text: startupInfo.featureNotesText
+                                color: "black"
+                                font.pixelSize: startupInfo.fieldValueSize
+                                font.bold: true
+                                wrapMode: Text.WordWrap
+                                elide: Text.ElideRight
+                            }
+                        }
+                    }
+
+                    Item {
+                        visible: !startupInfo.hasFeatureNotes
+                        Layout.fillHeight: true
                     }
                 }
             }

@@ -38,6 +38,7 @@
 #include <QPointer>
 #include <QFutureWatcher>
 #include <QtConcurrent>
+#include <QMutexLocker>
 #include <QTimer>
 #include <algorithm>
 #include <QJsonDocument>
@@ -1759,14 +1760,6 @@ void HttpUploadController::stopAccessPoint()
 {
     m_apClientPollTimer.stop();
 
-    if (!m_apConnectionName.isEmpty()) {
-        QString stderrText;
-        runNmcli({QStringLiteral("connection"), QStringLiteral("down"), m_apConnectionName},
-                 10000, nullptr, &stderrText);
-        runNmcli({QStringLiteral("connection"), QStringLiteral("delete"), m_apConnectionName},
-                 10000, nullptr, &stderrText);
-    }
-
     const bool changed = m_apActive || !m_apInterfaceName.isEmpty()
             || !m_apAddress.isNull();
     m_apActive = false;
@@ -1777,6 +1770,34 @@ void HttpUploadController::stopAccessPoint()
     if (changed) {
         emit accessPointChanged();
     }
+}
+
+void HttpUploadController::scheduleAccessPointTeardown(const QString &connectionName,
+                                                       bool disableRadio,
+                                                       quint64 stopGeneration)
+{
+    QtConcurrent::run([this, connectionName, disableRadio, stopGeneration]() {
+        QMutexLocker locker(&m_wifiNmcliMutex);
+        if (m_sessionGeneration != stopGeneration) {
+            return;
+        }
+        QString fwError;
+        if (!invokeUploadFirewallGuard(QStringLiteral("close"), &fwError)) {
+            qWarning() << "HttpUploadController:" << fwError;
+        }
+        if (!connectionName.isEmpty()) {
+            runNmcli({QStringLiteral("connection"), QStringLiteral("down"), connectionName},
+                     10000, nullptr, nullptr);
+            runNmcli({QStringLiteral("connection"), QStringLiteral("delete"), connectionName},
+                     10000, nullptr, nullptr);
+        }
+        if (disableRadio) {
+            QString error;
+            if (!setWifiRadioEnabled(false, &error) && !error.isEmpty()) {
+                qWarning() << "HttpUploadController: failed to disable Wi-Fi after session:" << error;
+            }
+        }
+    });
 }
 
 bool HttpUploadController::hasConnectedAccessPointClient() const
@@ -2229,12 +2250,6 @@ void HttpUploadController::beginSession(SessionKind kind)
     setSessionKind(kind);
 
     loadNetworkSettings();
-    QString wifiError;
-    if (!ensureWifiReadyForSession(&wifiError)) {
-        setSessionKind(SessionKind::FirmwareUpload);
-        setLastError(wifiError);
-        return;
-    }
     if (m_json) {
         const QString p = m_json->readString(QStringLiteral("httpUploadPort"));
         if (!p.isEmpty()) {
@@ -2261,27 +2276,7 @@ void HttpUploadController::beginSession(SessionKind kind)
         startLogDownloadSessionInternal();
         return;
     }
-    if (kind == SessionKind::UserProgUpload) {
-        startDeferredAccessPointSession();
-        return;
-    }
-
-    QString apError;
-    if (!startAccessPoint(&apError)) {
-        cleanupWifiAfterSession();
-        setSessionKind(SessionKind::FirmwareUpload);
-        setLastError(apError);
-        return;
-    }
-
-    m_sessionToken = randomToken();
-    emit sessionTokenChanged();
-    resetLogArchiveCache();
-    m_authorizedClientAddress = QHostAddress();
-
-    if (!activateHttpAfterAccessPoint()) {
-        return;
-    }
+    startDeferredAccessPointSession();
 }
 
 void HttpUploadController::startLogDownloadSessionInternal()
@@ -2309,6 +2304,9 @@ void HttpUploadController::startDeferredAccessPointSession()
     emit sessionTokenChanged();
     resetLogArchiveCache();
     m_authorizedClientAddress = QHostAddress();
+    setAccessPointClientConnected(false);
+    setAccessPointStatusText(tr("Подготовка..."));
+    emit accessPointChanged();
 
     QTimer::singleShot(0, this, [this, generation]() {
         if (generation != m_sessionGeneration) {
@@ -2331,17 +2329,6 @@ void HttpUploadController::launchAccessPointThenActivate(quint64 generation)
     setAccessPointStatusText(tr("Запуск точки доступа %1...").arg(m_apSsid));
     emit accessPointChanged();
 
-    const QString interfaceName = selectWifiInterface();
-    if (interfaceName.isEmpty()) {
-        cleanupWifiAfterSession();
-        setSessionKind(SessionKind::FirmwareUpload);
-        setLastError(tr("Wi-Fi интерфейс не найден."));
-        setAccessPointStatusText(QString());
-        m_apPassword.clear();
-        emit accessPointChanged();
-        return;
-    }
-
     const QString ssid = m_apSsid;
     const QString connectionName = m_apConnectionName;
     const QString configuredAddress = m_apConfiguredAddress;
@@ -2353,18 +2340,12 @@ void HttpUploadController::launchAccessPointThenActivate(quint64 generation)
         const AccessPointSetupResult result = watcher->result();
         watcher->deleteLater();
 
-        if (generation != m_sessionGeneration) {
-            if (result.profileCreated && !m_apActive) {
-                runNmcli({QStringLiteral("connection"), QStringLiteral("down"), connectionName},
-                         5000, nullptr, nullptr);
-                runNmcli({QStringLiteral("connection"), QStringLiteral("delete"), connectionName},
-                         5000, nullptr, nullptr);
-            }
+        if (result.cancelled || generation != m_sessionGeneration) {
             return;
         }
 
         if (!result.ok) {
-            cleanupWifiAfterSession();
+            scheduleAccessPointTeardown(connectionName, !wifiAlwaysEnabled(), generation);
             setSessionKind(SessionKind::FirmwareUpload);
             setLastError(result.errorText);
             setAccessPointStatusText(QString());
@@ -2383,8 +2364,60 @@ void HttpUploadController::launchAccessPointThenActivate(quint64 generation)
         activateHttpAfterAccessPoint();
     });
 
-    watcher->setFuture(QtConcurrent::run([this, interfaceName, ssid, connectionName, configuredAddress, password]() {
-        return runAccessPointSetup(interfaceName, ssid, connectionName, configuredAddress, password);
+    watcher->setFuture(QtConcurrent::run(
+            [this, generation, ssid, connectionName, configuredAddress, password]() {
+        AccessPointSetupResult result;
+        QMutexLocker locker(&m_wifiNmcliMutex);
+        if (generation != m_sessionGeneration) {
+            result.cancelled = true;
+            return result;
+        }
+
+        QString wifiError;
+        if (!setWifiRadioEnabled(true, &wifiError)) {
+            result.errorText = wifiError.isEmpty()
+                    ? tr("Не удалось включить Wi-Fi.")
+                    : wifiError;
+            return result;
+        }
+        if (generation != m_sessionGeneration) {
+            result.cancelled = true;
+            return result;
+        }
+
+        const QString interfaceName = selectWifiInterface();
+        if (interfaceName.isEmpty()) {
+            result.errorText = tr("Wi-Fi интерфейс не найден.");
+            return result;
+        }
+
+        result = runAccessPointSetup(interfaceName, ssid, connectionName,
+                                     configuredAddress, password);
+        if (generation != m_sessionGeneration) {
+            if (result.profileCreated) {
+                runNmcli({QStringLiteral("connection"), QStringLiteral("down"), connectionName},
+                         5000, nullptr, nullptr);
+                runNmcli({QStringLiteral("connection"), QStringLiteral("delete"), connectionName},
+                         5000, nullptr, nullptr);
+            }
+            result.ok = false;
+            result.cancelled = true;
+            result.profileCreated = false;
+            return result;
+        }
+        if (result.ok) {
+            QString fwError;
+            if (!invokeUploadFirewallGuard(QStringLiteral("open"), &fwError)) {
+                runNmcli({QStringLiteral("connection"), QStringLiteral("down"), connectionName},
+                         5000, nullptr, nullptr);
+                runNmcli({QStringLiteral("connection"), QStringLiteral("delete"), connectionName},
+                         5000, nullptr, nullptr);
+                result.ok = false;
+                result.profileCreated = false;
+                result.errorText = fwError;
+            }
+        }
+        return result;
     }));
 }
 
@@ -2401,23 +2434,10 @@ bool HttpUploadController::activateHttpAfterAccessPoint()
         m_listenAddress = QHostAddress();
         m_sessionToken.clear();
         emit sessionTokenChanged();
+        const QString connectionName = m_apConnectionName;
+        const quint64 stopGeneration = ++m_sessionGeneration;
         stopAccessPoint();
-        cleanupWifiAfterSession();
-        setSessionKind(SessionKind::FirmwareUpload);
-        return false;
-    }
-
-    QString fwError;
-    if (!invokeUploadFirewallGuard(QStringLiteral("open"), &fwError)) {
-        if (m_server->isListening()) {
-            m_server->close();
-        }
-        m_listenAddress = QHostAddress();
-        m_sessionToken.clear();
-        emit sessionTokenChanged();
-        stopAccessPoint();
-        cleanupWifiAfterSession();
-        setLastError(fwError);
+        scheduleAccessPointTeardown(connectionName, !wifiAlwaysEnabled(), stopGeneration);
         setSessionKind(SessionKind::FirmwareUpload);
         return false;
     }
@@ -2432,12 +2452,8 @@ bool HttpUploadController::activateHttpAfterAccessPoint()
 
 void HttpUploadController::stopSession()
 {
-    ++m_sessionGeneration;
+    const quint64 stopGeneration = ++m_sessionGeneration;
     resetLogArchiveCache();
-    QString fwError;
-    if (!invokeUploadFirewallGuard(QStringLiteral("close"), &fwError)) {
-        qWarning() << "HttpUploadController:" << fwError;
-    }
 
     m_sessionTimer.stop();
     if (m_client) {
@@ -2468,8 +2484,10 @@ void HttpUploadController::stopSession()
     setActive(false);
     m_baseUrl.clear();
     emit baseUrlChanged();
+    const QString connectionName = m_apConnectionName;
+    const bool disableRadio = !wifiAlwaysEnabled();
     stopAccessPoint();
-    cleanupWifiAfterSession();
+    scheduleAccessPointTeardown(connectionName, disableRadio, stopGeneration);
     updateLogDownloadUrl();
     updateQrCode();
     m_userProgDownloadFileName.clear();

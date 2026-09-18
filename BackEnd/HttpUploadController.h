@@ -186,6 +186,7 @@ private:
     struct AccessPointSetupResult {
         bool ok = false;
         bool profileCreated = false;
+        bool cancelled = false;
         QString errorText;
         QString interfaceName;
         QHostAddress address;
@@ -200,6 +201,9 @@ private:
     void startLogDownloadSessionInternal();
     void startDeferredAccessPointSession();
     void launchAccessPointThenActivate(quint64 generation);
+    void scheduleAccessPointTeardown(const QString &connectionName,
+                                     bool disableRadio,
+                                     quint64 stopGeneration);
     bool activateHttpAfterAccessPoint();
     void setLogDownloadCompleted(bool completed);
     void scheduleAccessPointShutdownAfterLogDownload();
@@ -357,6 +361,7 @@ private:
     QTimer m_apClientPollTimer;
     QProcess *m_idleWifiRadioProcess = nullptr;
     quint64 m_sessionGeneration = 0;
+    mutable QMutex m_wifiNmcliMutex;
 
     enum class LogArchiveState {
         Idle,

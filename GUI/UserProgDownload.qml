@@ -2,7 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
-import StratifyLabs.UI 2.0
 
 Item {
     id: root
@@ -35,7 +34,7 @@ Item {
                     width: Math.max(8, spinnerRoot.width * 0.16)
                     height: width
                     radius: width / 2
-                    color: "#42a5f5"
+                    color: root.fotekBlue
                     opacity: 0.25 + (index / spinnerDots.count) * 0.75
                     x: spinnerRoot.width / 2 - width / 2
                     y: spinnerRoot.height / 2 - height / 2
@@ -133,6 +132,11 @@ Item {
 
     readonly property string deviceSerialDisplay: savedJsonFieldOrDash("serialNumber")
     readonly property string deviceTypeDisplay: savedJsonFieldOrDash("deviceType")
+    property color fotekBlue: "#264093"
+    property color fotekOrange: "#faa731"
+    readonly property int screenMargin: 34
+    readonly property int panelRadius: 20
+    readonly property int headerHeight: 70
     readonly property int fontTitle: 36
     readonly property int fontBody: 26
     readonly property int fontCaption: 24
@@ -179,19 +183,31 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: "darkslategray"
+        color: "#F3F5F9"
     }
 
-    SLabel {
-        id: screenTitle
-        style: "label-primary lg"
-        text: root.foldersConfirmed
-              ? qsTr("СКАЧИВАНИЕ ПРОГРАММ ПОЛЬЗОВАТЕЛЯ")
-              : qsTr("ВЫБОР ПАПОК ДЛЯ СКАЧИВАНИЯ")
+    Item {
+        id: headerArea
         anchors {
             top: parent.top
-            left: parent.left
-            right: parent.right
+            horizontalCenter: parent.horizontalCenter
+            topMargin: root.screenMargin - 8
+        }
+        width: parent.width - root.screenMargin * 2
+        height: root.headerHeight
+
+        Text {
+            text: root.foldersConfirmed
+                  ? qsTr("СКАЧИВАНИЕ ПРОГРАММ ПОЛЬЗОВАТЕЛЯ")
+                  : qsTr("ВЫБОР ПАПОК ДЛЯ СКАЧИВАНИЯ")
+            anchors.centerIn: parent
+            color: root.fotekBlue
+            font.pixelSize: 36
+            font.bold: true
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            width: parent.width
+            lineHeight: 1.05
         }
     }
 
@@ -199,48 +215,78 @@ Item {
         id: folderSelectPanel
         visible: !root.foldersConfirmed
         anchors {
-            top: screenTitle.bottom
+            top: headerArea.bottom
+            topMargin: 22
             left: parent.left
             right: parent.right
-            bottom: returnButton.top
-            margins: 15
+            bottom: footerArea.top
+            bottomMargin: 20
+            leftMargin: root.screenMargin
+            rightMargin: root.screenMargin
         }
 
         ColumnLayout {
             anchors.fill: parent
-            spacing: 12
+            spacing: 16
 
             Text {
                 Layout.fillWidth: true
-                color: "white"
+                color: "black"
                 wrapMode: Text.Wrap
                 font.pixelSize: root.fontBody
+                horizontalAlignment: Text.AlignHCenter
+                lineHeight: 1.15
                 text: qsTr("Отметьте папки, программы из которых нужно скачать.")
             }
 
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                radius: 12
-                color: "#122323"
+                radius: root.panelRadius
+                color: "#80FFFFFF"
                 border.width: 1
-                border.color: "#42a5f5"
+                border.color: "#C5CAD3"
 
                 ListView {
                     id: scopeList
-                    anchors.fill: parent
-                    anchors.margins: 8
+                    anchors {
+                        fill: parent
+                        leftMargin: 10
+                        topMargin: 10
+                        bottomMargin: 10
+                        rightMargin: 22
+                    }
                     clip: true
                     model: scopeModel
-                    spacing: 8
+                    spacing: 10
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    ScrollBar.vertical: ScrollBar {
+                        id: scopeScrollBar
+                        policy: scopeList.contentHeight > scopeList.height
+                                ? ScrollBar.AlwaysOn
+                                : ScrollBar.AlwaysOff
+                        width: 14
+                        background: Rectangle {
+                            implicitWidth: 14
+                            radius: 7
+                            color: "#D5DAE3"
+                        }
+                        contentItem: Rectangle {
+                            implicitWidth: 14
+                            radius: 7
+                            color: root.fotekBlue
+                            opacity: scopeScrollBar.pressed ? 1 : 0.8
+                        }
+                    }
 
                     delegate: Rectangle {
                         width: scopeList.width
-                        height: 76
-                        radius: 10
-                        color: selected ? "#1E3274" : "#1a2a2a"
-                        border.width: 2
-                        border.color: selected ? "#faa731" : "#546e7a"
+                        height: 86
+                        radius: 16
+                        color: selected ? "#E8EEF8" : "#FFFFFF"
+                        border.width: selected ? 2 : 1
+                        border.color: selected ? root.fotekOrange : "#C5CAD3"
 
                         RowLayout {
                             anchors.fill: parent
@@ -248,18 +294,18 @@ Item {
                             spacing: 14
 
                             Rectangle {
-                                width: 32
-                                height: 32
-                                radius: 6
-                                color: selected ? "#faa731" : "transparent"
+                                width: 34
+                                height: 34
+                                radius: 8
+                                color: selected ? root.fotekOrange : "transparent"
                                 border.width: 2
-                                border.color: selected ? "#faa731" : "#90caf9"
+                                border.color: selected ? root.fotekOrange : root.fotekBlue
 
                                 Text {
                                     anchors.centerIn: parent
                                     visible: selected
                                     text: "✓"
-                                    color: "#1a2a2a"
+                                    color: "white"
                                     font.pixelSize: 22
                                     font.bold: true
                                 }
@@ -271,7 +317,7 @@ Item {
 
                                 Text {
                                     Layout.fillWidth: true
-                                    color: "white"
+                                    color: root.fotekBlue
                                     font.pixelSize: root.fontBody
                                     font.bold: true
                                     elide: Text.ElideRight
@@ -280,7 +326,7 @@ Item {
 
                                 Text {
                                     Layout.fillWidth: true
-                                    color: "#cfd8dc"
+                                    color: "#5A6478"
                                     font.pixelSize: root.fontSmall
                                     text: root.progCountText(progCount)
                                 }
@@ -296,7 +342,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         visible: scopeModel.count === 0
-                        color: "#cfd8dc"
+                        color: "#5A6478"
                         font.pixelSize: root.fontBody
                         text: qsTr("Нет папок пользовательских программ")
                     }
@@ -307,27 +353,43 @@ Item {
                 Layout.fillWidth: true
                 spacing: 12
 
-                SButton {
+                DialogActionButton {
+                    Layout.preferredWidth: 220
+                    Layout.preferredHeight: 64
                     text: qsTr("Выбрать все")
-                    style: "btn-primary"
+                    secondaryColor: root.fotekBlue
+                    secondaryBorderWidth: 1
+                    secondaryBorderColor: "#1E3274"
+                    cornerRadius: root.panelRadius
+                    labelPixelSize: 24
                     enabled: scopeModel.count > 0
-                    onClicked: root.setAllSelected(true)
+                    onPressed: root.setAllSelected(true)
                 }
 
-                SButton {
+                DialogActionButton {
+                    Layout.preferredWidth: 200
+                    Layout.preferredHeight: 64
                     text: qsTr("Снять все")
-                    style: "btn-secondary"
+                    secondaryColor: root.fotekBlue
+                    secondaryBorderWidth: 1
+                    secondaryBorderColor: "#1E3274"
+                    cornerRadius: root.panelRadius
+                    labelPixelSize: 24
                     enabled: scopeModel.count > 0
-                    onClicked: root.setAllSelected(false)
+                    onPressed: root.setAllSelected(false)
                 }
 
                 Item { Layout.fillWidth: true }
 
-                SButton {
-                    text: qsTr("Далее")
-                    style: "btn-success"
+                DialogActionButton {
+                    Layout.preferredWidth: 200
+                    Layout.preferredHeight: 64
+                    text: qsTr("ДАЛЕЕ")
+                    primary: true
+                    cornerRadius: root.panelRadius
+                    labelPixelSize: 26
                     enabled: root.selectedCount() > 0
-                    onClicked: root.startDownload()
+                    onPressed: root.startDownload()
                 }
             }
         }
@@ -337,11 +399,14 @@ Item {
         id: scrollView
         visible: root.foldersConfirmed
         anchors {
-            top: screenTitle.bottom
+            top: headerArea.bottom
+            topMargin: 22
             left: parent.left
             right: parent.right
-            bottom: returnButton.top
-            margins: 15
+            bottom: footerArea.top
+            bottomMargin: 20
+            leftMargin: root.screenMargin
+            rightMargin: root.screenMargin
         }
         clip: true
         contentWidth: width
@@ -357,14 +422,14 @@ Item {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: 12
-                    color: "#122323"
+                    radius: root.panelRadius
+                    color: "#80FFFFFF"
                     border.width: 1
                     border.color: root.wizardStep === 3
-                                  ? "#66bb6a"
+                                  ? "#2E7D32"
                                   : (httpUpload.active && httpUpload.accessPointClientConnected
-                                     ? "#66bb6a"
-                                     : (root.wizardStep >= 1 ? "#ffca28" : "#42a5f5"))
+                                     ? "#2E7D32"
+                                     : (root.wizardStep >= 1 ? root.fotekOrange : root.fotekBlue))
                 }
 
                 RowLayout {
@@ -381,10 +446,10 @@ Item {
 
                         Text {
                             color: root.wizardStep === 3
-                                   ? "#a5d6a7"
+                                   ? "#2E7D32"
                                    : (httpUpload.active && httpUpload.accessPointClientConnected
-                                      ? "#a5d6a7"
-                                      : (root.wizardStep >= 1 ? "#ffe082" : "#90caf9"))
+                                      ? "#2E7D32"
+                                      : (root.wizardStep >= 1 ? root.fotekOrange : root.fotekBlue))
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontTitle
@@ -406,7 +471,7 @@ Item {
 
                         Text {
                             visible: root.wizardStep !== 0
-                            color: "white"
+                            color: "black"
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontBody
@@ -429,7 +494,7 @@ Item {
 
                         Text {
                             visible: root.wizardStep === 0
-                            color: "white"
+                            color: "black"
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontBody
@@ -441,7 +506,7 @@ Item {
                                      && root.wizardStep >= 1
                                      && root.wizardStep <= 3
                                      && httpUpload.userProgDownloadFileName.length > 0
-                            color: "#bbdefb"
+                            color: "#5A6478"
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontCaption
@@ -455,10 +520,10 @@ Item {
 
                             Rectangle {
                                 anchors.fill: parent
-                                radius: 8
-                                color: httpUpload.accessPointClientConnected ? "#17331d" : "#3a2f12"
+                                radius: 12
+                                color: httpUpload.accessPointClientConnected ? "#E8F5E9" : "#FFF8E1"
                                 border.width: 1
-                                border.color: httpUpload.accessPointClientConnected ? "#66bb6a" : "#ffca28"
+                                border.color: httpUpload.accessPointClientConnected ? "#2E7D32" : root.fotekOrange
                             }
 
                             ColumnLayout {
@@ -469,7 +534,7 @@ Item {
                                 spacing: 8
 
                                 Text {
-                                    color: httpUpload.accessPointClientConnected ? "#a5d6a7" : "#ffe082"
+                                    color: httpUpload.accessPointClientConnected ? "#2E7D32" : root.fotekOrange
                                     Layout.fillWidth: true
                                     wrapMode: Text.Wrap
                                     font.pixelSize: root.fontBody
@@ -480,7 +545,7 @@ Item {
                                 }
 
                                 Text {
-                                    color: "white"
+                                    color: "black"
                                     Layout.fillWidth: true
                                     wrapMode: Text.Wrap
                                     font.pixelSize: root.fontBody
@@ -491,7 +556,7 @@ Item {
 
                                 Text {
                                     visible: httpUpload.accessPointStatusText.length > 0
-                                    color: "#cfd8dc"
+                                    color: "#5A6478"
                                     Layout.fillWidth: true
                                     wrapMode: Text.Wrap
                                     font.pixelSize: root.fontSmall
@@ -502,7 +567,7 @@ Item {
 
                         Text {
                             visible: root.wizardStep == 1
-                            color: "#e0f2f1"
+                            color: "#5A6478"
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontCaption
@@ -511,26 +576,29 @@ Item {
                                   + qsTr(" · Wi‑Fi: ") + (wifiProbe.wifiState ? qsTr("вкл") : qsTr("выкл"))
                         }
 
-                        SButton {
-                            text: qsTr("Повторить")
-                            style: "btn-primary"
-                            Layout.preferredWidth: 320
+                        DialogActionButton {
+                            text: qsTr("ПОВТОРИТЬ")
+                            primary: true
+                            Layout.preferredWidth: 280
+                            Layout.preferredHeight: 64
+                            cornerRadius: root.panelRadius
+                            labelPixelSize: 26
                             visible: httpUpload.lastError.length > 0 || httpUpload.logArchiveError.length > 0
-                            onClicked: root.startDownload()
+                            onPressed: root.startDownload()
                         }
                     }
 
                     Rectangle {
                         Layout.preferredWidth: 260
                         Layout.preferredHeight: 260
-                        radius: 10
+                        radius: 16
                         color: root.wizardStep === 3
-                               ? "#17331d"
-                               : (httpUpload.active && httpUpload.qrImagePath.length > 0 ? "white" : "#263238")
+                               ? "#E8F5E9"
+                               : (httpUpload.active && httpUpload.qrImagePath.length > 0 ? "white" : "#EEF1F6")
                         border.width: 1
                         border.color: root.wizardStep === 3 || (httpUpload.active && httpUpload.accessPointClientConnected)
-                                      ? "#66bb6a"
-                                      : (root.wizardStep === 0 ? "#42a5f5" : (httpUpload.active ? "#ffca28" : "#78909c"))
+                                      ? "#2E7D32"
+                                      : (root.wizardStep === 0 ? root.fotekBlue : (httpUpload.active ? root.fotekOrange : "#C5CAD3"))
 
                         Image {
                             visible: root.wizardStep > 0 && root.wizardStep < 3 && httpUpload.active && httpUpload.qrImagePath.length > 0
@@ -555,7 +623,7 @@ Item {
 
                             Text {
                                 width: parent.width
-                                color: "#bbdefb"
+                                color: root.fotekBlue
                                 horizontalAlignment: Text.AlignHCenter
                                 wrapMode: Text.Wrap
                                 font.pixelSize: root.fontCaption
@@ -567,7 +635,7 @@ Item {
                             visible: root.wizardStep === 3
                             anchors.centerIn: parent
                             width: parent.width - 30
-                            color: "#a5d6a7"
+                            color: "#2E7D32"
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontTitle
@@ -579,7 +647,7 @@ Item {
                             visible: root.wizardStep !== 0 && root.wizardStep !== 3 && (!httpUpload.active || httpUpload.qrImagePath.length === 0)
                             anchors.centerIn: parent
                             width: parent.width - 30
-                            color: "#cfd8dc"
+                            color: "#5A6478"
                             horizontalAlignment: Text.AlignHCenter
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontCaption
@@ -591,7 +659,7 @@ Item {
 
             Text {
                 visible: httpUpload.lastError.length > 0 || httpUpload.logArchiveError.length > 0
-                color: "#ffb3b3"
+                color: "#C62828"
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 font.pixelSize: root.fontBody
@@ -600,29 +668,41 @@ Item {
         }
     }
 
-    DialogActionButton {
-        id: returnButton
-        width: 180
+    Item {
+        id: footerArea
         height: 72
-        text: qsTr("НАЗАД")
-        secondaryColor: "#264093"
-        secondaryBorderWidth: 1
-        secondaryBorderColor: "#1E3274"
-        cornerRadius: 20
-        labelPixelSize: 30
         anchors {
             left: parent.left
+            right: parent.right
             bottom: parent.bottom
-            margins: 15
+            leftMargin: root.screenMargin
+            rightMargin: root.screenMargin
+            bottomMargin: root.screenMargin
         }
-        onPressed: {
-            if (root.foldersConfirmed && root.wizardStep !== 3) {
-                root.foldersConfirmed = false
-                if (typeof httpUpload !== "undefined" && httpUpload.active)
-                    httpUpload.stopSession()
-                return
+
+        DialogActionButton {
+            id: returnButton
+            width: 180
+            height: parent.height
+            text: qsTr("НАЗАД")
+            secondaryColor: root.fotekBlue
+            secondaryBorderWidth: 1
+            secondaryBorderColor: "#1E3274"
+            cornerRadius: root.panelRadius
+            labelPixelSize: 30
+            onPressed: {
+                if (root.foldersConfirmed && root.wizardStep !== 3) {
+                    root.foldersConfirmed = false
+                    if (typeof httpUpload !== "undefined" && httpUpload.active)
+                        httpUpload.stopSession()
+                    return
+                }
+                root.returnButtonPressed()
             }
-            root.returnButtonPressed()
+            anchors {
+                left: parent.left
+                verticalCenter: parent.verticalCenter
+            }
         }
     }
 

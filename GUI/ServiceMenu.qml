@@ -4,9 +4,9 @@ import QtQuick.Controls 2.15
 
 import StratifyLabs.UI 2.0
 
-Item {
+ServiceFrame {
     id: serviceMenuRoot
-    signal returnButtonPressed()
+    title: qsTr("СЕРВИСНОЕ МЕНЮ")
     signal serialNumberButtonPressed()
     signal softwareUpdateButtonPressed()
     signal wifiFileReceiveButtonPressed()
@@ -46,24 +46,6 @@ Item {
         deleteAllUserProgsRequested()
     }
 
-    Rectangle {
-        id: background
-        anchors.fill: parent
-        color: "#F3F5F9"
-//        color: "darkslategray"
-    }
-    
-    SLabel {
-        id: screenTitle
-        style: "label-primary lg"
-        text: qsTr("Сервисное меню")
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-    }
-    
     GridLayout {
         anchors {
             top: screenTitle.bottom
@@ -179,18 +161,6 @@ Item {
             Layout.preferredHeight: serviceMenuRoot.menuButtonHeight
             text: qsTr("Управление ИСН")
             onPressed: serviceMenuRoot.isnCorrectionButtonPressed()
-        }
-    }
-
-    SButton {
-        id: retButton
-        style: "btn-secondary"
-        text: qsTr("Назад")
-        onPressed: returnButtonPressed()
-        anchors {
-            left: parent.left
-            bottom: parent.bottom
-            margins: 15
         }
     }
 

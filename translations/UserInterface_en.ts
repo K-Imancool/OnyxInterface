@@ -781,6 +781,10 @@ If the error persists, contact the service department.</translation>
         <translation>Starting access point %1...</translation>
     </message>
     <message>
+        <source>Подготовка...</source>
+        <translation>Preparing...</translation>
+    </message>
+    <message>
         <source>Не удалось создать профиль точки доступа.</source>
         <translation>Failed to create the access point profile.</translation>
     </message>
@@ -1354,6 +1358,30 @@ PROGRAM</translation>
     <message>
         <source>Не удалось переключить Wi-Fi</source>
         <translation>Failed to toggle Wi-Fi</translation>
+    </message>
+    <message>
+        <source>Интернет доступен</source>
+        <translation>Internet is available</translation>
+    </message>
+    <message>
+        <source>Интернет доступен, среднее %1 мс</source>
+        <translation>Internet is available, average %1 ms</translation>
+    </message>
+    <message>
+        <source>Интернет доступен, среднее %1 мс (%2 из 4)</source>
+        <translation>Internet is available, average %1 ms (%2 of 4)</translation>
+    </message>
+    <message>
+        <source>Нет прав на ping (нужен sudo)</source>
+        <translation>No permission to ping (sudo required)</translation>
+    </message>
+    <message>
+        <source>Нет ответа (таймаут)</source>
+        <translation>No reply (timeout)</translation>
+    </message>
+    <message>
+        <source>Нет доступа в интернет</source>
+        <translation>No internet access</translation>
     </message>
 </context>
 <context>
@@ -2575,6 +2603,10 @@ The power of each output may change depending on the other output, because only 
         <translation>Software versions</translation>
     </message>
     <message>
+        <source>Дополнительно</source>
+        <translation>Additional</translation>
+    </message>
+    <message>
         <source>НАЗАД</source>
         <translation>BACK</translation>
     </message>
@@ -3286,6 +3318,30 @@ After a connection is detected, the QR code will change.</translation>
         <source>WiFi всегда включен</source>
         <translation>Wi-Fi always on</translation>
     </message>
+    <message>
+        <source>НАСТРОЙКИ WI-FI</source>
+        <translation>WI-FI SETTINGS</translation>
+    </message>
+    <message>
+        <source>Адрес Ethernet:</source>
+        <translation>Ethernet address:</translation>
+    </message>
+    <message>
+        <source>кабель подключен, адрес не получен</source>
+        <translation>cable connected, no address yet</translation>
+    </message>
+    <message>
+        <source>Ping</source>
+        <translation>Ping</translation>
+    </message>
+    <message>
+        <source>Проверка...</source>
+        <translation>Checking...</translation>
+    </message>
+    <message>
+        <source>Проверка доступа в интернет…</source>
+        <translation>Checking internet access…</translation>
+    </message>
 </context>
 <context>
     <name>WiFiPassRequest</name>
@@ -3447,6 +3503,18 @@ After a connection is detected, the QR code will change.</translation>
     <message>
         <source>Не удалось включить точку доступа</source>
         <translation>Failed to enable the access point</translation>
+    </message>
+    <message>
+        <source>1. Подготовка</source>
+        <translation>1. Preparation</translation>
+    </message>
+    <message>
+        <source>Идёт подготовка. Подождите.</source>
+        <translation>Preparing. Please wait.</translation>
+    </message>
+    <message>
+        <source>Подготовка</source>
+        <translation>Preparation</translation>
     </message>
     <message>
         <source>Создание точки доступа...</source>

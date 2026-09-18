@@ -149,14 +149,20 @@ Item {
         color: "darkslategray"
     }
 
-    SLabel {
+    Rectangle {
         id: logTitle
-        style: "label-primary lg"
-        text: qsTr("Журнал событий (лог-файл)")
+        color: "#1D7DC5"
         anchors {
             top: parent.top
-            left: parent.left
-            right: parent.right
+        }
+        height: 60
+        width: parent.width
+        Text {
+            text: qsTr("ЖУРНАЛ СОБЫТИЙ (ЛОГ-ФАЙЛ)")
+            font.pixelSize: 36
+            color: "white"
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
         }
     }
 

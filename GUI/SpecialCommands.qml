@@ -4,16 +4,16 @@ import QtQuick.Controls 2.15
 
 import StratifyLabs.UI 2.0
 
-Item {
+ServiceFrame {
     id: specialCommandsRoot
 
-    signal returnButtonPressed()
+    title: qsTr("СПЕЦИАЛЬНЫЕ КОМАНДЫ")
     signal deleteAllUserProgsRequested()
 
     property bool serviceMenuNoPassword: false
 
     readonly property int menuButtonWidth: 550
-    readonly property int menuButtonHeight: 112
+    readonly property int menuButtonHeight: 95
     readonly property int menuColumnsSpacing: 24
 
     function readServiceMenuNoPassword() {
@@ -31,22 +31,6 @@ Item {
 
     Component.onCompleted: {
         serviceMenuNoPassword = readServiceMenuNoPassword()
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        color: "darkslategray"
-    }
-
-    SLabel {
-        id: screenTitle
-        style: "label-primary lg"
-        text: qsTr("СПЕЦ КОМАНДЫ")
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
     }
 
     GridLayout {
@@ -182,18 +166,6 @@ Item {
             text: qsTr("Удалить программы\nпользователя")
             onPressed: confirmDeleteDialog.open()
         }
-    }
-
-    SButton {
-        id: returnButton
-        style: "btn-secondary"
-        text: qsTr("Назад")
-        anchors {
-            left: parent.left
-            bottom: parent.bottom
-            margins: 15
-        }
-        onPressed: specialCommandsRoot.returnButtonPressed()
     }
 
     Dialog {
