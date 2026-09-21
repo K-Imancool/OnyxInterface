@@ -1,7 +1,12 @@
 #include "apppaths.h"
 
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QtGlobal>
 #include <QUrl>
+#include <QVariantList>
+#include <QVariantMap>
 
 #include <cstdlib>
 
@@ -27,6 +32,25 @@ QString defaultFotekRoot()
 QString defaultReleasesRoot()
 {
     return QDir::homePath() + QStringLiteral("/releases");
+}
+
+bool isVideoFileName(const QString &fileName)
+{
+    static const QStringList suffixes{
+        QStringLiteral("mp4"), QStringLiteral("avi"), QStringLiteral("mkv"),
+        QStringLiteral("mov"), QStringLiteral("wmv"), QStringLiteral("flv"),
+        QStringLiteral("webm"), QStringLiteral("m4v"), QStringLiteral("mpeg"),
+        QStringLiteral("mpg")
+    };
+    return suffixes.contains(QFileInfo(fileName).suffix().toLower());
+}
+
+QDir videoListingDir(const QString &folderPath)
+{
+    QDir directory(folderPath);
+    directory.setFilter(QDir::Files | QDir::Readable);
+    directory.setSorting(QDir::Name);
+    return directory;
 }
 
 QString takeArgValue(int argc, char *argv[], int &i, const QLatin1String &keyEq, const QLatin1String &key)
@@ -150,6 +174,81 @@ QString AppPaths::scopesDir() const
 QString AppPaths::videoDir() const
 {
     return m_fotekRoot + QStringLiteral("/Video");
+}
+
+QStringList AppPaths::listVideoFileNames(const QString &folderPath) const
+{
+    const QString path = folderPath.isEmpty() ? videoDir() : folderPath;
+    QDir directory = videoListingDir(path);
+    if (!directory.exists()) {
+        return {};
+    }
+
+    QStringList names;
+    const QFileInfoList infos = directory.entryInfoList();
+    names.reserve(infos.size());
+    for (const QFileInfo &info : infos) {
+        if (info.isSymLink() || !isVideoFileName(info.fileName())) {
+            continue;
+        }
+        names.append(info.fileName());
+    }
+    return names;
+}
+
+QVariantList AppPaths::listVideoFiles() const
+{
+    QVariantList result;
+    QDir directory = videoListingDir(videoDir());
+    if (!directory.exists()) {
+        return result;
+    }
+
+    const QFileInfoList infos = directory.entryInfoList();
+    result.reserve(infos.size());
+    for (const QFileInfo &info : infos) {
+        if (info.isSymLink() || !isVideoFileName(info.fileName())) {
+            continue;
+        }
+        QVariantMap item;
+        item.insert(QStringLiteral("fileName"), info.fileName());
+        item.insert(QStringLiteral("fileSize"), info.size());
+        result.append(item);
+    }
+    return result;
+}
+
+int AppPaths::deleteVideoFiles(const QStringList &fileNames)
+{
+    const QDir directory(videoDir());
+    const QString root = QDir::cleanPath(directory.absolutePath()) + QLatin1Char('/');
+    int deleted = 0;
+
+    for (const QString &rawName : fileNames) {
+        const QString name = QFileInfo(rawName).fileName();
+        if (name.isEmpty() || name == QLatin1String(".") || name == QLatin1String("..")) {
+            continue;
+        }
+        if (!isVideoFileName(name)) {
+            continue;
+        }
+
+        const QString path = QDir::cleanPath(directory.absoluteFilePath(name));
+        if (!path.startsWith(root)) {
+            continue;
+        }
+
+        const QFileInfo info(path);
+        if (!info.exists() || !info.isFile() || info.isSymLink()) {
+            continue;
+        }
+        if (QFile::remove(path)) {
+            ++deleted;
+        } else {
+            qWarning("Failed to delete video file: %s", qUtf8Printable(path));
+        }
+    }
+    return deleted;
 }
 
 QString AppPaths::soundsDir() const

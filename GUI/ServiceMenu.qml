@@ -18,6 +18,7 @@ ServiceFrame {
     signal secretKeysButtonPressed()
     signal featureOptionsButtonPressed()
     signal isnCorrectionButtonPressed()
+    signal videoDeleteButtonPressed()
     signal deleteAllUserProgsRequested()
 
     property string accessLevel: "full"
@@ -161,6 +162,15 @@ ServiceFrame {
             Layout.preferredHeight: serviceMenuRoot.menuButtonHeight
             text: qsTr("Управление ИСН")
             onPressed: serviceMenuRoot.isnCorrectionButtonPressed()
+        }
+
+        SButton {
+            id: videoDeleteButton
+            style: "btn-primary lg"
+            Layout.preferredWidth: serviceMenuRoot.menuButtonWidth
+            Layout.preferredHeight: serviceMenuRoot.menuButtonHeight
+            text: qsTr("Удаление видео")
+            onPressed: serviceMenuRoot.videoDeleteButtonPressed()
         }
     }
 

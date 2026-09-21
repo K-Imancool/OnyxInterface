@@ -3,7 +3,9 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QUrl>
+#include <QVariantList>
 
 /**
  * Единый центр путей к данным FOTEK, журналам и releases.
@@ -64,6 +66,12 @@ public:
     QString modesDir() const;
     QString scopesDir() const;
     QString videoDir() const;
+    /** Имена видеофайлов в каталоге. Пустой путь — videoDir(). */
+    Q_INVOKABLE QStringList listVideoFileNames(const QString &folderPath = QString()) const;
+    /** Список {fileName, fileSize} видеофайлов в videoDir(). */
+    Q_INVOKABLE QVariantList listVideoFiles() const;
+    /** Удаляет указанные файлы только из videoDir(). Возвращает число успешно удалённых. */
+    Q_INVOKABLE int deleteVideoFiles(const QStringList &fileNames);
     QString soundsDir() const;
     QString downloadDir() const;
 

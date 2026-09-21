@@ -1,6 +1,6 @@
 #include "gstreamervideoplayer.h"
+#include "apppaths.h"
 
-#include <QDir>
 #include <QLoggingCategory>
 #include <QQuickItem>
 #include <QQuickWindow>
@@ -199,26 +199,7 @@ QString GStreamerVideoPlayer::errorString() const
 QStringList GStreamerVideoPlayer::scanVideoFiles(
         const QString &folderPath) const
 {
-    QDir directory(folderPath);
-    if (!directory.exists()) {
-        return {};
-    }
-
-    directory.setNameFilters({
-        QStringLiteral("*.mp4"), QStringLiteral("*.MP4"),
-        QStringLiteral("*.avi"), QStringLiteral("*.AVI"),
-        QStringLiteral("*.mkv"), QStringLiteral("*.MKV"),
-        QStringLiteral("*.mov"), QStringLiteral("*.MOV"),
-        QStringLiteral("*.wmv"), QStringLiteral("*.WMV"),
-        QStringLiteral("*.flv"), QStringLiteral("*.FLV"),
-        QStringLiteral("*.webm"), QStringLiteral("*.WEBM"),
-        QStringLiteral("*.m4v"), QStringLiteral("*.M4V"),
-        QStringLiteral("*.mpeg"), QStringLiteral("*.MPEG"),
-        QStringLiteral("*.mpg"), QStringLiteral("*.MPG")
-    });
-    directory.setFilter(QDir::Files | QDir::Readable);
-    directory.setSorting(QDir::Name);
-    return directory.entryList();
+    return AppPaths::instance().listVideoFileNames(folderPath);
 }
 
 void GStreamerVideoPlayer::setLocalFile(const QString &filePath)

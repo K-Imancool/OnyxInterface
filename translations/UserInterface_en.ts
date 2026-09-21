@@ -28,10 +28,6 @@
         <translation>Not specified</translation>
     </message>
     <message>
-        <source>Об аппарате</source>
-        <translation>About the unit</translation>
-    </message>
-    <message>
         <source>Тип аппарата</source>
         <translation>Unit type</translation>
     </message>
@@ -44,10 +40,6 @@
         <translation>Comments</translation>
     </message>
     <message>
-        <source>Версия приложения</source>
-        <translation type="vanished">Application version</translation>
-    </message>
-    <message>
         <source>Версии ПО модулей</source>
         <translation>Module firmware versions</translation>
     </message>
@@ -58,10 +50,6 @@
     <message>
         <source>Рабочая прошивка</source>
         <translation>Main firmware</translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
     </message>
     <message>
         <source>повреждена</source>
@@ -82,6 +70,10 @@
     <message>
         <source>Модуль</source>
         <translation>Module</translation>
+    </message>
+    <message>
+        <source>СВЕДЕНИЯ ОБ АППАРАТЕ</source>
+        <translation>DEVICE INFORMATION</translation>
     </message>
 </context>
 <context>
@@ -118,14 +110,6 @@ eff.</translation>
         <translation>SERVICE MENU</translation>
     </message>
     <message>
-        <source>ЖУРНАЛ СОБЫТИЙ</source>
-        <translation type="vanished">EVENT LOG</translation>
-    </message>
-    <message>
-        <source>НАСТРОЙКА ДАТЫ И ВРЕМЕНИ</source>
-        <translation type="vanished">DATE AND TIME</translation>
-    </message>
-    <message>
         <source>НАЗАД</source>
         <translation>BACK</translation>
     </message>
@@ -148,10 +132,6 @@ eff.</translation>
     <message>
         <source>ВОЙТИ</source>
         <translation>LOG IN</translation>
-    </message>
-    <message>
-        <source>АКТИВАЦИЯ ДОПОЛНИТЕЛЬНЫХ ОПЦИЙ</source>
-        <translation type="vanished">ACTIVATE ADDITIONAL OPTIONS</translation>
     </message>
     <message>
         <source>Для активации дополнительных опций введите ключ</source>
@@ -235,12 +215,12 @@ OPTIONS</translation>
         <translation>REAL</translation>
     </message>
     <message>
-        <source>ПОДКЛЮЧИТЕ БАЛЛОН</source>
-        <translation>CONNECT CYLINDER</translation>
-    </message>
-    <message>
         <source>Продувка...</source>
         <translation>Blowing...</translation>
+    </message>
+    <message>
+        <source>ПОДКЛЮЧИТЕ БАЛЛОН!</source>
+        <translation>CONNECT THE CYLINDER!</translation>
     </message>
 </context>
 <context>
@@ -395,14 +375,6 @@ OPTIONS</translation>
 <context>
     <name>FeatureOptionsManager</name>
     <message>
-        <source>Управление опциями</source>
-        <translation>Option management</translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
-    </message>
-    <message>
         <source>Ключ №%1: ВКЛ</source>
         <translation>Key #%1: ON</translation>
     </message>
@@ -418,24 +390,16 @@ OPTIONS</translation>
         <source>Все ключи: ВЫКЛ</source>
         <translation>All keys: OFF</translation>
     </message>
+    <message>
+        <source>УПРАВЛЕНИЕ ОПЦИЯМИ</source>
+        <translation>OPTION MANAGEMENT</translation>
+    </message>
 </context>
 <context>
     <name>FullSocketEditor</name>
     <message>
         <source>Другой инструмент</source>
         <translation>Other electrode</translation>
-    </message>
-    <message>
-        <source>Подача импульсов СРЕДНЯЯ</source>
-        <translation type="vanished">MEDIUM pulse rate</translation>
-    </message>
-    <message>
-        <source>Подача импульсов РЕДКАЯ</source>
-        <translation type="vanished">SLOW pulse rate</translation>
-    </message>
-    <message>
-        <source>Подача импульсов ЧАСТАЯ</source>
-        <translation type="vanished">FAST pulse rate</translation>
     </message>
     <message>
         <source>РЕЗАНИЕ</source>
@@ -501,15 +465,15 @@ OPTIONS</translation>
 <context>
     <name>FullSocketInstrButton</name>
     <message>
-        <source>Другой инструмент</source>
-        <translation>Other electrode</translation>
+        <source>Выбрать инструмент</source>
+        <translation>Select electrode</translation>
     </message>
 </context>
 <context>
     <name>FullSocketModeButton</name>
     <message>
-        <source>Выберите режим</source>
-        <translation>SELECT A MODE</translation>
+        <source>Выбрать режим</source>
+        <translation>Select mode</translation>
     </message>
 </context>
 <context>
@@ -602,14 +566,6 @@ s</translation>
 <context>
     <name>FullscreenErrorOverlay</name>
     <message>
-        <source>ДЛИТЕЛЬНАЯ РАБОТА БЕЗ КАСАНИЯ ТКАНИ И/ИЛИ ОБРАЗОВАНИЯ ДУГИ.
-ОТПУСКАЙТЕ ПЕДАЛЬ (КНОПКУ ДЕРЖАТЕЛЯ), КОГДА ВОЗДЕЙСТВИЕ НЕ ПРОИЗВОДИТСЯ.
-ПРОВЕРЬТЕ ИСПРАВНОСТЬ ПЕДАЛИ И/ИЛИ ДЕРЖАТЕЛЯ С КНОПКАМИ.</source>
-        <translation>PROLONGED OPERATION WITHOUT TISSUE CONTACT AND/OR ARC FORMATION.
-RELEASE THE PEDAL (HANDPIECE BUTTON) WHEN NOT APPLYING ENERGY.
-CHECK THE PEDAL AND/OR THE HANDPIECE WITH BUTTONS.</translation>
-    </message>
-    <message>
         <source>ЗАМЫКАНИЕ ИНСТРУМЕНТА.
 ПЕРЕУСТАНОВИТЕ ИНСТРУМЕНТ НА ТКАНЬ И ПОВТОРИТЕ АКТИВАЦИЮ</source>
         <translation>INSTRUMENT SHORT CIRCUIT.
@@ -640,6 +596,28 @@ FULLY OPEN THE CYLINDER VALVES.</translation>
 Если ошибка повторится, обратитесь в сервисную службу.</source>
         <translation>Turn the unit off and turn it back on after 15 seconds.
 If the error persists, contact the service department.</translation>
+    </message>
+    <message>
+        <source>КОАГУЛЯЦИЯ ЗАВЕРШЕНА</source>
+        <translation>COAGULATION COMPLETE</translation>
+    </message>
+    <message>
+        <source>ПРОВЕРЬТЕ ИСПОЛЬЗУЕМЫЙ РАСТВОР (0,9% NaCl)
+В СЛУЧАЕ ПОВТОРЕНИЯ ОШИБКИ, ЗАМЕНИТЕ ИНСТРУМЕНТ И (ИЛИ) РЕЗЕКТОСКОП.
+ПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ ДЕРЖАТЕЛЯ И РЕЗЕКТОСКОПА.</source>
+        <translation>CHECK THE IRRIGATION SOLUTION IN USE (0.9% NaCl)
+IF THE ERROR RECURS, REPLACE THE INSTRUMENT AND/OR THE RESECTOSCOPE.
+CHECK THE HANDPIECE AND RESECTOSCOPE CONNECTION.</translation>
+    </message>
+    <message>
+        <source>ПРОВЕРЬТЕ, ЧТО РАСТВОР НЕ ПОПАЛ В РЕЗЕКТОСКОП ИЛИ РАЗЪЁМ ПОДКЛЮЧЕНИЯ ДЕРЖАТЕЛЯ. ПРОСУШИТЕ РЕЗЕКТОСКОП И ДЕРЖАТЕЛЬ.
+В СЛУЧАЕ ПОВТОРЕНИЯ ОШИБКИ, ЗАМЕНИТЕ РЕЗЕКТОСКОП.</source>
+        <translation>MAKE SURE THE SOLUTION HAS NOT ENTERED THE RESECTOSCOPE OR THE HANDPIECE CONNECTOR. DRY THE RESECTOSCOPE AND THE HANDPIECE.
+IF THE ERROR RECURS, REPLACE THE RESECTOSCOPE.</translation>
+    </message>
+    <message>
+        <source>ЗАХВАЧЕН СЛИШКОМ БОЛЬШОЙ ОБЪЁМ ТКАНИ И/ИЛИ ВЫБРАН РЕЖИМ НЕДОСТАТОЧНОЙ МОЩНОСТИ.</source>
+        <translation>TOO MUCH TISSUE HAS BEEN GRASPED AND/OR A MODE WITH INSUFFICIENT POWER HAS BEEN SELECTED.</translation>
     </message>
 </context>
 <context>
@@ -763,10 +741,6 @@ If the error persists, contact the service department.</translation>
     <message>
         <source>Адрес загрузки ещё не готов.</source>
         <translation>Upload address is not ready yet.</translation>
-    </message>
-    <message>
-        <source>Если телефон уже подключён к ONYX-TEST, откройте этот QR для страницы загрузки.</source>
-        <translation type="vanished">If the phone is already connected to ONYX-TEST, open this QR for the upload page.</translation>
     </message>
     <message>
         <source>Устройство подключено. Отсканируйте QR для открытия страницы загрузки.</source>
@@ -912,6 +886,14 @@ If the error persists, contact the service department.</translation>
         <source>Не удалось импортировать программы пользователя.</source>
         <translation>Failed to import user programs.</translation>
     </message>
+    <message>
+        <source>Не удалось выключить Wi-Fi.</source>
+        <translation>Failed to disable Wi-Fi.</translation>
+    </message>
+    <message>
+        <source>Не удалось выключить Wi-Fi: %1</source>
+        <translation>Failed to disable Wi-Fi: %1</translation>
+    </message>
 </context>
 <context>
     <name>InstrumEditor</name>
@@ -944,20 +926,16 @@ If the error persists, contact the service department.</translation>
         <translation>CANCEL</translation>
     </message>
     <message>
-        <source>Другой инструмент</source>
-        <translation type="vanished">Other electrode</translation>
-    </message>
-    <message>
         <source>ПРИНЯТЬ</source>
         <translation>ACCEPT</translation>
     </message>
     <message>
-        <source>Рекомендуемый уровень</source>
-        <translation>Recommended level</translation>
-    </message>
-    <message>
         <source>ДРУГОЙ ИНСТРУМЕНТ</source>
         <translation>OTHER ELECTRODE</translation>
+    </message>
+    <message>
+        <source>Рекомендуемый уровень мощности</source>
+        <translation>Recommended power level</translation>
     </message>
 </context>
 <context>
@@ -969,10 +947,6 @@ If the error persists, contact the service department.</translation>
 </context>
 <context>
     <name>IsnCorrection</name>
-    <message>
-        <source>Управление ИСН</source>
-        <translation>ISN control</translation>
-    </message>
     <message>
         <source>ИСН: Включен</source>
         <translation>ISN: On</translation>
@@ -1018,20 +992,12 @@ If the error persists, contact the service department.</translation>
         <translation>Store DAC value</translation>
     </message>
     <message>
-        <source>Назад</source>
-        <translation>back</translation>
+        <source>УПРАВЛЕНИЕ ИСН</source>
+        <translation>ISN CONTROL</translation>
     </message>
 </context>
 <context>
     <name>ItemList</name>
-    <message>
-        <source>Редактирование названия</source>
-        <translation type="vanished">Edit name</translation>
-    </message>
-    <message>
-        <source>Укажите новое имя:</source>
-        <translation type="vanished">Enter a new name:</translation>
-    </message>
     <message>
         <source>ОТМЕНА</source>
         <translation>CANCEL</translation>
@@ -1159,10 +1125,6 @@ If the error persists, contact the service department.</translation>
         <translation>No records</translation>
     </message>
     <message>
-        <source>Журнал событий (лог-файл)</source>
-        <translation>Event log</translation>
-    </message>
-    <message>
         <source>Фильтр:</source>
         <translation>Filter:</translation>
     </message>
@@ -1183,10 +1145,6 @@ If the error persists, contact the service department.</translation>
         <translation>Not selected</translation>
     </message>
     <message>
-        <source>Обновить</source>
-        <translation type="vanished">Refresh</translation>
-    </message>
-    <message>
         <source>Записей: %1</source>
         <translation>Records: %1</translation>
     </message>
@@ -1203,10 +1161,6 @@ If the error persists, contact the service department.</translation>
         <translation>Selected: %1</translation>
     </message>
     <message>
-        <source>Назад</source>
-        <translation type="vanished">back</translation>
-    </message>
-    <message>
         <source>Дата:</source>
         <translation>Date:</translation>
     </message>
@@ -1217,6 +1171,10 @@ If the error persists, contact the service department.</translation>
     <message>
         <source>СКАЧАТЬ ЛОГ-ФАЙЛ</source>
         <translation>DOWNLOAD LOG FILE</translation>
+    </message>
+    <message>
+        <source>ЖУРНАЛ СОБЫТИЙ (ЛОГ-ФАЙЛ)</source>
+        <translation>EVENT LOG (LOG FILE)</translation>
     </message>
 </context>
 <context>
@@ -1326,6 +1284,10 @@ PROGRAM</translation>
         <source>Выберите тип подачи импульсов</source>
         <translation>Select pulse rate</translation>
     </message>
+    <message>
+        <source>ПОДРОБНЕЕ</source>
+        <translation>DETAILS</translation>
+    </message>
 </context>
 <context>
     <name>ModePowerRect</name>
@@ -1360,28 +1322,24 @@ PROGRAM</translation>
         <translation>Failed to toggle Wi-Fi</translation>
     </message>
     <message>
-        <source>Интернет доступен</source>
-        <translation>Internet is available</translation>
-    </message>
-    <message>
-        <source>Интернет доступен, среднее %1 мс</source>
-        <translation>Internet is available, average %1 ms</translation>
-    </message>
-    <message>
-        <source>Интернет доступен, среднее %1 мс (%2 из 4)</source>
-        <translation>Internet is available, average %1 ms (%2 of 4)</translation>
-    </message>
-    <message>
-        <source>Нет прав на ping (нужен sudo)</source>
-        <translation>No permission to ping (sudo required)</translation>
-    </message>
-    <message>
         <source>Нет ответа (таймаут)</source>
         <translation>No reply (timeout)</translation>
     </message>
     <message>
         <source>Нет доступа в интернет</source>
         <translation>No internet access</translation>
+    </message>
+    <message>
+        <source>Интернет доступен,
+среднее %1 мс (%2 из 4)</source>
+        <translation>Internet available,
+average %1 ms (%2 of 4)</translation>
+    </message>
+    <message>
+        <source>Интернет доступен,
+среднее %1 мс</source>
+        <translation>Internet available,
+average %1 ms</translation>
     </message>
 </context>
 <context>
@@ -1443,22 +1401,24 @@ power:</translation>
 <context>
     <name>NeutralPowerWarningDialog</name>
     <message>
-        <source>ОПАСНОСТЬ ПЕРЕГРЕВА\n в области наложения нейтрального электрода (НЭ)! Мощность выхода %1 превышает безопасный уровень для выбранного НЭ (макс %2).
-ПРОДОЛЖИТЬ с текущим уровнем мощности?
-ИЛИ
-ПОНИЗИТЬ мощность до безопасного уровня?</source>
-        <translation>Danger of overheating in the neutral electrode (NE) application area! %1 output power exceeds the safety level for the selected NE (max %2).
-CONTINUE with the current power level?
-OR
-REDUCE power to a safe level?</translation>
-    </message>
-    <message>
         <source>ПРОДОЛЖИТЬ</source>
         <translation>CONTINUE</translation>
     </message>
     <message>
         <source>ПОНИЗИТЬ</source>
         <translation>REDUCE</translation>
+    </message>
+    <message>
+        <source>ОПАСНОСТЬ ПЕРЕГРЕВА
+ в области наложения нейтрального электрода (НЭ)! Мощность выхода %1 превышает безопасный уровень для выбранного НЭ (макс %2).
+ПРОДОЛЖИТЬ с текущим уровнем мощности?
+ИЛИ
+ПОНИЗИТЬ мощность до безопасного уровня?</source>
+        <translation>OVERHEATING HAZARD
+ in the neutral electrode (NE) application area! Output power %1 exceeds the safe level for the selected NE (max %2).
+CONTINUE at the current power level?
+OR
+REDUCE the power to a safe level?</translation>
     </message>
 </context>
 <context>
@@ -1542,10 +1502,6 @@ EMPTY</translation>
         <translation>Confirm deletion</translation>
     </message>
     <message>
-        <source>Область &quot;%1&quot; будет удалена. Продолжить?</source>
-        <translation>Area &quot;%1&quot; will be deleted. Continue?</translation>
-    </message>
-    <message>
         <source>Программа &quot;%1&quot; будет удалена. Продолжить?</source>
         <translation>Program &quot;%1&quot; will be deleted. Continue?</translation>
     </message>
@@ -1570,16 +1526,24 @@ EMPTY</translation>
         <translation>ADD NEW FOLDER</translation>
     </message>
     <message>
-        <source>Новая папка</source>
-        <translation>New folder</translation>
-    </message>
-    <message>
         <source>Укажите название папки:</source>
         <translation>Enter a folder name:</translation>
     </message>
     <message>
         <source>Название</source>
         <translation>Name</translation>
+    </message>
+    <message>
+        <source>Папка &quot;%1&quot; будет удалена. Продолжить?</source>
+        <translation>Folder &quot;%1&quot; will be deleted. Continue?</translation>
+    </message>
+    <message>
+        <source>УДАЛИТЬ</source>
+        <translation>DELETE</translation>
+    </message>
+    <message>
+        <source>НОВАЯ ПАПКА</source>
+        <translation>NEW FOLDER</translation>
     </message>
 </context>
 <context>
@@ -1601,10 +1565,6 @@ EMPTY</translation>
         <translation>SELECT A FOLDER</translation>
     </message>
     <message>
-        <source>Категория</source>
-        <translation type="vanished">Category</translation>
-    </message>
-    <message>
         <source>Укажите название программы</source>
         <translation>ENTER THE PROGRAM NAME</translation>
     </message>
@@ -1615,113 +1575,6 @@ EMPTY</translation>
     <message>
         <source>Название папки</source>
         <translation>Folder name</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <source>БИ-СМЕСЬ</source>
-        <translation type="vanished">BI-BLEND</translation>
-    </message>
-    <message>
-        <source>БИ-ТУР</source>
-        <translation type="vanished">BI-TUR</translation>
-    </message>
-    <message>
-        <source>БИ-АРТРО</source>
-        <translation type="vanished">BI-ARTHRO</translation>
-    </message>
-    <message>
-        <source>БИ-ГИСТЕРО</source>
-        <translation type="vanished">BI-HYSTERO</translation>
-    </message>
-    <message>
-        <source>БИ-КОАГ</source>
-        <translation type="vanished">BI-COAG</translation>
-    </message>
-    <message>
-        <source>БИ-КОАГ-ДИССЕКТ</source>
-        <translation type="vanished">BI-COAG-DISSECT</translation>
-    </message>
-    <message>
-        <source>ТЕРМОШОВ</source>
-        <translation type="vanished">T-SEAM</translation>
-    </message>
-    <message>
-        <source>РЕЗАНИЕ</source>
-        <translation type="vanished">CUT</translation>
-    </message>
-    <message>
-        <source>СМЕСЬ</source>
-        <translation type="vanished">BLEND</translation>
-    </message>
-    <message>
-        <source>СМЕСЬ-1</source>
-        <translation type="vanished">BLEND-1</translation>
-    </message>
-    <message>
-        <source>ТУР</source>
-        <translation type="vanished">TUR</translation>
-    </message>
-    <message>
-        <source>ВАП</source>
-        <translation type="vanished">VAP</translation>
-    </message>
-    <message>
-        <source>ЭНДОНОЖ-1</source>
-        <translation type="vanished">ENDOKNIFE-1</translation>
-    </message>
-    <message>
-        <source>ЭНДОНОЖ-2</source>
-        <translation type="vanished">ENDOKNIFE-2</translation>
-    </message>
-    <message>
-        <source>ЭНДОНОЖ-3</source>
-        <translation type="vanished">ENDOKNIFE-3</translation>
-    </message>
-    <message>
-        <source>ЭНДОПЕТЛЯ-</source>
-        <translation type="vanished">ENDOLOOP-</translation>
-    </message>
-    <message>
-        <source>ЭНДОПЕТЛЯ-2</source>
-        <translation type="vanished">ENDOLOOP-2</translation>
-    </message>
-    <message>
-        <source>ЭНДОПЕТЛЯ-3</source>
-        <translation type="vanished">ENDOLOOP-3</translation>
-    </message>
-    <message>
-        <source>ФОРС</source>
-        <translation type="vanished">FORCED</translation>
-    </message>
-    <message>
-        <source>ФУЛЬГУР</source>
-        <translation type="vanished">FULGUR</translation>
-    </message>
-    <message>
-        <source>МЯГКАЯ</source>
-        <translation type="vanished">SOFT</translation>
-    </message>
-    <message>
-        <source>СПРЕЙ</source>
-        <translation type="vanished">SPRAY</translation>
-    </message>
-    <message>
-        <source>ФУЛЬГУР АРГОН</source>
-        <translation type="vanished">FULGUR ARGON</translation>
-    </message>
-    <message>
-        <source>СПРЕЙ АРГОН</source>
-        <translation type="vanished">SPRAY ARGON</translation>
-    </message>
-    <message>
-        <source>ФУЛЬГУР ПУЛЬС АРГОН</source>
-        <translation type="vanished">FULGUR PULSE ARGON</translation>
-    </message>
-    <message>
-        <source>СПРЕЙ ПУЛЬС АРГОН</source>
-        <translation type="vanished">SPRAY PULSE ARGON</translation>
     </message>
 </context>
 <context>
@@ -2038,14 +1891,6 @@ EMPTY</translation>
 <context>
     <name>SecretKeysWindow</name>
     <message>
-        <source>Секретные ключи</source>
-        <translation>Secret keys</translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
-    </message>
-    <message>
         <source>Генерация ключа</source>
         <translation>Key generation</translation>
     </message>
@@ -2090,14 +1935,6 @@ EMPTY</translation>
         <translation>Verify key</translation>
     </message>
     <message>
-        <source>✓ КЛЮЧ ВЕРНЫЙ! Проверка пройдена успешно</source>
-        <translation>✓ KEY IS VALID! Verification passed</translation>
-    </message>
-    <message>
-        <source>✗ КЛЮЧ НЕВЕРНЫЙ! Проверка не пройдена</source>
-        <translation>✗ KEY IS INVALID! Verification failed</translation>
-    </message>
-    <message>
         <source>✗ Заполните все поля</source>
         <translation>✗ Fill in all fields</translation>
     </message>
@@ -2116,6 +1953,18 @@ EMPTY</translation>
     <message>
         <source>• Соседние номера гарантированно имеют различные ключи</source>
         <translation>• Adjacent serial numbers are guaranteed to have different keys</translation>
+    </message>
+    <message>
+        <source>СЕКРЕТНЫЕ КЛЮЧИ</source>
+        <translation>SECRET KEYS</translation>
+    </message>
+    <message>
+        <source>✓ КЛЮЧ ВЕРНЫЙ!</source>
+        <translation>✓ KEY CORRECT!</translation>
+    </message>
+    <message>
+        <source>✗ КЛЮЧ НЕВЕРНЫЙ!</source>
+        <translation>✗ KEY INCORRECT!</translation>
     </message>
 </context>
 <context>
@@ -2160,6 +2009,9 @@ EMPTY</translation>
         <source>Сохранить</source>
         <translation>save</translation>
     </message>
+</context>
+<context>
+    <name>ServiceFrame</name>
     <message>
         <source>Назад</source>
         <translation>back</translation>
@@ -2167,10 +2019,6 @@ EMPTY</translation>
 </context>
 <context>
     <name>ServiceMenu</name>
-    <message>
-        <source>Сервисное меню</source>
-        <translation>SERVICE SETTINGS</translation>
-    </message>
     <message>
         <source>СПЕЦ КОМАНДЫ</source>
         <translation>SPECIAL COMMANDS</translation>
@@ -2184,10 +2032,6 @@ EMPTY</translation>
         <translation>Software update</translation>
     </message>
     <message>
-        <source>Приём файлов по Wi‑Fi</source>
-        <translation type="vanished">Receive files over Wi‑Fi</translation>
-    </message>
-    <message>
         <source>Настройки WiFi</source>
         <translation>Wi-Fi settings</translation>
     </message>
@@ -2197,7 +2041,7 @@ EMPTY</translation>
     </message>
     <message>
         <source>Проверка тач-скрина</source>
-        <translation>Touchscreen calibration</translation>
+        <translation>Touchscreen test</translation>
     </message>
     <message>
         <source>Лог обновлений</source>
@@ -2212,16 +2056,16 @@ EMPTY</translation>
         <translation>Option management</translation>
     </message>
     <message>
-        <source>Назад</source>
-        <translation>back</translation>
-    </message>
-    <message>
         <source>Приём файлов обновления</source>
         <translation>Receive update files</translation>
     </message>
     <message>
         <source>Управление ИСН</source>
         <translation>ISN control</translation>
+    </message>
+    <message>
+        <source>Удаление видео</source>
+        <translation>Delete videos</translation>
     </message>
     <message>
         <source>СБРОС НАСТРОЕК</source>
@@ -2245,6 +2089,10 @@ always-on Wi-Fi — disable.
 User programs will be deleted.
 This cannot be undone.</translation>
     </message>
+    <message>
+        <source>СЕРВИСНОЕ МЕНЮ</source>
+        <translation>SERVICE MENU</translation>
+    </message>
 </context>
 <context>
     <name>SettingsMenu</name>
@@ -2253,20 +2101,8 @@ This cannot be undone.</translation>
         <translation>SETTINGS</translation>
     </message>
     <message>
-        <source>СВЕДЕНИЯ ОБ АППАРАТЕ</source>
-        <translation type="vanished">DEVICE INFORMATION</translation>
-    </message>
-    <message>
         <source>ЯЗЫК</source>
         <translation>LANGUAGE</translation>
-    </message>
-    <message>
-        <source>ГРОМКОСТЬ</source>
-        <translation type="vanished">VOLUME</translation>
-    </message>
-    <message>
-        <source>ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ</source>
-        <translation type="vanished">ADDITIONAL SETTINGS</translation>
     </message>
     <message>
         <source>НАЗАД</source>
@@ -2466,32 +2302,8 @@ SETTINGS</translation>
 <context>
     <name>SpecialCommands</name>
     <message>
-        <source>СПЕЦ КОМАНДЫ</source>
-        <translation>SPECIAL COMMANDS</translation>
-    </message>
-    <message>
-        <source>UART: ВКЛ</source>
-        <translation type="vanished">UART: ON</translation>
-    </message>
-    <message>
-        <source>Вывод UART</source>
-        <translation type="vanished">UART output</translation>
-    </message>
-    <message>
-        <source>ЦП: ВКЛ</source>
-        <translation type="vanished">CPU: ON</translation>
-    </message>
-    <message>
-        <source>Вывод загрузки ЦП</source>
-        <translation type="vanished">CPU load display</translation>
-    </message>
-    <message>
         <source>Выход в Linux</source>
         <translation>Exit to Linux</translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
     </message>
     <message>
         <source>Подтверждение удаления</source>
@@ -2501,10 +2313,6 @@ SETTINGS</translation>
         <source>Удалить все пользовательские программы и папки?
 Это действие необратимо.</source>
         <translation>All user programs and folders will be DELETED! Continue?</translation>
-    </message>
-    <message>
-        <source>Вход без пароля</source>
-        <translation type="obsolete">Login without password</translation>
     </message>
     <message>
         <source>UART 500 мс</source>
@@ -2559,6 +2367,10 @@ programs</translation>
     <message>
         <source>Перезагрузка модуля</source>
         <translation>Module reboot</translation>
+    </message>
+    <message>
+        <source>СПЕЦИАЛЬНЫЕ КОМАНДЫ</source>
+        <translation>SPECIAL COMMANDS</translation>
     </message>
 </context>
 <context>
@@ -2630,32 +2442,10 @@ The power of each output may change depending on the other output, because only 
         <translation>Other electrode</translation>
     </message>
     <message>
-        <source> АВТОСТОП</source>
-        <translation type="vanished"> AUTOSTOP</translation>
-    </message>
-    <message>
-        <source>БИ КОАГ МИКРО
-АВТОСТОП</source>
-        <translation>BI COAG MICRO
-AUTOSTOP</translation>
-    </message>
-    <message>
-        <source>БИ КОАГ
-АВТОСТОП</source>
-        <translation>BI COAG
-AUTOSTOP</translation>
-    </message>
-    <message>
         <source>БИ КОАГ
 А-СТ-СТОП</source>
         <translation>BI COAG
 A-ST-STOP</translation>
-    </message>
-    <message>
-        <source>БИ КОАГ ДИСС
-АВТОСТОП</source>
-        <translation>BI COAG DISS
-AUTOSTOP</translation>
     </message>
     <message>
         <source>БИ КОАГ ДИСС
@@ -2670,10 +2460,22 @@ A-ST-STOP</translation>
 A-ST-STOP</translation>
     </message>
     <message>
+        <source>БИ КОАГ
+А-СТОП</source>
+        <translation>BI COAG
+A-STOP</translation>
+    </message>
+    <message>
+        <source>БИ КОАГ МИКРО
+А-СТОП</source>
+        <translation>BI COAG MICRO
+A-STOP</translation>
+    </message>
+    <message>
         <source>МЯГКАЯ
-АВТОСТОП</source>
+А-СТОП</source>
         <translation>SOFT
-AUTOSTOP</translation>
+A-STOP</translation>
     </message>
 </context>
 <context>
@@ -2846,10 +2648,6 @@ Recent events:
         <translation>Clear all</translation>
     </message>
     <message>
-        <source>Далее</source>
-        <translation>Next</translation>
-    </message>
-    <message>
         <source>4. Успешно передано</source>
         <translation>4. Transfer complete</translation>
     </message>
@@ -2940,10 +2738,6 @@ After a connection is detected, the QR code will change.</translation>
         <translation>off</translation>
     </message>
     <message>
-        <source>Повторить</source>
-        <translation>Retry</translation>
-    </message>
-    <message>
         <source>Подготовка файла</source>
         <translation>Preparing file</translation>
     </message>
@@ -2978,6 +2772,14 @@ After a connection is detected, the QR code will change.</translation>
     <message>
         <source>ПРИНЯТЬ</source>
         <translation>ACCEPT</translation>
+    </message>
+    <message>
+        <source>ДАЛЕЕ</source>
+        <translation>NEXT</translation>
+    </message>
+    <message>
+        <source>ПОВТОРИТЬ</source>
+        <translation>RETRY</translation>
     </message>
 </context>
 <context>
@@ -3236,28 +3038,12 @@ After a connection is detected, the QR code will change.</translation>
 <context>
     <name>VideoPlayer</name>
     <message>
-        <source>Ошибка: Неподдерживаемый формат видео</source>
-        <translation type="vanished">Error: Unsupported video format</translation>
-    </message>
-    <message>
         <source>Ошибка воспроизведения: </source>
         <translation>Playback error: </translation>
     </message>
     <message>
         <source>Загрузка...</source>
         <translation>Loading...</translation>
-    </message>
-    <message>
-        <source>Нажмите ▶ для воспроизведения</source>
-        <translation type="vanished">Press ▶ to play</translation>
-    </message>
-    <message>
-        <source>Нет видеофайлов в папке </source>
-        <translation type="vanished">No video files in folder </translation>
-    </message>
-    <message>
-        <source>Нет видео</source>
-        <translation type="vanished">No video</translation>
     </message>
     <message>
         <source>Видеозаписи</source>
@@ -3283,10 +3069,6 @@ After a connection is detected, the QR code will change.</translation>
 <context>
     <name>WiFiConnector</name>
     <message>
-        <source>Настройки сети</source>
-        <translation>Network settings</translation>
-    </message>
-    <message>
         <source>Доступные Wi-Fi сети</source>
         <translation>Available Wi-Fi networks</translation>
     </message>
@@ -3295,24 +3077,12 @@ After a connection is detected, the QR code will change.</translation>
         <translation>General</translation>
     </message>
     <message>
-        <source>Wi-Fi</source>
-        <translation type="vanished">Wi-Fi</translation>
-    </message>
-    <message>
-        <source>VPN FOTEK</source>
-        <translation type="vanished">VPN FOTEK</translation>
-    </message>
-    <message>
         <source>Текущий IP-адрес устройства:</source>
         <translation>Current device IP address:</translation>
     </message>
     <message>
         <source>Отключиться от сети</source>
         <translation>Disconnect from network</translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
     </message>
     <message>
         <source>WiFi всегда включен</source>
@@ -3381,22 +3151,6 @@ After a connection is detected, the QR code will change.</translation>
         <translation>Media files</translation>
     </message>
     <message>
-        <source>Приём файлов обновления</source>
-        <translation type="vanished">Receive update files</translation>
-    </message>
-    <message>
-        <source>1. Включите приём</source>
-        <translation type="vanished">1. Enable receiving</translation>
-    </message>
-    <message>
-        <source>2. Подключитесь к Wi‑Fi</source>
-        <translation type="vanished">2. Connect to Wi‑Fi</translation>
-    </message>
-    <message>
-        <source>3. Откройте страницу загрузки</source>
-        <translation type="vanished">3. Open the upload page</translation>
-    </message>
-    <message>
         <source>Адрес загрузки</source>
         <translation>Upload address</translation>
     </message>
@@ -3433,22 +3187,6 @@ After a connection is detected, the QR code will change.</translation>
         <translation>off</translation>
     </message>
     <message>
-        <source>Выключить приём</source>
-        <translation type="vanished">Disable receiving</translation>
-    </message>
-    <message>
-        <source>Включить приём</source>
-        <translation type="vanished">Enable receiving</translation>
-    </message>
-    <message>
-        <source>QR появится после включения приёма</source>
-        <translation type="vanished">QR will appear after receiving is enabled</translation>
-    </message>
-    <message>
-        <source>Обнаружен релиз: </source>
-        <translation type="vanished">Release detected: </translation>
-    </message>
-    <message>
         <source>Компонент</source>
         <translation>Component</translation>
     </message>
@@ -3467,10 +3205,6 @@ After a connection is detected, the QR code will change.</translation>
     <message>
         <source>Последняя загрузка: файлов: </source>
         <translation>Last upload: files: </translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
     </message>
     <message>
         <source>Соединение установлено! Отсканируйте новый QR-код или откройте адрес вручную в любом браузере</source>
@@ -3517,10 +3251,6 @@ After a connection is detected, the QR code will change.</translation>
         <translation>Preparation</translation>
     </message>
     <message>
-        <source>Создание точки доступа...</source>
-        <translation>Creating the access point...</translation>
-    </message>
-    <message>
         <source>!Отключите мобильный интернет на вашем устройстве!
 Отсканируйте QR-код или выберите сеть %1 в списке Wi‑Fi.
 После обнаружения подключения QR-код изменится.</source>
@@ -3531,10 +3261,6 @@ After a connection is detected, the QR code will change.</translation>
     <message>
         <source>Проверьте Wi‑Fi и повторите включение точки доступа.</source>
         <translation>Check Wi‑Fi and try enabling the access point again.</translation>
-    </message>
-    <message>
-        <source>Аппарат создаёт временную точку доступа и QR-код для подключения.</source>
-        <translation>The unit is creating a temporary access point and a QR code for connection.</translation>
     </message>
     <message>
         <source>Обнаружен файл обновления: </source>
@@ -3712,6 +3438,87 @@ will be overwritten</translation>
     </message>
 </context>
 <context>
+    <name>VideoDelete</name>
+    <message>
+        <source>УДАЛЕНИЕ ВИДЕО</source>
+        <translation>DELETE VIDEOS</translation>
+    </message>
+    <message>
+        <source>Отметьте видео, которые нужно удалить.</source>
+        <translation>Select the videos you want to delete.</translation>
+    </message>
+    <message>
+        <source>Каталог видео недоступен</source>
+        <translation>Video folder is unavailable</translation>
+    </message>
+    <message>
+        <source>Удалено: %1</source>
+        <translation>Deleted: %1</translation>
+    </message>
+    <message>
+        <source>Удалено %1 из %2. Часть файлов удалить не удалось.</source>
+        <translation>Deleted %1 of %2. Some files could not be deleted.</translation>
+    </message>
+    <message>
+        <source> Б</source>
+        <translation> B</translation>
+    </message>
+    <message>
+        <source> КБ</source>
+        <translation> KB</translation>
+    </message>
+    <message>
+        <source> МБ</source>
+        <translation> MB</translation>
+    </message>
+    <message>
+        <source> ГБ</source>
+        <translation> GB</translation>
+    </message>
+    <message>
+        <source> файл</source>
+        <translation> file</translation>
+    </message>
+    <message>
+        <source> файла</source>
+        <translation> files</translation>
+    </message>
+    <message>
+        <source> файлов</source>
+        <translation> files</translation>
+    </message>
+    <message>
+        <source>Нет видео в папке FOTEK/Video</source>
+        <translation>No videos in the FOTEK/Video folder</translation>
+    </message>
+    <message>
+        <source>Выбрано: %1, %2</source>
+        <translation>Selected: %1, %2</translation>
+    </message>
+    <message>
+        <source>Выбрать все</source>
+        <translation>Select all</translation>
+    </message>
+    <message>
+        <source>Снять все</source>
+        <translation>Clear all</translation>
+    </message>
+    <message>
+        <source>Удалить</source>
+        <translation>Delete</translation>
+    </message>
+    <message>
+        <source>Подтверждение удаления</source>
+        <translation>Confirm deletion</translation>
+    </message>
+    <message>
+        <source>Удалить %1?
+Это действие необратимо.</source>
+        <translation>Delete %1?
+This cannot be undone.</translation>
+    </message>
+</context>
+<context>
     <name>logUpdate</name>
     <message>
         <source>Журнал обновлений недоступен</source>
@@ -3722,12 +3529,8 @@ will be overwritten</translation>
         <translation>No records</translation>
     </message>
     <message>
-        <source>Лог обновлений</source>
-        <translation>Update log</translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
+        <source>ЛОГ ОБНОВЛЕНИЙ</source>
+        <translation>UPDATE LOG</translation>
     </message>
 </context>
 <context>
@@ -3821,14 +3624,6 @@ will be overwritten</translation>
         <translation>Error: NE controller overheated</translation>
     </message>
     <message>
-        <source>Ошибка: обновление не выполнено</source>
-        <translation type="vanished">Error: update not completed</translation>
-    </message>
-    <message>
-        <source>Ошибка: нет рабочей прошивки МУС</source>
-        <translation type="vanished">Error: no working MUS firmware</translation>
-    </message>
-    <message>
         <source>Критичная ошибка: ИСН при включении</source>
         <translation>Critical error: ISN at power-on</translation>
     </message>
@@ -3879,38 +3674,6 @@ will be overwritten</translation>
     <message>
         <source>Последние установки</source>
         <translation>Last settings</translation>
-    </message>
-    <message>
-        <source>Питание будет выключено через %1 секунд</source>
-        <translation type="vanished">Power will be turned off in %1 seconds</translation>
-    </message>
-    <message>
-        <source>ОТМЕНА</source>
-        <translation type="vanished">CANCEL</translation>
-    </message>
-    <message>
-        <source>ВЫКЛЮЧИТЬ</source>
-        <translation type="vanished">POWER OFF</translation>
-    </message>
-    <message>
-        <source>Внимание! Текущая программа
-
-%1
-
-будет перезаписана</source>
-        <translation type="vanished">ATTENTION! The current program
-
-%1
-
-will be overwritten</translation>
-    </message>
-    <message>
-        <source>ПРИНЯТЬ</source>
-        <translation type="vanished">ACCEPT</translation>
-    </message>
-    <message>
-        <source>Эндоскопические программы не могут быть использованы совместно с другими программами</source>
-        <translation type="vanished">Endoscopic programs cannot be used together with other programs</translation>
     </message>
     <message>
         <source>Ошибка модуля связи</source>
@@ -4000,10 +3763,6 @@ will be overwritten</translation>
         <translation>Media files</translation>
     </message>
     <message>
-        <source>Обновление ПО</source>
-        <translation>Software update</translation>
-    </message>
-    <message>
         <source>Модуль</source>
         <translation>Module</translation>
     </message>
@@ -4020,14 +3779,6 @@ will be overwritten</translation>
         <translation>Refresh</translation>
     </message>
     <message>
-        <source>Перезапуск</source>
-        <translation type="vanished">Restart</translation>
-    </message>
-    <message>
-        <source>В одном или нескольких модулях отсутствует рабочая прошивка.</source>
-        <translation type="vanished">One or more modules have no working firmware.</translation>
-    </message>
-    <message>
         <source>Передача прошивки МК: </source>
         <translation>MCU firmware transfer: </translation>
     </message>
@@ -4038,10 +3789,6 @@ will be overwritten</translation>
     <message>
         <source>Изменения вступят в силу после перезагрузки.</source>
         <translation>Changes will take effect after a restart.</translation>
-    </message>
-    <message>
-        <source>Назад</source>
-        <translation>back</translation>
     </message>
     <message>
         <source>Список версий: текущие и доступные</source>
@@ -4126,6 +3873,10 @@ will be overwritten</translation>
     <message>
         <source>!ПЕРЕЗАГРУЗКА!</source>
         <translation>!REBOOT!</translation>
+    </message>
+    <message>
+        <source>ОБНОВЛЕНИЕ ПО</source>
+        <translation>SOFTWARE UPDATE</translation>
     </message>
 </context>
 </TS>

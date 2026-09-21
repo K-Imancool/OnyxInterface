@@ -922,8 +922,7 @@ Window {
             anchors.topMargin: 83
             spacing: 8
             visible: periphHandle.activationStopWarningVisible
-                     && (!periphHandle.fullscreenErrorsEnabled
-                         || container.startupFlowVisible)
+                     && !periphHandle.fullscreenErrorsEnabled
 
             Repeater {
                 model: periphHandle.activationStopWarningCodes

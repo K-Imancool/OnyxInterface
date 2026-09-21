@@ -6,7 +6,7 @@ Rectangle {
     property bool dismissedBySecret: false
     property bool latchedCritical: false
     property var latchedCodes: []
-    // На стартовом меню не перехватываем тач: ошибки видны баннерами, кнопки должны работать.
+    // На стартовом меню полоса видна, но тач не перехватываем — кнопки меню должны работать.
     property bool blockInput: true
 
     readonly property bool fullscreenOn: typeof periphHandle !== "undefined"
@@ -34,9 +34,9 @@ Rectangle {
                                           && !dismissedBySecret
                                           && (liveVisible || latchedCritical)
 
-    visible: overlayActive && blockInput
-    enabled: overlayActive && blockInput
-    color: "#AAFFFFFF"
+    visible: overlayActive
+    enabled: overlayActive
+    color: blockInput ? "#AAFFFFFF" : "transparent"
 
     function codesHaveCritical(codes) {
         for (var i = 0; i < codes.length; ++i) {

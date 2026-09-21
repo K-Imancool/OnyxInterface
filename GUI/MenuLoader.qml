@@ -76,6 +76,7 @@ Item {
                 || base === "WifiFileReceive.qml"
                 || base === "AboutScreen.qml"
                 || base === "logUpdate.qml"
+                || base === "VideoDelete.qml"
     }
 
     function isServiceMenuChildScreenBaseName(base) {
@@ -90,6 +91,7 @@ Item {
                 || base === "FeatureOptionsManager.qml"
                 || base === "IsnCorrection.qml"
                 || base === "logUpdate.qml"
+                || base === "VideoDelete.qml"
     }
 
     function isSettingsMenuChildScreenBaseName(base) {
@@ -205,6 +207,9 @@ Item {
                     }
                     if (menuLoader.item.isnCorrectionButtonPressed) {
                         menuLoader.item.isnCorrectionButtonPressed.disconnect()
+                    }
+                    if (menuLoader.item.videoDeleteButtonPressed) {
+                        menuLoader.item.videoDeleteButtonPressed.disconnect()
                     }
                 } catch(e) {
                     // Игнорируем ошибки отключения
@@ -339,6 +344,14 @@ Item {
                                 return
                             }
                             navigateTo("qrc:/IsnCorrection.qml")
+                        })
+                    }
+                    if (menuLoader.item.videoDeleteButtonPressed) {
+                        menuLoader.item.videoDeleteButtonPressed.connect(function() {
+                            if (!isServiceMenuScreenAllowed("VideoDelete.qml")) {
+                                return
+                            }
+                            navigateTo("qrc:/VideoDelete.qml")
                         })
                     }
                     if (menuLoader.item.touchScreenTestButtonPressed) {

@@ -30,6 +30,12 @@ TRANSLATIONS += \
     translations/UserInterface_en.ts \
     translations/UserInterface_es.ts
 
+# Приложение грузит :/translations/*.qm из qml.qrc — пересобираем их из .ts при qmake.
+qtPrepareTool(LRELEASE, lrelease)
+isEmpty(LRELEASE): LRELEASE = lrelease
+system($$LRELEASE $$PWD/translations/UserInterface_en.ts -qm $$PWD/translations/UserInterface_en.qm)
+system($$LRELEASE $$PWD/translations/UserInterface_es.ts -qm $$PWD/translations/UserInterface_es.qm)
+
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH += $$PWD/GUI
 

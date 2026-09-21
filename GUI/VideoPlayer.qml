@@ -27,6 +27,79 @@ Rectangle {
     property bool fullScreen: false
     property bool showLoadingOnPlay: false
 
+    component MediaControlIcon: Item {
+        id: iconRoot
+        property string name: "play"
+        property color iconColor: "white"
+        implicitWidth: videoPlayerRoot.controlIconSize
+        implicitHeight: videoPlayerRoot.controlIconSize
+
+        Canvas {
+            id: canvas
+            anchors.fill: parent
+            antialiasing: true
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.reset()
+                ctx.fillStyle = iconRoot.iconColor
+                var m = Math.min(width, height)
+                var cx = width / 2
+                var cy = height / 2
+
+                function fillTriangle(x1, y1, x2, y2, x3, y3) {
+                    ctx.beginPath()
+                    ctx.moveTo(x1, y1)
+                    ctx.lineTo(x2, y2)
+                    ctx.lineTo(x3, y3)
+                    ctx.closePath()
+                    ctx.fill()
+                }
+
+                if (iconRoot.name === "play") {
+                    var tw = m * 0.42
+                    var th = m * 0.72
+                    var ox = m * 0.06
+                    fillTriangle(cx - tw * 0.55 + ox, cy - th / 2,
+                                 cx + tw * 0.78 + ox, cy,
+                                 cx - tw * 0.55 + ox, cy + th / 2)
+                } else if (iconRoot.name === "pause") {
+                    var bw = m * 0.18
+                    var bh = m * 0.64
+                    var gap = m * 0.18
+                    ctx.fillRect(cx - gap / 2 - bw, cy - bh / 2, bw, bh)
+                    ctx.fillRect(cx + gap / 2, cy - bh / 2, bw, bh)
+                } else if (iconRoot.name === "stop") {
+                    var s = m * 0.48
+                    ctx.fillRect(cx - s / 2, cy - s / 2, s, s)
+                } else if (iconRoot.name === "prev" || iconRoot.name === "next") {
+                    var barW = m * 0.13
+                    var barH = m * 0.64
+                    var gap = m * 0.08
+                    var skipTw = m * 0.40
+                    var skipTh = m * 0.64
+                    var groupW = barW + gap + skipTw
+                    var left = cx - groupW / 2
+                    if (iconRoot.name === "prev") {
+                        ctx.fillRect(left, cy - barH / 2, barW, barH)
+                        fillTriangle(left + groupW, cy - skipTh / 2,
+                                     left + barW + gap, cy,
+                                     left + groupW, cy + skipTh / 2)
+                    } else {
+                        fillTriangle(left, cy - skipTh / 2,
+                                     left + skipTw, cy,
+                                     left, cy + skipTh / 2)
+                        ctx.fillRect(left + skipTw + gap, cy - barH / 2, barW, barH)
+                    }
+                }
+            }
+        }
+
+        onNameChanged: canvas.requestPaint()
+        onIconColorChanged: canvas.requestPaint()
+        onWidthChanged: canvas.requestPaint()
+        onHeightChanged: canvas.requestPaint()
+    }
+
     Component.onCompleted: loadVideoFiles()
 
     Component.onDestruction: {
@@ -461,14 +534,11 @@ Rectangle {
                                 enabled: currentVideoIndex > 0
                                 onClicked: videoPlayerRoot.selectPreviousVideo()
 
-                                Text {
+                                MediaControlIcon {
                                     anchors.centerIn: parent
-                                    anchors.verticalCenterOffset: 5
-                                    text: "⏮"
-                                    color: "white"
-//                                    opacity: parent.enabled ? 1.0 : 0.45
-                                    font.family: "DejaVu Sans"
-                                    font.pixelSize: videoPlayerRoot.controlIconSize
+                                    width: videoPlayerRoot.controlIconSize
+                                    height: videoPlayerRoot.controlIconSize
+                                    name: "prev"
                                 }
                             }
 
@@ -480,17 +550,12 @@ Rectangle {
                                 enabled: currentVideoIndex >= 0
                                 onClicked: videoPlayerRoot.togglePlayback()
 
-                                Text {
+                                MediaControlIcon {
                                     anchors.centerIn: parent
-                                    anchors.verticalCenterOffset:
-                                        mediaPlayer.playbackState === GStreamerVideoPlayer.PlayingState
-                                        ? 5 : -2
-                                    text: mediaPlayer.playbackState === GStreamerVideoPlayer.PlayingState
-                                          ? "⏸" : "▶"
-                                    color: "white"
-//                                    opacity: parent.enabled ? 1.0 : 0.45
-                                    font.family: "DejaVu Sans"
-                                    font.pixelSize: videoPlayerRoot.controlIconSize
+                                    width: videoPlayerRoot.controlIconSize
+                                    height: videoPlayerRoot.controlIconSize
+                                    name: mediaPlayer.playbackState === GStreamerVideoPlayer.PlayingState
+                                          ? "pause" : "play"
                                 }
                             }
 
@@ -505,14 +570,11 @@ Rectangle {
                                     progressSlider.value = 0
                                 }
 
-                                Text {
+                                MediaControlIcon {
                                     anchors.centerIn: parent
-                                    anchors.verticalCenterOffset: 5
-                                    text: "⏹"
-                                    color: "white"
-//                                    opacity: parent.enabled ? 1.0 : 0.45
-                                    font.family: "DejaVu Sans"
-                                    font.pixelSize: videoPlayerRoot.controlIconSize
+                                    width: videoPlayerRoot.controlIconSize
+                                    height: videoPlayerRoot.controlIconSize
+                                    name: "stop"
                                 }
                             }
 
@@ -525,14 +587,11 @@ Rectangle {
                                          && currentVideoIndex < videoFiles.length - 1
                                 onClicked: videoPlayerRoot.selectNextVideo()
 
-                                Text {
+                                MediaControlIcon {
                                     anchors.centerIn: parent
-                                    anchors.verticalCenterOffset: 5
-                                    text: "⏭"
-                                    color: "white"
-//                                    opacity: parent.enabled ? 1.0 : 0.45
-                                    font.family: "DejaVu Sans"
-                                    font.pixelSize: videoPlayerRoot.controlIconSize
+                                    width: videoPlayerRoot.controlIconSize
+                                    height: videoPlayerRoot.controlIconSize
+                                    name: "next"
                                 }
                             }
                         }

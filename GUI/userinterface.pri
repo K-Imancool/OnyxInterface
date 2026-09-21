@@ -30,6 +30,7 @@ DISTFILES += \
     $$PWD/SerialNumberSettings.qml \
     $$PWD/ServiceMenu.qml \
     $$PWD/ServiceFrame.qml \
+    $$PWD/VideoDelete.qml \
     $$PWD/SpecialCommands.qml \
     $$PWD/Pedal.qml \
     $$PWD/PedalContainer.qml \
