@@ -8,6 +8,14 @@ namespace {
 constexpr int kBannerWarningTimeoutMs = 5000;
 constexpr int kFullscreenMinVisibleMs = 5000;
 constexpr int kFullscreenCauseGoneMs = 2000;
+/// Ошибка USB-тача (TouchUsbMonitor): на экране до восстановления.
+constexpr int kTouchUsbFaultWarningCode = 0x09;
+
+/// Коды остановки генератора (0x41..0x4F): сообщение показываем, но активацию не блокируем.
+bool isGeneratorStopWarning(int warningCode)
+{
+    return warningCode >= 0x41 && warningCode <= 0x4F;
+}
 
 } // namespace
 
@@ -357,6 +365,11 @@ void PeriphHandler::setActivationActive(bool active)
 	m_activation = active;
 	emit activationChanged(m_activation);
 
+	if (active) {
+		// Остановка генератора (0x41..0x4F): сброс сообщения при новой активации.
+		clearGeneratorStopWarnings();
+	}
+
 	if (!active && m_argonRealRate != 0 && !m_argonBlowing) {
 		m_argonRealRate = 0;
 		emit argonRealRateChanged(m_argonRealRate);
@@ -405,6 +418,11 @@ void PeriphHandler::showWarningCode(quint8 warningCode)
 
 void PeriphHandler::scheduleWarningClear(int warningCode)
 {
+    // 0x09 — неисправность тача: держим на экране, пока TouchUsbMonitor не снимет.
+    if (warningCode == kTouchUsbFaultWarningCode) {
+        return;
+    }
+
     QTimer *timer = m_warningTimers.value(warningCode, nullptr);
     if (!timer) {
         timer = new QTimer(this);
@@ -450,13 +468,48 @@ void PeriphHandler::dismissWarningCode(int warningCode)
 
 void PeriphHandler::recomputeEnableActivation()
 {
-    const bool hasWarnings = !m_activeWarningCodes.isEmpty();
-    const bool effectiveEnable = m_uiEnableActivation && !hasWarnings;
+    bool hasBlockingWarnings = false;
+    for (int code : m_activeWarningCodes) {
+        if (!isGeneratorStopWarning(code)) {
+            hasBlockingWarnings = true;
+            break;
+        }
+    }
+    const bool effectiveEnable = m_uiEnableActivation && !hasBlockingWarnings;
     if (m_enableActivation == effectiveEnable) {
         return;
     }
     m_enableActivation = effectiveEnable;
     emit enableActivationChanged(m_enableActivation);
+}
+
+void PeriphHandler::clearGeneratorStopWarnings()
+{
+    bool changed = false;
+    for (int i = m_activeWarningCodes.size() - 1; i >= 0; --i) {
+        const int code = m_activeWarningCodes.at(i);
+        if (!isGeneratorStopWarning(code)) {
+            continue;
+        }
+        m_activeWarningCodes.removeAt(i);
+        m_warningShownAtMs.remove(code);
+        if (QTimer *timer = m_warningTimers.value(code, nullptr)) {
+            timer->stop();
+        }
+        changed = true;
+    }
+    if (!changed) {
+        return;
+    }
+    if (m_activeWarningCodes.isEmpty()) {
+        m_activationStopWarningVisible = false;
+        m_activationStopWarningCode = -1;
+    } else {
+        m_activationStopWarningVisible = true;
+        m_activationStopWarningCode = m_activeWarningCodes.first();
+    }
+    recomputeEnableActivation();
+    emit activationStopWarningChanged();
 }
 
 void PeriphHandler::clearWarningCode(int warningCode)

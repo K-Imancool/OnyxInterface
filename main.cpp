@@ -12,6 +12,7 @@
 #include "BackEnd/instrimageprovider.h"
 #include "BackEnd/systemmonitor.h"
 #include "BackEnd/gpiomonitor.h"
+#include "BackEnd/TouchUsbMonitor.h"
 #include "BackEnd/keygenerator.h"
 #include "BackEnd/onyxapp.h"
 #include "qqmlcontext.h"
@@ -675,6 +676,10 @@ int main(int argc, char *argv[])
     auto *deviceLog = new DeviceLogManager(m_savedJson, ctrl->getSocketModel(), &app);
     engine.rootContext()->setContextProperty(QStringLiteral("deviceLog"), deviceLog);
     ctrl->setDeviceLogManager(deviceLog);
+
+    auto *touchUsbMonitor = new TouchUsbMonitor(deviceLog, &app);
+    touchUsbMonitor->setPeriphHandler(ctrl->getPeripheryHandle());
+    engine.rootContext()->setContextProperty(QStringLiteral("touchUsbMonitor"), touchUsbMonitor);
     // После журнала: 100 мс LOW на GPIO0_D5 сразу даст P|7, а не пустой logPowerOff.
     gpio0d5->start();
     gpio4c5->start();
@@ -743,6 +748,11 @@ int main(int argc, char *argv[])
     m_linkStm = new LinkStm();
     // Откуда грузиться stm
     m_linkStm->setBoot(static_cast<LinkStm::BootChoice>(boot.toInt()));
+    // До старта потока UART: ONYX-M не опрашивает аргоновый модуль (в том числе 0x20 0xE0).
+    const QString deviceType = m_savedJson->readString(
+                QStringLiteral("deviceType"), QStringLiteral("ONYX-AM")).trimmed().toUpper();
+    if (deviceType == QStringLiteral("ONYX-M"))
+        m_linkStm->setPollArgonModule(false);
 
     QObject::connect(m_linkStm, &LinkStm::sigFirmwareVersionsChanged,
                      mcFirmware, &McFirmwareVersionsBridge::setModules,

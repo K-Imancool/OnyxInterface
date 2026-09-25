@@ -36,6 +36,7 @@ int packEndoActivationPower(int modeId, int uiPower)
 
 constexpr int kNoRxErrorLimit = 3;       // E2 только после 3 промахов подряд
 constexpr int kSlowNoRxErrorLimit = 8;   // GoBoot/GoApp/Erase/StartUpdate: ~8 с
+constexpr int kCurrentVersionTries = 5;  // Запрос версии 0xE0, затем следующая команда
 
 // Тело посылки без FRAME_START (байт 0) и без CRC (2 последних байта).
 QByteArray uartPacketBodyWithoutCrc(const QByteArray &packet)
@@ -119,6 +120,8 @@ void LinkStm::argonBlow()
 
 void LinkStm::setArgonBlowing(bool blowing)
 {
+    if (m_argonBlowing == blowing)
+        return;
     m_argonBlowing = blowing;
 }
 
@@ -130,6 +133,28 @@ void LinkStm::stopArgon()
     stopArgonCommand.mc = MC_COM;
     stopArgonCommand.data.clear();
     setTxCommand(stopArgonCommand);
+}
+
+void LinkStm::setPollArgonModule(bool enabled)
+{
+    if (m_pollArgonModule == enabled)
+        return;
+    m_pollArgonModule = enabled;
+    if (enabled) {
+        m_argonPollStopped = false;
+        UartTx verCommand;
+        verCommand.data.clear();
+        verCommand.com = CurrentVersion;
+        verCommand.mc = MC_ARG;
+        if (checkCommandList(verCommand))
+            m_txCommandList.append(verCommand);
+        return;
+    }
+    for (int i = m_txCommandList.size() - 1; i >= 0; --i) {
+        const UartTx &cmd = m_txCommandList.at(i);
+        if (cmd.com == CurrentVersion && cmd.mc == MC_ARG)
+            m_txCommandList.removeAt(i);
+    }
 }
 
 void LinkStm::setLedOutput(LedOutput out, LedColor color)
@@ -202,9 +227,14 @@ void LinkStm::unpackRxCommand(const QByteArray &rxPacket)
 //    qDebug() << "[LinkStm] unpackRxCommand, bytes:" << rxPacket.size();
     static QByteArray lastRxBody;
 
+    // Хвост RX до первой TX (или без ожидаемого ответа) — не разбираем
+    if (m_lastCommand.com == NoTxCommand) {
+        return;
+    }
+
     // Замеряем задержку от момента readyRead (readData) до входа в unpackRxCommand
-    QTime now = QTime::currentTime();
-    int delayFromReadyRead = m_uart->lastReadTime().msecsTo(now);
+//    QTime now = QTime::currentTime();
+//    int delayFromReadyRead = m_uart->lastReadTime().msecsTo(now);
 //    qDebug() << "Delay readyRead -> unpackRxCommand:" << delayFromReadyRead << "ms";
 
     // Засекаем время обработки unpackRxCommand + checkRxCommand
@@ -369,6 +399,7 @@ void LinkStm::sendCommand()
     static UartState preState = STATE_OK;   // Предыдущее состояние
     static int errCounter = 0;
     static int noRxCount = 0;           // Подряд идущие NO_RX до вывода E2
+    static int currentVersionTries = 0; // Сколько раз уже ушёл CurrentVersion без годного ответа
 
     if (m_abortFirmwareUpdatePending) {
         updateCounter = 0;
@@ -376,7 +407,11 @@ void LinkStm::sendCommand()
         m_abortFirmwareUpdatePending = false;
     }
 
-    m_comState = IDLE;
+    // Не сбрасываем ACTIVATION/UPDATING — иначе RxActivation на следующем тике
+    // отвергнется, а штатный цикл активации развалится.
+    if (m_comState != ACTIVATION && m_comState != UPDATING) {
+        m_comState = IDLE;
+    }
 
     // Не дождались адекватного ответа (unpackRxCommand)
     if (m_waitAnswer)
@@ -384,6 +419,8 @@ void LinkStm::sendCommand()
 
     const bool fwInProgress = isFirmwareUpdateInProgress();
     bool skipCommandBuild = false;
+    bool resendCurrentVersion = false;
+    bool skipStaleRx = false;
     const bool lastWasSlowCmd = (m_lastCommand.com == StartUpdate
                                  || m_lastCommand.com == GoApp
                                  || m_lastCommand.com == Erase
@@ -400,8 +437,36 @@ void LinkStm::sendCommand()
         }
     }
 
+    // ONYX-M: не дожимаем уже отправленный запрос версии аргонового модуля.
+    if (!m_pollArgonModule && m_lastCommand.com == CurrentVersion && m_lastCommand.mc == MC_ARG) {
+        clearMcVersionsForUnit(MC_ARG);
+        m_state = STATE_OK;
+        currentVersionTries = 0;
+        noRxCount = 0;
+        errCounter = 0;
+        preState = STATE_OK;
+        skipStaleRx = true;
+    }
+
+    // Запрос версии: не больше 5 отправок, затем следующая команда.
+    // Общий счётчик NO_RX/errCounter сюда не подмешиваем — он для остальных команд.
+    if (!skipCommandBuild && m_lastCommand.com == CurrentVersion && m_state != STATE_OK) {
+        if (currentVersionTries >= kCurrentVersionTries) {
+            reportError(m_state);
+            clearMcVersionsForUnit(m_lastCommand.mc);
+            m_state = STATE_OK;
+            currentVersionTries = 0;
+            noRxCount = 0;
+            errCounter = 0;
+            preState = STATE_OK;
+            skipStaleRx = true;
+        } else {
+            resendCurrentVersion = true;
+        }
+    }
+
     //_____________ Проверяем ответ rx__________
-    if (!skipCommandBuild && m_state != STATE_OK) {
+    if (!skipCommandBuild && m_state != STATE_OK && !resendCurrentVersion) {
         if (m_state == STATE_NO_RX) {
             const int noRxLimit = lastWasSlowCmd ? kSlowNoRxErrorLimit : kNoRxErrorLimit;
             if (noRxCount < noRxLimit)
@@ -410,9 +475,6 @@ void LinkStm::sendCommand()
                 reportError(m_state);
                 preState = STATE_NO_RX;
                 errCounter = 0;
-                if (m_lastCommand.com == CurrentVersion) {
-                    clearMcVersionsForUnit(m_lastCommand.mc);
-                }
             } else if (!lastWasSlowCmd && preState == STATE_NO_RX && errCounter++ > 100) {
                 // Во время прошивки не маскируем NO_RX «восстановлением» STATE_OK
                 if (!fwInProgress) {
@@ -435,7 +497,7 @@ void LinkStm::sendCommand()
             }
         }
     }
-    else if (!skipCommandBuild) {
+    else if (!skipCommandBuild && !resendCurrentVersion) {
         if (!m_waitAnswer) {
             preState = STATE_OK;
         }
@@ -444,7 +506,10 @@ void LinkStm::sendCommand()
     }
 
     if (!skipCommandBuild && m_state == STATE_OK) {
-        readRxCommand();                    // Читаем ответ
+        // До первой TX разбирать RX нельзя — в буфере может быть хвост
+        if (m_lastCommand.com != NoTxCommand && !skipStaleRx) {
+            readRxCommand();                    // Читаем ответ
+        }
 
         if (m_readyToPowerOffPending && !m_fwUpdateSessionActive && !m_fwUpdateAwaitingGoApp) {
             m_txCommand.com = ReadyToPowerOff;
@@ -664,8 +729,8 @@ void LinkStm::sendCommand()
         // Ответ может занять до ~8 с; тик 1 с, ошибка связи — после 8 промахов
         m_uartTimer->setInterval(1000);
         break;
-    case CurrentVersion:                    // Т.к. спрашиваем другие МК через МС, то дадим побольше времени
-        m_uartTimer->setInterval(300);
+    case CurrentVersion:
+        m_uartTimer->setInterval(100);
         break;
     case SoftData:
         m_uartTimer->setInterval(100);
@@ -676,6 +741,14 @@ void LinkStm::sendCommand()
     }
 
 //    qDebug() << "txCom: " << m_txCommand.com << ": " << QString::number(m_txCommand.com, 16);
+    if (m_txCommand.com == CurrentVersion) {
+        if (resendCurrentVersion)
+            ++currentVersionTries;
+        else
+            currentVersionTries = 1;
+    } else {
+        currentVersionTries = 0;
+    }
     // Собираем команду в посылку
     m_lastCommand = m_txCommand;        // Сохраняем отправленную команду
     txPacket = packTxCommand();
@@ -689,6 +762,7 @@ void LinkStm::sendCommand()
    else {
         static QByteArray lastTxBody;
         txStr = getHexStr(txPacket);
+//        qDebug() << "txCom: " << txStr;
         debugLogNewUartPacket("NEW TX--------", txPacket, &lastTxBody);
         if (m_debugUart)
             emit sigDebugOverlayLine(QStringLiteral("Tx: %1").arg(getHexStr(txPacket)));
@@ -748,11 +822,23 @@ QString LinkStm::getHexStr(QByteArray byteArray)
     return outStr;
 }
 
+quint8 LinkStm::linkErrorCode(quint8 error) const
+{
+    if (error < STATE_TX_ERR || error > STATE_RX_CRC_ERR)
+        return error;
+    if (m_lastCommand.mc == MC_ARG)
+        return static_cast<quint8>(error + 0x10);
+    if (m_lastCommand.mc == MC_GEN)
+        return static_cast<quint8>(error + 0x20);
+    return error;
+}
+
 void LinkStm::reportError(quint8 error)
 {
     if (m_argonPollStopped && error == ErrArgComm) {
         return;
     }
+    error = linkErrorCode(error);
     // DeviceLogManager сам объединяет повторы и ограничивает запись на диск,
     // поэтому для журнала передаём каждое событие.
     emit sigErrorForLog(error);
@@ -897,6 +983,9 @@ void LinkStm::readRxCommand()
     }
     // Во время активации
     case RxActivation:
+        if (m_comState != ACTIVATION) {
+            break;
+        }
         unitState.activOutput = (m_rxCommand.com >> 3) & 0x03;
         
         // Проверяем наличие данных перед доступом
@@ -909,7 +998,6 @@ void LinkStm::readRxCommand()
         if (m_rxCommand.data.size() >= 2) {
             unitState.argonRealRate = static_cast<quint8>(m_rxCommand.data.at(1)) & 0x3F; // Реальный расход от 0,0 до 8,0 (0-80)
         }
-        m_comState = ACTIVATION;
         forceUnitStateEmit = true;
         break;
     // Остановка
@@ -1277,9 +1365,11 @@ void LinkStm::mcVersRequest()
 
     // Ставим в очередь
 
-    verCommand.mc = MC_ARG;
-    if (checkCommandList(verCommand))
-        m_txCommandList.append(verCommand);
+    if (m_pollArgonModule) {
+        verCommand.mc = MC_ARG;
+        if (checkCommandList(verCommand))
+            m_txCommandList.append(verCommand);
+    }
 
     verCommand.mc = MC_GEN;
     if (checkCommandList(verCommand))

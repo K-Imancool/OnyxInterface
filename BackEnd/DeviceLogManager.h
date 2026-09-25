@@ -38,6 +38,7 @@ public:
     Q_INVOKABLE QString adjacentLogDate(const QString &date, int direction) const;
     Q_INVOKABLE int logLineCount(const QString &filter, const QString &date) const;
     Q_INVOKABLE QString logFilePath() const;
+    Q_INVOKABLE QString warningTextForCode(int code) const;
 
 public slots:
     void beginSession();
@@ -48,6 +49,8 @@ public slots:
     void onActivationStopped(quint8 stopReason);
     void onWarningCode(quint8 warningCode);
     void logPowerOff(quint8 reasonCode);
+    /// Системная ошибка вне кодов STM (например, пропажа USB-тача).
+    void logSystemError(const QString &message);
 
 private:
     struct ActivationInfo {
@@ -102,7 +105,6 @@ private:
     QString formatCompactTotalDuration(qint64 milliseconds) const;
     QString activationOutputCode(quint8 socketId) const;
     QString activationSourceCode(bool autoMode, quint8 sourceCode) const;
-    QString warningTextForCode(int code) const;
     QString powerOffTextForCode(int code) const;
     QString sourceText(bool autoMode, quint8 sourceCode) const;
     QString socketData(int socketId, int role) const;

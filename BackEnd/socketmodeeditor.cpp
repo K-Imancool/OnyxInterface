@@ -165,30 +165,42 @@ int SocketModeEditor::currentModeIndex() const
 
 void SocketModeEditor::setCurrentModeIndex(int index)
 {
-    if (index >= 0 && index < m_modeNames.size()) {
-        int prevInstrId = -1;
-        if (m_currentInstrIndex >= 0 && m_currentInstrIndex < m_instrListIds.size()) {
-            bool ok = false;
-            const int parsedId = m_instrListIds.at(m_currentInstrIndex).toInt(&ok);
-            if (ok) {
-                prevInstrId = parsedId;
-            }
+    if (index < 0 || index >= m_modeNames.size())
+        return;
+    if (index == m_currentModeIndex)
+        return;
+
+    int prevInstrId = -1;
+    if (m_currentInstrIndex >= 0 && m_currentInstrIndex < m_instrListIds.size()) {
+        bool ok = false;
+        const int parsedId = m_instrListIds.at(m_currentInstrIndex).toInt(&ok);
+        if (ok) {
+            prevInstrId = parsedId;
         }
-        if (prevInstrId <= 0 || prevInstrId == 1000) {
-            prevInstrId = m_preferredInstrId;
-        }
-        m_currentModeIndex = index;
-        loadModeParameters(index);
-        if (prevInstrId > 0 && prevInstrId != 1000) {
-            const int sameInstrIndex = m_instrListIds.indexOf(QString::number(prevInstrId));
-            if (sameInstrIndex >= 0) {
-                setCurrentInstrIndex(sameInstrIndex);
-            }
-        }
-        checkChanges();
-        emit currentModeIndexChanged();
-        emit currentParamsChanged();
     }
+    if (prevInstrId <= 0 || prevInstrId == 1000) {
+        prevInstrId = m_preferredInstrId;
+    }
+    m_currentModeIndex = index;
+    loadModeParameters(index);
+    if (prevInstrId > 0 && prevInstrId != 1000) {
+        const int sameInstrIndex = m_instrListIds.indexOf(QString::number(prevInstrId));
+        if (sameInstrIndex >= 0) {
+            setCurrentInstrIndex(sameInstrIndex);
+            // Средняя рекомендованная мощность инструмента в новом режиме
+            // (как при выборе инструмента в InstrumEditor).
+            int power = m_midPowerBound;
+            if (power == 0)
+                power = m_lowPowerBound;
+            if (power == 0)
+                power = m_highPowerBound;
+            if (power != 0)
+                updateParameter(QStringLiteral("currentpower"), power);
+        }
+    }
+    checkChanges();
+    emit currentModeIndexChanged();
+    emit currentParamsChanged();
 }
 
 bool SocketModeEditor::checkChanges()

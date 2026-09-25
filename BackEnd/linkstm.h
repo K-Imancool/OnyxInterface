@@ -269,6 +269,8 @@ public slots:
     void argonBlow();                                   // Начать продувку газового тракта
     void setArgonBlowing(bool blowing);                 // Вкл/выкл непрерывную передачу ArgonBlow
     void stopArgon();                                   // Остановить опрос газового тракта (0x6B)
+    /// ONYX-AM: опрос аргонового модуля, в том числе версия 0x20 0xE0. ONYX-M: не опрашивать.
+    void setPollArgonModule(bool enabled);
     void setLedOutput(LedOutput out, LedColor color);   // Передать команду на включение/выключение подсветки
     /// Управление ИСН: voltage=0 и dacAction=0 — выкл; иначе voltage 0..110, dacAction — IsnDacAction
     void manageIsn(quint8 voltage, quint8 dacAction);
@@ -347,6 +349,8 @@ private:
 
     void readRxCommand();
     void reportError(quint8 error);
+    /// 0x01–0x05 — модуль связи, 0x11–0x15 — аргон, 0x21–0x25 — генератор.
+    quint8 linkErrorCode(quint8 error) const;
 
     ActiveSocket determineSocket(const PedalKnobPressed &pedalKnob);
 
@@ -396,6 +400,7 @@ private:
     quint8 m_argonFlowRate;
     bool m_activCylinderFirst;
     bool m_argonPollStopped = false;
+    bool m_pollArgonModule = true;      // false для ONYX-M: нет запроса версии MC_ARG
     bool m_argonBlowing = false;        // Непрерывная передача ArgonBlow, пока идёт продувка
 
     UnitState m_unitState;

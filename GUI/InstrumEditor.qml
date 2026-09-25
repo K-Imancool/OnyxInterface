@@ -507,12 +507,19 @@ Popup {
             height: 86
             color: "transparent"
 
+            readonly property int actionTouchExpandH: 40
+            readonly property int actionTouchExpandV: 12
+            readonly property int actionVisualW: 195
+            readonly property int actionVisualH: 62
+
             DialogActionButton {
                 anchors.left: parent.left
-                anchors.leftMargin: root.screenMargin
+                anchors.leftMargin: root.screenMargin - footer.actionTouchExpandH
                 anchors.verticalCenter: parent.verticalCenter
-                width: 195
-                height: 62
+                width: footer.actionVisualW + 2 * footer.actionTouchExpandH
+                height: footer.actionVisualH + 2 * footer.actionTouchExpandV
+                touchExpandH: footer.actionTouchExpandH
+                touchExpandV: footer.actionTouchExpandV
                 text: qsTr("ОТМЕНА")
                 secondaryColor: "white"
                 secondaryBorderWidth: 2
@@ -541,10 +548,12 @@ Popup {
 
             DialogActionButton {
                 anchors.right: parent.right
-                anchors.rightMargin: root.screenMargin
+                anchors.rightMargin: root.screenMargin - footer.actionTouchExpandH
                 anchors.verticalCenter: parent.verticalCenter
-                width: 195
-                height: 62
+                width: footer.actionVisualW + 2 * footer.actionTouchExpandH
+                height: footer.actionVisualH + 2 * footer.actionTouchExpandV
+                touchExpandH: footer.actionTouchExpandH
+                touchExpandV: footer.actionTouchExpandV
                 text: qsTr("ПРИНЯТЬ")
                 primary: true
                 enabled: true

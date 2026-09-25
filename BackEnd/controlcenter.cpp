@@ -809,12 +809,18 @@ void ControlCenter::sendStopArgonIfOnyxM()
     if (!deviceTypeIsOnyxM() || m_linkStm.isNull()) {
         return;
     }
+    QMetaObject::invokeMethod(m_linkStm.data(), "setPollArgonModule", Qt::QueuedConnection,
+                              Q_ARG(bool, false));
     QMetaObject::invokeMethod(m_linkStm.data(), "stopArgon", Qt::QueuedConnection);
 }
 
 void ControlCenter::applyStoredDeviceType()
 {
     if (!deviceTypeIsOnyxM()) {
+        if (!m_linkStm.isNull()) {
+            QMetaObject::invokeMethod(m_linkStm.data(), "setPollArgonModule", Qt::QueuedConnection,
+                                      Q_ARG(bool, true));
+        }
         emit deviceTypeApplied();
         return;
     }

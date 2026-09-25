@@ -58,6 +58,28 @@ Item {
         return slash >= 0 ? src.substring(slash + 1) : src
     }
 
+    // Реактивное имя экрана для биндингов (в т.ч. preferCompactWarnings).
+    readonly property string currentSourceBaseName: {
+        var s = menuLoader.source
+        if (s === undefined || s === null)
+            return ""
+        var src = (typeof s === "string") ? s : s.toString()
+        var slash = src.lastIndexOf("/")
+        return slash >= 0 ? src.substring(slash + 1) : src
+    }
+
+    // Сервисное меню / его подразделы / диалог пароля — ошибки только сжатым списком.
+    readonly property bool forceCompactErrors: {
+        var base = currentSourceBaseName
+        if (base === "ServiceMenu.qml" || isServiceMenuChildScreenBaseName(base))
+            return true
+        if (base === "AdditionalSettingsMenu.qml"
+                && menuLoader.item
+                && menuLoader.item.servicePasswordDialogOpen)
+            return true
+        return false
+    }
+
     property string serviceMenuAccessLevel: "full"
 
     function navigateToServiceMenu(accessLevel) {

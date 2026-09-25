@@ -46,8 +46,6 @@ Popup {
     property int pendingAutoMode: -1
     property string autoModeConfirmText: ""
     property bool pendingSubEditorCoag: false
-    property bool powerRepeatIncrease: false
-    property bool powerRepeatIsCoag: false
     property var modePicker
     property var instrPicker
 
@@ -233,13 +231,32 @@ Popup {
         return sideRef(isCoag).power % 10
     }
 
+    function assignSidePower(isCoag, power) {
+        var side = cloneSideState(sideRef(isCoag))
+        if (side.power === power)
+            return
+        side.power = power
+        if (isCoag)
+            coagLive = side
+        else
+            cutLive = side
+
+        // Мощность пишем в live; Editor только синхронизируем — без обратного
+        // copyEditorToSide после шага (он мог переписать другую сторону).
+        if (activeIsCoag === isCoag) {
+            modeEditor.updateParameter("currentpower", power)
+        } else {
+            copyEditorToSide(activeIsCoag)
+            activeIsCoag = isCoag
+            applySideToEditor(isCoag)
+        }
+        refreshDirtyFlags()
+    }
+
     function setEndoPower(isCoag, cutEffect, coagEffect) {
-        activateSide(isCoag)
         var cut = Math.max(1, Math.min(3, cutEffect))
         var coag = Math.max(1, Math.min(3, coagEffect))
-        modeEditor.updateParameter("currentpower", cut * 10 + coag)
-        copyEditorToSide(isCoag)
-        refreshDirtyFlags()
+        assignSidePower(isCoag, cut * 10 + coag)
     }
 
     function normalizeEndoPowerForSide(isCoag) {
@@ -294,40 +311,20 @@ Popup {
     }
 
     function stepMainPower(isCoag, increase) {
-        activateSide(isCoag)
         var side = sideRef(isCoag)
         if (!modeSelectedInSide(isCoag) || side.isEndo || side.maxPower <= 0)
             return
         var unitStep = usesUnitPowerStep(side.modeId)
-        if (increase)
-            modeEditor.updateParameter("currentpower", nextPowerUp(side.power, side.maxPower, unitStep))
-        else
-            modeEditor.updateParameter("currentpower", nextPowerDown(side.power, unitStep))
-        copyEditorToSide(isCoag)
-        refreshDirtyFlags()
-    }
-
-    function startMainPowerRepeat(isCoag, increase) {
-        if (!root.opened)
-            return
-        powerRepeatIsCoag = isCoag
-        powerRepeatIncrease = increase
-        stepMainPower(isCoag, increase)
-        powerRepeatDelay.restart()
-    }
-
-    function stopMainPowerRepeat() {
-        powerRepeatDelay.stop()
-        powerRepeatTick.stop()
+        var next = increase
+                ? nextPowerUp(side.power, side.maxPower, unitStep)
+                : nextPowerDown(side.power, unitStep)
+        assignSidePower(isCoag, next)
     }
 
     function setRecommendedPower(isCoag, power) {
         if (power === 0)
             return
-        activateSide(isCoag)
-        modeEditor.updateParameter("currentpower", power)
-        copyEditorToSide(isCoag)
-        refreshDirtyFlags()
+        assignSidePower(isCoag, power)
     }
 
     function isBiCoagModeInSide(isCoag) {
@@ -348,11 +345,6 @@ Popup {
             return
         if (isBiCoagDissInSide(true) && socketAutoModeState === 1)
             setSocketAutoMode(0)
-    }
-
-    function isTermoModeInSide(isCoag) {
-        var modeId = sideRef(isCoag).modeId
-        return modeId === ESHF.TERMOSHOV || modeId === ESHF.TERMOSHOV_A
     }
 
     function isSoftModeInSide(isCoag) {
@@ -571,8 +563,6 @@ Popup {
         if (socId < 0)
             return
 
-        stopMainPowerRepeat()
-
         modeEditor.initialize(socId, 0, false)
         cutHasAvailableModes = hasAvailableModesFromEditor()
         cutLive = normalizeSidePowerIfNeeded(captureSideFromEditor())
@@ -596,7 +586,6 @@ Popup {
     }
 
     function cancelEditorAndClose() {
-        stopMainPowerRepeat()
         restoreAutoModesFromBaseline()
         modeEditor.rollBack()
         root.close()
@@ -612,7 +601,6 @@ Popup {
     }
 
     function finishCommitAndClose() {
-        stopMainPowerRepeat()
         // Не вызывать copyEditorToSide: attemptCommitAndClose уже синхронизировал
         // активную сторону, а onReduceChosen мог понизить power в cutLive/coagLive —
         // повторный захват из modeEditor затёр бы снижение.
@@ -712,7 +700,6 @@ Popup {
     }
 
     onOpened: {
-        stopMainPowerRepeat()
         prepareEditorData()
         if (!cutHasAvailableModes && !coagHasAvailableModes) {
             Qt.callLater(function() { root.close() })
@@ -724,7 +711,6 @@ Popup {
     }
 
     onClosed: {
-        stopMainPowerRepeat()
         mono2CoagLockOverlay.visible = false
         appControl.setLedOutput(LinkStm.OUT_ALL, LinkStm.LED_OFF)
     }
@@ -732,26 +718,6 @@ Popup {
     onMono2CoagLockedByM1M2Changed: Qt.callLater(syncMono2CoagLockOverlay)
     onWidthChanged: Qt.callLater(syncMono2CoagLockOverlay)
     onHeightChanged: Qt.callLater(syncMono2CoagLockOverlay)
-
-    Timer {
-        id: powerRepeatDelay
-        interval: 1500
-        repeat: false
-        onTriggered: powerRepeatTick.start()
-    }
-
-    Timer {
-        id: powerRepeatTick
-        interval: 120
-        repeat: true
-        onTriggered: {
-            if (!root.opened) {
-                stopMainPowerRepeat()
-                return
-            }
-            stepMainPower(powerRepeatIsCoag, powerRepeatIncrease)
-        }
-    }
 
     Rectangle {
         id: editorContent
@@ -818,6 +784,7 @@ Popup {
         }
 
         ColumnLayout {
+            z: 2
             anchors.top: header.bottom
             anchors.bottom: footer.top
             anchors.left: parent.left
@@ -990,14 +957,24 @@ Popup {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: 86
+            // Ниже контента (z:2), чтобы расширенное поле ПРИНЯТЬ не перехватывало
+            // кнопки задержки автозапуска в правой панели.
+            z: 1
             color: "transparent"
+
+            readonly property int actionTouchExpandH: 40
+            readonly property int actionTouchExpandV: 12
+            readonly property int actionVisualW: 195
+            readonly property int actionVisualH: 62
 
             DialogActionButton {
                 anchors.left: parent.left
-                anchors.leftMargin: root.screenMargin
+                anchors.leftMargin: root.screenMargin - footer.actionTouchExpandH
                 anchors.verticalCenter: parent.verticalCenter
-                width: 195
-                height: 62
+                width: footer.actionVisualW + 2 * footer.actionTouchExpandH
+                height: footer.actionVisualH + 2 * footer.actionTouchExpandV
+                touchExpandH: footer.actionTouchExpandH
+                touchExpandV: footer.actionTouchExpandV
                 text: qsTr("ОТМЕНА")
                 secondaryColor: "white"
                 secondaryBorderWidth: 2
@@ -1010,10 +987,13 @@ Popup {
 
             DialogActionButton {
                 anchors.right: parent.right
-                anchors.rightMargin: root.screenMargin
+                anchors.rightMargin: root.screenMargin - footer.actionTouchExpandH
                 anchors.verticalCenter: parent.verticalCenter
-                width: 195
-                height: 62
+                width: footer.actionVisualW + 2 * footer.actionTouchExpandH
+                height: footer.actionVisualH + 2 * footer.actionTouchExpandV
+                touchExpandH: footer.actionTouchExpandH
+                touchExpandV: footer.actionTouchExpandV
+                z: 0
                 text: qsTr("ПРИНЯТЬ")
                 primary: true
                 enabled: true

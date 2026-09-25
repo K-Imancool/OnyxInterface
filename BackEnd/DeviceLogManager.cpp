@@ -4,6 +4,7 @@
 #include "socketmodel.h"
 #include "apppaths.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -298,6 +299,15 @@ void DeviceLogManager::onWarningCode(quint8 warningCode)
 void DeviceLogManager::logPowerOff(quint8 reasonCode)
 {
     appendPowerOffEvent(reasonCode);
+}
+
+void DeviceLogManager::logSystemError(const QString &message)
+{
+    const QString trimmed = message.trimmed();
+    if (trimmed.isEmpty()) {
+        return;
+    }
+    appendEvent(QStringLiteral("ERROR"), trimmed);
 }
 
 QString DeviceLogManager::logDirPath() const
@@ -878,48 +888,70 @@ QString DeviceLogManager::activationSourceCode(bool autoMode, quint8 sourceCode)
     }
 }
 
-QString DeviceLogManager::warningTextForCode(int code) const
+namespace {
+
+// Русские исходники. Перевод ищется в контексте main — там уже лежат строки из UserInterface_*.ts.
+const char *warningSourceForCode(int code)
 {
     switch (code) {
-    case 0x01: return QStringLiteral("Ошибка связи: передача не выполнена");
-    case 0x02: return QStringLiteral("Ошибка связи: нет ответа");
-    case 0x03: return QStringLiteral("Ошибка связи: неверный ответ");
-    case 0x04: return QStringLiteral("Ошибка связи: неверная длина пакета");
-    case 0x05: return QStringLiteral("Ошибка связи: CRC не совпадает");
-    case 0x41: return QStringLiteral("Активация остановлена: холостой ход (автостоп)");
-    case 0x42: return QStringLiteral("Активация остановлена: короткое замыкание бранш");
-    case 0x43: return QStringLiteral("Активация остановлена: обрыв нейтрального электрода");
-    case 0x44: return QStringLiteral("Активация остановлена: закончился аргон");
-    case 0x45: return QStringLiteral("Активация остановлена: непроходимость газового тракта");
-    case 0x46: return QStringLiteral("Ошибка модуля связи");
-    case 0x4F: return QStringLiteral("Активация остановлена: ошибка генератора");
-    case 0x80: return QStringLiteral("Ошибка: модуль связи не принимает сигналы от МИФ");
-    case 0x81: return QStringLiteral("Ошибка: генератор не отвечает");
-    case 0x82: return QStringLiteral("Ошибка: газовый модуль не отвечает");
-    case 0x83: return QStringLiteral("Ошибка: не отвечает радиомодуль");
-    case 0x84: return QStringLiteral("Ошибка: кнопки или педали зажаты до старта");
-    case 0x85: return QStringLiteral("Ошибка: МК НЭ не отвечает");
-    case 0x86: return QStringLiteral("Ошибка: МК раскачки не отвечает");
-    case 0x87: return QStringLiteral("Ошибка: питание НЭ 5В не соответствует норме");
-    case 0x88: return QStringLiteral("Ошибка: питание НЭ 3,3В не соответствует норме");
-    case 0x89: return QStringLiteral("Ошибка: перегрев контроллера НЭ");
-    case 0x8D: return QStringLiteral("Ошибка: прошивка МК повреждена или обновление не выполнено");
-    case 0x8E: return QStringLiteral("Ошибка: нет рабочей прошивки МК");
-    case 0x90: return QStringLiteral("Критичная ошибка: ИСН при включении");
-    case 0x91: return QStringLiteral("Критичная ошибка: АЦП1 (напряжение контура)");
-    case 0x92: return QStringLiteral("Критичная ошибка: АЦП2 (ток контура)");
-    case 0x93: return QStringLiteral("Критичная ошибка: АЦП3 (ток генератора)");
-    case 0x94: return QStringLiteral("Критичная ошибка: АЦП4 (напряжение ИСН)");
-    case 0x95: return QStringLiteral("Критичная ошибка: реле");
-    case 0x96: return QStringLiteral("Критичная ошибка: ИСН при нормальной работе");
-    case 0x97: return QStringLiteral("Критичная ошибка: не найден резонанс при калибровке НЭ");
-    case 0x98: return QStringLiteral("Критичная ошибка: АЦП схемы НЭ");
+    case 0x01: return "Ошибка связи: передача не выполнена";
+    case 0x02: return "Ошибка связи: нет ответа";
+    case 0x03: return "Ошибка связи: неверный ответ";
+    case 0x04: return "Ошибка связи: неверная длина пакета";
+    case 0x05: return "Ошибка связи: CRC не совпадает";
+    case 0x09: return "Ошибка сенсорного экрана";
+    case 0x11: return "Ошибка связи с аргоновым модулем: передача не выполнена";
+    case 0x12: return "Ошибка связи с аргоновым модулем: нет ответа";
+    case 0x13: return "Ошибка связи с аргоновым модулем: неверный ответ";
+    case 0x14: return "Ошибка связи с аргоновым модулем: неверная длина пакета";
+    case 0x15: return "Ошибка связи с аргоновым модулем: CRC не совпадает";
+    case 0x21: return "Ошибка связи с генератором: передача не выполнена";
+    case 0x22: return "Ошибка связи с генератором: нет ответа";
+    case 0x23: return "Ошибка связи с генератором: неверный ответ";
+    case 0x24: return "Ошибка связи с генератором: неверная длина пакета";
+    case 0x25: return "Ошибка связи с генератором: CRC не совпадает";
+    case 0x41: return "Активация остановлена: холостой ход (автостоп)";
+    case 0x42: return "Активация остановлена: короткое замыкание бранш";
+    case 0x43: return "Активация остановлена: обрыв нейтрального электрода";
+    case 0x44: return "Активация остановлена: закончился аргон";
+    case 0x45: return "Активация остановлена: непроходимость газового тракта";
+    case 0x46: return "Ошибка модуля связи";
+    case 0x4F: return "Активация остановлена: ошибка генератора";
+    case 0x80: return "Ошибка: модуль связи не принимает сигналы от МИФ";
+    case 0x81: return "Ошибка: генератор не отвечает";
+    case 0x82: return "Ошибка: газовый модуль не отвечает";
+    case 0x83: return "Ошибка: не отвечает радиомодуль";
+    case 0x84: return "Ошибка: кнопки или педали зажаты до старта";
+    case 0x85: return "Ошибка: МК НЭ не отвечает";
+    case 0x86: return "Ошибка: МК раскачки не отвечает";
+    case 0x87: return "Ошибка: питание НЭ 5В не соответствует норме";
+    case 0x88: return "Ошибка: питание НЭ 3,3В не соответствует норме";
+    case 0x89: return "Ошибка: перегрев контроллера НЭ";
+    case 0x8D: return "Ошибка: прошивка МК повреждена или обновление не выполнено";
+    case 0x8E: return "Ошибка: нет рабочей прошивки МК";
+    case 0x90: return "Критичная ошибка: ИСН при включении";
+    case 0x91: return "Критичная ошибка: АЦП1 (напряжение контура)";
+    case 0x92: return "Критичная ошибка: АЦП2 (ток контура)";
+    case 0x93: return "Критичная ошибка: АЦП3 (ток генератора)";
+    case 0x94: return "Критичная ошибка: АЦП4 (напряжение ИСН)";
+    case 0x95: return "Критичная ошибка: реле";
+    case 0x96: return "Критичная ошибка: ИСН при нормальной работе";
+    case 0x97: return "Критичная ошибка: не найден резонанс при калибровке НЭ";
+    case 0x98: return "Критичная ошибка: АЦП схемы НЭ";
     default:
-    {
-        const QString codeText = QString::number(code, 16).rightJustified(2, QLatin1Char('0')).toUpper();
-        return QStringLiteral("Ошибка устройства (код 0x%1)").arg(codeText);
+        return nullptr;
     }
-    }
+}
+
+} // namespace
+
+QString DeviceLogManager::warningTextForCode(int code) const
+{
+    if (const char *source = warningSourceForCode(code))
+        return QCoreApplication::translate("main", source);
+    const QString codeText = QString::number(code, 16).rightJustified(2, QLatin1Char('0')).toUpper();
+    return QCoreApplication::translate("main", "Ошибка устройства (код 0x")
+            + codeText + QLatin1Char(')');
 }
 
 QString DeviceLogManager::powerOffTextForCode(int code) const

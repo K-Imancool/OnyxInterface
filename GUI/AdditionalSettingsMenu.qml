@@ -22,6 +22,8 @@ Item {
     readonly property int menuActionIconSize: 76
     readonly property int panelRadius: 20
     readonly property int menuActionSmallLabelSize: 28
+    // Диалог пароля входа в сервисное меню открыт (в т.ч. с клавиатурой).
+    readonly property bool servicePasswordDialogOpen: servicePasswordDialog.visible
 
     function isServiceMenuNoPasswordEnabled() {
         if (typeof savedJson === "undefined" || !savedJson) {

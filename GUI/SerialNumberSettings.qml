@@ -165,7 +165,7 @@ ServiceFrame {
     function setDeviceType(value) {
         serialRoot.deviceType = value
         if (serialRoot.serialValid) {
-            serialRoot.serialSaveStatus = qsTr("Не сохранено")
+            serialRoot.serialSaveStatus = qsTr("НЕ СОХРАНЕНО!")
         }
     }
 
@@ -237,7 +237,7 @@ ServiceFrame {
                     serialRoot.serialNumber = text
                     serialRoot.serialValid = serialRoot.isSerialValid(text)
                     if (serialRoot.serialValid) {
-                        serialRoot.serialSaveStatus = qsTr("Не сохранено")
+                        serialRoot.serialSaveStatus = qsTr("НЕ СОХРАНЕНО!")
                     } else {
                         serialRoot.serialSaveStatus = qsTr("Введите серийный номер в диапазоне 260 000 - 1 000 000")
                     }
@@ -345,7 +345,7 @@ ServiceFrame {
                 serialRoot.lastFittingNotes = text
                 serialRoot.featureNotes = text
                 if (serialRoot.serialValid) {
-                    serialRoot.serialSaveStatus = qsTr("Не сохранено")
+                    serialRoot.serialSaveStatus = qsTr("НЕ СОХРАНЕНО!")
                 }
             }
             background: Rectangle {

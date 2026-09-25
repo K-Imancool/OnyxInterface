@@ -15,14 +15,27 @@ Button {
     property int cornerRadius: 18
     property int labelPixelSize: 24
     property color labelColor: "white"
+    // Расширение поля касания за пределы видимой кнопки (фон рисуется с inset).
+    property int touchExpandH: 0
+    property int touchExpandV: 0
 
-    background: Rectangle {
-        radius: control.cornerRadius
-        color: control.primary
-               ? (control.enabled ? control.primaryEnabledColor : control.primaryDisabledColor)
-               : control.secondaryColor
-        border.color: control.primary ? control.primaryBorderColor : control.secondaryBorderColor
-        border.width: control.primary ? control.primaryBorderWidth : control.secondaryBorderWidth
+    leftPadding: touchExpandH
+    rightPadding: touchExpandH
+    topPadding: touchExpandV
+    bottomPadding: touchExpandV
+
+    background: Item {
+        Rectangle {
+            anchors.centerIn: parent
+            width: Math.max(0, parent.width - 2 * control.touchExpandH)
+            height: Math.max(0, parent.height - 2 * control.touchExpandV)
+            radius: control.cornerRadius
+            color: control.primary
+                   ? (control.enabled ? control.primaryEnabledColor : control.primaryDisabledColor)
+                   : control.secondaryColor
+            border.color: control.primary ? control.primaryBorderColor : control.secondaryBorderColor
+            border.width: control.primary ? control.primaryBorderWidth : control.secondaryBorderWidth
+        }
     }
 
     contentItem: Text {

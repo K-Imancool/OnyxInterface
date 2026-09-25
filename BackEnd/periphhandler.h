@@ -192,6 +192,7 @@ private:
 
     void recomputeEnableActivation();
     void clearWarningCode(int warningCode);
+    void clearGeneratorStopWarnings();
     void scheduleWarningClear(int warningCode);
 
 signals:

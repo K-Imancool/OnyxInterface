@@ -16,6 +16,28 @@ Popup {
     readonly property color foregroundColor: isCoag ? "white" : "black"
     readonly property color foregroundOutlineColor: isCoag ? "black" : "white"
 
+    // Внутренняя рамка: margin 10 + border. Длинное имя режима ужимаем, короткие остаются 96.
+    readonly property int modeNameBasePixelSize: 96
+    readonly property int modeNameMinPixelSize: 64
+    readonly property int modeNameSideInset: 24
+    readonly property int modeNameAvailWidth: Math.max(0, width - modeNameSideInset * 2)
+    readonly property int modeNamePixelSize: {
+        var avail = modeNameAvailWidth
+        var measured = Math.ceil(modeNameBaseMetrics.width) + 4
+        if (avail <= 0 || measured <= 0 || measured <= avail)
+            return modeNameBasePixelSize
+        var fitted = Math.floor(modeNameBasePixelSize * avail / measured)
+        return Math.max(modeNameMinPixelSize, fitted)
+    }
+
+    TextMetrics {
+        id: modeNameBaseMetrics
+        text: modeName
+        font.pixelSize: modeNameBasePixelSize
+        font.family: modeNameLabel.font.family
+        font.bold: modeNameLabel.font.bold
+    }
+
     modal: true
     dim: false
     closePolicy: Popup.NoAutoClose
@@ -99,7 +121,7 @@ Popup {
                 id: modeNameLabel
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: modeName
-                font.pixelSize: 96
+                font.pixelSize: activationPopup.modeNamePixelSize
                 color: foregroundColor
                 style: Text.Outline
                 styleColor: foregroundOutlineColor

@@ -9,12 +9,24 @@
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QStandardPaths>
+#include <QThread>
 #include <QTouchEvent>
+
+namespace {
+
+bool clickLatencyLogEnabled()
+{
+    const QByteArray raw = qgetenv("ONYX_CLICK_LATENCY");
+    return raw.isEmpty() || raw != "0";
+}
+
+}
 
 UiClickSound::UiClickSound(QObject *parent)
     : QObject(parent)
 {
     m_lastPlay.invalidate();
+    m_lastInput.invalidate();
     loadSource();
     if (qApp) {
         qApp->installEventFilter(this);
@@ -37,14 +49,18 @@ void UiClickSound::setEnabled(bool enabled)
 
 void UiClickSound::play(bool force)
 {
-    playAtPercent(kNormalClickPercent, force);
+    QElapsedTimer filterTimer;
+    filterTimer.start();
+    logClick("play", playAtPercent(kNormalClickPercent, force), filterTimer.elapsed());
 }
 
 void UiClickSound::playPreview(int level)
 {
     static const int kPreviewPercents[] = {20, 30, 45, 60};
     const int clamped = qBound(0, level, 3);
-    playAtPercent(kPreviewPercents[clamped], true);
+    QElapsedTimer filterTimer;
+    filterTimer.start();
+    logClick("preview", playAtPercent(kPreviewPercents[clamped], true), filterTimer.elapsed());
 }
 
 void UiClickSound::stop()
@@ -70,6 +86,25 @@ bool UiClickSound::isOnSettingsVolumeSlider(QQuickWindow *window, const QPointF 
     return QRectF(0, 0, slider->width(), slider->height()).contains(local);
 }
 
+void UiClickSound::logClick(const char *origin, const PlayTrace &trace, qint64 filterMs) const
+{
+    if (!clickLatencyLogEnabled()) {
+        return;
+    }
+    const bool guiThread = qApp && QThread::currentThread() == qApp->thread();
+    const qint64 sinceInputMs = m_lastInput.isValid() ? m_lastInput.elapsed() : -1;
+//    qDebug("click-latency origin=%s decision=%s guiThread=%d tid=%llu "
+//           "sinceInput=%lld sincePlay=%lld spawnMs=%lld filterMs=%lld",
+//           origin,
+//           trace.decision,
+//           int(guiThread),
+//           static_cast<qulonglong>(reinterpret_cast<quintptr>(QThread::currentThreadId())),
+//           sinceInputMs,
+//           trace.sincePlayMs,
+//           trace.spawnMs,
+//           filterMs);
+}
+
 bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
 {
     auto *window = qobject_cast<QQuickWindow *>(watched);
@@ -83,16 +118,29 @@ bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
         if (touchEvent->touchPoints().isEmpty()) {
             break;
         }
+        QElapsedTimer filterTimer;
+        filterTimer.start();
         m_touchSeen = true;
         const QPointF globalPos = touchEvent->touchPoints().first().screenPos();
+        PlayTrace trace;
         if (isOnSettingsVolumeSlider(window, globalPos)) {
-            break;
+            trace.decision = "skip-slider";
+            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
+        } else {
+            trace = playAtPercent(kNormalClickPercent, false);
         }
-        play();
+        logClick("touch", trace, filterTimer.elapsed());
+        m_lastInput.restart();
         break;
     }
     case QEvent::MouseButtonPress: {
+        QElapsedTimer filterTimer;
+        filterTimer.start();
         if (m_touchSeen) {
+            PlayTrace trace;
+            trace.decision = "ignore-after-touch";
+            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
+            logClick("mouse", trace, filterTimer.elapsed());
             break;
         }
         const auto *mouseEvent = static_cast<const QMouseEvent *>(event);
@@ -100,12 +148,21 @@ bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
             break;
         }
         if (mouseEvent->source() != Qt::MouseEventNotSynthesized) {
+            PlayTrace trace;
+            trace.decision = "ignore-synthesized";
+            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
+            logClick("mouse", trace, filterTimer.elapsed());
             break;
         }
+        PlayTrace trace;
         if (isOnSettingsVolumeSlider(window, mouseEvent->globalPos())) {
-            break;
+            trace.decision = "skip-slider";
+            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
+        } else {
+            trace = playAtPercent(kNormalClickPercent, false);
         }
-        play();
+        logClick("mouse", trace, filterTimer.elapsed());
+        m_lastInput.restart();
         break;
     }
     default:
@@ -133,21 +190,30 @@ void UiClickSound::loadSource()
     }
 }
 
-void UiClickSound::playAtPercent(int percent, bool force)
+UiClickSound::PlayTrace UiClickSound::playAtPercent(int percent, bool force)
 {
+    PlayTrace trace;
+    trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
     if ((!force && !m_enabled) || m_wavPath.isEmpty()) {
-        return;
+        trace.decision = m_wavPath.isEmpty() ? "skip-nofile" : "skip-disabled";
+        return trace;
     }
-    if (!force && m_lastPlay.isValid() && m_lastPlay.elapsed() < kMinIntervalMs) {
-        return;
+    if (!force && trace.sincePlayMs >= 0 && trace.sincePlayMs < kMinIntervalMs) {
+        trace.decision = "skip-interval";
+        return trace;
     }
     m_lastPlay.restart();
 
     const int pulseVolume = qBound(0,
                                    qRound(percent / 100.0 * kPulseVolumeNorm),
                                    kPulseVolumeNorm);
-    QProcess::startDetached(m_paplayBin,
+    QElapsedTimer spawnTimer;
+    spawnTimer.start();
+    const bool started = QProcess::startDetached(m_paplayBin,
                             {QStringLiteral("--volume"),
                              QString::number(pulseVolume),
                              m_wavPath});
+    trace.decision = started ? "paplay" : "paplay-failed";
+    trace.spawnMs = spawnTimer.elapsed();
+    return trace;
 }

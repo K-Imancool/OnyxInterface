@@ -40,7 +40,7 @@ ProgHandle::ProgHandle(QObject *parent)
 
 void ProgHandle::loadRecommendedProg(int recomProgIdx, bool clear)
 {
-	if (recomProgIdx < 0 || recomProgIdx >= m_progs.size()) {
+	if (recomProgIdx < 0 || static_cast<size_t>(recomProgIdx) >= m_progs.size()) {
 		return;
 	}
 	auto iter = m_progs.begin();
@@ -112,7 +112,7 @@ void ProgHandle::deleteProgRequest(int index)
 	if (m_isRecomProgs) {
 		return;
 	}
-	if (index < 0 || m_progs.size() <= index) {
+	if (index < 0 || static_cast<size_t>(index) >= m_progs.size()) {
 		return;
 	}
 	auto iter = m_progs.begin();
@@ -129,7 +129,7 @@ void ProgHandle::renameProgRequest(int index, const QString &name)
 		qWarning() << "renameProgRequest skipped: current list is recommended";
 		return;
 	}
-	if (index < 0 || m_progs.size() <= index) {
+	if (index < 0 || static_cast<size_t>(index) >= m_progs.size()) {
 		qWarning() << "renameProgRequest skipped: index out of range" << index
 		           << "size" << static_cast<int>(m_progs.size());
 		return;
@@ -180,7 +180,7 @@ int ProgHandle::scopeIdx() const
 
 void ProgHandle::setScopeIdx(int newScopeIdx)
 {
-	if (m_scopes.size() <= newScopeIdx)
+	if (newScopeIdx < 0 || static_cast<size_t>(newScopeIdx) >= m_scopes.size())
 		return;
 	// if (m_scopeIdx == newScopeIdx)
 	//     return;
@@ -199,10 +199,10 @@ void ProgHandle::setProgList(const std::map<int, QString>& lst/*, bool isRecom*/
 {
 //	qDebug() << "[ProgFlow] setProgList size:" << lst.size()
 //	         << "isRecomProgs:" << m_isRecomProgs;
-	if (!lst.empty()) {
-		auto it = lst.cbegin();
+//	if (!lst.empty()) {
+//		auto it = lst.cbegin();
 //		qDebug() << "[ProgFlow] setProgList first entry id:" << it->first << "name:" << it->second;
-	}
+//	}
 	m_progs = lst;
 }
 
@@ -302,7 +302,7 @@ void ProgHandle::deleteScopeRequest(int index)
 	if (m_isRecomProgs) {
 		return;
 	}
-	if (index < 0 || m_scopes.size() <= index) {
+	if (index < 0 || static_cast<size_t>(index) >= m_scopes.size()) {
 		return;
 	}
 	auto iter = m_scopes.begin();
@@ -319,7 +319,7 @@ void ProgHandle::renameScopeRequest(int index, const QString &name)
 		qWarning() << "renameScopeRequest skipped: current list is recommended";
 		return;
 	}
-	if (index < 0 || m_scopes.size() <= index) {
+	if (index < 0 || static_cast<size_t>(index) >= m_scopes.size()) {
 		qWarning() << "renameScopeRequest skipped: index out of range" << index
 		           << "size" << static_cast<int>(m_scopes.size());
 		return;

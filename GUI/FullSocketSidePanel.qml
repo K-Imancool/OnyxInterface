@@ -19,7 +19,6 @@ Item {
             spacing: 10
             visible: isCoagSide && editorRoot.modeSelectedInSide(true)
                      && ((editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true))
-                         || (editorRoot.socId <= 1 && editorRoot.isTermoModeInSide(true))
                          || (editorRoot.socId === 2 && editorRoot.isSprayModeInSide(true))
                          || (editorRoot.socId === 3 && editorRoot.sprayM1M2Active)
                          || (editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true)))
@@ -117,7 +116,6 @@ Item {
                 Layout.maximumHeight: sidePanelRoot.autoRowHeight
                 spacing: 8
                 visible: (editorRoot.socId >= 2 && editorRoot.socId <= 3 && editorRoot.isSoftModeInSide(true))
-                         || (editorRoot.socId <= 1 && editorRoot.isTermoModeInSide(true))
 
                 Button {
                     Layout.fillWidth: true
@@ -160,6 +158,7 @@ Item {
                 Layout.minimumHeight: sidePanelRoot.autoRowHeight - 15
                 Layout.maximumHeight: sidePanelRoot.autoRowHeight - 15
                 spacing: 6
+                z: 3
                 visible: editorRoot.socId <= 1 && editorRoot.isBiCoagModeInSide(true) && editorRoot.socketAutoModeState === 2
 
                 Repeater {
@@ -172,6 +171,8 @@ Item {
                     delegate: Button {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+                        // Выше footer/ПРИНЯТЬ при пересечении расширенного поля касания.
+                        z: 3
                         text: modelData.label
                         flat: true
                         background: Rectangle {

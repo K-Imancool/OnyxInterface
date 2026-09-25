@@ -332,7 +332,15 @@ Popup {
     onOpened: {
         openingInProgress = true
         detailsExpanded = false
-        modeEditor.initialize(socId, modeIndex, isCoag)
+
+        if (deferCommit) {
+            // FullSocketEditor already keeps live (possibly uncommitted) state in Editor.
+            // Do not re-initialize from the committed model — that would drop the live instrument.
+            if (modeIndex >= 0 && modeEditor.currentModeIndex !== modeIndex)
+                modeEditor.currentModeIndex = modeIndex
+        } else {
+            modeEditor.initialize(socId, modeIndex, isCoag)
+        }
 
         itemNameArr = modeEditor.modeNames
         itemIdArr = modeEditor.modeNamesIds()
@@ -349,13 +357,15 @@ Popup {
         if (di < 0) {
             displayIndex = -1
             modeListView.curIndex = -1
-            if (idx >= 0 && idx < itemIdArr.length)
+            if (idx >= 0 && idx < itemIdArr.length
+                    && modeEditor.currentModeIndex !== idx)
                 modeEditor.currentModeIndex = idx
         } else {
             var info = displayToBackend[di]
             var variant = endoCutDefaultVariant
             if (info && info.isGroup)
                 variant = endoCutVariantOf(itemIdArr[idx])
+            // Sync list UI; C++ setCurrentModeIndex no-ops if backend index is unchanged.
             applyDisplaySelection(di, variant)
         }
 
@@ -731,12 +741,19 @@ Popup {
             height: 86
             color: "transparent"
 
+            readonly property int actionTouchExpandH: 40
+            readonly property int actionTouchExpandV: 12
+            readonly property int actionVisualW: 195
+            readonly property int actionVisualH: 62
+
             DialogActionButton {
                 anchors.left: parent.left
-                anchors.leftMargin: root.screenMargin
+                anchors.leftMargin: root.screenMargin - footer.actionTouchExpandH
                 anchors.verticalCenter: parent.verticalCenter
-                width: 195
-                height: 62
+                width: footer.actionVisualW + 2 * footer.actionTouchExpandH
+                height: footer.actionVisualH + 2 * footer.actionTouchExpandV
+                touchExpandH: footer.actionTouchExpandH
+                touchExpandV: footer.actionTouchExpandV
                 text: qsTr("ОТМЕНА")
                 secondaryColor: "white"
                 secondaryBorderWidth: 2
@@ -765,10 +782,12 @@ Popup {
 
             DialogActionButton {
                 anchors.right: parent.right
-                anchors.rightMargin: root.screenMargin
+                anchors.rightMargin: root.screenMargin - footer.actionTouchExpandH
                 anchors.verticalCenter: parent.verticalCenter
-                width: 195
-                height: 62
+                width: footer.actionVisualW + 2 * footer.actionTouchExpandH
+                height: footer.actionVisualH + 2 * footer.actionTouchExpandV
+                touchExpandH: footer.actionTouchExpandH
+                touchExpandV: footer.actionTouchExpandV
                 text: qsTr("ПРИНЯТЬ")
                 primary: true
                 enabled: true

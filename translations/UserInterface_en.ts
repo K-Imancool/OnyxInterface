@@ -3560,6 +3560,46 @@ This cannot be undone.</translation>
         <translation>Communication error: CRC mismatch</translation>
     </message>
     <message>
+        <source>Ошибка связи с аргоновым модулем: передача не выполнена</source>
+        <translation>Communication error with argon module: transmission failed</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: нет ответа</source>
+        <translation>Communication error with argon module: no response</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: неверный ответ</source>
+        <translation>Communication error with argon module: invalid response</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: неверная длина пакета</source>
+        <translation>Communication error with argon module: invalid packet length</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: CRC не совпадает</source>
+        <translation>Communication error with argon module: CRC mismatch</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: передача не выполнена</source>
+        <translation>Communication error with generator: transmission failed</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: нет ответа</source>
+        <translation>Communication error with generator: no response</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: неверный ответ</source>
+        <translation>Communication error with generator: invalid response</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: неверная длина пакета</source>
+        <translation>Communication error with generator: invalid packet length</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: CRC не совпадает</source>
+        <translation>Communication error with generator: CRC mismatch</translation>
+    </message>
+    <message>
         <source>Активация остановлена: холостой ход (автостоп)</source>
         <translation>Activation stopped: idle (autostop)</translation>
     </message>

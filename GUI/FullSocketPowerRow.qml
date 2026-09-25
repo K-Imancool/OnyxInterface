@@ -24,46 +24,102 @@ Item {
     implicitHeight: showEndo ? (btnH + endoLabelHeight + 6) : btnH
     implicitWidth: 200
 
-    // Подсветка нажатия как у кнопок расхода аргона: фон fotekOrange, текст чёрный.
-    // Автоповтор привязан к down, а не к pressed: при соскальзывании пальца
-    // Button остаётся pressed до отпускания, но down (и цвет) уже сбрасываются.
-    component StepButton: Button {
+    // Подсветка и автоповтор локально на кнопку (как Argon).
+    // Не трогаем Item.enabled: при enabled→false Qt гасит MouseArea и теряет release,
+    // из‑за чего подсветка/жест залипают. Доступность шага — через interactive.
+    component StepButton: Item {
         id: stepBtn
-        flat: true
+        property string text: ""
         property int labelPixelSize: 52
         property bool holdRepeat: false
-        property bool increase: false
+        property bool interactive: true
+        property bool pressActive: false
 
-        background: Rectangle {
+        signal activated()
+
+        Rectangle {
+            anchors.fill: parent
             radius: 16
-            color: !stepBtn.enabled
+            color: !stepBtn.interactive
                    ? "#E8ECF2"
-                   : (stepBtn.down ? editorRoot.fotekOrange : "white")
-            border.width: stepBtn.enabled ? 2 : 1
-            border.color: stepBtn.enabled ? editorRoot.fotekOrange : "#C7CEDA"
+                   : (stepBtn.pressActive ? editorRoot.fotekOrange : "white")
+            border.width: stepBtn.interactive ? 2 : 1
+            border.color: stepBtn.interactive ? editorRoot.fotekOrange : "#C7CEDA"
         }
-        contentItem: Text {
+
+        Text {
+            anchors.fill: parent
             text: stepBtn.text
-            color: !stepBtn.enabled
+            color: !stepBtn.interactive
                    ? editorRoot.uiMidGray
-                   : (stepBtn.down ? "black" : editorRoot.fotekBlue)
+                   : (stepBtn.pressActive ? "black" : editorRoot.fotekBlue)
             font.pixelSize: stepBtn.labelPixelSize
             font.bold: true
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
 
-        onDownChanged: {
-            if (!holdRepeat || !editorRoot)
-                return
-            if (down)
-                editorRoot.startMainPowerRepeat(control.isCoagSide, increase)
-            else
-                editorRoot.stopMainPowerRepeat()
+        MouseArea {
+            id: holdArea
+            // Поле касания шире визуала ~на 20% (по 10% с каждой стороны).
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: -Math.round(stepBtn.width * 0.10)
+            anchors.rightMargin: -Math.round(stepBtn.width * 0.10)
+            // Всегда enabled, чтобы гарантированно получить released/canceled.
+            onPressed: {
+                if (!stepBtn.interactive) {
+                    mouse.accepted = true
+                    return
+                }
+                stepBtn.pressActive = true
+                stepBtn.activated()
+                if (stepBtn.holdRepeat)
+                    repeatDelay.restart()
+            }
+            onReleased: stepBtn.endPress()
+            onCanceled: stepBtn.endPress()
         }
-        onEnabledChanged: {
-            if (!enabled && holdRepeat && editorRoot)
-                editorRoot.stopMainPowerRepeat()
+
+        function endPress() {
+            pressActive = false
+            stopRepeat()
+        }
+
+        function stopRepeat() {
+            repeatDelay.stop()
+            repeatTick.stop()
+        }
+
+        onInteractiveChanged: {
+            if (!interactive) {
+                // Достигли min/max во время удержания — гасим повтор и подсветку,
+                // но MouseArea остаётся живым до отпускания пальца.
+                pressActive = false
+                stopRepeat()
+            }
+        }
+
+        Timer {
+            id: repeatDelay
+            interval: 900
+            repeat: false
+            onTriggered: repeatTick.start()
+        }
+
+        Timer {
+            id: repeatTick
+            interval: 120
+            repeat: true
+            onTriggered: {
+                if (!editorRoot || !editorRoot.opened || !stepBtn.interactive) {
+                    stepBtn.endPress()
+                    return
+                }
+                stepBtn.activated()
+            }
         }
     }
 
@@ -71,7 +127,6 @@ Item {
         anchors.fill: parent
         spacing: 10
         visible: modeSelected && !sideState.isEndo
-        enabled: visible
         z: visible ? 1 : 0
 
         Item { Layout.fillWidth: true }
@@ -80,10 +135,13 @@ Item {
             Layout.preferredWidth: control.btnW
             Layout.preferredHeight: control.btnH
             text: qsTr("−")
-            enabled: control.canDecreasePower
+            interactive: control.canDecreasePower
             labelPixelSize: 52
             holdRepeat: true
-            increase: false
+            onActivated: {
+                if (editorRoot)
+                    editorRoot.stepMainPower(control.isCoagSide, false)
+            }
         }
 
         Label {
@@ -101,10 +159,13 @@ Item {
             Layout.preferredWidth: control.btnW
             Layout.preferredHeight: control.btnH
             text: qsTr("+")
-            enabled: control.canIncreasePower
+            interactive: control.canIncreasePower
             labelPixelSize: 50
             holdRepeat: true
-            increase: true
+            onActivated: {
+                if (editorRoot)
+                    editorRoot.stepMainPower(control.isCoagSide, true)
+            }
         }
 
         Item { Layout.fillWidth: true }
@@ -116,7 +177,6 @@ Item {
         anchors.fill: parent
         spacing: control.endoGroupsGap
         visible: showEndo
-        enabled: visible
         z: visible ? 1 : 0
 
         ColumnLayout {
@@ -135,11 +195,11 @@ Item {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("−")
-                    enabled: control.cutEffect > 1
+                    interactive: control.cutEffect > 1
                     labelPixelSize: 44
-                    onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       control.cutEffect - 1,
-                                                       control.coagEffect)
+                    onActivated: editorRoot.setEndoPower(control.isCoagSide,
+                                                         control.cutEffect - 1,
+                                                         control.coagEffect)
                 }
 
                 Label {
@@ -158,11 +218,11 @@ Item {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("+")
-                    enabled: control.cutEffect < 3
+                    interactive: control.cutEffect < 3
                     labelPixelSize: 44
-                    onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       control.cutEffect + 1,
-                                                       control.coagEffect)
+                    onActivated: editorRoot.setEndoPower(control.isCoagSide,
+                                                         control.cutEffect + 1,
+                                                         control.coagEffect)
                 }
             }
 
@@ -195,11 +255,11 @@ Item {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("−")
-                    enabled: control.coagEffect > 1
+                    interactive: control.coagEffect > 1
                     labelPixelSize: 44
-                    onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       control.cutEffect,
-                                                       control.coagEffect - 1)
+                    onActivated: editorRoot.setEndoPower(control.isCoagSide,
+                                                         control.cutEffect,
+                                                         control.coagEffect - 1)
                 }
 
                 Label {
@@ -218,11 +278,11 @@ Item {
                     Layout.preferredWidth: control.endoBtnW
                     Layout.preferredHeight: control.btnH
                     text: qsTr("+")
-                    enabled: control.coagEffect < 3
+                    interactive: control.coagEffect < 3
                     labelPixelSize: 44
-                    onPressed: editorRoot.setEndoPower(isCoagSide,
-                                                       control.cutEffect,
-                                                       control.coagEffect + 1)
+                    onActivated: editorRoot.setEndoPower(control.isCoagSide,
+                                                         control.cutEffect,
+                                                         control.coagEffect + 1)
                 }
             }
 

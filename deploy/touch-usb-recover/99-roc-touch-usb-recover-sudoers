@@ -1,0 +1,1 @@
+kikorik ALL=(root) NOPASSWD: /usr/local/sbin/roc-touch-usb-recover

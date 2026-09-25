@@ -46,7 +46,8 @@ HEADERS += \
     $$PWD/userprogloader.h \
     $$PWD/userprogtransfercontroller.h \
     $$PWD/systemmonitor.h \
-    $$PWD/gpiomonitor.h 
+    $$PWD/gpiomonitor.h \
+    $$PWD/TouchUsbMonitor.h 
 
 SOURCES += \
     $$PWD/dblocale.cpp \
@@ -84,7 +85,8 @@ SOURCES += \
     $$PWD/userprogloader.cpp \
     $$PWD/userprogtransfercontroller.cpp \
     $$PWD/systemmonitor.cpp \
-    $$PWD/gpiomonitor.cpp 
+    $$PWD/gpiomonitor.cpp \
+    $$PWD/TouchUsbMonitor.cpp 
 
 RESOURCES += \
     $$PWD/backend.qrc

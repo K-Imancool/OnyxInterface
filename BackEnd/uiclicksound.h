@@ -35,9 +35,16 @@ signals:
     void enabledChanged();
 
 private:
+    struct PlayTrace {
+        const char *decision = "nop";
+        qint64 sincePlayMs = -1;
+        qint64 spawnMs = -1;
+    };
+
     void loadSource();
-    void playAtPercent(int percent, bool force);
+    PlayTrace playAtPercent(int percent, bool force);
     bool isOnSettingsVolumeSlider(QQuickWindow *window, const QPointF &globalPos);
+    void logClick(const char *origin, const PlayTrace &trace, qint64 filterMs) const;
 
     static constexpr qint64 kMinIntervalMs = 220;
     static constexpr int kNormalClickPercent = 30;
@@ -50,6 +57,7 @@ private:
     bool m_enabled = true;
     bool m_touchSeen = false;
     QElapsedTimer m_lastPlay;
+    QElapsedTimer m_lastInput;
 };
 
 #endif // UICLICKSOUND_H

@@ -8,10 +8,13 @@ Rectangle {
     property var latchedCodes: []
     // На стартовом меню полоса видна, но тач не перехватываем — кнопки меню должны работать.
     property bool blockInput: true
+    // Сервисное меню / ввод пароля: форсируем сжатый список вместо полноэкранного оверлея.
+    property bool forceCompact: false
 
     readonly property bool fullscreenOn: typeof periphHandle !== "undefined"
                                          && periphHandle
                                          && periphHandle.fullscreenErrorsEnabled
+                                         && !forceCompact
     readonly property bool liveVisible: fullscreenOn && periphHandle.activationStopWarningVisible
     readonly property var liveCodes: liveVisible ? periphHandle.activationStopWarningCodes : []
     readonly property var warningCodes: liveVisible ? liveCodes : latchedCodes
@@ -33,10 +36,33 @@ Rectangle {
     readonly property bool overlayActive: fullscreenOn
                                           && !dismissedBySecret
                                           && (liveVisible || latchedCritical)
+    // 0x41..0x4F — только информационная остановка генератора: полосу показываем,
+    // но тач/активацию не блокируем (критичные и прочие коды — блокируем).
+    readonly property bool onlyGeneratorStopWarnings: {
+        if (overlayRoot.latchedCritical || overlayRoot.hasCriticalError)
+            return false
+        var codes = overlayRoot.warningCodes
+        var found = false
+        for (var i = 0; i < 16; ++i) {
+            if (codes === undefined || codes === null)
+                break
+            var item = codes[i]
+            if (item === undefined || item === null)
+                break
+            var c = Number(item)
+            if (isNaN(c))
+                continue
+            found = true
+            if (c < 0x41 || c > 0x4F)
+                return false
+        }
+        return found
+    }
+    readonly property bool shouldBlockInput: blockInput && !onlyGeneratorStopWarnings
 
     visible: overlayActive
     enabled: overlayActive
-    color: blockInput ? "#AAFFFFFF" : "transparent"
+    color: shouldBlockInput ? "#AAFFFFFF" : "transparent"
 
     function codesHaveCritical(codes) {
         for (var i = 0; i < codes.length; ++i) {
@@ -116,10 +142,10 @@ Rectangle {
     function fullscreenErrorColor(code) {
         var c = Number(code)
         if (c === 0x41)
-            return "#70F870"
+            return "#03d403"
         if (c >= 0x42 && c <= 0x48)
-            return "#b8a400"
-        return "#FF8A80"
+            return "#e7cf0b"
+        return "#FF6154"
     }
 
     function stripeSeverity(code) {
@@ -150,19 +176,19 @@ Rectangle {
             found = true
         }
         if (!found)
-            return "#b8a400"
+            return "#e7cf0b"
         if (worst >= 2)
-            return "#FF8A80"
+            return "#FF6154"
         if (worst === 1)
-            return "#b8a400"
-        return "#70F870"
+            return "#e7cf0b"
+        return "#03d403"
     }
 
     MouseArea {
         objectName: "fullscreenTouchBlocker"
         anchors.fill: parent
         z: 10
-        enabled: overlayRoot.visible && overlayRoot.blockInput
+        enabled: overlayRoot.visible && overlayRoot.shouldBlockInput
         hoverEnabled: true
         preventStealing: true
         onPressed: function(mouse) {
@@ -175,15 +201,32 @@ Rectangle {
     }
 
     Rectangle {
+        id: dimmer
+        anchors.fill: parent
+        color: "#60FFFFFF"
+    }
+
+    Rectangle {
         id: errorStripe
         anchors {
             left: parent.left
             right: parent.right
             verticalCenter: parent.verticalCenter
         }
-        height: Math.max(250, errorColumn.implicitHeight + 40)
+        height: Math.max(250, errorColumn.implicitHeight + 50)
         color: overlayRoot.stripeColor
         z: 11
+
+        Rectangle {
+            id: whiteback
+            anchors {
+                left: parent.left
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+            }
+            height: errorColumn.implicitHeight + 20
+            color: "white"
+        }
 
         Column {
             id: errorColumn

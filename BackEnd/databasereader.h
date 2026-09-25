@@ -21,8 +21,6 @@ public:
 
     QString connectionName() const { return m_connectionName; }
 
-    void slotSendQuery(const QString& queryStr, int valueNumbersAwaited = 1) const;
-
     QList<QVariantList> slotSendSelectQuery(const QStringList &tables,
                              const QStringList& columns,
                              const QString& conditions) const;

@@ -143,7 +143,7 @@ std::map<int, Onyx::InstrInfo> SurgicalMode::InstrConstraints() const
 
 std::optional<Onyx::InstrInfo> SurgicalMode::getConstraints(int index) const
 {
-    if (index >= m_InstrConstraints.size())
+    if (index < 0 || static_cast<size_t>(index) >= m_InstrConstraints.size())
         return std::nullopt;
     //элементы map отсортированы по возрастанию ключа
     for (const auto& iter : m_InstrConstraints) {

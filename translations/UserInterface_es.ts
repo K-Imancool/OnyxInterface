@@ -3560,6 +3560,46 @@ Esta acción no se puede deshacer.</translation>
         <translation>Error de comunicación: CRC no coincide</translation>
     </message>
     <message>
+        <source>Ошибка связи с аргоновым модулем: передача не выполнена</source>
+        <translation>Error de comunicación con el módulo de argón: transmisión fallida</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: нет ответа</source>
+        <translation>Error de comunicación con el módulo de argón: sin respuesta</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: неверный ответ</source>
+        <translation>Error de comunicación con el módulo de argón: respuesta no válida</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: неверная длина пакета</source>
+        <translation>Error de comunicación con el módulo de argón: longitud de paquete no válida</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с аргоновым модулем: CRC не совпадает</source>
+        <translation>Error de comunicación con el módulo de argón: CRC no coincide</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: передача не выполнена</source>
+        <translation>Error de comunicación con el generador: transmisión fallida</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: нет ответа</source>
+        <translation>Error de comunicación con el generador: sin respuesta</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: неверный ответ</source>
+        <translation>Error de comunicación con el generador: respuesta no válida</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: неверная длина пакета</source>
+        <translation>Error de comunicación con el generador: longitud de paquete no válida</translation>
+    </message>
+    <message>
+        <source>Ошибка связи с генератором: CRC не совпадает</source>
+        <translation>Error de comunicación con el generador: CRC no coincide</translation>
+    </message>
+    <message>
         <source>Активация остановлена: холостой ход (автостоп)</source>
         <translation>Activación detenida: marcha en vacío (autostop)</translation>
     </message>

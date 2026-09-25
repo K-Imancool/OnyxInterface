@@ -68,7 +68,7 @@ QStringList EshfProgStringBuilder::makePedalString(size_t pageNum)
 	return res;
 }
 
-QString EshfProgStringBuilder::makeOutEnableMask(size_t pageNum)
+QString EshfProgStringBuilder::makeOutEnableMask()
 {
 	//заглушка
 	return QString::number(11111111);

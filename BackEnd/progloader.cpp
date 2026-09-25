@@ -324,27 +324,6 @@ void filterModeMap(QMap<int, SurgModePtr>& container, const std::vector<int>& al
 	}
 }
 
-QString makeDbStringMode( const QModelIndex& idx,
-                                int listRole,
-                                int firstItemRole) {
-    QStringList list = idx.data(listRole).toStringList();
-    int firstItem = idx.data(firstItemRole).toInt();
-    list.removeOne(QString::number(firstItem));
-    list.removeOne(QString::number(ESHF::NO_MODE));
-    list.prepend(QString::number(firstItem));
-    return list.join(',');
-}
-
-QString makeDbStringInstr( const QModelIndex& idx,
-                          int listRole,
-                          int firstItemRole) {
-    QStringList list = idx.data(listRole).toStringList();
-    int firstItem = idx.data(firstItemRole).toInt();
-    list.removeOne(QString::number(firstItem));
-    list.prepend(QString::number(firstItem));
-    return list.join(',');
-}
-
 const QString queryConditionRecom = "Prog_ID = %1 AND Num >= 0 AND Num < 4 ORDER BY Num ASC, id ASC";
 const QStringList fields = {"id", "Num", "Prog_ID", /* 0 1 2*/
                             "Bi1Cut_INSTR", "Bi1Cut_MODE", "Bi1Cut_POWER", /* 3 4 5*/
@@ -1816,7 +1795,7 @@ QList<QStringList> ProgLoader::prepSaveState()
 			curList.append(builder.makeSocketString(j,i));
 		}
 		curList.append(builder.makePedalString(i));
-		curList.append(builder.makeOutEnableMask(i));
+        curList.append(builder.makeOutEnableMask());
 	}
 	return listsStr;
 }

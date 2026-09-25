@@ -47,7 +47,15 @@ Window {
     property bool startupInfoVisible: false
     property bool powerOffShutdownPending: false
     readonly property bool startupFlowVisible: startupScreen !== "mainScreen"
-
+    // В сервисном меню (и при вводе пароля) — сжатый список ошибок, даже если включён fullscreen.
+    readonly property bool preferCompactWarnings: {
+        if (startupFlowVisible && startupContentLoader.item
+                && startupContentLoader.item.forceCompactErrors === true)
+            return true
+        if (workReady && work.menuLoad && work.menuLoad.forceCompactErrors === true)
+            return true
+        return false
+    }
 
     // --- deferred WorkScreen ---
     readonly property var work: workScreenLoader.item
@@ -461,51 +469,6 @@ Window {
         }
     }
 
-    function warningTextForCode(code) {
-        switch (code) {
-        case 0x01: return qsTr("Ошибка связи: передача не выполнена")
-        case 0x02: return qsTr("Ошибка связи: нет ответа")
-        case 0x03: return qsTr("Ошибка связи: неверный ответ")
-        case 0x04: return qsTr("Ошибка связи: неверная длина пакета")
-        case 0x05: return qsTr("Ошибка связи: CRC не совпадает")
-
-        case 0x41: return qsTr("Активация остановлена: холостой ход (автостоп)")
-        case 0x42: return qsTr("Активация остановлена: короткое замыкание бранш")
-        case 0x43: return qsTr("Активация остановлена: обрыв нейтрального электрода")
-        case 0x44: return qsTr("Активация остановлена: закончился аргон")
-        case 0x45: return qsTr("Активация остановлена: непроходимость газового тракта")
-        case 0x46: return qsTr("Ошибка модуля связи")
-        case 0x4F: return qsTr("Активация остановлена: ошибка генератора")
-
-        case 0x80: return qsTr("Ошибка: модуль связи не принимает сигналы от МИФ")
-        case 0x81: return qsTr("Ошибка: генератор не отвечает")
-        case 0x82: return qsTr("Ошибка: газовый модуль не отвечает")
-        case 0x83: return qsTr("Ошибка: не отвечает радиомодуль")
-        case 0x84: return qsTr("Ошибка: кнопки или педали зажаты до старта")
-        case 0x85: return qsTr("Ошибка: МК НЭ не отвечает")
-        case 0x86: return qsTr("Ошибка: МК раскачки не отвечает")
-        case 0x87: return qsTr("Ошибка: питание НЭ 5В не соответствует норме")
-        case 0x88: return qsTr("Ошибка: питание НЭ 3,3В не соответствует норме")
-        case 0x89: return qsTr("Ошибка: перегрев контроллера НЭ")
-//        case 0x8C: return qsTr("Ошибка: кнопка питания зажата")
-        case 0x8D: return qsTr("Ошибка: прошивка МК повреждена или обновление не выполнено")
-        case 0x8E: return qsTr("Ошибка: нет рабочей прошивки МК")
-
-        case 0x90: return qsTr("Критичная ошибка: ИСН при включении")
-        case 0x91: return qsTr("Критичная ошибка: АЦП1 (напряжение контура)")
-        case 0x92: return qsTr("Критичная ошибка: АЦП2 (ток контура)")
-        case 0x93: return qsTr("Критичная ошибка: АЦП3 (ток генератора)")
-        case 0x94: return qsTr("Критичная ошибка: АЦП4 (напряжение ИСН)")
-        case 0x95: return qsTr("Критичная ошибка: реле")
-        case 0x96: return qsTr("Критичная ошибка: ИСН при нормальной работе")
-        case 0x97: return qsTr("Критичная ошибка: не найден резонанс при калибровке НЭ")
-        case 0x98: return qsTr("Критичная ошибка: АЦП схемы НЭ")
-
-        default:
-            return qsTr("Ошибка устройства (код 0x") + code.toString(16).toUpperCase() + ")"
-        }
-    }
-
     Component.onCompleted: {
         Qt.inputMethod.hide()
         restoreLanguage()
@@ -807,6 +770,7 @@ Window {
         anchors.fill: parent
         z: 500000
         blockInput: !container.startupFlowVisible
+        forceCompact: container.preferCompactWarnings
     }
 
     ArgonModuleFaultDialog {
@@ -842,9 +806,13 @@ Window {
     }
 
     // Индикация поверх Popup/Drawer: не перехватывает тач (enabled: false).
+    // На mainScreen — в Overlay.overlay (иначе Popup перекрывает любой z в дереве Window).
+    // На старте Overlay.enabled=false — остаёмся дочерним окна над startupOverlay.
     Item {
         id: globalHudLayer
         objectName: "globalHudLayer"
+        parent: (!container.startupFlowVisible && Overlay.overlay)
+                ? Overlay.overlay : container
         anchors.fill: parent
         z: 1000000
         enabled: false
@@ -922,7 +890,8 @@ Window {
             anchors.topMargin: 83
             spacing: 8
             visible: periphHandle.activationStopWarningVisible
-                     && !periphHandle.fullscreenErrorsEnabled
+                     && (!periphHandle.fullscreenErrorsEnabled
+                         || container.preferCompactWarnings)
 
             Repeater {
                 model: periphHandle.activationStopWarningCodes
@@ -931,11 +900,14 @@ Window {
                     required property var modelData
 
                     readonly property int warningCode: Number(modelData)
-                    readonly property string warningText: container.warningTextForCode(warningCode)
+                    // language читается, чтобы смена языка обновила уже показанную плашку
+                    readonly property string warningText: (translationController.language,
+                                                           deviceLog.warningTextForCode(warningCode))
 
                     width: Math.min(container.width - 80, warningTextLabel.implicitWidth + 32)
                     height: warningTextLabel.implicitHeight + 20
                     radius: 8
+                    opacity: 0.72
                     color: container.warningColorForCode(warningCode)
                     border.color: "#212121"
                     border.width: 1

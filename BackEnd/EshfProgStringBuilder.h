@@ -19,7 +19,7 @@ public:
 	EshfProgStringBuilder();
 	QStringList makeSocketString(size_t socketNum, size_t pageNum);
 	QStringList makePedalString(size_t pageNum);
-	QString makeOutEnableMask(size_t pageNum);
+    QString makeOutEnableMask();
 	void setState(const std::vector<std::map<int, SockPtr> > &sockets,
 	              const std::vector<std::map<int, InstrPtr> > &instrs);
 private:

@@ -35,32 +35,6 @@ DataBaseReader::DataBaseReader(const QString& pathToDb, const QString& connectio
     }
 }
 
-void DataBaseReader::slotSendQuery(const QString &queryStr, int valueNumbersAwaited) const
-{
-    QList<QVariantList> result;
-    QSqlDatabase db = QSqlDatabase::database(m_connectionName);
-    db.open();
-
-    QSqlQuery query(db);
-    query.prepare(queryStr);
-    query.setForwardOnly(true);
-
-    if (!query.exec()) {
-        // qDebug() << query.lastError().text();
-    }
-
-    while (query.next()) {
-        QVariant res1 = query.value(0);
-        QVariant res2 = query.value(1);
-
-        result.append(QVariantList{res1, res2});
-    }
-
-
-    emit signalResultReady(queryStr, result);
-
-}
-
 QList<QVariantList> DataBaseReader::slotSendSelectQuery(const QStringList &tables,
                                          const QStringList &columns,
                                          const QString &conditions) const
