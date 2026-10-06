@@ -2,8 +2,10 @@
 #include "DeviceLogManager.h"
 #include "periphhandler.h"
 
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
+#include <QEvent>
 #include <QFile>
 #include <QProcess>
 #include <QTimer>
@@ -22,6 +24,9 @@ constexpr int kMissingConfirmNeeded = 4; // ~0.8 + 3×0.7 ≈ 3 с наблюд�
 constexpr int kRecoverTimeoutMs = 45000;
 constexpr int kPostRecoverRecheckMs = 2000;
 constexpr int kMaxRecoverAttempts = 2;
+// Касание — доказательство, что тач жив: столько времени не смотрим на /proc
+// и не делаем power-cycle, даже если "WINSTARTP Mouse" там не найден.
+constexpr qint64 kTouchEventTrustMs = 5 * 60 * 1000;
 
 QString readSysfsText(const QString &path)
 {
@@ -54,6 +59,10 @@ TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
                 onRecoverFinished(exitCode);
             });
 
+    if (QCoreApplication *app = QCoreApplication::instance()) {
+        app->installEventFilter(this);
+    }
+
     QTimer::singleShot(kFirstCheckMs, this, [this]() {
         check();
         m_timer->start();
@@ -63,6 +72,38 @@ TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
 void TouchUsbMonitor::setPeriphHandler(PeriphHandler *periph)
 {
     m_periph = periph;
+}
+
+bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::TouchBegin:
+    case QEvent::MouseButtonPress:
+        onTouchEvent();
+        break;
+    default:
+        break;
+    }
+    return QObject::eventFilter(watched, event);
+}
+
+bool TouchUsbMonitor::touchEventRecent() const
+{
+    return m_lastTouchEvent.isValid() && m_lastTouchEvent.elapsed() < kTouchEventTrustMs;
+}
+
+void TouchUsbMonitor::onTouchEvent()
+{
+    m_lastTouchEvent.start();
+    if (m_recovering) {
+        return;
+    }
+    if (m_touchOk && !m_screenFaultShown && m_missingConfirmCount == 0) {
+        return;
+    }
+    applyState(QStringLiteral("ok"),
+               QStringLiteral("touch event received"),
+               false);
 }
 
 bool TouchUsbMonitor::touchInputPresent()
@@ -200,6 +241,13 @@ void TouchUsbMonitor::check()
     if (touchInputPresent()) {
         applyState(QStringLiteral("ok"),
                    QStringLiteral("WINSTARTP Mouse present"),
+                   false);
+        return;
+    }
+
+    if (touchEventRecent()) {
+        applyState(QStringLiteral("ok"),
+                   QStringLiteral("recent touch event"),
                    false);
         return;
     }

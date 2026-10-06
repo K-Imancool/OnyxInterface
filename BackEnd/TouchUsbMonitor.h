@@ -1,6 +1,7 @@
 #ifndef TOUCHUSBMONITOR_H
 #define TOUCHUSBMONITOR_H
 
+#include <QElapsedTimer>
 #include <QObject>
 #include <QString>
 
@@ -47,7 +48,12 @@ signals:
     void detailChanged();
     void touchUsbFault(const QString &state, const QString &detail);
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private:
+    void onTouchEvent();
+    bool touchEventRecent() const;
     void setRecovering(bool on);
     void applyState(const QString &state, const QString &detail, bool logFault);
     void startRecover(const QString &detail);
@@ -63,6 +69,7 @@ private:
     PeriphHandler *m_periph = nullptr;
     QTimer *m_timer = nullptr;
     QProcess *m_process = nullptr;
+    QElapsedTimer m_lastTouchEvent;
     QString m_state = QStringLiteral("ok");
     QString m_detail;
     QString m_lastLoggedKey;

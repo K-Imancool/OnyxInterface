@@ -105,7 +105,7 @@ Window {
                                           | work.socketsDummy.fullSocketEditorOpened
                                           | startupFlowVisible
                                           | powerOffShutdownPending
-                                          | work.powerOffConfirmDialog.opened
+                                          | powerOffConfirmDialog.opened
                                           | argonModuleFaultDialog.opened)
     }
 
@@ -552,6 +552,8 @@ Window {
         target: Overlay.overlay
         property: "enabled"
         value: !container.startupFlowVisible
+               || argonModuleFaultDialog.visible
+               || powerOffConfirmDialog.visible
     }
 
     Item {
@@ -788,6 +790,21 @@ Window {
         }
     }
 
+    PowerOffConfirmDialog {
+        id: powerOffConfirmDialog
+        accentColor: container.fotekBlue
+        onOpened: periphHandle.enableActivation = false
+        onCancelChosen: {
+            appControl.cancelPowerOff()
+            container.activationEnable()
+        }
+        onConfirmChosen: {
+            container.powerOffShutdownPending = true
+            periphHandle.enableActivation = false
+            appControl.confirmPowerOff()
+        }
+    }
+
     Connections {
         target: periphHandle
         function onActivationStopWarningChanged() {
@@ -803,6 +820,11 @@ Window {
         function onDeviceTypeApplied() {
             container.refreshArgonAvailability()
         }
+        function onPowerOffConfirmationRequested(timeoutSeconds) {
+            container.powerOffShutdownPending = false
+            periphHandle.enableActivation = false
+            powerOffConfirmDialog.openWithTimeout(timeoutSeconds)
+        }
     }
 
     // Индикация поверх Popup/Drawer: не перехватывает тач (enabled: false).
@@ -812,7 +834,7 @@ Window {
         id: globalHudLayer
         objectName: "globalHudLayer"
         parent: (!container.startupFlowVisible && Overlay.overlay)
-                ? Overlay.overlay : container
+                ? Overlay.overlay : container.contentItem
         anchors.fill: parent
         z: 1000000
         enabled: false

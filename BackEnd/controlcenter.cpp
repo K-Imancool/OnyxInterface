@@ -510,8 +510,12 @@ void ControlCenter::setLinkStm(LinkStm* linkStm)
                 this, &ControlCenter::onPowerOffCommand,
                 Qt::QueuedConnection);
         connect(m_linkStm, &LinkStm::sigReadyToPowerOffSent,
-                this, &ControlCenter::shutdownSystem,
-                Qt::QueuedConnection);
+                this, [this]() {
+            // Первый ReadyToPowerOff — лишь квитанция на PowerOff от STM
+            if (m_powerOffRequested) {
+                shutdownSystem();
+            }
+        }, Qt::QueuedConnection);
 
 		// Инициализируем все сокеты текущими данными
 		initSocketsForPeriphery();

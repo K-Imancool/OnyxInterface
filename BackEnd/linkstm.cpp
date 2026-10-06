@@ -563,6 +563,7 @@ void LinkStm::sendCommand()
                     }
                 }
                 const bool modeAllowed = mode != 0 && mode != ESHF::NO_MODE;
+//                if (m_socketList[activeSocket.id].)
                 if (m_enableActivation && modeAllowed && (power > 0) && (power <= 400)) {
                         activeSocket.autoMode = m_socketList[activeSocket.id].autoMode > 0 ? true : false;
                         QElapsedTimer m_elapsedTimer;
@@ -636,17 +637,26 @@ void LinkStm::sendCommand()
                     }
                 }
                 m_txCommand.com = Allright;
+                m_txCommand.data.clear();
                 if (m_enableActivation) {
+                    int accSocketId = -1;
                     if (m_socketList[0].autoMode == kAutoModeAutoStartStop) {  // АСС на БИ1
                         m_txCommand.com |= 1 << 2;
+                        accSocketId = 0;
                     }
                     if (m_socketList[1].autoMode == kAutoModeAutoStartStop) {  // АСС на БИ2
                         m_txCommand.com |= 3 << 2;
+                        accSocketId = 1;
+                    }
+                    if (accSocketId >= 0) {
+                        // 1 — АСС на режиме БИ-КОАГ-ДИССЕКТ, 0 — на остальных режимах
+                        const bool isDissect = m_socketList[accSocketId].coagModeId == ESHF::BI_COAG_DISS;
+                        m_txCommand.data.append(static_cast<char>(0x00));
+                        m_txCommand.data.append(static_cast<char>(isDissect ? 0x01 : 0x00));
                     }
                 }
                 m_txCommand.com |= m_neutralElDivided ? (1 << 1) : 0;
                 m_txCommand.com |= m_enableActivation ? 0 : 1;  // Запрет активации
-                m_txCommand.data.clear();
                 m_txCommand.mc = MC_COM;
             }
         }

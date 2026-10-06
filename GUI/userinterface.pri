@@ -42,6 +42,7 @@ DISTFILES += \
     $$PWD/NeutralPowerWarningDialog.qml \
     $$PWD/ArgonConflictWarningDialog.qml \
     $$PWD/ArgonModuleFaultDialog.qml \
+    $$PWD/PowerOffConfirmDialog.qml \
     $$PWD/PeripheryPanel.qml \
     $$PWD/PowerRect.qml \
     $$PWD/ProgAdditionPop.qml \

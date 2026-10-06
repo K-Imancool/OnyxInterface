@@ -25,7 +25,6 @@ Item {
     property alias menuLoad: menuLoad
     property alias activationIndicator: activationIndicator
     property alias saveProgDialog: saveProgDialog
-    property alias powerOffConfirmDialog: powerOffConfirmDialog
     property alias keyboardLoader: keyboardLoader
 
     // Во время активации режима без ARGON скрываем баллоны и расход на боковой панели.
@@ -271,119 +270,6 @@ Item {
         originalProgName: host.currentProgName
         originalScopeName: host.currentScopeName
         currentProgramIsUser: host.currentProgramIsUser
-    }
-    Dialog {
-        id: powerOffConfirmDialog
-        modal: true
-        closePolicy: Popup.NoAutoClose
-        width: Math.min(host.width * 0.82, 900)
-        height: 360
-        x: Math.round((host.width - width) / 2)
-        y: Math.round((host.height - height) / 2)
-
-        property int secondsRemaining: 10
-
-        function openWithTimeout(seconds) {
-            secondsRemaining = seconds
-            powerOffTimer.restart()
-            open()
-            periphHandle.enableActivation = false
-        }
-
-        function cancelPowerOff() {
-            powerOffTimer.stop()
-            close()
-            appControl.cancelPowerOff()
-            host.activationEnable()
-        }
-
-        function confirmPowerOff() {
-            powerOffTimer.stop()
-            host.powerOffShutdownPending = true
-            close()
-            periphHandle.enableActivation = false
-            appControl.confirmPowerOff()
-        }
-
-        background: Rectangle {
-            color: "#f5f5f5"
-            border.color: host.fotekBlue
-            border.width: 3
-            radius: 6
-        }
-
-        contentItem: Rectangle {
-            color: "transparent"
-
-            Text {
-                anchors.fill: parent
-                anchors.leftMargin: 32
-                anchors.rightMargin: 32
-                wrapMode: Text.WordWrap
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                text: qsTr("Питание будет выключено через %1 секунд").arg(powerOffConfirmDialog.secondsRemaining)
-                font.pixelSize: 38
-                font.bold: true
-                color: "black"
-            }
-        }
-
-        footer: Rectangle {
-            color: "transparent"
-            implicitHeight: 118
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 28
-                anchors.rightMargin: 28
-                anchors.topMargin: 20
-                anchors.bottomMargin: 20
-                spacing: 18
-
-                DialogActionButton {
-                    Layout.preferredWidth: 240
-                    Layout.fillHeight: true
-                    text: qsTr("ОТМЕНА")
-                    labelPixelSize: 32
-                    onPressed: powerOffConfirmDialog.cancelPowerOff()
-                }
-
-                Item { Layout.fillWidth: true }
-
-                DialogActionButton {
-                    Layout.preferredWidth: 260
-                    Layout.fillHeight: true
-                    text: qsTr("ВЫКЛЮЧИТЬ")
-                    primary: true
-                    primaryEnabledColor: "#B71C1C"
-                    labelPixelSize: 32
-                    onPressed: powerOffConfirmDialog.confirmPowerOff()
-                }
-            }
-        }
-
-        Timer {
-            id: powerOffTimer
-            interval: 1000
-            repeat: true
-            onTriggered: {
-                if (powerOffConfirmDialog.secondsRemaining <= 1) {
-                    powerOffConfirmDialog.confirmPowerOff()
-                } else {
-                    powerOffConfirmDialog.secondsRemaining--
-                }
-            }
-        }
-
-        onOpened: periphHandle.enableActivation = false
-    }
-    Connections {
-        target: appControl
-        function onPowerOffConfirmationRequested(timeoutSeconds) {
-            host.powerOffShutdownPending = false
-            powerOffConfirmDialog.openWithTimeout(timeoutSeconds)
-        }
     }
     Dialog {
         id: overwriteConfirmDialog

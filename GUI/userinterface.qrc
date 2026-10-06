@@ -58,6 +58,7 @@
         <file>SprayM1M2WarningDialog.qml</file>
         <file>ArgonConflictWarningDialog.qml</file>
         <file>ArgonModuleFaultDialog.qml</file>
+        <file>PowerOffConfirmDialog.qml</file>
         <file>PeripheryPanel.qml</file>
         <file>NeutralButton.qml</file>
         <file>VideoPlayer.qml</file>
