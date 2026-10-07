@@ -7,7 +7,9 @@
 #include <QDir>
 #include <QEvent>
 #include <QFile>
+#include <QMouseEvent>
 #include <QProcess>
+#include <QTouchEvent>
 #include <QTimer>
 
 namespace {
@@ -16,17 +18,20 @@ constexpr char kRecoverHelper[] = "/usr/local/sbin/roc-touch-usb-recover";
 constexpr char kVid[] = "222a";
 constexpr char kPid[] = "0001";
 
-// Неразрушающая проверка почти сразу; сброс порта — только после короткого confirm.
 constexpr int kFirstCheckMs = 800;
 constexpr int kPollOkMs = 30000;
 constexpr int kPollMissingMs = 700;
-constexpr int kMissingConfirmNeeded = 4; // ~0.8 + 3×0.7 ≈ 3 с наблюдения без reset
+constexpr int kMissingConfirmNeeded = 4;
 constexpr int kRecoverTimeoutMs = 45000;
 constexpr int kPostRecoverRecheckMs = 2000;
 constexpr int kMaxRecoverAttempts = 2;
-// Касание — доказательство, что тач жив: столько времени не смотрим на /proc
-// и не делаем power-cycle, даже если "WINSTARTP Mouse" там не найден.
 constexpr qint64 kTouchEventTrustMs = 5 * 60 * 1000;
+// Порог по X: быстрый перескок / ghost после отпускания.
+constexpr qreal kMaxDxPx = 50.0;
+// Окно после release, в котором режем повторный press с |Δx| > 50.
+constexpr qint64 kPostReleaseGuardMs = 200;
+// Если release потерян — не держим состояние вечно.
+constexpr qint64 kPointerLockTimeoutMs = 30000;
 
 QString readSysfsText(const QString &path)
 {
@@ -71,18 +76,253 @@ TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
 
 void TouchUsbMonitor::setPeriphHandler(PeriphHandler *periph)
 {
+    if (m_periph == periph) {
+        return;
+    }
+    if (m_periph) {
+        disconnect(m_periph, &PeriphHandler::activationChanged,
+                   this, &TouchUsbMonitor::onActivationChanged);
+    }
     m_periph = periph;
+    if (m_periph) {
+        connect(m_periph, &PeriphHandler::activationChanged,
+                this, &TouchUsbMonitor::onActivationChanged);
+        onActivationChanged(m_periph->activation());
+    }
+}
+
+void TouchUsbMonitor::onActivationChanged(bool active)
+{
+    // На старте/стопе активации сбрасываем состояние фильтра.
+    clearContactState();
+    if (active) {
+        qWarning("TouchUsbMonitor: mute pointer events during activation");
+    }
+}
+
+bool TouchUsbMonitor::isActivationMute() const
+{
+    return m_periph && m_periph->activation();
+}
+
+bool TouchUsbMonitor::isPointerEvent(QEvent::Type type) const
+{
+    switch (type) {
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove:
+        return true;
+    default:
+        return false;
+    }
+}
+
+void TouchUsbMonitor::beginContact(const QPointF &screenPos)
+{
+    m_pointerDown = true;
+    m_postReleaseArmed = false;
+    m_contactPos = screenPos;
+    m_lastAcceptedPos = screenPos;
+    m_postReleasePos = screenPos;
+    m_pointerDownSince.start();
+}
+
+void TouchUsbMonitor::endContact(const QPointF &screenPos)
+{
+    m_pointerDown = false;
+    m_postReleaseArmed = true;
+    m_postReleasePos = screenPos;
+    m_lastAcceptedPos = screenPos;
+    m_postReleaseSince.start();
+}
+
+void TouchUsbMonitor::clearContactState()
+{
+    m_pointerDown = false;
+    m_postReleaseArmed = false;
+    m_contactPos = {};
+    m_lastAcceptedPos = {};
+    m_postReleasePos = {};
+}
+
+bool TouchUsbMonitor::postReleaseGuardActive() const
+{
+    return m_postReleaseArmed
+            && m_postReleaseSince.isValid()
+            && m_postReleaseSince.elapsed() < kPostReleaseGuardMs;
+}
+
+void TouchUsbMonitor::expireStalePointerState()
+{
+    if (m_pointerDown
+            && m_pointerDownSince.isValid()
+            && m_pointerDownSince.elapsed() > kPointerLockTimeoutMs) {
+        clearContactState();
+    }
+    if (m_postReleaseArmed && !postReleaseGuardActive()) {
+        m_postReleaseArmed = false;
+    }
+}
+
+bool TouchUsbMonitor::shouldRejectPress(const QPointF &screenPos) const
+{
+    // Во время удержания: близкий press (пара touch↔mouse) — пропускаем;
+    // далёкий по X — ghost.
+    if (m_pointerDown) {
+        return qAbs(screenPos.x() - m_contactPos.x()) > kMaxDxPx;
+    }
+    // После отпускания: слишком быстрый повтор с |Δx| > 50 от первого касания.
+    if (postReleaseGuardActive()
+            && qAbs(screenPos.x() - m_postReleasePos.x()) > kMaxDxPx) {
+        return true;
+    }
+    return false;
+}
+
+bool TouchUsbMonitor::shouldRejectMove(const QPointF &screenPos) const
+{
+    if (!m_pointerDown) {
+        return false;
+    }
+    // Быстрый перескок по X во время удержания.
+    return qAbs(screenPos.x() - m_lastAcceptedPos.x()) > kMaxDxPx;
+}
+
+bool TouchUsbMonitor::filterMouseEvent(QMouseEvent *mouse)
+{
+    const QEvent::Type type = mouse->type();
+    const QPointF pos = mouse->screenPos();
+    expireStalePointerState();
+
+    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick) {
+        if (!(mouse->buttons() & Qt::LeftButton)
+                && mouse->button() != Qt::LeftButton) {
+            return false;
+        }
+        if (shouldRejectPress(pos)) {
+            // Пока сыпется мусор — продлеваем post-release окно.
+            if (!m_pointerDown && postReleaseGuardActive()) {
+                m_postReleaseSince.start();
+            }
+            return true;
+        }
+        // Первое касание / близкий парный press — всегда в UI.
+        if (!m_pointerDown) {
+            beginContact(pos);
+        }
+        onLiveTouchEvidence();
+        return false;
+    }
+
+    if (type == QEvent::MouseMove) {
+        if (!(mouse->buttons() & Qt::LeftButton) || !m_pointerDown) {
+            return false;
+        }
+        if (shouldRejectMove(pos)) {
+            return true;
+        }
+        m_lastAcceptedPos = pos;
+        return false;
+    }
+
+    if (type == QEvent::MouseButtonRelease) {
+        if (mouse->button() != Qt::LeftButton) {
+            return false;
+        }
+        endContact(m_pointerDown ? m_lastAcceptedPos : pos);
+        return false;
+    }
+
+    return false;
+}
+
+bool TouchUsbMonitor::filterTouchEvent(QTouchEvent *touch)
+{
+    const QEvent::Type type = touch->type();
+    const auto points = touch->touchPoints();
+    expireStalePointerState();
+
+    if (type == QEvent::TouchBegin) {
+        if (points.isEmpty()) {
+            return false;
+        }
+        const QPointF pos = points.first().screenPos();
+        if (shouldRejectPress(pos)) {
+            if (!m_pointerDown && postReleaseGuardActive()) {
+                m_postReleaseSince.start();
+            }
+            return true;
+        }
+        if (!m_pointerDown) {
+            beginContact(pos);
+        }
+        onLiveTouchEvidence();
+        return false;
+    }
+
+    if (type == QEvent::TouchUpdate) {
+        if (!m_pointerDown || points.isEmpty()) {
+            return false;
+        }
+        // Несколько точек сразу — горизонтальный EMI-мусор.
+        if (points.size() > 1) {
+            return true;
+        }
+        const QPointF pos = points.first().screenPos();
+        if (shouldRejectMove(pos)) {
+            return true;
+        }
+        m_lastAcceptedPos = pos;
+        return false;
+    }
+
+    if (type == QEvent::TouchEnd || type == QEvent::TouchCancel) {
+        if (m_pointerDown) {
+            endContact(m_lastAcceptedPos);
+        }
+        return false;
+    }
+
+    return false;
 }
 
 bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
 {
+    Q_UNUSED(watched)
+
+    if (!isPointerEvent(event->type())) {
+        return QObject::eventFilter(watched, event);
+    }
+
+    if (isActivationMute()) {
+        return true;
+    }
+
+    bool filtered = false;
     switch (event->type()) {
-    case QEvent::TouchBegin:
     case QEvent::MouseButtonPress:
-        onTouchEvent();
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove:
+        filtered = filterMouseEvent(static_cast<QMouseEvent *>(event));
+        break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
+        filtered = filterTouchEvent(static_cast<QTouchEvent *>(event));
         break;
     default:
         break;
+    }
+
+    if (filtered) {
+        return true;
     }
     return QObject::eventFilter(watched, event);
 }
@@ -92,7 +332,7 @@ bool TouchUsbMonitor::touchEventRecent() const
     return m_lastTouchEvent.isValid() && m_lastTouchEvent.elapsed() < kTouchEventTrustMs;
 }
 
-void TouchUsbMonitor::onTouchEvent()
+void TouchUsbMonitor::onLiveTouchEvidence()
 {
     m_lastTouchEvent.start();
     if (m_recovering) {
@@ -108,8 +348,6 @@ void TouchUsbMonitor::onTouchEvent()
 
 bool TouchUsbMonitor::touchInputPresent()
 {
-    // Нужен именно "WINSTARTP Mouse" — с него Qt получает ABS/BTN.
-    // Одного multitouch "WINSTARTP" недостаточно.
     QFile devices(QStringLiteral("/proc/bus/input/devices"));
     if (!devices.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return false;
@@ -252,7 +490,6 @@ void TouchUsbMonitor::check()
         return;
     }
 
-    // Только наблюдение — без power-cycle.
     ++m_missingConfirmCount;
     QString sysfsPath;
     const bool usbPresent = touchUsbDevicePresent(&sysfsPath);
@@ -272,7 +509,6 @@ void TouchUsbMonitor::check()
         return;
     }
 
-    // Стабильно нет input → один раз пробуем сброс порта.
     if (m_recoverAttempts >= kMaxRecoverAttempts) {
         m_recoverAttempts = 0;
     }
