@@ -3727,6 +3727,10 @@ This cannot be undone.</translation>
         <source>Ошибка: нет рабочей прошивки МК</source>
         <translation>Error: no working MCU firmware</translation>
     </message>
+    <message>
+        <source>Подготовка компонентов...</source>
+        <translation>Preparing components...</translation>
+    </message>
 </context>
 <context>
     <name>updateWindow</name>

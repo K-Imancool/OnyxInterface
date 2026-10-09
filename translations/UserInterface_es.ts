@@ -3727,6 +3727,10 @@ Esta acción no se puede deshacer.</translation>
         <source>Ошибка: нет рабочей прошивки МК</source>
         <translation>Error: no hay firmware operativo del MC</translation>
     </message>
+    <message>
+        <source>Подготовка компонентов...</source>
+        <translation>Preparando componentes...</translation>
+    </message>
 </context>
 <context>
     <name>updateWindow</name>

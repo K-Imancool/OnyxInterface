@@ -764,6 +764,20 @@ Window {
                 }
             }
         }
+
+        Text {
+            anchors {
+                top: parent.top
+                right: parent.right
+                topMargin: 18
+                rightMargin: 28
+            }
+            z: 1000
+            visible: workScreenLoadBar.visible
+            text: qsTr("Подготовка компонентов...")
+            color: "#5C6575"
+            font.pixelSize: 20
+        }
     }
 
     FullscreenErrorOverlay {

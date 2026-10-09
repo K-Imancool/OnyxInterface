@@ -20,6 +20,7 @@ class QTouchEvent;
  * - во время удержания режем скачки |Δx| > 50;
  * - после release коротко режем повторный press с |Δx| > 50;
  * - во время активации глушим pointer-события.
+ * Release в UI всегда сразу (без debounce), чтобы holdRepeat гас мгновенно.
  */
 class TouchUsbMonitor : public QObject
 {

@@ -34,6 +34,10 @@ Item {
         property bool holdRepeat: false
         property bool interactive: true
         property bool pressActive: false
+        // После EMI false-release: если tick уже шёл и press вернулся быстро —
+        // продолжаем без паузы 900 мс. Реальное отпускание гасит сразу.
+        property bool resumeRepeatEligible: false
+        property double lastReleaseMs: 0
 
         signal activated()
 
@@ -76,14 +80,25 @@ Item {
                 }
                 stepBtn.pressActive = true
                 stepBtn.activated()
-                if (stepBtn.holdRepeat)
+                if (!stepBtn.holdRepeat)
+                    return
+                // Быстрый возврат после blip — сразу снова tick, без repeatDelay.
+                if (stepBtn.resumeRepeatEligible
+                        && (Date.now() - stepBtn.lastReleaseMs) < 280) {
+                    stepBtn.resumeRepeatEligible = false
+                    repeatTick.start()
+                } else {
+                    stepBtn.resumeRepeatEligible = false
                     repeatDelay.restart()
+                }
             }
             onReleased: stepBtn.endPress()
             onCanceled: stepBtn.endPress()
         }
 
         function endPress() {
+            resumeRepeatEligible = holdRepeat && repeatTick.running
+            lastReleaseMs = Date.now()
             pressActive = false
             stopRepeat()
         }

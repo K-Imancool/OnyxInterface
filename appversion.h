@@ -9,4 +9,5 @@
 //inline constexpr const char *kOnyxAppVersion = "1.8"; // 21.09.26 Обмен по uart поправлен
 //inline constexpr const char *kOnyxAppVersion = "1.9"; // 23.09.26 Исправление обработки кнопок + и -
 //inline constexpr const char *kOnyxAppVersion = "1.10"; // 24.09.26 Дифференциация ошибок связи и мелочи по дизайну
-inline constexpr const char *kOnyxAppVersion = "1.11"; // 24.09.26 Контроль тача
+//inline constexpr const char *kOnyxAppVersion = "1.11"; // 24.09.26 Контроль тача
+inline constexpr const char *kOnyxAppVersion = "1.12"; // 09.10.26 Фильтрация прыжков тача
