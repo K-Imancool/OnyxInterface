@@ -19,7 +19,8 @@ class QTouchEvent;
  * - первое касание всегда проходит;
  * - во время удержания режем скачки |Δx| > 50;
  * - после release коротко режем повторный press с |Δx| > 50;
- * - во время активации глушим pointer-события.
+ * - во время активации глушим pointer-события, кроме AutoStartStop (ACC):
+ *   тогда касание доходит до UI и останавливает активацию (stopIfAccTouch).
  * Release в UI всегда сразу (без debounce), чтобы holdRepeat гас мгновенно.
  */
 class TouchUsbMonitor : public QObject

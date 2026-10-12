@@ -95,14 +95,30 @@ void TouchUsbMonitor::onActivationChanged(bool active)
 {
     // На старте/стопе активации сбрасываем состояние фильтра.
     clearContactState();
-    if (active) {
+    if (!active) {
+        return;
+    }
+    if (isActivationMute()) {
         qWarning("TouchUsbMonitor: mute pointer events during activation");
+    } else {
+        qWarning("TouchUsbMonitor: AutoStartStop — pointer allowed (touch stops activation)");
     }
 }
 
 bool TouchUsbMonitor::isActivationMute() const
 {
-    return m_periph && m_periph->activation();
+    if (!m_periph || !m_periph->activation()) {
+        return false;
+    }
+    // AutoStartStop (ACC = 2): касание должно дойти до Activation.stopIfAccTouch().
+    // В остальных режимах глушим весь pointer-ввод на время активации.
+    constexpr int kAutoModeAutoStartStop = 2;
+    for (int socketId = 0; socketId < 4; ++socketId) {
+        if (m_periph->autoMode(socketId) == kAutoModeAutoStartStop) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool TouchUsbMonitor::isPointerEvent(QEvent::Type type) const
