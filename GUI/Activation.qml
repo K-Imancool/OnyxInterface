@@ -234,34 +234,12 @@ Popup {
         }
 
         Rectangle {
-            id: pulseBorder
             anchors.fill: parent
             anchors.margins: 10
             color: "transparent"
             border.color: "white"
             border.width: 3
             radius: 15
-            opacity: 0.7
-
-            SequentialAnimation {
-                running: activationPopup.opened
-                loops: Animation.Infinite
-
-                OpacityAnimator {
-                    target: pulseBorder
-                    from: 0.35
-                    to: 1.0
-                    duration: 800
-                    easing.type: Easing.InOutQuad
-                }
-                OpacityAnimator {
-                    target: pulseBorder
-                    from: 1.0
-                    to: 0.35
-                    duration: 800
-                    easing.type: Easing.InOutQuad
-                }
-            }
         }
     }
 

@@ -3395,11 +3395,7 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
     </message>
 </context>
 <context>
-    <name>WorkScreen</name>
-    <message>
-        <source></source>
-        <translation></translation>
-    </message>
+    <name>PowerOffConfirmDialog</name>
     <message>
         <source>Питание будет выключено через %1 секунд</source>
         <translation>La alimentación se apagará en %1 segundos</translation>
@@ -3411,6 +3407,17 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
     <message>
         <source>ВЫКЛЮЧИТЬ</source>
         <translation>APAGAR</translation>
+    </message>
+</context>
+<context>
+    <name>WorkScreen</name>
+    <message>
+        <source></source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>ОТМЕНА</source>
+        <translation>CANCELAR</translation>
     </message>
     <message>
         <source>Внимание! Программа
