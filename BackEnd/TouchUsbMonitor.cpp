@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QEvent>
 #include <QFile>
+#include <QFileInfo>
 #include <QMouseEvent>
 #include <QProcess>
 #include <QTouchEvent>
@@ -14,18 +15,19 @@
 
 namespace {
 
-constexpr char kRecoverHelper[] = "/usr/local/sbin/roc-touch-usb-recover";
 constexpr char kVid[] = "222a";
 constexpr char kPid[] = "0001";
+constexpr char kPortFileName[] = "/.config/UserInterface/touch-usb-port";
+constexpr int kHubBusFirst = 1;
+constexpr int kHubBusLast = 7;
 
-constexpr int kFirstCheckMs = 800;
-constexpr int kPollOkMs = 30000;
-constexpr int kPollMissingMs = 700;
-constexpr int kMissingConfirmNeeded = 4;
-constexpr int kRecoverTimeoutMs = 45000;
-constexpr int kPostRecoverRecheckMs = 2000;
-constexpr int kMaxRecoverAttempts = 2;
-constexpr qint64 kTouchEventTrustMs = 5 * 60 * 1000;
+constexpr int kFaultDeadlineMs = 15000;
+constexpr int kPortToggleMs = 2000;
+constexpr int kPortPhaseOff = 1;
+constexpr int kPortPhaseOn = 2;
+constexpr int kPortPollMs = 250;
+constexpr int kPortProbeIntervalMs = 500;
+constexpr int kPortProbeTries = 20;
 // Порог по X: быстрый перескок / ghost после отпускания.
 constexpr qreal kMaxDxPx = 50.0;
 // Окно после release, в котором режем повторный press с |Δx| > 50.
@@ -42,36 +44,42 @@ QString readSysfsText(const QString &path)
     return QString::fromUtf8(file.readAll()).trimmed().toLower();
 }
 
+QString rememberedPortFile()
+{
+    return QDir::homePath() + QString::fromLatin1(kPortFileName);
+}
+
 } // namespace
 
 TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
     : QObject(parent)
     , m_deviceLog(deviceLog)
-    , m_timer(new QTimer(this))
-    , m_process(new QProcess(this))
+    , m_stepTimer(new QTimer(this))
+    , m_deadlineTimer(new QTimer(this))
+    , m_portProbeTimer(new QTimer(this))
+    , m_settleTimer(new QTimer(this))
 {
-    m_timer->setInterval(kPollOkMs);
-    connect(m_timer, &QTimer::timeout, this, &TouchUsbMonitor::check);
+    m_stepTimer->setSingleShot(true);
+    connect(m_stepTimer, &QTimer::timeout, this, &TouchUsbMonitor::onPortStep);
+    m_deadlineTimer->setSingleShot(true);
+    connect(m_deadlineTimer, &QTimer::timeout, this, &TouchUsbMonitor::onRecoverDeadline);
 
-    connect(m_process,
-            QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this,
-            [this](int exitCode, QProcess::ExitStatus status) {
-                if (status != QProcess::NormalExit) {
-                    onRecoverFinished(-1);
-                    return;
-                }
-                onRecoverFinished(exitCode);
-            });
+    m_portProbeTimer->setInterval(kPortProbeIntervalMs);
+    connect(m_portProbeTimer, &QTimer::timeout, this, &TouchUsbMonitor::probeTouchPort);
+
+    m_settleTimer->setInterval(kPortPollMs);
+    connect(m_settleTimer, &QTimer::timeout, this, &TouchUsbMonitor::onSettlePoll);
 
     if (QCoreApplication *app = QCoreApplication::instance()) {
         app->installEventFilter(this);
     }
 
-    QTimer::singleShot(kFirstCheckMs, this, [this]() {
-        check();
-        m_timer->start();
-    });
+    loadRememberedPort();
+    m_portProbeLeft = kPortProbeTries;
+    probeTouchPort();
+    if (m_portProbeTimer && m_portProbeLeft > 0) {
+        m_portProbeTimer->start();
+    }
 }
 
 void TouchUsbMonitor::setPeriphHandler(PeriphHandler *periph)
@@ -95,14 +103,20 @@ void TouchUsbMonitor::onActivationChanged(bool active)
 {
     // На старте/стопе активации сбрасываем состояние фильтра.
     clearContactState();
-    if (!active) {
+    if (active) {
+        m_activationWasOn = true;
+        if (isActivationMute()) {
+            qWarning("TouchUsbMonitor: mute pointer events during activation");
+        } else {
+            qWarning("TouchUsbMonitor: AutoStartStop — pointer allowed (touch stops activation)");
+        }
         return;
     }
-    if (isActivationMute()) {
-        qWarning("TouchUsbMonitor: mute pointer events during activation");
-    } else {
-        qWarning("TouchUsbMonitor: AutoStartStop — pointer allowed (touch stops activation)");
+    if (!m_activationWasOn) {
+        return;
     }
+    m_activationWasOn = false;
+    beginPostActivationCheck();
 }
 
 bool TouchUsbMonitor::isActivationMute() const
@@ -343,18 +357,12 @@ bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
     return QObject::eventFilter(watched, event);
 }
 
-bool TouchUsbMonitor::touchEventRecent() const
-{
-    return m_lastTouchEvent.isValid() && m_lastTouchEvent.elapsed() < kTouchEventTrustMs;
-}
-
 void TouchUsbMonitor::onLiveTouchEvidence()
 {
-    m_lastTouchEvent.start();
     if (m_recovering) {
         return;
     }
-    if (m_touchOk && !m_screenFaultShown && m_missingConfirmCount == 0) {
+    if (m_touchOk && !m_screenFaultShown) {
         return;
     }
     applyState(QStringLiteral("ok"),
@@ -403,17 +411,6 @@ void TouchUsbMonitor::setRecovering(bool on)
     emit recoveringChanged();
 }
 
-void TouchUsbMonitor::updatePollInterval()
-{
-    const int interval = (!m_touchOk || m_faultActive || m_screenFaultShown
-                          || m_missingConfirmCount > 0)
-            ? kPollMissingMs
-            : kPollOkMs;
-    if (m_timer->interval() != interval) {
-        m_timer->setInterval(interval);
-    }
-}
-
 void TouchUsbMonitor::raiseScreenFault()
 {
     if (m_screenFaultShown) {
@@ -426,7 +423,6 @@ void TouchUsbMonitor::raiseScreenFault()
     if (m_periph) {
         m_periph->showWarningCode(FaultWarningCode);
     }
-    updatePollInterval();
 }
 
 void TouchUsbMonitor::clearScreenFault()
@@ -438,7 +434,6 @@ void TouchUsbMonitor::clearScreenFault()
     if (m_periph) {
         m_periph->dismissWarningCode(FaultWarningCode);
     }
-    updatePollInterval();
 }
 
 void TouchUsbMonitor::applyState(const QString &state, const QString &detail, bool logFault)
@@ -466,14 +461,9 @@ void TouchUsbMonitor::applyState(const QString &state, const QString &detail, bo
 
     if (ok) {
         m_lastLoggedKey.clear();
-        m_recoverAttempts = 0;
-        m_missingConfirmCount = 0;
         clearScreenFault();
-        updatePollInterval();
         return;
     }
-
-    updatePollInterval();
 
     if (logFault && fault) {
         const QString logKey = state + QLatin1Char('|') + detail;
@@ -488,157 +478,287 @@ void TouchUsbMonitor::applyState(const QString &state, const QString &detail, bo
 
 void TouchUsbMonitor::check()
 {
-    if (m_recovering) {
-        return;
-    }
+    beginPostActivationCheck();
+}
+
+void TouchUsbMonitor::beginPostActivationCheck()
+{
+    m_stepTimer->stop();
+    m_deadlineTimer->stop();
+    m_settleTimer->stop();
+    m_portPhase = 0;
+    m_cycle = 0;
+    rememberTouchPort();
 
     if (touchInputPresent()) {
+        setRecovering(false);
         applyState(QStringLiteral("ok"),
                    QStringLiteral("WINSTARTP Mouse present"),
                    false);
         return;
     }
 
-    if (touchEventRecent()) {
-        applyState(QStringLiteral("ok"),
-                   QStringLiteral("recent touch event"),
-                   false);
-        return;
-    }
-
-    ++m_missingConfirmCount;
-    QString sysfsPath;
-    const bool usbPresent = touchUsbDevicePresent(&sysfsPath);
-    const QString detail = usbPresent
-            ? QStringLiteral("no WINSTARTP Mouse (usb %1, confirm %2/%3)")
-              .arg(sysfsPath)
-              .arg(m_missingConfirmCount)
-              .arg(kMissingConfirmNeeded)
-            : QStringLiteral("no WINSTARTP Mouse (usb absent, confirm %1/%2)")
-              .arg(m_missingConfirmCount)
-              .arg(kMissingConfirmNeeded);
-
-    if (m_missingConfirmCount < kMissingConfirmNeeded) {
-        applyState(QStringLiteral("lost"), detail, false);
-        qWarning().noquote() << "TouchUsbMonitor: observe" << detail;
-        updatePollInterval();
-        return;
-    }
-
-    if (m_recoverAttempts >= kMaxRecoverAttempts) {
-        m_recoverAttempts = 0;
-    }
-    startRecover(detail);
-}
-
-void TouchUsbMonitor::startRecover(const QString &detail)
-{
-    if (m_process->state() != QProcess::NotRunning) {
-        return;
-    }
-    if (m_recoverAttempts >= kMaxRecoverAttempts) {
-        applyState(QStringLiteral("failed"),
-                   QStringLiteral("recover attempts exhausted: %1").arg(detail),
-                   true);
-        raiseScreenFault();
-        return;
-    }
-
-    ++m_recoverAttempts;
-    applyState(QStringLiteral("lost"), detail, true);
+    qWarning("TouchUsbMonitor: WINSTARTP Mouse missing after activation, port reset");
     setRecovering(true);
-    ++m_recoverGeneration;
-    const int generation = m_recoverGeneration;
+    applyState(QStringLiteral("lost"),
+               QStringLiteral("no WINSTARTP Mouse after activation"),
+               false);
+    m_checkStarted.start();
+    m_deadlineTimer->start(kFaultDeadlineMs);
+    kickPortCycle();
+}
 
-    qWarning().noquote() << "TouchUsbMonitor: recover attempt" << m_recoverAttempts
-                         << detail;
+void TouchUsbMonitor::kickPortCycle()
+{
+    if (!m_recovering) {
+        return;
+    }
+    if (touchInputPresent()) {
+        finishRecovered(QStringLiteral("WINSTARTP Mouse present"));
+        return;
+    }
+    if (m_checkStarted.isValid() && m_checkStarted.elapsed() >= kFaultDeadlineMs) {
+        noteOngoingFault(QStringLiteral("no WINSTARTP Mouse, port reset continues"));
+    }
 
-    m_process->start(QStringLiteral("sudo"), {
-                         QStringLiteral("-n"),
-                         QString::fromLatin1(kRecoverHelper)
-                     });
-    if (!m_process->waitForStarted(500)) {
-        setRecovering(false);
-        applyState(QStringLiteral("failed"),
-                   QStringLiteral("sudo -n %1 failed to start").arg(QLatin1String(kRecoverHelper)),
-                   true);
-        raiseScreenFault();
+    const QString path = resolvePortDisablePath();
+    if (path.isEmpty()) {
+        qWarning("TouchUsbMonitor: touch port unknown, retry");
+        m_portPhase = 0;
+        m_stepTimer->start(kPortToggleMs);
         return;
     }
 
-    QTimer::singleShot(kRecoverTimeoutMs, this, [this, generation]() {
-        if (generation != m_recoverGeneration) {
-            return;
-        }
-        if (m_process->state() == QProcess::NotRunning) {
-            return;
-        }
-        m_process->kill();
-        setRecovering(false);
-        applyState(QStringLiteral("failed"),
-                   QStringLiteral("recover helper timed out"),
-                   true);
-        raiseScreenFault();
-    });
-}
-
-void TouchUsbMonitor::schedulePostRecoverRecheck()
-{
-    const int generation = m_recoverGeneration;
-    QTimer::singleShot(kPostRecoverRecheckMs, this, [this, generation]() {
-        if (generation != m_recoverGeneration || m_recovering) {
-            return;
-        }
-        if (touchInputPresent()) {
-            applyState(QStringLiteral("recovered"),
-                       QStringLiteral("WINSTARTP Mouse after settle"),
-                       false);
-            return;
-        }
-        if (m_recoverAttempts < kMaxRecoverAttempts) {
-            startRecover(QStringLiteral("retry after settle, still no WINSTARTP Mouse"));
-            return;
-        }
-        applyState(QStringLiteral("failed"),
-                   QStringLiteral("no WINSTARTP Mouse after recover"),
-                   true);
-        raiseScreenFault();
-    });
-}
-
-void TouchUsbMonitor::onRecoverFinished(int exitCode)
-{
-    ++m_recoverGeneration;
-    setRecovering(false);
-
-    const QString out = QString::fromUtf8(m_process->readAllStandardOutput()).trimmed();
-    const QString err = QString::fromUtf8(m_process->readAllStandardError()).trimmed();
-    if (!out.isEmpty()) {
-        qWarning().noquote() << "TouchUsbMonitor: helper stdout:" << out;
+    m_activeDisablePath = path;
+    qWarning().noquote() << "TouchUsbMonitor: port off cycle" << (m_cycle + 1) << path;
+    if (!writePortDisable(path, true)) {
+        ++m_cycle;
+        m_portPhase = 0;
+        m_stepTimer->start(kPortToggleMs);
+        return;
     }
-    if (!err.isEmpty()) {
-        qWarning().noquote() << "TouchUsbMonitor: helper stderr:" << err;
+
+    m_portPhase = kPortPhaseOff;
+    m_stepTimer->start(kPortToggleMs);
+}
+
+void TouchUsbMonitor::onPortStep()
+{
+    if (!m_recovering) {
+        return;
+    }
+    if (m_portPhase == 0) {
+        kickPortCycle();
+        return;
+    }
+    if (m_portPhase == kPortPhaseOff) {
+        qWarning().noquote() << "TouchUsbMonitor: port on" << m_activeDisablePath;
+        writePortDisable(m_activeDisablePath, false);
+        m_portPhase = kPortPhaseOn;
+        m_portOnSince.start();
+        m_stepTimer->start(kPortPollMs);
+        return;
     }
 
     if (touchInputPresent()) {
-        applyState(QStringLiteral("recovered"),
-                   QStringLiteral("power-cycle restored WINSTARTP Mouse"),
-                   false);
+        finishRecovered(QStringLiteral("WINSTARTP Mouse present"));
         return;
     }
 
-    if (exitCode == 0 || m_recoverAttempts < kMaxRecoverAttempts) {
-        applyState(QStringLiteral("lost"),
-                   QStringLiteral("recover exit %1, waiting settle").arg(exitCode),
-                   true);
-        schedulePostRecoverRecheck();
+    const bool onLongEnough = m_portOnSince.isValid() && m_portOnSince.elapsed() >= kPortToggleMs;
+    if (onLongEnough) {
+        ++m_cycle;
+        m_portPhase = 0;
+        kickPortCycle();
         return;
     }
+    m_stepTimer->start(kPortPollMs);
+}
 
-    applyState(QStringLiteral("failed"),
-               QStringLiteral("recover exit %1%2")
-               .arg(exitCode)
-               .arg(err.isEmpty() ? QString() : (QStringLiteral(": ") + err)),
-               true);
+void TouchUsbMonitor::onRecoverDeadline()
+{
+    if (!m_recovering) {
+        return;
+    }
+    if (touchInputPresent()) {
+        finishRecovered(QStringLiteral("WINSTARTP Mouse before deadline"));
+        return;
+    }
+    noteOngoingFault(QStringLiteral("no WINSTARTP Mouse within 15s, port reset continues"));
+}
+
+void TouchUsbMonitor::noteOngoingFault(const QString &detail)
+{
+    if (m_screenFaultShown) {
+        return;
+    }
+    qWarning().noquote() << "TouchUsbMonitor:" << detail;
+    applyState(QStringLiteral("failed"), detail, true);
     raiseScreenFault();
 }
+
+void TouchUsbMonitor::onSettlePoll()
+{
+    if (!m_screenFaultShown || touchInputPresent()) {
+        if (m_screenFaultShown && touchInputPresent() && !m_recovering) {
+            qWarning("TouchUsbMonitor: WINSTARTP Mouse is back, clearing 09");
+            rememberTouchPort();
+            applyState(QStringLiteral("recovered"),
+                       QStringLiteral("WINSTARTP Mouse present after fault"),
+                       false);
+        }
+        m_settleTimer->stop();
+    }
+}
+
+void TouchUsbMonitor::finishRecovered(const QString &detail)
+{
+    if (!m_recovering && m_state == QLatin1String("ok")) {
+        return;
+    }
+    m_stepTimer->stop();
+    m_deadlineTimer->stop();
+    m_settleTimer->stop();
+    m_portPhase = 0;
+    setRecovering(false);
+    qWarning().noquote() << "TouchUsbMonitor:" << detail;
+    rememberTouchPort();
+    applyState(QStringLiteral("recovered"), detail, false);
+}
+
+QString TouchUsbMonitor::hubDisablePath(int bus)
+{
+    return QStringLiteral("/sys/bus/usb/devices/usb%1/%1-0:1.0/usb%1-port1/disable").arg(bus);
+}
+
+bool TouchUsbMonitor::isAllowedDisablePath(const QString &path)
+{
+    for (int bus = kHubBusFirst; bus <= kHubBusLast; ++bus) {
+        if (path == hubDisablePath(bus)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void TouchUsbMonitor::loadRememberedPort()
+{
+    QFile file(rememberedPortFile());
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return;
+    }
+    const QString path = QString::fromUtf8(file.readAll()).trimmed();
+    if (isAllowedDisablePath(path) && QFile::exists(path)) {
+        m_lastDisablePath = path;
+        qWarning().noquote() << "TouchUsbMonitor: saved touch port" << path;
+    }
+}
+
+void TouchUsbMonitor::saveRememberedPort() const
+{
+    if (!isAllowedDisablePath(m_lastDisablePath)) {
+        return;
+    }
+    const QString path = rememberedPortFile();
+    QDir().mkpath(QFileInfo(path).absolutePath());
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        qWarning().noquote() << "TouchUsbMonitor: cannot save touch port" << path;
+        return;
+    }
+    file.write(m_lastDisablePath.toUtf8());
+    file.write("\n");
+}
+
+void TouchUsbMonitor::probeTouchPort()
+{
+    if (rememberTouchPort()) {
+        m_portProbeTimer->stop();
+        m_portProbeLeft = 0;
+        return;
+    }
+    if (--m_portProbeLeft <= 0) {
+        m_portProbeTimer->stop();
+        qWarning().noquote() << "TouchUsbMonitor: touch device not found at startup, last port"
+                             << m_lastDisablePath;
+    }
+}
+
+bool TouchUsbMonitor::rememberTouchPort()
+{
+    QString devicePath;
+    if (!touchUsbDevicePresent(&devicePath)) {
+        return false;
+    }
+    const QString portCanonical = QFileInfo(devicePath + QStringLiteral("/port")).canonicalFilePath();
+    if (portCanonical.isEmpty()) {
+        return false;
+    }
+    for (int bus = kHubBusFirst; bus <= kHubBusLast; ++bus) {
+        const QString disable = hubDisablePath(bus);
+        if (!QFile::exists(disable)) {
+            continue;
+        }
+        const QString knownPort = QFileInfo(disable).dir().canonicalPath();
+        if (knownPort.isEmpty() || knownPort != portCanonical) {
+            continue;
+        }
+        if (m_lastDisablePath != disable) {
+            m_lastDisablePath = disable;
+            saveRememberedPort();
+            qWarning().noquote() << "TouchUsbMonitor: touch port" << disable;
+        }
+        return true;
+    }
+    qWarning().noquote() << "TouchUsbMonitor: touch port is not a known hub port" << portCanonical;
+    return false;
+}
+
+QString TouchUsbMonitor::resolvePortDisablePath()
+{
+    rememberTouchPort();
+    if (!m_lastDisablePath.isEmpty() && QFile::exists(m_lastDisablePath)) {
+        return m_lastDisablePath;
+    }
+    return {};
+}
+
+bool TouchUsbMonitor::writePortDisable(const QString &path, bool disabled)
+{
+    const QByteArray payload = disabled ? QByteArrayLiteral("1\n") : QByteArrayLiteral("0\n");
+    QFile file(path);
+    if (file.open(QIODevice::WriteOnly | QIODevice::Unbuffered)) {
+        if (file.write(payload) == payload.size()) {
+            file.close();
+            return true;
+        }
+        file.close();
+    }
+
+    if (!isAllowedDisablePath(path)) {
+        qWarning().noquote() << "TouchUsbMonitor: cannot write" << path;
+        return false;
+    }
+    const qint64 left = 800;
+
+    QProcess proc;
+    proc.start(QStringLiteral("sudo"), {
+                   QStringLiteral("-n"),
+                   QStringLiteral("/usr/bin/tee"),
+                   path
+               });
+    if (!proc.waitForStarted(int(qMin(qint64(400), qMax(qint64(1), left))))) {
+        qWarning().noquote() << "TouchUsbMonitor: sudo tee failed to start" << path;
+        return false;
+    }
+    proc.write(payload);
+    proc.closeWriteChannel();
+    if (!proc.waitForFinished(800) || proc.exitCode() != 0) {
+        qWarning().noquote() << "TouchUsbMonitor: sudo tee failed" << path
+                             << proc.readAllStandardError();
+        proc.kill();
+        return false;
+    }
+    return true;
+}
+

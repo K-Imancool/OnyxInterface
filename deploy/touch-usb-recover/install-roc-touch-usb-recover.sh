@@ -41,8 +41,8 @@ echo "  $DST_SH"
 echo "  $DST_SUDOERS"
 echo
 echo "Проверка от kikorik:"
-echo "  sudo -n $DST_SH"
-echo "  # в UI: touchUsbMonitor.state / journalctl -t roc-touch-usb-recover"
+echo "  echo 0 | sudo -n /usr/bin/tee /sys/bus/usb/devices/usb6/6-0:1.0/usb6-port1/disable"
+echo "  # UI после активации сам проверяет WINSTARTP Mouse и при необходимости сбрасывает порт"
 echo
 echo "Удаление:"
 echo "  sudo rm -f $DST_SH $DST_SUDOERS"

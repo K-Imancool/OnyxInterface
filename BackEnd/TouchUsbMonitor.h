@@ -10,7 +10,6 @@
 class DeviceLogManager;
 class PeriphHandler;
 class QMouseEvent;
-class QProcess;
 class QTimer;
 class QTouchEvent;
 
@@ -21,6 +20,10 @@ class QTouchEvent;
  * - после release коротко режем повторный press с |Δx| > 50;
  * - во время активации глушим pointer-события, кроме AutoStartStop (ACC):
  *   тогда касание доходит до UI и останавливает активацию (stopIfAccTouch).
+ * При старте и пока 222a:0001 виден, запоминается его USB-порт.
+ * После каждой активации проверяется WINSTARTP Mouse. Если его нет —
+ * запомненный порт перезапускается, пока мышь не появится.
+ * Ошибка 0x09 показывается через 15 с и снимается вместе с восстановлением.
  * Release в UI всегда сразу (без debounce), чтобы holdRepeat гас мгновенно.
  */
 class TouchUsbMonitor : public QObject
@@ -61,7 +64,19 @@ protected:
 private:
     void onActivationChanged(bool active);
     void onLiveTouchEvidence();
-    bool touchEventRecent() const;
+    void beginPostActivationCheck();
+    void probeTouchPort();
+    bool rememberTouchPort();
+    void loadRememberedPort();
+    void saveRememberedPort() const;
+    void kickPortCycle();
+    void onPortStep();
+    void onRecoverDeadline();
+    void noteOngoingFault(const QString &detail);
+    void onSettlePoll();
+    void finishRecovered(const QString &detail);
+    QString resolvePortDisablePath();
+    bool writePortDisable(const QString &path, bool disabled);
     bool isActivationMute() const;
     bool isPointerEvent(QEvent::Type type) const;
     bool filterMouseEvent(QMouseEvent *mouse);
@@ -75,35 +90,39 @@ private:
     void expireStalePointerState();
     void setRecovering(bool on);
     void applyState(const QString &state, const QString &detail, bool logFault);
-    void startRecover(const QString &detail);
-    void onRecoverFinished(int exitCode);
-    void schedulePostRecoverRecheck();
     void raiseScreenFault();
     void clearScreenFault();
-    void updatePollInterval();
     static bool touchInputPresent();
     static bool touchUsbDevicePresent(QString *sysfsPath = nullptr);
+    static QString hubDisablePath(int bus);
+    static bool isAllowedDisablePath(const QString &path);
 
     DeviceLogManager *m_deviceLog = nullptr;
     PeriphHandler *m_periph = nullptr;
-    QTimer *m_timer = nullptr;
-    QProcess *m_process = nullptr;
-    QElapsedTimer m_lastTouchEvent;
+    QTimer *m_stepTimer = nullptr;
+    QTimer *m_deadlineTimer = nullptr;
+    QTimer *m_portProbeTimer = nullptr;
+    QTimer *m_settleTimer = nullptr;
+    QElapsedTimer m_checkStarted;
+    QElapsedTimer m_portOnSince;
     QElapsedTimer m_pointerDownSince;
     QElapsedTimer m_postReleaseSince;
+    QString m_activeDisablePath;
+    QString m_lastDisablePath;
     QPointF m_contactPos;
     QPointF m_lastAcceptedPos;
     QPointF m_postReleasePos;
     QString m_state = QStringLiteral("ok");
     QString m_detail;
     QString m_lastLoggedKey;
-    int m_recoverGeneration = 0;
-    int m_recoverAttempts = 0;
-    int m_missingConfirmCount = 0;
+    int m_cycle = 0;
+    int m_portPhase = 0;
+    int m_portProbeLeft = 0;
     bool m_touchOk = true;
     bool m_faultActive = false;
     bool m_recovering = false;
     bool m_screenFaultShown = false;
+    bool m_activationWasOn = false;
     bool m_pointerDown = false;
     bool m_postReleaseArmed = false;
 };

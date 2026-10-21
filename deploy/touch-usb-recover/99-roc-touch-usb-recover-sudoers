@@ -1,1 +1,12 @@
-kikorik ALL=(root) NOPASSWD: /usr/local/sbin/roc-touch-usb-recover
+# Запись disable порта тача из UserInterface (sudo -n /usr/bin/tee <path>).
+# Номер шины зависит от того, на каком контроллере перечислился 222a:0001.
+Cmnd_Alias TOUCH_PORT_DISABLE = \
+    /usr/bin/tee /sys/bus/usb/devices/usb1/1-0\:1.0/usb1-port1/disable, \
+    /usr/bin/tee /sys/bus/usb/devices/usb2/2-0\:1.0/usb2-port1/disable, \
+    /usr/bin/tee /sys/bus/usb/devices/usb3/3-0\:1.0/usb3-port1/disable, \
+    /usr/bin/tee /sys/bus/usb/devices/usb4/4-0\:1.0/usb4-port1/disable, \
+    /usr/bin/tee /sys/bus/usb/devices/usb5/5-0\:1.0/usb5-port1/disable, \
+    /usr/bin/tee /sys/bus/usb/devices/usb6/6-0\:1.0/usb6-port1/disable, \
+    /usr/bin/tee /sys/bus/usb/devices/usb7/7-0\:1.0/usb7-port1/disable
+
+kikorik ALL=(root) NOPASSWD: TOUCH_PORT_DISABLE
