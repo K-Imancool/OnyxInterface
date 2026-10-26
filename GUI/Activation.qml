@@ -14,7 +14,6 @@ Popup {
     readonly property int autoModeAcc: 2
 
     readonly property color foregroundColor: isCoag ? "white" : "black"
-    readonly property color foregroundOutlineColor: isCoag ? "black" : "white"
 
     // Внутренняя рамка: margin 10 + border. Длинное имя режима ужимаем, короткие остаются 96.
     readonly property int modeNameBasePixelSize: 96
@@ -106,8 +105,6 @@ Popup {
                 font.pixelSize: 64
                 font.bold: true
                 color: foregroundColor
-                style: Text.Outline
-                styleColor: foregroundOutlineColor
             }
 
             Rectangle {
@@ -123,8 +120,6 @@ Popup {
                 text: modeName
                 font.pixelSize: activationPopup.modeNamePixelSize
                 color: foregroundColor
-                style: Text.Outline
-                styleColor: foregroundOutlineColor
             }
 
             Rectangle {
@@ -146,8 +141,6 @@ Popup {
                         font.pixelSize: 56
                         font.bold: true
                         color: foregroundColor
-                        style: Text.Outline
-                        styleColor: foregroundOutlineColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         text: qsTr("Мощность")
@@ -158,8 +151,6 @@ Popup {
                         font.pixelSize: 140
                         font.bold: true
                         color: foregroundColor
-                        style: Text.Outline
-                        styleColor: foregroundOutlineColor
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         text: activationPopup.power
@@ -179,8 +170,6 @@ Popup {
                         font.pixelSize: 56
                         font.bold: true
                         color: foregroundColor
-                        style: Text.Outline
-                        styleColor: foregroundOutlineColor
                         text: qsTr("Эффект\nрезания")
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -191,8 +180,6 @@ Popup {
                         font.pixelSize: 140
                         font.bold: true
                         color: foregroundColor
-                        style: Text.Outline
-                        styleColor: foregroundOutlineColor
                         text: Math.floor(activationPopup.power / 10)
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -211,8 +198,6 @@ Popup {
                         font.pixelSize: 56
                         font.bold: true
                         color: foregroundColor
-                        style: Text.Outline
-                        styleColor: foregroundOutlineColor
                         text: qsTr("Эффект\nкоагуляции")
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -223,8 +208,6 @@ Popup {
                         font.pixelSize: 140
                         font.bold: true
                         color: foregroundColor
-                        style: Text.Outline
-                        styleColor: foregroundOutlineColor
                         text: activationPopup.power % 10
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -243,35 +226,6 @@ Popup {
         }
     }
 
-    enter: Transition {
-        NumberAnimation {
-            property: "opacity"
-            from: 0.0
-            to: 1.0
-            duration: 50
-        }
-        NumberAnimation {
-            property: "scale"
-            from: 0.9
-            to: 1.0
-            duration: 50
-            easing.type: Easing.OutQuad
-        }
-    }
-
-    exit: Transition {
-        NumberAnimation {
-            property: "opacity"
-            from: 1.0
-            to: 0.0
-            duration: 50
-        }
-        NumberAnimation {
-            property: "scale"
-            from: 1.0
-            to: 0.9
-            duration: 50
-            easing.type: Easing.InQuad
-        }
-    }
+    enter: Transition {}
+    exit: Transition {}
 }

@@ -28,10 +28,12 @@ constexpr int kPortPhaseOn = 2;
 constexpr int kPortPollMs = 250;
 constexpr int kPortProbeIntervalMs = 500;
 constexpr int kPortProbeTries = 20;
+// После появления WINSTARTP Mouse usbhid часто шлёт ложный press.
+constexpr qint64 kPostRecoverMuteMs = 500;
 // Порог по X: быстрый перескок / ghost после отпускания.
 constexpr qreal kMaxDxPx = 50.0;
 // Окно после release, в котором режем повторный press с |Δx| > 50.
-constexpr qint64 kPostReleaseGuardMs = 200;
+constexpr qint64 kPostReleaseGuardMs = 500;
 // Если release потерян — не держим состояние вечно.
 constexpr qint64 kPointerLockTimeoutMs = 30000;
 
@@ -117,6 +119,21 @@ void TouchUsbMonitor::onActivationChanged(bool active)
     }
     m_activationWasOn = false;
     beginPostActivationCheck();
+}
+
+bool TouchUsbMonitor::isRecoverMute() const
+{
+    if (m_recovering) {
+        return true;
+    }
+    return m_postRecoverMuteSince.isValid()
+            && m_postRecoverMuteSince.elapsed() < kPostRecoverMuteMs;
+}
+
+void TouchUsbMonitor::armPostRecoverMute()
+{
+    clearContactState();
+    m_postRecoverMuteSince.start();
 }
 
 bool TouchUsbMonitor::isActivationMute() const
@@ -329,7 +346,7 @@ bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
         return QObject::eventFilter(watched, event);
     }
 
-    if (isActivationMute()) {
+    if (isActivationMute() || isRecoverMute()) {
         return true;
     }
 
@@ -499,6 +516,7 @@ void TouchUsbMonitor::beginPostActivationCheck()
     }
 
     qWarning("TouchUsbMonitor: WINSTARTP Mouse missing after activation, port reset");
+    clearContactState();
     setRecovering(true);
     applyState(QStringLiteral("lost"),
                QStringLiteral("no WINSTARTP Mouse after activation"),
@@ -602,6 +620,7 @@ void TouchUsbMonitor::onSettlePoll()
     if (!m_screenFaultShown || touchInputPresent()) {
         if (m_screenFaultShown && touchInputPresent() && !m_recovering) {
             qWarning("TouchUsbMonitor: WINSTARTP Mouse is back, clearing 09");
+            armPostRecoverMute();
             rememberTouchPort();
             applyState(QStringLiteral("recovered"),
                        QStringLiteral("WINSTARTP Mouse present after fault"),
@@ -621,6 +640,7 @@ void TouchUsbMonitor::finishRecovered(const QString &detail)
     m_settleTimer->stop();
     m_portPhase = 0;
     setRecovering(false);
+    armPostRecoverMute();
     qWarning().noquote() << "TouchUsbMonitor:" << detail;
     rememberTouchPort();
     applyState(QStringLiteral("recovered"), detail, false);

@@ -23,6 +23,8 @@ class QTouchEvent;
  * При старте и пока 222a:0001 виден, запоминается его USB-порт.
  * После каждой активации проверяется WINSTARTP Mouse. Если его нет —
  * запомненный порт перезапускается, пока мышь не появится.
+ * Во время сброса и коротко после появления мыши pointer-события глушатся
+ * (ложный press от usbhid при перечислении не доходит до UI).
  * Ошибка 0x09 показывается через 15 с и снимается вместе с восстановлением.
  * Release в UI всегда сразу (без debounce), чтобы holdRepeat гас мгновенно.
  */
@@ -78,6 +80,8 @@ private:
     QString resolvePortDisablePath();
     bool writePortDisable(const QString &path, bool disabled);
     bool isActivationMute() const;
+    bool isRecoverMute() const;
+    void armPostRecoverMute();
     bool isPointerEvent(QEvent::Type type) const;
     bool filterMouseEvent(QMouseEvent *mouse);
     bool filterTouchEvent(QTouchEvent *touch);
@@ -107,6 +111,7 @@ private:
     QElapsedTimer m_portOnSince;
     QElapsedTimer m_pointerDownSince;
     QElapsedTimer m_postReleaseSince;
+    QElapsedTimer m_postRecoverMuteSince;
     QString m_activeDisablePath;
     QString m_lastDisablePath;
     QPointF m_contactPos;

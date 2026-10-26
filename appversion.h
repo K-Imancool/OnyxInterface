@@ -13,4 +13,5 @@
 //inline constexpr const char *kOnyxAppVersion = "1.11"; // 24.09.26 Контроль тача
 //inline constexpr const char *kOnyxAppVersion = "1.12"; // 09.10.26 Фильтрация прыжков тача
 //inline constexpr const char *kOnyxAppVersion = "1.13"; // 09.10.26 убрана анимация активации
-inline constexpr const char *kOnyxAppVersion = "1.14"; // 20.10.26 улучшено восстановление тача после сбоя во время активации
+//inline constexpr const char *kOnyxAppVersion = "1.14"; // 20.10.26 улучшено восстановление тача после сбоя во время активации
+inline constexpr const char *kOnyxAppVersion = "1.15"; // 26.10.26 увеличена пауза между касаниями в разных местах по горизонтали (constexpr qint64 kPostReleaseGuardMs = 400; TouchUsbMonitor.cpp)
