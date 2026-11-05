@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Ui 1.0
 
 Dialog {
     id: addTypeSelector
@@ -19,9 +20,9 @@ Dialog {
         width: 380
         height: 250
         radius: 8
-        color: "transparent"
+        color: UiPalette.surface
         border {
-            color: "grey"
+            color: UiPalette.border
             width: 1
         }
         Column {
@@ -37,7 +38,7 @@ Dialog {
                 font.pixelSize: 26
                 font.bold: true
                 wrapMode: Text.WordWrap
-                color: "black"
+                color: UiPalette.text
             }
 
             Image {
@@ -57,6 +58,10 @@ Dialog {
             }
         }
     }
+    background: Rectangle {
+        color: UiPalette.background
+    }
+
     header: Rectangle {
         anchors.top: parent.top
         height: 50
@@ -69,6 +74,7 @@ Dialog {
             font.pixelSize: 36
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
+            color: UiPalette.text
         }
     }
 

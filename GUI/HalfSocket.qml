@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import BackEnd 1.0
+import Ui 1.0
 
 Rectangle {
     id: halfSocketRoot
@@ -19,11 +20,13 @@ Rectangle {
     property bool hasAvailableModes: true
 
     readonly property color socketColor: {
-        if (modeId === ESHF.NO_MODE) {
-            return "darkgray"
-        }
-        return isCoag ? "blue" : "yellow"
+        if (modeId === ESHF.NO_MODE)
+            return UiPalette.caseSteel
+        return isCoag ? UiPalette.coag : UiPalette.cut
     }
+    readonly property color ink: (isCoag && modeId !== ESHF.NO_MODE)
+                                 ? UiPalette.coagInk
+                                 : UiPalette.cutInk
     readonly property bool hasInstrImage: modeId !== ESHF.NO_MODE
                                           && instrumNum > 0
                                           && instrumNum !== 1000
@@ -160,7 +163,7 @@ Rectangle {
         id: modeLabel
         visible: halfSocketRoot.hasAvailableModes
         text: halfSocketRoot.modeLabelText
-        color: (!halfSocketRoot.isCoag || modeId === ESHF.NO_MODE) ? "black" : "white"
+        color: halfSocketRoot.ink
         font.pixelSize: halfSocketRoot.modeNameFontSize
         font.bold: true
         wrapMode: halfSocketRoot.cutModeNameSingleLine ? Text.NoWrap : Text.Wrap
@@ -204,7 +207,7 @@ Rectangle {
         id: powerLabel
         text: halfSocketRoot.modePower
         visible: !halfSocketRoot.isEndo && halfSocketRoot.modeId !== ESHF.NO_MODE
-        color: halfSocketRoot.isCoag ? "white" : "black"
+        color: halfSocketRoot.ink
         font.pixelSize: 60
         font.bold: true
         horizontalAlignment: halfSocketRoot.isCoag ? Text.AlignRight : Text.AlignLeft
@@ -249,7 +252,7 @@ Rectangle {
 
             Text {
                 text: qsTr("эфф.\nрез.")
-                color: halfSocketRoot.isCoag ? "white" : "black"
+                color: halfSocketRoot.ink
                 font.pixelSize: 24
                 font.bold: true
                 width: implicitWidth
@@ -259,7 +262,7 @@ Rectangle {
 
             Text {
                 text: halfSocketRoot.endoCutEffect
-                color: halfSocketRoot.isCoag ? "white" : "black"
+                color: halfSocketRoot.ink
                 font.pixelSize: 60
                 font.bold: true
                 verticalAlignment: Text.AlignVCenter
@@ -271,7 +274,7 @@ Rectangle {
 
             Text {
                 text: qsTr("эфф.\nкоаг.")
-                color: halfSocketRoot.isCoag ? "white" : "black"
+                color: halfSocketRoot.ink
                 font.pixelSize: 24
                 font.bold: true
                 width: implicitWidth
@@ -281,7 +284,7 @@ Rectangle {
 
             Text {
                 text: halfSocketRoot.endoCoagEffect
-                color: halfSocketRoot.isCoag ? "white" : "black"
+                color: halfSocketRoot.ink
                 font.pixelSize: 60
                 font.bold: true
                 verticalAlignment: Text.AlignVCenter

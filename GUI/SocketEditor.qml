@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
+import Ui 1.0
 
 Popup {
     id: root
@@ -14,7 +15,7 @@ Popup {
     padding: 0
 
     background: Rectangle {
-        color: "#F3F5F9"
+        color: UiPalette.background
     }
 
     property int socId: -1
@@ -47,14 +48,14 @@ Popup {
     readonly property color powerStepButtonBg: "white"
     readonly property color powerStepButtonText: fotekBlue
     readonly property int powerStepButtonWidth: 110
-    readonly property color uiMidGray: "#5A6478"
+    readonly property color uiMidGray: UiPalette.textSecondary
     readonly property color autoBtnOnFill: fotekOrange
     readonly property color autoBtnOnBorder: "#1E3274"
     readonly property color autoBtnOffFill: "white"
-    readonly property color autoBtnOffBorder: "#C7CEDA"
+    readonly property color autoBtnOffBorder: UiPalette.border
     readonly property color autoBtnOffText: fotekBlue
-    readonly property color listSelectedBackground: isCoag ? "#0B4FB3" : "#F4D13D"
-    readonly property color listSelectedText: isCoag ? "white" : "black"
+    readonly property color listSelectedBackground: isCoag ? UiPalette.coag : UiPalette.cut
+    readonly property color listSelectedText: isCoag ? UiPalette.coagInk : UiPalette.cutInk
 
     function modeImagePrefix() {
         return "mode"
@@ -517,7 +518,7 @@ Popup {
 
     Rectangle {
         anchors.fill: parent
-        color: "#F3F5F9"
+        color: UiPalette.background
 
         Rectangle {
             id: header
@@ -525,7 +526,7 @@ Popup {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 78
-            color: isCoag ? "#0B4FB3" : "#F4D13D"
+            color: listSelectedBackground
 
             Label {
                 id: titleLabel
@@ -544,7 +545,7 @@ Popup {
                 wrapMode: Text.WordWrap
                 font.pixelSize: 34
                 font.bold: true
-                color: isCoag ? "white" : "black"
+                color: listSelectedText
             }
 
             Button {
@@ -566,7 +567,7 @@ Popup {
                     text: qsTr("X")
                     font.pixelSize: 34
                     font.bold: true
-                    color: isCoag ? "white" : "black"
+                    color: listSelectedText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -675,7 +676,7 @@ Popup {
             Rectangle {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 1
-                color: "#C7CEDA"
+                color: UiPalette.border
             }
 
             Rectangle {
@@ -772,7 +773,7 @@ Popup {
             Rectangle {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 1
-                color: "#C7CEDA"
+                color: UiPalette.border
             }
 
             Rectangle {
@@ -842,7 +843,7 @@ Popup {
                                 radius: 16
                                 color: enabled ? powerStepButtonBg : "#E8ECF2"
                                 border.width: enabled ? 2 : 1
-                                border.color: enabled ? root.fotekOrange : "#C7CEDA"
+                                border.color: enabled ? root.fotekOrange : UiPalette.border
                             }
                             contentItem: Text {
                                 text: parent.text
@@ -875,7 +876,7 @@ Popup {
                                 radius: 16
                                 color: enabled ? powerStepButtonBg : "#E8ECF2"
                                 border.width: enabled ? 2 : 1
-                                border.color: enabled ? root.fotekOrange : "#C7CEDA"
+                                border.color: enabled ? root.fotekOrange : UiPalette.border
                             }
                             contentItem: Text {
                                 text: parent.text
@@ -1364,7 +1365,7 @@ Popup {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: modeEditor.isEndo ? recommendedEndoButtonHeight : recommendedButtonHeight
                                 borderColor: "#A5D6A7"
-                                idleFillColor: "#F3F5F9"
+                                idleFillColor: UiPalette.background
                                 idleTextColor: root.fotekBlue
                                 power: modeEditor.lowPowerBound
                                 selected: modeEditor.currentPower === power
@@ -1375,7 +1376,7 @@ Popup {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: modeEditor.isEndo ? recommendedEndoButtonHeight : recommendedButtonHeight
                                 borderColor: "#78D87C"
-                                idleFillColor: "#F3F5F9"
+                                idleFillColor: UiPalette.background
                                 idleTextColor: root.fotekBlue
                                 power: modeEditor.midPowerBound
                                 selected: modeEditor.currentPower === power
@@ -1386,7 +1387,7 @@ Popup {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: modeEditor.isEndo ? recommendedEndoButtonHeight : recommendedButtonHeight
                                 borderColor: "#51D456"
-                                idleFillColor: "#F3F5F9"
+                                idleFillColor: UiPalette.background
                                 idleTextColor: root.fotekBlue
                                 power: modeEditor.highPowerBound
                                 selected: modeEditor.currentPower === power
@@ -1559,7 +1560,7 @@ Popup {
 
         background: Rectangle {
             radius: 20
-            color: "#F3F5F9"
+            color: UiPalette.background
         }
 
         ColumnLayout {

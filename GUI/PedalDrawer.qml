@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 import BackEnd 1.0
+import Ui 1.0
 
 Drawer {
     id: repeatRoot
@@ -10,7 +11,7 @@ Drawer {
     property var innerModel
     property int pedalUiRev: 0
     readonly property real titleHeight: Math.max(18, Math.min(40, height * 0.22))
-    readonly property color drawerGray: "#6a6a6a"
+    readonly property color drawerGray: UiPalette.caseBase
 
     modal: false
     closePolicy: Popup.NoAutoClose
@@ -101,7 +102,7 @@ Drawer {
             wrapMode: Text.WordWrap
             font.bold: true
             font.pixelSize: Math.max(14, Math.min(20, titleItem.height * 0.55))
-            color: "white"
+            color: UiPalette.darkInk
         }
     }
 

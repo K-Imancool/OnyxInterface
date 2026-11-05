@@ -3,30 +3,34 @@
 
 #include <QElapsedTimer>
 #include <QEvent>
+#include <QFile>
 #include <QObject>
 #include <QPointF>
+#include <QPointer>
 #include <QString>
 
 class DeviceLogManager;
 class PeriphHandler;
 class QMouseEvent;
 class QTimer;
+class QTouchDevice;
 class QTouchEvent;
 
 /**
- * Мониторинг USB-тача ILITEK + простой EMI-фильтр:
- * - первое касание всегда проходит;
- * - во время удержания режем скачки |Δx| > 50;
- * - после release коротко режем повторный press с |Δx| > 50;
- * - во время активации глушим pointer-события, кроме AutoStartStop (ACC):
- *   тогда касание доходит до UI и останавливает активацию (stopIfAccTouch).
- * При старте и пока 222a:0001 виден, запоминается его USB-порт.
- * После каждой активации проверяется WINSTARTP Mouse. Если его нет —
- * запомненный порт перезапускается, пока мышь не появится.
- * Во время сброса и коротко после появления мыши pointer-события глушатся
- * (ложный press от usbhid при перечислении не доходит до UI).
- * Ошибка 0x09 показывается через 15 с и снимается вместе с восстановлением.
- * Release в UI всегда сразу (без debounce), чтобы holdRepeat гас мгновенно.
+ * Мониторинг USB-тача ILITEK/PIC + EMI-фильтр:
+ * - одиночный тап, даже короткий, сразу в UI;
+ * - пока палец зажат, скачок (больше живого свайпа за кадр) не двигает точку;
+ * - краткий второй слот вырезается и не задерживает отпускание;
+ * - после ACT — повышенное внимание не меньше минуты; гаснет позже минуты,
+ *   только когда ложных касаний уже нет. Новый Begin на той же строке вскоре после End
+ *   не становится кликом, пока не видно, что это живой палец;
+ * - дубликат Begin в ту же точку не глотаем (иначе окно не получает press);
+ * - во время активации глушим pointer, кроме AutoStartStop (ACC).
+ * При старте и пока виден USB-тач (ILITEK 222a:0001 или PIC16F1459 04d8:4931),
+ * запоминается его USB-порт.
+ * После старта UI и после каждой активации проверяется вход
+ * ("WINSTARTP Mouse" либо "PIC16F1459"). Если узла нет — порт перезапускается.
+ * Ошибка 0x09 через 15 с без входа; снимается, когда вход снова есть.
  */
 class TouchUsbMonitor : public QObject
 {
@@ -51,6 +55,8 @@ public:
     QString detail() const { return m_detail; }
 
     Q_INVOKABLE void check();
+    // Обнуляет touch-trace.log. Вызывается при входе в проверку тача.
+    Q_INVOKABLE void clearTouchTrace();
 
 signals:
     void touchOkChanged();
@@ -59,6 +65,8 @@ signals:
     void stateChanged();
     void detailChanged();
     void touchUsbFault(const QString &state, const QString &detail);
+    // Точка, которую фильтр не отдал в UI. Проверка тача рисует её бледным кругом.
+    void falsePoint(qreal x, qreal y);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -66,7 +74,11 @@ protected:
 private:
     void onActivationChanged(bool active);
     void onLiveTouchEvidence();
+    void beginStartupCheck();
     void beginPostActivationCheck();
+    void beginMouseCheck(const QString &missingDetail);
+    void abortRecoverForActivation();
+    void releaseHeldPort();
     void probeTouchPort();
     bool rememberTouchPort();
     void loadRememberedPort();
@@ -75,7 +87,6 @@ private:
     void onPortStep();
     void onRecoverDeadline();
     void noteOngoingFault(const QString &detail);
-    void onSettlePoll();
     void finishRecovered(const QString &detail);
     QString resolvePortDisablePath();
     bool writePortDisable(const QString &path, bool disabled);
@@ -83,15 +94,72 @@ private:
     bool isRecoverMute() const;
     void armPostRecoverMute();
     bool isPointerEvent(QEvent::Type type) const;
-    bool filterMouseEvent(QMouseEvent *mouse);
-    bool filterTouchEvent(QTouchEvent *touch);
+    bool filterMouseEvent(QObject *watched, QMouseEvent *mouse);
+    bool filterTouchEvent(QObject *watched, QTouchEvent *touch);
     void beginContact(const QPointF &screenPos);
-    void endContact(const QPointF &screenPos);
+    void endContact();
     void clearContactState();
-    bool postReleaseGuardActive() const;
-    bool shouldRejectPress(const QPointF &screenPos) const;
-    bool shouldRejectMove(const QPointF &screenPos) const;
+    bool attentionActive() const;
+    bool inAttentionWindow() const;
+    void noteFalseTouch();
+    void pollAttention();
+    bool releaseStitchPending() const;
+    void markGestureDirty();
+    qint64 releaseStitchDelayMs() const;
+    void armReleaseStitch(QObject *watched, bool oweTouchEnd, bool oweMouseRelease,
+                          QTouchDevice *device, int touchId);
+    void keepReleaseStitch(const QPointF &screenPos, int touchId);
+    void keepReleaseStitch(const QTouchEvent *touch);
+    bool releaseDeadlineSlides(const QPointF &screenPos, int touchId) const;
+    void noteLiveTouchReleased(QTouchDevice *device);
+    void commitReleaseStitch();
+    bool absorbContinuingTouch(QTouchEvent *touch);
+    void sendDelayedTouchEnd(QObject *target, QTouchDevice *device, int touchId,
+                             const QPointF &screenPos);
+    void sendDelayedMouseRelease(QObject *target, const QPointF &screenPos);
+    bool isJumpMove(const QPointF &screenPos) const;
+    bool isSameAsLast(const QPointF &screenPos) const;
+    bool isEmiRebegin(const QPointF &screenPos, int touchCount) const;
+    bool isFastRebegin(const QPointF &screenPos) const;
+    bool isAttentionSameLineJump(const QPointF &screenPos) const;
+    bool glueFastRebegin(QObject *watched, QTouchDevice *device, int touchId,
+                         const QPointF &screenPos);
+    bool consumeFreshContact(QObject *watched, QTouchDevice *device, int touchId,
+                             const QPointF &screenPos);
+    bool attentionNear(const QPointF &pos) const;
+    bool attentionWide(const QPointF &pos) const;
+    bool recentFarContact(const QPointF &screenPos) const;
+    bool rejectRecentFarContact(const QPointF &screenPos);
+    void armReleaseWait(QObject *watched, QTouchDevice *device, int touchId);
+    bool armBeginWait(QObject *watched, QTouchDevice *device, int touchId,
+                      const QPointF &screenPos);
+    void commitReleaseWait();
+    void confirmBeginWait(bool alsoRelease);
+    void rejectBeginWait(const QPointF &screenPos);
+    void onAttentionHoldTimeout();
+    bool handleAttentionMouse(QObject *watched, QMouseEvent *mouse);
+    bool handleAttentionTouch(QObject *watched, QTouchEvent *touch);
+    void clearStableSlots();
+    bool noteStableMove(QObject *watched, QTouchEvent *touch);
+    void beginPrimaryPick(QObject *watched, QTouchDevice *device, const QTouchEvent *touch);
+    bool handlePrimaryPick(QObject *watched, QTouchEvent *touch);
+    void deliverPickedPress(int touchId, const QPointF &screenPos, bool alsoRelease);
+    void clearPrimaryPick();
+    void freezePrimaryToLastAccepted(QTouchEvent *touch);
+    void startQuarantine(QObject *watched, QTouchDevice *device, int touchId,
+                         const QPointF &screenPos);
+    bool handleQuarantineTouch(QObject *watched, QTouchEvent *touch);
+    void dropQuarantine();
+    void flushQuarantine();
+    void sendDelayedTouchBegin(QObject *target, QTouchDevice *device, int touchId,
+                               const QPointF &screenPos);
+    void sendDelayedMousePress(QObject *target, const QPointF &screenPos);
     void expireStalePointerState();
+    void writeTouchTrace(const QString &line);
+    void writeTouchTrace(const QString &line, const QPointF &pos);
+    void writeTouchTraceAt(const QString &line, const QPointF &pos, bool hasPos);
+    void noteTrace(const QString &tag);
+    void reportFalsePoint(const QPointF &screenPos);
     void setRecovering(bool on);
     void applyState(const QString &state, const QString &detail, bool logFault);
     void raiseScreenFault();
@@ -106,30 +174,105 @@ private:
     QTimer *m_stepTimer = nullptr;
     QTimer *m_deadlineTimer = nullptr;
     QTimer *m_portProbeTimer = nullptr;
-    QTimer *m_settleTimer = nullptr;
+    QTimer *m_startupCheckTimer = nullptr;
+    QTimer *m_stitchTimer = nullptr;
+    QTimer *m_confirmTimer = nullptr;
+    QTimer *m_attnTimer = nullptr;
     QElapsedTimer m_checkStarted;
     QElapsedTimer m_portOnSince;
     QElapsedTimer m_pointerDownSince;
-    QElapsedTimer m_postReleaseSince;
     QElapsedTimer m_postRecoverMuteSince;
+    QElapsedTimer m_postActivationSince;
+    QElapsedTimer m_releasedAt;
+    QElapsedTimer m_lastFalseAt;
+    QElapsedTimer m_traceClock;
+    QFile m_traceFile;
+    qint64 m_traceBytes = 0;
+    QString m_traceTag;
+    QString m_tracePrevLine;
+    QPointF m_tracePrevPos;
+    QElapsedTimer m_tracePrevAt;
+    QElapsedTimer m_traceTouchAt;
+    QPointF m_traceTouchPos;
+    bool m_traceHasPrev = false;
+    bool m_traceTouchPassed = false;
+    bool m_traceInEvent = false;
     QString m_activeDisablePath;
     QString m_lastDisablePath;
     QPointF m_contactPos;
     QPointF m_lastAcceptedPos;
-    QPointF m_postReleasePos;
+    QPointer<QObject> m_stitchTarget;
+    QPointer<QObject> m_lastWindow;
+    QPointer<QObject> m_quarantineTarget;
+    QTouchDevice *m_stitchDevice = nullptr;
+    QTouchDevice *m_quarantineDevice = nullptr;
+    QPointF m_quarantinePos;
     QString m_state = QStringLiteral("ok");
     QString m_detail;
     QString m_lastLoggedKey;
     int m_cycle = 0;
     int m_portPhase = 0;
     int m_portProbeLeft = 0;
+    int m_primaryTouchId = -1;
+    // Слот, который реально зажал кнопку. Чужой id после обрыва его не подменяет.
+    int m_liveTouchId = -1;
+    int m_stitchTouchId = -1;
+    int m_quarantineId = -1;
+    bool m_ignoreForeignUntilClear = false;
     bool m_touchOk = true;
     bool m_faultActive = false;
     bool m_recovering = false;
     bool m_screenFaultShown = false;
     bool m_activationWasOn = false;
     bool m_pointerDown = false;
-    bool m_postReleaseArmed = false;
+    bool m_gestureDirty = false;
+    bool m_stitchPending = false;
+    bool m_stitchOwesTouchEnd = false;
+    bool m_stitchOwesMouseRelease = false;
+    bool m_deliveringStitchRelease = false;
+    bool m_quarantine = false;
+    bool m_quarantineEnded = false;
+    bool m_quarantineReject = false;
+    bool m_falseSeen = false;
+    // Предыдущий жест оборвался сбоем. Следующий Begin на той же полосе
+    // не становится кликом, пока цепочка не затихнет. Чистый тап флаг снимает.
+    bool m_chainRisk = false;
+    bool m_attentionAnnounced = false;
+    // На время внимания: Release — ждём, не ложный ли End; Begin — ещё не
+    // решили, живое ли это нажатие.
+    enum class AttnPhase { None, Release, Begin };
+    AttnPhase m_attnPhase = AttnPhase::None;
+    QPointF m_attnOrigin;
+    QPointF m_attnPos;
+    int m_attnTouchId = -1;
+    QPointer<QObject> m_attnTarget;
+    QTouchDevice *m_attnDevice = nullptr;
+    // Пока палец ещё не зажат: слот, который два кадра подряд стоит на месте.
+    struct StableSlot {
+        int id = -1;
+        QPointF pos;
+        int seen = 0;
+    };
+    static constexpr int kStableSlotCount = 4;
+    StableSlot m_stableSlot[kStableSlotCount];
+    int m_stableCount = 0;
+    QElapsedTimer m_stableAt;
+    bool m_uiHasPress = false;
+    // Живой слот уже отпущен. Дальше срок отпускания сдвигают только прыжки.
+    bool m_liveTouchReleased = false;
+    // После глушения на стекле ещё висит чужой кадр. Первая точка — только новый Begin.
+    bool m_waitForLift = false;
+    // В первом кадре два слота. Не берём p0, пока не видно, какой из них палец.
+    bool m_pickingPrimary = false;
+    int m_pickCount = 0;
+    int m_pickId[2] = {-1, -1};
+    QPointF m_pickStart[2];
+    QPointF m_pickPos[2];
+    QPointer<QObject> m_pickTarget;
+    QTouchDevice *m_pickDevice = nullptr;
+    QElapsedTimer m_pickSince;
+    QPointF m_falsePoint;
+    QElapsedTimer m_falsePointClock;
 };
 
 #endif // TOUCHUSBMONITOR_H

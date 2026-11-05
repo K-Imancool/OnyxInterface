@@ -18,6 +18,7 @@
 #include <QVector>
 #include <QVariant>
 #include <QElapsedTimer>
+#include <QJsonValue>
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #endif
@@ -145,6 +146,7 @@ void ControlCenter::makeHandleConnections()
         if (!m_progLoader->loadCurrentState()) {
             m_progLoader->defaultSocketInit();
         }
+        restoreLastNeutralSettings();
     });
 
     connect(m_handle, &ProgHandle::signalSaveCurrentStateRequested,
@@ -243,6 +245,7 @@ void ControlCenter::initSockets()
 	if (!m_progLoader->loadCurrentState())
 		m_progLoader->defaultSocketInit();
 	m_socketModel->blockSignals(false);
+	restoreLastNeutralSettings();
 
 	// m_handle->setScopeNameList(m_progLoader->getCategories());
 }
@@ -290,11 +293,46 @@ void ControlCenter::prepareConnectios()
 	});
 	connect(m_socketModel.data(), &SocketModel::subProgCountChanged,
 	        this, &ControlCenter::scheduleSave);
+
+	if (m_periphery) {
+		connect(m_periphery, &PeriphHandler::neutralElDividedChanged,
+		        this, [this](bool) { saveLastNeutralSettings(); });
+		connect(m_periphery, &PeriphHandler::neutralSizeChanged,
+		        this, [this](int) { saveLastNeutralSettings(); });
+	}
 }
 
 QPointer<ProgHandle> ControlCenter::getHandle() const
 {
 	return m_handle;
+}
+
+void ControlCenter::saveLastNeutralSettings()
+{
+	if (m_jsonStorage.isNull() || m_periphery.isNull())
+		return;
+
+	m_jsonStorage->saveInt(QStringLiteral("lastNeutralElDivided"),
+	                       m_periphery->neutralElDivided() ? 1 : 0);
+	m_jsonStorage->saveInt(QStringLiteral("lastNeutralSize"),
+	                       m_periphery->neutralSize());
+}
+
+void ControlCenter::restoreLastNeutralSettings()
+{
+	if (m_jsonStorage.isNull() || m_periphery.isNull())
+		return;
+
+	QJsonValue dividedValue;
+	if (m_jsonStorage->read(QStringLiteral("lastNeutralElDivided"), &dividedValue))
+		m_periphery->setNeutralElDivided(dividedValue.toInt(1) != 0);
+
+	QJsonValue sizeValue;
+	if (m_jsonStorage->read(QStringLiteral("lastNeutralSize"), &sizeValue)) {
+		const int size = sizeValue.toInt(2);
+		if (size >= 0 && size <= 2)
+			m_periphery->setNeutralSize(size);
+	}
 }
 
 void ControlCenter::scheduleSave()

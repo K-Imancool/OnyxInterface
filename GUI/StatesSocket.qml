@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import BackEnd 1.0
+import Ui 1.0
 
 Rectangle {
     id: socketRoot
@@ -176,7 +177,7 @@ Rectangle {
     Rectangle {
         id: centerSeparator
         width: 2
-        color: "#202020"
+        color: UiPalette.text
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.bottom: parent.bottom
@@ -187,7 +188,8 @@ Rectangle {
         id: dimOverlay
         anchors.fill: parent
         visible: socketRoot.dimmed
-        color: "#66000000"
+        color: UiPalette.caseBase
+        opacity: 0.4
         z: 3
     }
 

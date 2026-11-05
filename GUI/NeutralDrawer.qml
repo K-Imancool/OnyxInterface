@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 import BackEnd 1.0
+import Ui 1.0
 
 Drawer {
     id: neutralDrawerRoot
@@ -112,12 +113,12 @@ Drawer {
     }
 
     background: Rectangle {
-        color: "white"
+        color: UiPalette.background
     }
 
     Rectangle {
         anchors.fill: parent
-        color: "white"
+        color: UiPalette.background
         z: -1
 
         MouseArea {
@@ -145,7 +146,7 @@ Drawer {
             }
             horizontalAlignment: Qt.AlignHCenter
             text: qsTr("СОПРОТИВЛЕНИЕ НЭ")
-            color: fotekBlue
+            color: UiPalette.text
             font.pixelSize: 24
             font.bold: true
         }
@@ -160,7 +161,7 @@ Drawer {
             }
             horizontalAlignment: Qt.AlignHCenter
             text: periphHandle.neutralResistText
-            color: "black"
+            color: UiPalette.text
             font.pixelSize: 36
             font.bold: true
         }
@@ -175,7 +176,7 @@ Drawer {
             }
             horizontalAlignment: Qt.AlignHCenter
             text: qsTr("ВЫБОР НЕЙТРАЛЬНОГО ЭЛЕКТРОДА")
-            color: fotekBlue
+            color: UiPalette.text
             font.pixelSize: 26
             font.bold: true
         }
@@ -270,7 +271,7 @@ Drawer {
             text: qsTr("X")
             font.pixelSize: 34
             font.bold: true
-            color: fotekBlue
+            color: UiPalette.text
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             visible: false              // Сделал невидимой, для совпадения с ArgonDrawer

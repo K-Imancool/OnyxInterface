@@ -5,6 +5,7 @@ import QtQuick.Controls 2.15
 import QtQuick.CuteKeyboard 1.0 as CuteKeyboardUi
 import CuteKeyboard 1.0
 import BackEnd 1.0
+import Ui 1.0
 
 Item {
     id: workRoot
@@ -44,6 +45,12 @@ Item {
     }
 
     property bool monoSprayM1M2Active: false
+
+    Rectangle {
+        anchors.fill: parent
+        z: -1
+        color: UiPalette.background
+    }
 
     function pedalDrawerBlockedForSocket(socketId) {
         return monoSprayM1M2Active && (socketId === 2 || socketId === 3)
@@ -249,7 +256,7 @@ Item {
         readonly property bool drawerActive: opened
 
         background: Rectangle {
-            color: "darkslategray"
+            color: UiPalette.caseBase
         }
 
         MenuLoader {
@@ -279,6 +286,12 @@ Item {
         x: saveProgDialog.x
         y: saveProgDialog.y
 
+        background: Rectangle {
+            color: UiPalette.background
+            border.color: UiPalette.danger
+            border.width: 3
+        }
+
         contentItem: Rectangle {
             color: "transparent"
 
@@ -289,7 +302,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 text: qsTr("Внимание! Программа\n\n%1\n\nбудет перезаписана").arg(saveProgDialog.progName)
                 font.pixelSize: 30
-                color: "black"
+                color: UiPalette.text
             }
         }
 
@@ -309,6 +322,7 @@ Item {
                     Layout.preferredWidth: 220
                     Layout.fillHeight: true
                     text: qsTr("ОТМЕНА")
+                    secondaryColor: UiPalette.textSecondary
                     onPressed: overwriteConfirmDialog.close()
                 }
 
@@ -319,6 +333,8 @@ Item {
                     Layout.fillHeight: true
                     text: qsTr("ПРИНЯТЬ")
                     primary: true
+                    primaryEnabledColor: UiPalette.accent
+                    labelColor: UiPalette.accentInk
                     onPressed: {
                         overwriteConfirmDialog.close()
                         saveProgDialog.accept()
@@ -336,8 +352,8 @@ Item {
         y: Math.round((parent.height - height) / 2)
 
         background: Rectangle {
-            color: "#f5f5f5"
-            border.color: host.fotekBlue
+            color: UiPalette.background
+            border.color: UiPalette.accent
             border.width: 3
         }
 
@@ -351,7 +367,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 text: qsTr("Эндоскопические программы не могут быть использованы совместно с другими программами")
                 font.pixelSize: 30
-                color: "black"
+                color: UiPalette.text
             }
         }
 
@@ -374,6 +390,8 @@ Item {
                     Layout.fillHeight: true
                     text: qsTr("ПРИНЯТЬ")
                     primary: true
+                    primaryEnabledColor: UiPalette.accent
+                    labelColor: UiPalette.accentInk
                     onPressed: endoProgramMixDialog.close()
                 }
 
@@ -481,8 +499,8 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            color: "black"
-            opacity: 0.7
+            color: UiPalette.caseBase
+            opacity: 0.72
 
             MouseArea {
                 anchors.fill: parent
@@ -882,10 +900,10 @@ Item {
          availableLanguageLayouts: host.availableKeyboardLayouts()
          btnTextFontFamily: "DejaVu Sans"
          // Свободное поле цифровой раскладки берёт backgroundColor (по умолчанию чёрный).
-         backgroundColor: "#E8ECF2"
-         btnBackgroundColor: "#FFFFFF"
-         btnSpecialBackgroundColor: "#D0D5DD"
-         btnTextColor: "#264093"
+         backgroundColor: UiPalette.surface
+         btnBackgroundColor: UiPalette.background
+         btnSpecialBackgroundColor: UiPalette.caseMist
+         btnTextColor: UiPalette.text
          anchors.left: parent.left
          anchors.right: parent.right
 

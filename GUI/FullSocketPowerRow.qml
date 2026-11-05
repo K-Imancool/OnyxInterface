@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Ui 1.0
 
 Item {
     id: control
@@ -45,10 +46,10 @@ Item {
             anchors.fill: parent
             radius: 16
             color: !stepBtn.interactive
-                   ? "#E8ECF2"
-                   : (stepBtn.pressActive ? editorRoot.fotekOrange : "white")
+                   ? UiPalette.surface
+                   : (stepBtn.pressActive ? editorRoot.fotekOrange : UiPalette.background)
             border.width: stepBtn.interactive ? 2 : 1
-            border.color: stepBtn.interactive ? editorRoot.fotekOrange : "#C7CEDA"
+            border.color: stepBtn.interactive ? editorRoot.fotekOrange : UiPalette.border
         }
 
         Text {

@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
+import Ui 1.0
 
 Rectangle {
     id: socketContainer
@@ -20,7 +21,7 @@ Rectangle {
             periphHandle.enableActivation = true
     }
 
-    color: "gray"
+    color: UiPalette.caseBase
 
     property bool monoSprayM1M2Active: false
 
@@ -49,8 +50,8 @@ Rectangle {
                     delegate: Rectangle {
                         height: parent.height
                         width: 60
-                        color: index === theModel.subProgIdx ? "white" : "black"
-                        border.color: "white"
+                        color: index === theModel.subProgIdx ? UiPalette.caseBase : UiPalette.surface
+                        border.color: UiPalette.border
                         border.width: 1
                         radius: 6
                         Text {
@@ -59,7 +60,7 @@ Rectangle {
                             horizontalAlignment: Qt.AlignHCenter
                             verticalAlignment: Qt.AlignVCenter
                             anchors.fill: parent
-                            color: index === theModel.subProgIdx ? "black" : "white"
+                            color: index === theModel.subProgIdx ? UiPalette.darkInk : UiPalette.text
                             font.pixelSize: 34
                             font.bold: true
                         }
@@ -73,8 +74,8 @@ Rectangle {
                     id: progAddSign
                     height: parent.height
                     width: 60
-                    color: "black"
-                    border.color: "white"
+                    color: UiPalette.surface
+                    border.color: UiPalette.border
                     border.width: 1
                     radius: 6
                     visible: theModel.subProgCount < 4 && !theModel.endoProgramView
@@ -84,7 +85,7 @@ Rectangle {
                         horizontalAlignment: Qt.AlignHCenter
                         verticalAlignment: Qt.AlignVCenter
                         anchors.fill: parent
-                        color: "white"
+                        color: UiPalette.text
                         font.pixelSize: 36
                         font.bold: true
                     }
@@ -104,8 +105,8 @@ Rectangle {
                     id: progDeleteSign
                     height: parent.height
                     width: 40*5
-                    color: "black"
-                    border.color: "red"
+                    color: UiPalette.danger
+                    border.color: UiPalette.danger
                     border.width: 1
                     radius: 6
                     visible: theModel.subProgCount > 1 && !theModel.endoProgramView
@@ -115,7 +116,7 @@ Rectangle {
                         horizontalAlignment: Qt.AlignHCenter
                         verticalAlignment: Qt.AlignVCenter
                         anchors.fill: parent
-                        color: "white"
+                        color: UiPalette.darkInk
                         font.pixelSize: 30
                         font.bold: true
                     }
@@ -148,7 +149,7 @@ Rectangle {
         visible: false
         clip: true
 
-        readonly property color coagBlue: "blue"
+        readonly property color coagBlue: UiPalette.coag
         readonly property int cornerRadius: 20
         readonly property int instrBaseSize: 150
         readonly property int coagImageLeftInset: 8
@@ -241,7 +242,7 @@ Rectangle {
             Label {
                 id: overlayModeLabel
                 text: sprayM1M2Overlay.modeName
-                color: "white"
+                color: UiPalette.coagInk
                 font.pixelSize: 42
                 font.bold: true
                 wrapMode: Text.Wrap
@@ -270,7 +271,7 @@ Rectangle {
 
             Label {
                 text: sprayM1M2Overlay.modePower
-                color: "white"
+                color: UiPalette.coagInk
                 font.pixelSize: 60
                 font.bold: true
                 horizontalAlignment: Text.AlignRight
@@ -285,7 +286,7 @@ Rectangle {
         }
 
         Rectangle {
-            color: "darkgray"
+            color: UiPalette.coagDeep
             anchors.left: parent.left
 //            anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
@@ -294,7 +295,7 @@ Rectangle {
         }
 
         Rectangle {
-            color: "gray"
+            color: UiPalette.coagSoft
             anchors.right: parent.right
 //            anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
@@ -304,7 +305,7 @@ Rectangle {
 
         Label {
             text: "М1+М2"
-            color: "white"
+            color: UiPalette.coagInk
             font.pixelSize: 48
             font.bold: true
             horizontalAlignment: Text.AlignRight
@@ -422,6 +423,12 @@ Rectangle {
         x: (socketContainer.width - width) / 2
         y: (socketContainer.height - height) / 2
 
+        background: Rectangle {
+            color: UiPalette.background
+            border.color: UiPalette.danger
+            border.width: 3
+        }
+
         contentItem: Rectangle {
             color: "transparent"
 
@@ -439,6 +446,7 @@ Rectangle {
                     horizontalAlignment: Qt.AlignHCenter
                     font.pixelSize: 40
                     font.bold: true
+                    color: UiPalette.text
                 }
 
                 Label {
@@ -447,6 +455,7 @@ Rectangle {
                     horizontalAlignment: Qt.AlignHCenter
                     wrapMode: Text.WordWrap
                     font.pixelSize: 36
+                    color: UiPalette.textSecondary
                 }
 
                 Item { Layout.fillHeight: true }
@@ -470,6 +479,7 @@ Rectangle {
                     Layout.fillHeight: true
                     text: qsTr("ОТМЕНА")
                     labelPixelSize: 34
+                    secondaryColor: UiPalette.textSecondary
                     onPressed: confirmDeleteSubProgDialog.close()
                 }
 
@@ -480,6 +490,8 @@ Rectangle {
                     Layout.fillHeight: true
                     text: qsTr("ПРИНЯТЬ")
                     primary: true
+                    primaryEnabledColor: UiPalette.danger
+                    labelColor: UiPalette.darkInk
                     labelPixelSize: 34
                     onPressed: {
                         recomHandle.removeSubProg()

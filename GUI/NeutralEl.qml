@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Ui 1.0
 
 Rectangle {
     id: neutralEl
@@ -16,6 +17,9 @@ Rectangle {
     // property bool neutralConnected: false  // Передается снаружи
     property bool neutralConnected: periphHandle.neutralElConnected  // Передается снаружи
     property bool showControls: false      // Показывать ли кнопки управления
+
+    readonly property color fotekBlue: UiPalette.text
+    readonly property color fotekOrange: UiPalette.neSelected
 
     readonly property string neIconsBasePath: AppPaths.neIconsBaseUrl
 
@@ -50,7 +54,7 @@ Rectangle {
         width: parent.width * .7  // Уменьшена ширина, чтобы не перекрывать кнопки типа слева
         radius: 10
 
-        color: neutralSize === type ? fotekOrange : "lightgray"
+        color: neutralSize === type ? fotekOrange : UiPalette.surface
         border {
             color: neutralSize === type ? fotekBlue : "transparent"
             width: neutralSize === type ? 5 : 0
@@ -95,7 +99,7 @@ Rectangle {
                 text: qsTr("Пациент:")
                 textFormat: Text.StyledText
                 font.pixelSize: rootCustomBut.labelFontSize
-                color: "#2c2c2c"
+                color: UiPalette.text
                 horizontalAlignment: Text.AlignHCenter
                 lineHeight: 1.0
                 lineHeightMode: Text.ProportionalHeight
@@ -111,7 +115,7 @@ Rectangle {
                 text: "<b>" + rootCustomBut.line1Text + "</b>"
                 textFormat: Text.StyledText
                 font.pixelSize: rootCustomBut.labelFontSize
-                color: "#2c2c2c"
+                color: UiPalette.text
                 horizontalAlignment: Text.AlignHCenter
                 lineHeight: 1.2
                 lineHeightMode: Text.ProportionalHeight
@@ -127,7 +131,7 @@ Rectangle {
 //                width: textColumn.width
                 text: qsTr("Максимальная\nмощность:")
                 font.pixelSize: rootCustomBut.labelFontSize
-                color: "#2c2c2c"
+                color: UiPalette.text
                 horizontalAlignment: Text.AlignLeft
                 lineHeight: 1.0
                 lineHeightMode: Text.ProportionalHeight
@@ -144,7 +148,7 @@ Rectangle {
                 text: "<b>" + rootCustomBut.powerValueText + "</b>"
                 textFormat: Text.StyledText
                 font.pixelSize: rootCustomBut.labelFontSize
-                color: "#2c2c2c"
+                color: UiPalette.text
                 horizontalAlignment: Text.AlignHCenter
                 lineHeight: 1.0
                 lineHeightMode: Text.ProportionalHeight
@@ -175,8 +179,8 @@ Rectangle {
         borderColor: fotekBlue
         borderWidth: 3
         divided: neutralDivided
-        neutColor: neutralConnected ? "green" : "red"
-        theColor: neutralConnected ? "lightgray" : "white"
+        neutColor: neutralConnected ? UiPalette.neGreen : UiPalette.danger
+        theColor: neutralConnected ? UiPalette.surface : UiPalette.background
 
         anchors.fill: parent
         button: false
@@ -258,8 +262,8 @@ Rectangle {
             borderColor: neutralDivided ? fotekBlue : "transparent"
             borderWidth: neutralDivided ? 5 : 0
             divided: true
-            neutColor: "green"
-            theColor: !neutralDivided ? "lightgray" : fotekOrange
+            neutColor: UiPalette.neGreen
+            theColor: !neutralDivided ? UiPalette.surface : fotekOrange
             anchors {
                 top: parent.top
                 left: parent.left
@@ -275,8 +279,8 @@ Rectangle {
             borderColor: !neutralDivided ? fotekBlue : "transparent"
             borderWidth: !neutralDivided ? 5 : 0
             divided: false
-            neutColor: "green"
-            theColor: neutralDivided ? "lightgray" : fotekOrange
+            neutColor: UiPalette.neGreen
+            theColor: neutralDivided ? UiPalette.surface : fotekOrange
             anchors {
                 bottom: parent.bottom
                 left: parent.left

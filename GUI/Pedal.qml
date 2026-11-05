@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Ui 1.0
 
 Rectangle {
     id: pedalRoot
@@ -95,9 +96,9 @@ Rectangle {
         anchors.right: parent.right
 
         radius: 10
-        border.color: "orange"
+        border.color: UiPalette.accent
 
-        color: "grey"
+        color: UiPalette.caseSteel
 
         Rectangle {
             id: singleRect
@@ -106,12 +107,12 @@ Rectangle {
             }
             color: "transparent"
             Rectangle {
-                color: "blue"
+                color: UiPalette.coag
                 height: parent.height * .8
                 width: 0.3 * parent.width
                 anchors.centerIn: parent
                 radius: 6
-                border.color: "white"
+                border.color: UiPalette.coagInk
             }
         }
         Rectangle {
@@ -121,11 +122,11 @@ Rectangle {
             }
             color: "transparent"
             Rectangle {
-                color: "blue"
+                color: UiPalette.coag
                 height: parent.height * .8
                 width: 0.3 * parent.width
                 radius: 6
-                border.color: "white"
+                border.color: UiPalette.coagInk
                 anchors {
                     left: parent.horizontalCenter
                     verticalCenter: parent.verticalCenter
@@ -133,11 +134,11 @@ Rectangle {
                 }
             }
             Rectangle {
-                color: "yellow"
+                color: UiPalette.cut
                 height: parent.height *.8
                 width: 0.3 * parent.width
                 radius: 6
-                border.color: "white"
+                border.color: UiPalette.cutInk
                 anchors {
                     right: parent.horizontalCenter
                     verticalCenter: parent.verticalCenter
@@ -156,9 +157,9 @@ Rectangle {
                 width: parent.height *.8
                 height: width
                 radius: width/2
-                color: "purple"
+                color: UiPalette.bipolar
                 border {
-                    color: "white"
+                    color: UiPalette.accentInk
                     width:2
                 }
                 anchors.centerIn: parent
@@ -176,10 +177,10 @@ Rectangle {
                 width: parent.width * .42
                 height: parent.height * .42
                 radius: width/2
-                color: "yellow"
+                color: UiPalette.cut
                 border {
                     width: 2
-                    color: "black"
+                    color: UiPalette.cutInk
                 }
                 anchors {
                     top: parent.top
@@ -191,10 +192,10 @@ Rectangle {
                 width: parent.width * .42
                 height: parent.height * .42
                 radius: width/2
-                color: "blue"
+                color: UiPalette.coag
                 border {
                     width: 2
-                    color: "white"
+                    color: UiPalette.coagInk
                 }
                 anchors {
                     bottom: parent.bottom

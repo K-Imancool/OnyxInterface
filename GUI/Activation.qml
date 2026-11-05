@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import BackEnd 1.0
+import Ui 1.0
 
 Popup {
     id: activationPopup
@@ -13,7 +14,7 @@ Popup {
     property int activeSocketId: -1
     readonly property int autoModeAcc: 2
 
-    readonly property color foregroundColor: isCoag ? "white" : "black"
+    readonly property color foregroundColor: isCoag ? UiPalette.coagInk : UiPalette.cutInk
 
     // Внутренняя рамка: margin 10 + border. Длинное имя режима ужимаем, короткие остаются 96.
     readonly property int modeNameBasePixelSize: 96
@@ -87,9 +88,9 @@ Popup {
     }
 
     background: Rectangle {
-        color: isCoag ? "#0f58fa" : "#ffd900"
+        color: isCoag ? UiPalette.coag : UiPalette.cut
         radius: 20
-        border.color: "white"
+        border.color: foregroundColor
         border.width: 3
         opacity: 1.0
     }
@@ -220,7 +221,7 @@ Popup {
             anchors.fill: parent
             anchors.margins: 10
             color: "transparent"
-            border.color: "white"
+            border.color: foregroundColor
             border.width: 3
             radius: 15
         }

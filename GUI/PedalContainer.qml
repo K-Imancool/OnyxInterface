@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import Ui 1.0
 Rectangle {
     id: pedContainer
 
@@ -25,7 +26,7 @@ Rectangle {
             ? layoutMargins
             : (layoutMargins + progPageHeight + columnSpacing)
     readonly property int socketSpacing: 10
-    color: "#2c2c2c"
+    color: UiPalette.caseBase
     clip: true
 
     function displaySocketName(name) {
@@ -94,7 +95,7 @@ Rectangle {
             Rectangle {
                 width: parent.width
                 height: 2
-                color: "lightgray"
+                color: UiPalette.caseSteel
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -110,7 +111,7 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: 20
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: "white"
+                color: UiPalette.darkInk
                 font.pixelSize: 22
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
@@ -136,7 +137,7 @@ Rectangle {
                 id: emptyPedalLabel
                 text: qsTr("выбор педали")
                 anchors.fill: pedIcon
-                color: "white"
+                color: UiPalette.caseMist
                 font.pixelSize: 18
 //                font.bold: true
                 horizontalAlignment: Text.AlignHCenter

@@ -5,12 +5,20 @@ Item {
     id: touchTestRoot
     signal returnButtonPressed()
 
+    Component.onCompleted: {
+        if (typeof touchUsbMonitor !== "undefined" && touchUsbMonitor)
+            touchUsbMonitor.clearTouchTrace()
+    }
+
     property real pressX: 0
     property real pressY: 0
     property double pressTimestampMs: 0
     property bool pressedNow: false
     property bool watchdogTripped: false
     property real circleSize: 70
+    property var falseMarks: []
+    property real falseNow: 0
+    readonly property int falseMarkLifeMs: 1400
     property string statusText: qsTr("Коснитесь экрана для проверки")
     property string pressedText: ""
     property int pressedCount: 0
@@ -52,6 +60,29 @@ Item {
             sum += values[i]
         }
         avgDelayMs = values.length > 0 ? Math.round(sum / values.length) : 0
+    }
+
+    function addFalseMark(x, y) {
+        var now = Date.now()
+        var marks = []
+        var refreshed = false
+        for (var i = 0; i < falseMarks.length; i++) {
+            var mark = falseMarks[i]
+            if (now - mark.born > falseMarkLifeMs)
+                continue
+            if (!refreshed && Math.abs(mark.x - x) < 12 && Math.abs(mark.y - y) < 12) {
+                marks.push({ "x": x, "y": y, "born": now })
+                refreshed = true
+            } else {
+                marks.push(mark)
+            }
+        }
+        if (!refreshed)
+            marks.push({ "x": x, "y": y, "born": now })
+        if (marks.length > 24)
+            marks = marks.slice(marks.length - 24)
+        falseNow = now
+        falseMarks = marks
     }
 
     Rectangle {
@@ -116,6 +147,38 @@ Item {
         }
     }
 
+    Connections {
+        target: typeof touchUsbMonitor !== "undefined" ? touchUsbMonitor : null
+        ignoreUnknownSignals: true
+
+        function onFalsePoint(x, y) {
+            touchTestRoot.addFalseMark(x, y)
+        }
+    }
+
+    Repeater {
+        model: touchTestRoot.falseMarks
+        z: 2
+
+        delegate: Rectangle {
+            width: touchTestRoot.circleSize
+            height: touchTestRoot.circleSize
+            radius: width / 2
+            color: "#40A5FF"
+            border.color: "#BEE2FF"
+            border.width: 2
+            x: modelData.x - width / 2
+            y: modelData.y - height / 2
+            opacity: {
+                var age = touchTestRoot.falseNow - modelData.born
+                if (age < 0)
+                    age = 0
+                var left = 1 - Math.max(0, age - 500) / 900
+                return 0.38 * Math.max(0, Math.min(1, left))
+            }
+        }
+    }
+
     Rectangle {
         id: touchMarker
         width: touchTestRoot.circleSize
@@ -170,22 +233,12 @@ Item {
             touchTestRoot.pressedNow = false
             touchTestRoot.releasedCount += 1
             touchTestRoot.trackDelay(elapsedRoundedMs)
-            if (touchTestRoot.watchdogTripped
-                    && elapsedMs > touchTestRoot.watchdogThresholdMs) {
-                touchTestRoot.statusText = qsTr("Поздний release после сброса: %1 мс")
-                        .arg(elapsedRoundedMs)
-                touchTestRoot.appendLog(qsTr("поздний release (%1, %2), %3 ms")
-                                        .arg(Math.round(mouse.x))
-                                        .arg(Math.round(mouse.y))
-                                        .arg(elapsedRoundedMs))
-            } else {
-                touchTestRoot.statusText = qsTr("Время удержания: %1 мс")
-                        .arg(elapsedRoundedMs)
-                touchTestRoot.appendLog(qsTr("отпущено (%1, %2), задержка %3 мс")
-                                        .arg(Math.round(mouse.x))
-                                        .arg(Math.round(mouse.y))
-                                        .arg(elapsedRoundedMs))
-            }
+            touchTestRoot.statusText = qsTr("Время удержания: %1 мс")
+                    .arg(elapsedRoundedMs)
+            touchTestRoot.appendLog(qsTr("отпущено (%1, %2), задержка %3 мс")
+                                    .arg(Math.round(mouse.x))
+                                    .arg(Math.round(mouse.y))
+                                    .arg(elapsedRoundedMs))
             touchTestRoot.watchdogTripped = false
         }
 
@@ -198,19 +251,36 @@ Item {
     }
 
     Timer {
+        id: falseFade
+        interval: 80
+        repeat: true
+        running: touchTestRoot.falseMarks.length > 0
+        onTriggered: {
+            var now = Date.now()
+            touchTestRoot.falseNow = now
+            var marks = []
+            for (var i = 0; i < touchTestRoot.falseMarks.length; i++) {
+                if (now - touchTestRoot.falseMarks[i].born <= touchTestRoot.falseMarkLifeMs)
+                    marks.push(touchTestRoot.falseMarks[i])
+            }
+            if (marks.length !== touchTestRoot.falseMarks.length)
+                touchTestRoot.falseMarks = marks
+        }
+    }
+
+    Timer {
         id: stuckWatchdog
         interval: 200
         repeat: true
         running: true
         onTriggered: {
-            if (touchTestRoot.pressedNow) {
+            if (touchTestRoot.pressedNow && !touchTestRoot.watchdogTripped) {
                 var elapsedMs = Date.now() - touchTestRoot.pressTimestampMs
                 if (elapsedMs > touchTestRoot.watchdogThresholdMs) {
                     touchTestRoot.stuckCount += 1
-                    touchTestRoot.pressedNow = false
                     touchTestRoot.watchdogTripped = true
                     touchTestRoot.statusText = qsTr("Подозрение на зависание: %1 мс").arg(Math.round(elapsedMs))
-                    touchTestRoot.appendLog(qsTr("сброс по таймеру %1 ms").arg(Math.round(elapsedMs)))
+                    touchTestRoot.appendLog(qsTr("подозрение на зависание %1 ms").arg(Math.round(elapsedMs)))
                 }
             }
         }

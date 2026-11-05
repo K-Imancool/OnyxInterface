@@ -1,14 +1,15 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Ui 1.0
 
 Item {
     id: control
     property var editorRoot: null
     property bool isCoagSide: false
     property var sideState: ({})
-    property color accentColor: "#F4D13D"
-    property color accentTextColor: "black"
+    property color accentColor: UiPalette.cut
+    property color accentTextColor: UiPalette.cutInk
 
     readonly property bool modeSelected: editorRoot && editorRoot.modeSelectedInSide(isCoagSide)
 
@@ -20,7 +21,7 @@ Item {
         radius: editorRoot ? editorRoot.panelCornerRadius : 20
         color: accentColor
         border.width: 2
-        border.color: isCoagSide ? "#083D8C" : "#D4B82E"
+        border.color: isCoagSide ? UiPalette.coagDeep : UiPalette.cutText
     }
 
     MouseArea {

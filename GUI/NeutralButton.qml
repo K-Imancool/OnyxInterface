@@ -51,6 +51,14 @@ Rectangle {
         offsetY = layoutH - Math.floor(designH * s) - bottomMargin
     }
 
+    // Метрики нельзя писать из onPaint: смена unitScale/offset вызывает
+    // requestPaint() посреди отрисовки, и Qt сбрасывает уже нарисованную
+    // цветную подложку (зелёная/красная индикация подключения).
+    onWidthChanged: updateLayoutMetrics(width, height)
+    onHeightChanged: updateLayoutMetrics(width, height)
+    onTopReservedHeightChanged: updateLayoutMetrics(width, height)
+    Component.onCompleted: updateLayoutMetrics(width, height)
+
     signal clicked()
 
     color: theColor
@@ -71,8 +79,6 @@ Rectangle {
             anchors.fill: parent
 
             onPaint: {
-                neutButRoot.updateLayoutMetrics(width, height)
-
                 var ctx = getContext("2d")
                 ctx.reset()
                 ctx.fillStyle = neutColor
@@ -135,8 +141,6 @@ Rectangle {
             anchors.fill: parent
 
             onPaint: {
-                neutButRoot.updateLayoutMetrics(width, height)
-
                 var ctx = getContext("2d")
                 ctx.reset()
 

@@ -54,7 +54,9 @@ DISTFILES += \
     $$PWD/StartupInfoScreen.qml \
     $$PWD/StatusBar.qml \
     $$PWD/VideoPlayer.qml \
-    $$PWD/WorkScreen.qml
+    $$PWD/WorkScreen.qml \
+    $$PWD/Ui/qmldir \
+    $$PWD/Ui/UiPalette.qml
 
 HEADERS +=
 

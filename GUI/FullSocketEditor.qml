@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
+import Ui 1.0
 
 Popup {
     id: root
@@ -18,9 +19,9 @@ Popup {
 
     readonly property color fotekBlue: "#264093"
     readonly property color fotekOrange: "#faa731"
-    readonly property color cutAccent: "#F4D13D"
-    readonly property color coagAccent: "#0B4FB3"
-    readonly property color uiMidGray: "#5A6478"
+    readonly property color cutAccent: UiPalette.cut
+    readonly property color coagAccent: UiPalette.coag
+    readonly property color uiMidGray: UiPalette.textSecondary
     readonly property int screenMargin: 20
     readonly property int controlButtonHeight: 90
     readonly property int endoPowerRowHeight: 124
@@ -31,7 +32,7 @@ Popup {
     readonly property color autoBtnOnFill: fotekOrange
     readonly property color autoBtnOnBorder: "#1E3274"
     readonly property color autoBtnOffFill: "white"
-    readonly property color autoBtnOffBorder: "#C7CEDA"
+    readonly property color autoBtnOffBorder: UiPalette.border
     readonly property color autoBtnOffText: "gray"
 //    readonly property color autoBtnOffText: fotekBlue
 
@@ -88,7 +89,7 @@ Popup {
     readonly property bool mono2CoagLockedByM1M2: socId === 3 && sprayM1M2Active
 
     background: Rectangle {
-        color: "#F3F5F9"
+        color: UiPalette.background
     }
 
     function sideRef(isCoag) {
@@ -722,7 +723,7 @@ Popup {
     Rectangle {
         id: editorContent
         anchors.fill: parent
-        color: "#F3F5F9"
+        color: UiPalette.background
 
         RowLayout {
             id: header
@@ -742,16 +743,16 @@ Popup {
                     text: qsTr("РЕЗАНИЕ")
                     font.pixelSize: 28
                     font.bold: true
-                    color: "black"
+                    color: UiPalette.cutInk
                 }
             }
 
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: "white"
+                color: UiPalette.background
                 border.width: 1
-                border.color: "#C7CEDA"
+                border.color: UiPalette.border
 
                 Label {
                     anchors.fill: parent
@@ -778,7 +779,7 @@ Popup {
                     text: qsTr("КОАГУЛЯЦИЯ")
                     font.pixelSize: 28
                     font.bold: true
-                    color: "white"
+                    color: UiPalette.coagInk
                 }
             }
         }
@@ -811,7 +812,7 @@ Popup {
                     isCoagSide: false
                     sideState: cutLive
                     accentColor: cutAccent
-                    accentTextColor: "black"
+                    accentTextColor: UiPalette.cutInk
                 }
 
                 FullSocketStepHint {
@@ -837,7 +838,7 @@ Popup {
                     isCoagSide: true
                     sideState: coagLive
                     accentColor: coagAccent
-                    accentTextColor: "white"
+                    accentTextColor: UiPalette.coagInk
                 }
 
                 FullSocketInstrButton {
@@ -1034,7 +1035,7 @@ Popup {
 
         background: Rectangle {
             radius: 20
-            color: "#F3F5F9"
+            color: UiPalette.background
         }
 
         ColumnLayout {

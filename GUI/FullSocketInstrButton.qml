@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Ui 1.0
 
 Item {
     id: control
@@ -20,9 +21,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: editorRoot ? editorRoot.panelCornerRadius : 20
-        color: "white"
+        color: UiPalette.background
         border.width: 2
-        border.color: modeSelected ? editorRoot.fotekOrange : "#C7CEDA"
+        border.color: modeSelected ? editorRoot.fotekOrange : UiPalette.border
         opacity: modeSelected ? 1.0 : 0.65
     }
 
@@ -74,7 +75,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 font.pixelSize: control.nameMaxFont
                 font.bold: true
-                color: editorRoot ? editorRoot.fotekBlue : "#264093"
+                color: editorRoot ? editorRoot.fotekBlue : UiPalette.text
                 clip: true
 
                 function fitFontToBounds() {

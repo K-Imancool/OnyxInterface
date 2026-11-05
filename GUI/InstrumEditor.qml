@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
+import Ui 1.0
 
 Popup {
     id: root
@@ -23,11 +24,11 @@ Popup {
     readonly property var modeEditor: Editor
 
     readonly property color fotekBlue: "#264093"
-    readonly property color uiMidGray: "#5A6478"
+    readonly property color uiMidGray: UiPalette.textSecondary
     readonly property int screenMargin: 20
-    readonly property color previewBorderColor: "#C7CEDA"
-    readonly property color listSelectedBackground: isCoag ? "#0B4FB3" : "#F4D13D"
-    readonly property color listSelectedText: isCoag ? "white" : "black"
+    readonly property color previewBorderColor: UiPalette.border
+    readonly property color listSelectedBackground: isCoag ? UiPalette.coag : UiPalette.cut
+    readonly property color listSelectedText: isCoag ? UiPalette.coagInk : UiPalette.cutInk
     readonly property string instrImagePrefix: isCoag ? "coaginstr" : "cutinstr"
     readonly property int recommendedButtonHeight: 90
     readonly property int recommendedEndoButtonHeight: 110
@@ -51,7 +52,7 @@ Popup {
     }
 
     background: Rectangle {
-        color: "#F3F5F9"
+        color: UiPalette.background
     }
 
     ListModel {
@@ -205,7 +206,7 @@ Popup {
 
     Rectangle {
         anchors.fill: parent
-        color: "#F3F5F9"
+        color: UiPalette.background
 
         Rectangle {
             id: header
@@ -213,7 +214,7 @@ Popup {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 78
-            color: isCoag ? "#0B4FB3" : "#F4D13D"
+            color: listSelectedBackground
 
             Label {
                 anchors {
@@ -231,7 +232,7 @@ Popup {
                 wrapMode: Text.WordWrap
                 font.pixelSize: 34
                 font.bold: true
-                color: isCoag ? "white" : "black"
+                color: listSelectedText
             }
 
             Button {
@@ -253,7 +254,7 @@ Popup {
                     text: qsTr("X")
                     font.pixelSize: 34
                     font.bold: true
-                    color: isCoag ? "white" : "black"
+                    color: listSelectedText
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -352,7 +353,7 @@ Popup {
             Rectangle {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 1
-                color: "#C7CEDA"
+                color: UiPalette.border
             }
 
             ColumnLayout {
@@ -455,7 +456,7 @@ Popup {
                                                         ? recommendedEndoButtonHeight
                                                         : recommendedButtonHeight
                                 borderColor: "#A5D6A7"
-                                idleFillColor: "#F3F5F9"
+                                idleFillColor: UiPalette.background
                                 idleTextColor: root.fotekBlue
                                 power: modeEditor.lowPowerBound
                                 selected: modeEditor.currentPower === power
@@ -471,7 +472,7 @@ Popup {
                                                         ? recommendedEndoButtonHeight
                                                         : recommendedButtonHeight
                                 borderColor: "#78D87C"
-                                idleFillColor: "#F3F5F9"
+                                idleFillColor: UiPalette.background
                                 idleTextColor: root.fotekBlue
                                 power: modeEditor.midPowerBound
                                 selected: modeEditor.currentPower === power
@@ -487,7 +488,7 @@ Popup {
                                                         ? recommendedEndoButtonHeight
                                                         : recommendedButtonHeight
                                 borderColor: "#51D456"
-                                idleFillColor: "#F3F5F9"
+                                idleFillColor: UiPalette.background
                                 idleTextColor: root.fotekBlue
                                 power: modeEditor.highPowerBound
                                 selected: modeEditor.currentPower === power

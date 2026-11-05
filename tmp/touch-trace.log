@@ -1,0 +1,358 @@
+18:00:31.377          —  dx=    — dy=    — dt=    —  TRACE clear
+18:00:31.378     115,46  dx=    — dy=    — dt=    1  replay Press
+18:00:31.381     115,46  dx=    0 dy=    0 dt=    2  PICK Move p 673,47
+18:00:31.383          —  dx=    — dy=    — dt=    2  FALSE
+18:00:31.384     108,46  dx=   -7 dy=    0 dt=    1  PASS Move p 340,14
+18:00:31.386     340,14  dx= +232 dy=  -32 dt=    1  HOLD Move p 108,46
+18:00:31.480     108,46  dx= -232 dy=  +32 dt=   94  HOLD release
+18:00:31.480     108,46  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:31.482     108,46  dx=    0 dy=    0 dt=    1  replay Release
+18:00:33.636    644,428  dx= +536 dy= +382 dt= 2153  DROP Move p 340,14
+18:00:33.691    644,428  dx=    0 dy=    0 dt=   55  DROP Move p 541,418
+18:00:33.713    541,418  dx= -103 dy=  -10 dt=   22  DROP Move p 644,428
+18:00:33.745    475,417  dx=  -66 dy=   -1 dt=   32  DROP Move
+18:00:33.768    650,430  dx= +175 dy=  +13 dt=   22  DROP Move p 475,417
+18:00:33.935    650,430  dx=    0 dy=    0 dt=  166  DROP Move p 779,418
+18:00:34.065    650,427  dx=    0 dy=   -3 dt=  130  DROP Move
+18:00:34.089    654,425  dx=   +4 dy=   -2 dt=   23  DROP Move
+18:00:34.118    657,423  dx=   +3 dy=   -2 dt=   28  DROP Move
+18:00:34.141    659,423  dx=   +2 dy=    0 dt=   23  DROP Move
+18:00:34.175    658,423  dx=   -1 dy=    0 dt=   33  DROP Move
+18:00:34.224    656,422  dx=   -2 dy=   -1 dt=   49  DROP Move
+18:00:34.312    656,422  dx=    0 dy=    0 dt=   87  DROP Move p 545,421
+18:00:34.336    651,422  dx=   -5 dy=    0 dt=   24  DROP Move p 545,421
+18:00:34.357    647,422  dx=   -4 dy=    0 dt=   21  DROP Move
+18:00:34.385    643,422  dx=   -4 dy=    0 dt=   27  DROP Move
+18:00:34.409    647,422  dx=   +4 dy=    0 dt=   24  DROP Move
+18:00:34.442    651,422  dx=   +4 dy=    0 dt=   32  DROP Move p 589,383
+18:00:34.467    654,422  dx=   +3 dy=    0 dt=   25  DROP Move p 589,383
+18:00:34.523    655,426  dx=   +1 dy=   +4 dt=   55  DROP Move
+18:00:34.545    657,430  dx=   +2 dy=   +4 dt=   22  DROP Move
+18:00:34.578    658,434  dx=   +1 dy=   +4 dt=   32  DROP Move
+18:00:34.600    658,433  dx=    0 dy=   -1 dt=   21  DROP Move p 253,449
+18:00:34.634    658,427  dx=    0 dy=   -6 dt=   34  DROP Move p 253,449
+18:00:34.655    658,421  dx=    0 dy=   -6 dt=   21  DROP Move p 253,449
+18:00:34.682    657,417  dx=   -1 dy=   -4 dt=   26  DROP Move
+18:00:34.710    656,418  dx=   -1 dy=   +1 dt=   28  DROP Move
+18:00:34.733    656,419  dx=    0 dy=   +1 dt=   23  DROP Move
+18:00:34.789    656,421  dx=    0 dy=   +2 dt=   55  DROP Move
+18:00:34.813    656,422  dx=    0 dy=   +1 dt=   24  DROP Move
+18:00:34.852    660,423  dx=   +4 dy=   +1 dt=   38  DROP Move p 23,420
+18:00:34.868    662,426  dx=   +2 dy=   +3 dt=   16  DROP Move p 23,420
+18:00:34.894    664,428  dx=   +2 dy=   +2 dt=   25  DROP Move
+18:00:34.929    662,430  dx=   -2 dy=   +2 dt=   35  DROP Move p 544,419
+18:00:34.948    661,428  dx=   -1 dy=   -2 dt=   18  DROP Move p 544,419
+18:00:34.973    660,426  dx=   -1 dy=   -2 dt=   25  DROP Move
+18:00:35.011    660,425  dx=    0 dy=   -1 dt=   37  DROP Move p 515,416
+18:00:35.033    661,424  dx=   +1 dy=   -1 dt=   22  DROP Move p 515,416
+18:00:35.057    661,423  dx=    0 dy=   -1 dt=   23  DROP Move p 515,416
+18:00:35.108    659,422  dx=   -2 dy=   -1 dt=   51  DROP Move
+18:00:35.110    655,422  dx=   -4 dy=    0 dt=    1  DROP Move
+18:00:35.143    653,421  dx=   -2 dy=   -1 dt=   33  DROP Move p 55,416
+18:00:35.223    654,421  dx=   +1 dy=    0 dt=   79  DROP Move p 747,416
+18:00:35.277    655,421  dx=   +1 dy=    0 dt=   54  DROP Move p 771,416
+18:00:35.304    656,421  dx=   +1 dy=    0 dt=   26  DROP Move p 771,416
+18:00:35.322    656,420  dx=    0 dy=   -1 dt=   18  DROP Move
+18:00:35.382    656,421  dx=    0 dy=   +1 dt=   60  DROP Move
+18:00:35.401    657,421  dx=   +1 dy=    0 dt=   19  DROP Move
+18:00:35.466    657,421  dx=    0 dy=    0 dt=   64  DROP Move p 890,424
+18:00:35.607    651,421  dx=   -6 dy=    0 dt=  141  DROP Move p 721,416
+18:00:35.618    721,416  dx=  +70 dy=   -5 dt=   10  DROP Move p 651,421
+18:00:35.651    697,416  dx=  -24 dy=    0 dt=   33  DROP Move
+18:00:35.673    673,417  dx=  -24 dy=   +1 dt=   22  DROP Move
+18:00:35.707    650,417  dx=  -23 dy=    0 dt=   33  DROP Move p 540,419
+18:00:35.735    650,418  dx=    0 dy=   +1 dt=   28  DROP Move p 540,419
+18:00:35.767    650,418  dx=    0 dy=    0 dt=   31  DROP Move p 461,419
+18:00:35.818    651,419  dx=   +1 dy=   +1 dt=   51  DROP Move
+18:00:35.852    652,420  dx=   +1 dy=   +1 dt=   34  DROP Move
+18:00:35.882    653,421  dx=   +1 dy=   +1 dt=   30  DROP Move
+18:00:35.886    654,421  dx=   +1 dy=    0 dt=    3  DROP Move
+18:00:35.928    655,421  dx=   +1 dy=    0 dt=   42  DROP Move p 818,416
+18:00:35.952    656,421  dx=   +1 dy=    0 dt=   23  DROP Move p 818,416
+18:00:35.983    654,422  dx=   -2 dy=   +1 dt=   30  DROP Move p 844,416
+18:00:36.033    652,422  dx=   -2 dy=    0 dt=   50  DROP Move
+18:00:36.114    653,422  dx=   +1 dy=    0 dt=   80  DROP Move p 118,420
+18:00:36.137    651,422  dx=   -2 dy=    0 dt=   22  DROP Move p 118,420
+18:00:36.160    650,422  dx=   -1 dy=    0 dt=   22  DROP Move
+18:00:36.185    647,422  dx=   -3 dy=    0 dt=   25  DROP Move
+18:00:36.276    641,422  dx=   -6 dy=    0 dt=   91  DROP Move p 250,416
+18:00:36.296    638,421  dx=   -3 dy=   -1 dt=   20  DROP Move p 250,416
+18:00:36.314    636,421  dx=   -2 dy=    0 dt=   17  DROP Move
+18:00:36.371    640,421  dx=   +4 dy=    0 dt=   57  DROP Move p 540,419
+18:00:36.382    642,421  dx=   +2 dy=    0 dt=   10  DROP Move p 540,419
+18:00:36.403    643,421  dx=   +1 dy=    0 dt=   21  DROP Move p 540,419
+18:00:36.422    645,422  dx=   +2 dy=   +1 dt=   18  DROP Move
+18:00:36.455    644,421  dx=   -1 dy=   -1 dt=   32  DROP Move
+18:00:36.512    643,421  dx=   -1 dy=    0 dt=   57  DROP Move
+18:00:36.530    644,420  dx=   +1 dy=   -1 dt=   17  DROP Move
+18:00:36.567    645,419  dx=   +1 dy=   -1 dt=   36  DROP Move
+18:00:36.590    646,419  dx=   +1 dy=    0 dt=   23  DROP Move p 143,416
+18:00:36.632    648,420  dx=   +2 dy=   +1 dt=   41  DROP Move p 143,416
+18:00:36.665    648,421  dx=    0 dy=   +1 dt=   33  DROP Move p 113,416
+18:00:36.688    646,422  dx=   -2 dy=   +1 dt=   23  DROP Move p 113,416
+18:00:36.716    644,423  dx=   -2 dy=   +1 dt=   27  DROP Move
+18:00:36.718    645,423  dx=   +1 dy=    0 dt=    1  DROP Move
+18:00:36.751    648,423  dx=   +3 dy=    0 dt=   32  DROP Move
+18:00:36.778    651,423  dx=   +3 dy=    0 dt=   26  DROP Move
+18:00:36.812    653,423  dx=   +2 dy=    0 dt=   34  DROP Move
+18:00:36.839    652,423  dx=   -1 dy=    0 dt=   26  DROP Move
+18:00:36.911    646,424  dx=   -6 dy=   +1 dt=   72  DROP Move
+18:00:36.934    645,424  dx=   -1 dy=    0 dt=   22  DROP Move
+18:00:36.966    647,424  dx=   +2 dy=    0 dt=   31  DROP Move
+18:00:36.996    655,425  dx=   +8 dy=   +1 dt=   30  DROP Move
+18:00:37.025    660,425  dx=   +5 dy=    0 dt=   29  DROP Move
+18:00:37.660    910,422  dx= +250 dy=   -3 dt=  635  DROP Move
+18:00:37.820    918,421  dx=   +8 dy=   -1 dt=  160  DROP Move p 303,435
+18:00:37.845    924,420  dx=   +6 dy=   -1 dt=   25  DROP Move p 303,435
+18:00:37.868    926,424  dx=   +2 dy=   +4 dt=   22  DROP Move p 303,435
+18:00:37.904    897,433  dx=  -29 dy=   +9 dt=   35  DROP Move
+18:00:37.940    870,444  dx=  -27 dy=  +11 dt=   35  DROP Move
+18:00:37.988    809,438  dx=  -61 dy=   -6 dt=   47  DROP Move
+18:00:38.020    771,427  dx=  -38 dy=  -11 dt=   32  DROP Move
+18:00:38.030    732,416  dx=  -39 dy=  -11 dt=    9  DROP Move p 420,416
+18:00:38.088    734,416  dx=   +2 dy=    0 dt=   58  DROP Move p 420,416
+18:00:38.113    735,416  dx=   +1 dy=    0 dt=   24  DROP Move p 420,416
+18:00:38.138    736,416  dx=   +1 dy=    0 dt=   25  DROP Move
+18:00:38.138    735,416  dx=   -1 dy=    0 dt=    0  DROP Move
+18:00:38.560    381,416  dx= -354 dy=    0 dt=  421  DROP Move p 735,416
+18:00:38.580    381,416  dx=    0 dy=    0 dt=   20  DROP Move p 7,416
+18:00:38.598      7,416  dx= -374 dy=    0 dt=   17  DROP Move p 381,416
+18:00:38.630      7,416  dx=    0 dy=    0 dt=   32  PASS End
+
+18:00:38.659    154,416  dx= +147 dy=    0 dt=   28  PICK Begin p 373,416
+18:00:38.720    154,416  dx=    0 dy=    0 dt=   60  replay Begin
+18:00:38.755    154,416  dx=    0 dy=    0 dt=   34  replay Press
+18:00:38.758    154,416  dx=    0 dy=    0 dt=    3  replay End
+
+18:00:38.758    154,416  dx=    0 dy=    0 dt=    0  replay Release
+18:00:38.762    154,416  dx=    0 dy=    0 dt=    3  PICK End p 373,416
+
+18:00:39.083    586,416  dx= +432 dy=    0 dt=  320  HOLD Begin
+18:00:39.138    586,416  dx=    0 dy=    0 dt=   55  replay Begin
+18:00:39.180    586,416  dx=    0 dy=    0 dt=   42  replay Press
+18:00:39.184    586,416  dx=    0 dy=    0 dt=    3  replay End
+
+18:00:39.184    586,416  dx=    0 dy=    0 dt=    0  replay Release
+18:00:39.188    586,416  dx=    0 dy=    0 dt=    3  TAP End
+
+18:00:39.198    600,416  dx=  +14 dy=    0 dt=    9  GHOST Begin
+18:00:39.242    600,416  dx=    0 dy=    0 dt=   44  PASS End
+
+18:00:39.251    466,416  dx= -134 dy=    0 dt=    8  GHOST Begin
+18:00:39.271    466,416  dx=    0 dy=    0 dt=   19  PASS End
+
+18:00:39.894    667,416  dx= +201 dy=    0 dt=  623  HOLD Begin
+18:00:39.930    667,416  dx=    0 dy=    0 dt=   36  replay Begin
+18:00:39.970    667,416  dx=    0 dy=    0 dt=   39  replay Press
+18:00:39.974    667,416  dx=    0 dy=    0 dt=    3  replay End
+
+18:00:39.974    667,416  dx=    0 dy=    0 dt=    0  replay Release
+18:00:39.979    667,416  dx=    0 dy=    0 dt=    4  TAP End
+
+18:00:40.076    220,425  dx= -447 dy=   +9 dt=   97  GHOST Begin
+18:00:40.177    220,425  dx=    0 dy=    0 dt=  101  DROP Move p 57,419
+18:00:40.201    226,425  dx=   +6 dy=    0 dt=   23  DROP Move p 57,419
+18:00:40.222     57,419  dx= -169 dy=   -6 dt=   21  DROP Move p 226,425
+18:00:40.285     57,419  dx=    0 dy=    0 dt=   62  DROP Move p 226,420
+18:00:40.302    226,420  dx= +169 dy=   +1 dt=   17  DROP Move p 57,419
+18:00:40.342    226,420  dx=    0 dy=    0 dt=   40  PASS End
+
+18:00:40.427    445,416  dx= +219 dy=   -4 dt=   84  HOLD Begin
+18:00:40.466    445,416  dx=    0 dy=    0 dt=   39  replay Begin
+18:00:40.510    445,416  dx=    0 dy=    0 dt=   43  replay Press
+18:00:40.514    445,416  dx=    0 dy=    0 dt=    4  replay End
+
+18:00:40.515    445,416  dx=    0 dy=    0 dt=    0  replay Release
+18:00:40.521    445,416  dx=    0 dy=    0 dt=    5  TAP End
+
+18:00:40.590    126,417  dx= -319 dy=   +1 dt=   69  GHOST Begin p 782,450
+18:00:40.655    126,417  dx=    0 dy=    0 dt=   65  DROP Move p 782,450
+18:00:40.676    161,427  dx=  +35 dy=  +10 dt=   20  DROP Move
+18:00:40.710    196,438  dx=  +35 dy=  +11 dt=   34  DROP Move
+18:00:40.736    214,449  dx=  +18 dy=  +11 dt=   26  DROP Move
+18:00:40.761    187,449  dx=  -27 dy=    0 dt=   24  DROP Move
+18:00:40.785    160,449  dx=  -27 dy=    0 dt=   24  DROP Move
+18:00:40.815    146,444  dx=  -14 dy=   -5 dt=   30  DROP Move
+18:00:40.846     97,434  dx=  -49 dy=  -10 dt=   30  DROP Move
+18:00:40.880     49,423  dx=  -48 dy=  -11 dt=   33  DROP Move p 474,416
+18:00:40.903     36,417  dx=  -13 dy=   -6 dt=   23  DROP Move p 474,416
+18:00:40.927    474,416  dx= +438 dy=   -1 dt=   24  DROP Move p 36,417
+18:00:40.964    455,427  dx=  -19 dy=  +11 dt=   36  DROP Move
+18:00:40.992    445,438  dx=  -10 dy=  +11 dt=   27  DROP Move
+18:00:41.024    443,438  dx=   -2 dy=    0 dt=   32  DROP Move p 148,450
+18:00:41.064    459,427  dx=  +16 dy=  -11 dt=   39  DROP Move p 148,450
+18:00:41.092    517,416  dx=  +58 dy=  -11 dt=   28  DROP Move p 222,450
+18:00:41.119    594,416  dx=  +77 dy=    0 dt=   26  DROP Move p 295,450
+18:00:41.147    409,438  dx= -185 dy=  +22 dt=   28  DROP Move p 594,416
+18:00:41.182    486,427  dx=  +77 dy=  -11 dt=   34  DROP Move
+18:00:41.211    562,416  dx=  +76 dy=  -11 dt=   29  DROP Move
+18:00:41.239    589,416  dx=  +27 dy=    0 dt=   27  DROP Move
+18:00:41.265    589,416  dx=    0 dy=    0 dt=   25  PASS End
+
+18:00:41.403    143,416  dx= -446 dy=    0 dt=  137  PICK Begin p 370,440
+18:00:41.455    128,416  dx=  -15 dy=    0 dt=   51  DROP Move p 370,440
+18:00:41.495     90,424  dx=  -38 dy=   +8 dt=   40  replay Begin
+18:00:41.530     90,424  dx=    0 dy=    0 dt=   35  replay Press
+18:00:41.535     90,424  dx=    0 dy=    0 dt=    4  PICK Move p 370,440
+18:00:41.539     90,424  dx=    0 dy=    0 dt=    4  HOLD End
+
+18:00:41.639     90,424  dx=    0 dy=    0 dt=   99  HOLD release
+18:00:41.639     90,424  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:41.640     90,424  dx=    0 dy=    0 dt=    0  replay Release
+18:00:41.947    255,416  dx= +165 dy=   -8 dt=  306  PICK Begin p 650,416
+18:00:41.978    650,416  dx= +395 dy=    0 dt=   30  replay Begin
+18:00:42.013    650,416  dx=    0 dy=    0 dt=   34  replay Press
+18:00:42.017    650,416  dx=    0 dy=    0 dt=    4  PICK Move p 255,416
+18:00:42.027    867,426  dx= +217 dy=  +10 dt=    9  HOLD Move p 650,416
+18:00:42.079    867,426  dx=    0 dy=    0 dt=   51  HOLD End
+
+18:00:42.132    650,416  dx= -217 dy=  -10 dt=   52  HOLD release
+18:00:42.132    650,416  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:42.132    650,416  dx=    0 dy=    0 dt=    0  replay Release
+18:00:42.165    740,416  dx=  +90 dy=    0 dt=   33  GHOST Begin
+18:00:42.193    725,416  dx=  -15 dy=    0 dt=   27  DROP Move
+18:00:42.300    273,450  dx= -452 dy=  +34 dt=  106  DROP Move
+18:00:42.360    356,440  dx=  +83 dy=  -10 dt=   59  DROP Move p 38,450
+18:00:43.111    356,440  dx=    0 dy=    0 dt=  751  PASS End
+
+18:00:43.114    149,416  dx= -207 dy=  -24 dt=    2  HOLD Begin
+18:00:43.144    149,416  dx=    0 dy=    0 dt=   29  replay Begin
+18:00:43.181    149,416  dx=    0 dy=    0 dt=   36  replay Press
+18:00:43.186    149,416  dx=    0 dy=    0 dt=    5  DROP Move p 396,416
+18:00:43.196    186,416  dx=  +37 dy=    0 dt=   10  JUMP Move p 416,416
+18:00:43.223    223,416  dx=  +37 dy=    0 dt=   26  JUMP Move p 416,416
+18:00:43.258    318,416  dx=  +95 dy=    0 dt=   35  JUMP Move
+18:00:43.284    427,416  dx= +109 dy=    0 dt=   26  JUMP Move p 461,416
+18:00:43.322    603,417  dx= +176 dy=   +1 dt=   37  JUMP Move p 461,416
+18:00:43.341    721,417  dx= +118 dy=    0 dt=   18  JUMP Move p 493,416
+18:00:43.373    813,428  dx=  +92 dy=  +11 dt=   32  JUMP Move p 556,427
+18:00:43.400    689,439  dx= -124 dy=  +11 dt=   27  HOLD Move p 813,428
+18:00:43.403    689,439  dx=    0 dy=    0 dt=    2  HOLD End
+
+18:00:43.469    624,416  dx=  -65 dy=  -23 dt=   66  GHOST Begin
+18:00:43.495    624,416  dx=    0 dy=    0 dt=   26  JUMP Move p 762,418
+18:00:43.506    149,416  dx= -475 dy=    0 dt=   10  HOLD release
+18:00:43.506    149,416  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:43.507    149,416  dx=    0 dy=    0 dt=    0  replay Release
+18:00:43.528    572,416  dx= +423 dy=    0 dt=   21  DROP Move p 762,418
+18:00:43.560    499,416  dx=  -73 dy=    0 dt=   32  DROP Move
+18:00:43.599    379,416  dx= -120 dy=    0 dt=   38  DROP Move
+18:00:43.624    279,416  dx= -100 dy=    0 dt=   24  DROP Move
+18:00:43.647    279,416  dx=    0 dy=    0 dt=   23  PASS End
+
+18:00:43.743     70,416  dx= -209 dy=    0 dt=   95  HOLD Begin
+18:00:43.783     70,416  dx=    0 dy=    0 dt=   40  replay Begin
+18:00:43.824     70,416  dx=    0 dy=    0 dt=   40  replay Press
+18:00:43.829     70,416  dx=    0 dy=    0 dt=    5  replay End
+
+18:00:43.829     70,416  dx=    0 dy=    0 dt=    0  replay Release
+18:00:43.836     70,416  dx=    0 dy=    0 dt=    6  TAP End
+
+18:00:43.858     10,416  dx=  -60 dy=    0 dt=   21  GHOST Begin
+18:00:43.879     10,416  dx=    0 dy=    0 dt=   21  DROP Move p 1269,450
+18:00:43.896   1269,450  dx=+1259 dy=  +34 dt=   16  DROP Move p 10,416
+18:00:44.011   1077,419  dx= -192 dy=  -31 dt=  114  DROP Move p 341,416
+18:00:44.101   1000,418  dx=  -77 dy=   -1 dt=   89  DROP Move
+18:00:44.133    862,418  dx= -138 dy=    0 dt=   32  DROP Move p 534,426
+18:00:44.147    862,418  dx=    0 dy=    0 dt=   14  PASS End p 534,426
+
+18:00:44.175    506,423  dx= -356 dy=   +5 dt=   27  HOLD Begin
+18:00:44.215    506,423  dx=    0 dy=    0 dt=   39  replay Begin
+18:00:44.251    506,423  dx=    0 dy=    0 dt=   36  replay Press
+18:00:44.256    506,423  dx=    0 dy=    0 dt=    5  DROP Move p 17,416
+18:00:44.261    519,422  dx=  +13 dy=   -1 dt=    4  PASS Move p 17,416
+18:00:44.261    519,422  dx=    0 dy=    0 dt=    0  PASS Move
+18:00:44.766    519,422  dx=    0 dy=    0 dt=  504  HOLD End
+
+18:00:44.772    546,422  dx=  +27 dy=    0 dt=    5  GHOST Begin
+18:00:44.816    709,417  dx= +163 dy=   -5 dt=   44  JUMP Move p 546,422
+18:00:44.861    519,422  dx= -190 dy=   +5 dt=   45  HOLD release
+18:00:44.862    519,422  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:44.862    519,422  dx=    0 dy=    0 dt=    0  replay Release
+18:00:44.878    679,421  dx= +160 dy=   -1 dt=   15  DROP Move
+18:00:44.903    632,424  dx=  -47 dy=   +3 dt=   24  DROP Move
+18:00:44.927    555,426  dx=  -77 dy=   +2 dt=   24  DROP Move
+18:00:44.963    507,428  dx=  -48 dy=   +2 dt=   36  DROP Move p 1178,416
+18:00:44.991    549,436  dx=  +42 dy=   +8 dt=   27  DROP Move p 1178,416
+18:00:45.043    549,436  dx=    0 dy=    0 dt=   51  PASS End
+
+18:00:45.111    545,436  dx=   -4 dy=    0 dt=   68  PICK Begin p 948,450
+18:00:45.154    948,450  dx= +403 dy=  +14 dt=   43  replay Begin
+18:00:45.192    948,450  dx=    0 dy=    0 dt=   37  replay Press
+18:00:45.217    948,450  dx=    0 dy=    0 dt=   24  PICK Move p 545,436
+18:00:45.220     64,417  dx= -884 dy=  -33 dt=    3  HOLD Move p 948,450
+18:00:45.238     64,417  dx=    0 dy=    0 dt=   18  JUMP Move p 335,419
+18:00:45.270     50,417  dx=  -14 dy=    0 dt=   31  JUMP Move p 335,419
+18:00:45.288     50,417  dx=    0 dy=    0 dt=   18  HOLD End p 335,419
+
+18:00:45.326    948,450  dx= +898 dy=  +33 dt=   37  HOLD release
+18:00:45.326    948,450  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:45.326    948,450  dx=    0 dy=    0 dt=    0  replay Release
+18:00:45.467    559,450  dx= -389 dy=    0 dt=  140  HOLD Begin
+18:00:45.498    559,450  dx=    0 dy=    0 dt=   30  replay Begin
+18:00:45.535    559,450  dx=    0 dy=    0 dt=   36  replay Press
+18:00:45.540    559,450  dx=    0 dy=    0 dt=    5  DROP Move p 340,419
+18:00:45.544    340,419  dx= -219 dy=  -31 dt=    3  HOLD Move p 559,450
+18:00:45.556    388,419  dx=  +48 dy=    0 dt=   12  JUMP Move
+18:00:45.609    437,418  dx=  +49 dy=   -1 dt=   52  JUMP Move
+18:00:45.642    486,418  dx=  +49 dy=    0 dt=   33  JUMP Move
+18:00:45.661    559,450  dx=  +73 dy=  +32 dt=   19  HOLD release
+18:00:45.662    559,450  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:45.662    559,450  dx=    0 dy=    0 dt=    0  replay Release
+18:00:45.673    486,418  dx=  -73 dy=  -32 dt=   10  PASS End
+
+18:00:45.851    589,445  dx= +103 dy=  +27 dt=  177  HOLD Begin
+18:00:45.946    589,445  dx=    0 dy=    0 dt=   94  HOLD ok
+18:00:45.947    589,445  dx=    0 dy=    0 dt=    0  replay Begin
+18:00:45.987    589,445  dx=    0 dy=    0 dt=   40  replay Press
+18:00:45.996    589,445  dx=    0 dy=    0 dt=    9  HOLD End
+
+18:00:46.005     35,424  dx= -554 dy=  -21 dt=    9  GHOST Begin
+18:00:46.019     35,424  dx=    0 dy=    0 dt=   14  HOLD End
+
+18:00:46.083    170,443  dx= +135 dy=  +19 dt=   63  GHOST Begin p 260,416
+18:00:46.100    589,445  dx= +419 dy=   +2 dt=   17  HOLD release
+18:00:46.100    589,445  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:46.101    589,445  dx=    0 dy=    0 dt=    0  replay Release
+18:00:46.139    156,444  dx= -433 dy=   -1 dt=   38  DROP Move p 260,416
+18:00:46.169    128,446  dx=  -28 dy=   +2 dt=   29  DROP Move p 239,427
+18:00:46.201    101,448  dx=  -27 dy=   +2 dt=   32  DROP Move p 218,438
+18:00:46.262     65,449  dx=  -36 dy=   +1 dt=   60  DROP Move p 172,450
+18:00:46.278    172,450  dx= +107 dy=   +1 dt=   16  DROP Move p 65,449
+18:00:46.796    818,417  dx= +646 dy=  -33 dt=  517  DROP Move p 591,417
+18:00:46.811    818,417  dx=    0 dy=    0 dt=   15  PASS End p 591,417
+
+18:00:46.964    544,420  dx= -274 dy=   +3 dt=  152  HOLD Begin
+18:00:47.055    544,420  dx=    0 dy=    0 dt=   91  replay Begin
+18:00:47.089    544,420  dx=    0 dy=    0 dt=   33  replay Press
+18:00:47.095    544,420  dx=    0 dy=    0 dt=    5  DROP Move p 384,416
+18:00:47.099    544,420  dx=    0 dy=    0 dt=    4  PASS Move p 384,416
+18:00:47.291    544,420  dx=    0 dy=    0 dt=  192  HOLD End
+
+18:00:47.301    961,450  dx= +417 dy=  +30 dt=    9  GHOST Begin
+18:00:47.323    491,416  dx= -470 dy=  -34 dt=   22  JUMP Move p 961,450
+18:00:47.375    560,416  dx=  +69 dy=    0 dt=   51  DROP Move
+18:00:47.397    544,420  dx=  -16 dy=   +4 dt=   21  HOLD release
+18:00:47.398    544,420  dx=    0 dy=    0 dt=    0  replay End
+
+18:00:47.399    544,420  dx=    0 dy=    0 dt=    1  replay Release
+18:00:47.471    580,416  dx=  +36 dy=   -4 dt=   72  DROP Move p 500,416
+18:00:47.594    581,416  dx=   +1 dy=    0 dt=  122  DROP Move
+18:00:47.672    581,416  dx=    0 dy=    0 dt=   77  PASS End
+
+18:00:48.219    292,450  dx= -289 dy=  +34 dt=  547  HOLD Begin
+18:00:48.260    292,450  dx=    0 dy=    0 dt=   40  replay Begin
+18:00:48.297    292,450  dx=    0 dy=    0 dt=   36  replay Press
+18:00:48.302    292,450  dx=    0 dy=    0 dt=    5  replay End
+
+18:00:48.303    292,450  dx=    0 dy=    0 dt=    0  replay Release
+18:00:48.310    292,450  dx=    0 dy=    0 dt=    6  TAP End
+

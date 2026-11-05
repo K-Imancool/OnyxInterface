@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import BackEnd 1.0
+import Ui 1.0
 
 Canvas {
     id: modePowerRect
@@ -16,10 +17,14 @@ Canvas {
     signal modeEditDialogRequest()
     signal newPower(int pwr)
 
+    readonly property color ink: (isCoag && modeId !== ESHF.NO_MODE)
+                                 ? UiPalette.coagInk
+                                 : UiPalette.cutInk
+
     function colorFromId() {
         if (modePowerRect.modeId === ESHF.NO_MODE)
-            return "darkgray"
-        return isCoag ? "blue" : "yellow"
+            return UiPalette.caseSteel
+        return isCoag ? UiPalette.coag : UiPalette.cut
     }
 
     function usesUnitPowerStep() {
@@ -211,7 +216,7 @@ Canvas {
             Label {
                 id: collapsedModeLabel
                 text: modePowerRect.modeName
-                color: modePowerRect.isCoag ? "white" : "black"
+                color: modePowerRect.ink
                 font.pixelSize: 20
                 font.bold: true
                 wrapMode: Text.Wrap
@@ -228,7 +233,7 @@ Canvas {
                 id: collapsedPowerLabel
                 text: modePowerRect.modePower
                 visible: modePowerRect.modeId !== ESHF.NO_MODE
-                color: modePowerRect.isCoag ? "white" : "black"
+                color: modePowerRect.ink
                 font.pixelSize: 46
                 font.bold: true
                 width: parent.width
@@ -257,7 +262,7 @@ Canvas {
             lineHeight: 0.9
             lineHeightMode: Text.ProportionalHeight
             height: 60
-            color: isCoag ? "white" : "black"
+            color: ink
             // verticalAlignment: Qt.AlignVCenter
             anchors {
                 margins: 10
@@ -321,7 +326,7 @@ Canvas {
                 width: fontMetrics.advanceWidth("999")
                 font.pixelSize: 50
                 font.bold: true
-                color: isCoag ? "white" : "black"
+                color: ink
                 anchors {
                     left: parent.left
                     leftMargin: 10
@@ -351,7 +356,7 @@ Canvas {
             color: "transparent"
             radius: 8
             border {
-                color: modePowerRect.isCoag ? "white" : "color"
+                color: modePowerRect.ink
                 width: 2
             }
             anchors.margins: 95
@@ -366,7 +371,7 @@ Canvas {
                     margins: 10
                     fill: parent
                 }
-                color: modePowerRect.isCoag ? "white" : "color"
+                color: modePowerRect.ink
                 font.pixelSize: 30
                 font.bold: true
                 text: "+"
@@ -441,7 +446,7 @@ Canvas {
             color: "transparent"
             radius: 8
             border {
-                color: modePowerRect.isCoag ? "white" : "color"
+                color: modePowerRect.ink
                 width: 2
             }
             anchors.margins: 95
@@ -456,7 +461,7 @@ Canvas {
                     margins: 10
                     fill: parent
                 }
-                color: modePowerRect.isCoag ? "white" : "color"
+                color: modePowerRect.ink
                 font.pixelSize: 30
                 font.bold: true
                 text: "-"
@@ -574,7 +579,7 @@ Canvas {
                 color: "transparent"
                 radius: 8
                 border {
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     width: 2
                 }
                 Label {
@@ -582,7 +587,7 @@ Canvas {
                         margins: 10
                         fill: parent
                     }
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     font.pixelSize: 30
                     font.bold: true
                     text: "-"
@@ -606,7 +611,7 @@ Canvas {
                     id: cutEffect
                     text: qsTr("эффект резания")
                     font.pixelSize: 14
-                    color: isCoag ? "white" : "black"
+                    color: ink
                     width: parent.width
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: powerEndoCutLabel.top
@@ -623,7 +628,7 @@ Canvas {
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: 50
                     font.bold: true
-                    color: isCoag ? "white" : "black"
+                    color: ink
                     verticalAlignment: Qt.AlignVCenter
                     horizontalAlignment: Qt.AlignHCenter
                 }
@@ -636,7 +641,7 @@ Canvas {
                 color: "transparent"
                 radius: 8
                 border {
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     width: 2
                 }
                 Label {
@@ -644,7 +649,7 @@ Canvas {
                         margins: 10
                         fill: parent
                     }
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     font.pixelSize: 30
                     font.bold: true
                     text: "+"
@@ -672,7 +677,7 @@ Canvas {
                 color: "transparent"
                 radius: 8
                 border {
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     width: 2
                 }
                 Label {
@@ -680,7 +685,7 @@ Canvas {
                         margins: 10
                         fill: parent
                     }
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     font.pixelSize: 30
                     font.bold: true
                     text: "-"
@@ -709,7 +714,7 @@ Canvas {
                     id: coagEffect
                     text: qsTr("эффект коагуляции")
                     font.pixelSize: 14
-                    color: isCoag ? "white" : "black"
+                    color: ink
                     width: parent.width
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: powerEndoCoagLabel.top
@@ -726,7 +731,7 @@ Canvas {
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: 50
                     font.bold: true
-                    color: isCoag ? "white" : "black"
+                    color: ink
                     verticalAlignment: Qt.AlignVCenter
                     horizontalAlignment: Qt.AlignHCenter
                 }
@@ -739,7 +744,7 @@ Canvas {
                 color: "transparent"
                 radius: 8
                 border {
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     width: 2
                 }
                 Label {
@@ -747,7 +752,7 @@ Canvas {
                         margins: 10
                         fill: parent
                     }
-                    color: modePowerRect.isCoag ? "white" : "black"
+                    color: modePowerRect.ink
                     font.pixelSize: 30
                     font.bold: true
                     text: "+"
@@ -793,7 +798,7 @@ Canvas {
             height: 31
             font.pixelSize: 50
             font.bold: true
-            color: isCoag ? "white" : "black"
+            color: ink
             // verticalAlignment: Qt.AlignVCenter
             anchors {
                 margins: 10

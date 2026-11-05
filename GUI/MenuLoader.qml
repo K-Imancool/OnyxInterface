@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import Ui 1.0
 
 Item {
     id: menuLoadRoot
@@ -154,7 +155,7 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            color: "darkslategray"
+            color: UiPalette.caseBase
             z: -1
         }
 

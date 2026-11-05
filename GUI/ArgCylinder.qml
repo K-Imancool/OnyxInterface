@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Ui 1.0
 
 Rectangle {
 
@@ -25,10 +26,12 @@ Rectangle {
         width: bodyWidth
         height: bodyHeight
         radius: width / 2
-        color: cylConnected ? (cylSelected ? "#30f020" : "#80f070") : "#d9d9d9"
+        color: cylConnected
+               ? (cylSelected ? UiPalette.success : Qt.lighter(UiPalette.success, 1.45))
+               : UiPalette.surface
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        border.color: "gray"
+        border.color: UiPalette.caseSteel
         border.width: borderSize
     }
     Rectangle {
@@ -36,7 +39,7 @@ Rectangle {
         width: unit
         height: unit * 2
         radius: width / 2
-        color: "gray"
+        color: UiPalette.textSecondary
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: cylinderBody.top
         anchors.bottomMargin: -(unit / 2)
@@ -46,7 +49,7 @@ Rectangle {
         width: unit * 3
         height: unit
         radius: height / 2
-        color: "gray"
+        color: UiPalette.textSecondary
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: cylinderNeck.top
         anchors.topMargin: Math.max(1, unit * 0.2)
@@ -64,7 +67,7 @@ Rectangle {
             else return bodyWidth * 0.5
         }
         font.bold: true
-        color: "black"
+        color: UiPalette.text
     }
     Label {
         id: empty1
@@ -72,7 +75,7 @@ Rectangle {
         anchors.fill: parent
         font.pixelSize: Math.min(width, height) * 0.8
         font.bold: true
-        color: "yellow"
+        color: UiPalette.danger
         visible: !cylConnected
         horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Qt.AlignVCenter

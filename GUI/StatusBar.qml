@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Ui 1.0
 
 Rectangle {
     id: statusRoot
@@ -20,9 +21,10 @@ Rectangle {
     readonly property int titleCompactFontSize: 36
     readonly property bool useCompactTitle: mainTextLargeMetrics.width > titleViewport.width
 
+    color: UiPalette.background
     border {
         width: 1
-        color: "black"
+        color: UiPalette.border
     }
 
     Button {
@@ -38,7 +40,7 @@ Rectangle {
             font.pixelSize: Math.round(drawerButton.height * 0.45)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            color: "#111111"
+            color: UiPalette.text
         }
         background: Item {}
         onClicked: statusRoot.drawerCalled()
@@ -87,6 +89,7 @@ Rectangle {
             wrapMode: Text.NoWrap
             maximumLineCount: 1
             elide: Text.ElideNone
+            color: UiPalette.text
 
             onTextChanged: {
                 titleViewport.contentX = 0
@@ -144,6 +147,7 @@ Rectangle {
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
         text: ""
+        color: UiPalette.textSecondary
         visible: text !== ""
     }
     Button {
@@ -167,7 +171,7 @@ Rectangle {
             anchors.fill: parent
             anchors.margins: 6
             radius: 10
-            color: "#70F870"
+            color: UiPalette.success
             opacity: statusRoot.saveHighlighted ? 0.95 : 0.0
             z: -1
         }

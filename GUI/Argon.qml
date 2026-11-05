@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Ui 1.0
 
 Rectangle {
     id: argonRoot
@@ -21,7 +22,9 @@ Rectangle {
     property bool compactOnLightBackground: false  // PeripheryPanel: белая карточка, тёмные подписи
     property bool activCylinderFirst: true // Активный баллон 1 (или 2)
 
-    readonly property color compactLabelColor: compactOnLightBackground ? "#2c2c2c" : "white"
+    readonly property color fotekBlue: UiPalette.accent
+    readonly property color fotekOrange: UiPalette.cut
+    readonly property color compactLabelColor: compactOnLightBackground ? UiPalette.text : UiPalette.darkInk
     readonly property int displayedArgonRate: (isActivation || isBlowing) ? realFlowRate : flowRate
     readonly property bool showRealFlow: isActivation || isBlowing
     readonly property bool anyCylinderConnected: cylinder1Connected || cylinder2Connected
@@ -102,7 +105,7 @@ Rectangle {
             text: iconText
             font.pixelSize: 44
             font.bold: true
-            color: isPressed ? "black" : "white"
+            color: isPressed ? UiPalette.cutInk : UiPalette.accentInk
         }
         
         MouseArea {
@@ -163,7 +166,7 @@ Rectangle {
             visible: showControls && !anyCylinderConnected
             height: 50
             width: parent.width
-            color: "#DDDDDD"
+            color: UiPalette.surface
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -171,7 +174,7 @@ Rectangle {
                 text: qsTr("ПОДКЛЮЧИТЕ БАЛЛОН!")
                 font.pixelSize: 30
                 font.bold: true
-                color: "black"
+                color: UiPalette.text
 //                color: fotekBlue
             }
         }
@@ -196,7 +199,7 @@ Rectangle {
             text: showControls ? qsTr("РАСХОД АРГОНА") : qsTr("АРГОН")
             font.pixelSize: showControls ? 32 : Math.round(18 * compactLayoutScale)
             font.bold: true
-            color: showControls ? fotekBlue : argonRoot.compactLabelColor
+            color: showControls ? UiPalette.text : argonRoot.compactLabelColor
         }
 
         ArgCylinder {
@@ -319,9 +322,9 @@ Rectangle {
 //                font.pixelSize: step * 3
                 font.bold: true
                 // В развернутом виде — тёмный текст, в свернутом (PeripheryPanel) — светлый для тёмного фона
-                color: showRealFlow
-                       ? "#000000"
-                       : (argonRoot.showControls ? "#2c2c2c" : argonRoot.compactLabelColor)
+                color: (showRealFlow || argonRoot.showControls)
+                       ? UiPalette.text
+                       : argonRoot.compactLabelColor
             }
             Text {
                 id: litrPerMin
@@ -332,7 +335,7 @@ Rectangle {
 //                font.pixelSize: 24
                 font.pixelSize: showControls ? 30 : 24
                 font.bold: true
-                color: argonRoot.showControls ? fotekBlue: argonRoot.compactLabelColor
+                color: argonRoot.showControls ? UiPalette.textSecondary : argonRoot.compactLabelColor
             }
         }
 
@@ -438,7 +441,7 @@ Rectangle {
                 text: qsTr("Продувка...")
                 font.pixelSize: buttonStep * 1.5
                 font.bold: true
-                color: fotekBlue
+                color: UiPalette.text
             }
 
             Item {
@@ -450,7 +453,7 @@ Rectangle {
                 Rectangle {
                     anchors.fill: parent
                     radius: height / 2
-                    color: "#CFD8DC"
+                    color: UiPalette.border
                 }
 
                 Rectangle {
@@ -483,9 +486,9 @@ Rectangle {
             anchors.bottomMargin: 30
             radius: 10
             visible: showControls
-            color: blowDisabled ? "#9E9E9E" : fotekBlue
+            color: blowDisabled ? UiPalette.textSecondary : fotekBlue
             border {
-                color: blowDisabled ? "#757575" : "#558B2F"
+                color: blowDisabled ? UiPalette.caseSteel : UiPalette.success
                 width: 3
             }
             
@@ -494,7 +497,7 @@ Rectangle {
                 text: qsTr("ПРОДУТЬ")
                 font.pixelSize: buttonStep * 2
                 font.bold: true
-                color: "white"
+                color: UiPalette.accentInk
             }
             
             MouseArea {

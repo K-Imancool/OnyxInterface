@@ -32,6 +32,7 @@ Item {
     readonly property int menuActionLargeIconSize: startupMode ? 112 : 112
 
     property bool videoPlayerVisible: false
+    property bool touchScreenTestVisible: false
 
     function closeVideoPlayer() {
         videoPlayerVisible = false
@@ -82,6 +83,26 @@ Item {
         color: "#F3F5F9"
     }
 
+    // Временная кнопка отладки тачскрина — убрать после проверки.
+    DialogActionButton {
+        id: debugTouchTestButton
+        z: 50
+        width: 168
+        height: 72
+        text: qsTr("ТАЧ")
+        primary: true
+        primaryEnabledColor: "#FF1744"
+        cornerRadius: 16
+        labelPixelSize: 32
+        enabled: !settingsScreen.touchScreenTestVisible
+        onPressed: settingsScreen.touchScreenTestVisible = true
+        anchors {
+            left: parent.left
+            top: parent.top
+            margins: 12
+        }
+    }
+
     Item {
         id: headerArea
         anchors {
@@ -124,6 +145,7 @@ Item {
         secondaryBorderColor: "#1E3274"
         cornerRadius: 20
         labelPixelSize: 30
+        enabled: !settingsScreen.touchScreenTestVisible
         onPressed: {
             settingsScreen.closeVideoPlayer()
             settingsScreen.exitButtonPressed()
@@ -139,6 +161,7 @@ Item {
         id: serviceMenuButton
         width: exitButton.width
         height: exitButton.height
+        enabled: !settingsScreen.touchScreenTestVisible
         onPressed: settingsScreen.serviceMenuButtonPressed()
         anchors {
             right: parent.right
@@ -176,7 +199,7 @@ Item {
         iconSize: 52
         labelPixelSize: 26
         cornerRadius: 20
-        enabled: qmlGlAvailable
+        enabled: qmlGlAvailable && !settingsScreen.touchScreenTestVisible
         onPressed: settingsScreen.openVideoPlayer()
         anchors {
             horizontalCenter: parent.horizontalCenter
@@ -212,6 +235,7 @@ Item {
                 iconSize: settingsScreen.menuActionLargeIconSize
                 iconCenter: false
                 labelPixelSize: settingsScreen.menuActionLargeLabelSize
+                enabled: !settingsScreen.touchScreenTestVisible
                 onPressed: settingsScreen.recommendButtonPressed()
             }
 
@@ -230,6 +254,7 @@ Item {
                     textColor: settingsScreen.fotekBlue
                     iconSize: settingsScreen.menuActionIconSize
                     labelPixelSize: settingsScreen.menuActionLabelSize
+                    enabled: !settingsScreen.touchScreenTestVisible
                     onPressed: settingsScreen.lastSettingsButtonPressed()
                 }
 
@@ -243,6 +268,7 @@ Item {
                     textColor: settingsScreen.fotekBlue
                     iconSize: settingsScreen.menuActionIconSize
                     labelPixelSize: settingsScreen.menuActionLabelSize
+                    enabled: !settingsScreen.touchScreenTestVisible
                     onPressed: settingsScreen.saveSettingsButtonPressed()
                 }
 
@@ -255,6 +281,7 @@ Item {
                     textColor: settingsScreen.fotekBlue
                     iconSize: settingsScreen.menuActionIconSize
                     labelPixelSize: settingsScreen.menuActionLabelSize
+                    enabled: !settingsScreen.touchScreenTestVisible
                     onPressed: settingsScreen.userButtonPressed()
                 }
 
@@ -267,6 +294,7 @@ Item {
                     textColor: settingsScreen.fotekBlue
                     iconSize: settingsScreen.menuActionIconSize
                     labelPixelSize: settingsScreen.menuActionLabelSize
+                    enabled: !settingsScreen.touchScreenTestVisible
                     onPressed: {
                         if (!settingsScreen.startupMode) {
                             recomHandle.loadFreeSettings()
@@ -293,6 +321,24 @@ Item {
 
         function onCloseRequested() {
             settingsScreen.closeVideoPlayer()
+        }
+    }
+
+    Loader {
+        id: touchScreenTestLoader
+        anchors.fill: parent
+        z: 1100
+        active: settingsScreen.touchScreenTestVisible
+        visible: active
+        source: active ? "qrc:/TouchScreenTest.qml" : ""
+    }
+
+    Connections {
+        target: touchScreenTestLoader.item
+        ignoreUnknownSignals: true
+
+        function onReturnButtonPressed() {
+            settingsScreen.touchScreenTestVisible = false
         }
     }
 }

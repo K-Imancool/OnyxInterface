@@ -172,6 +172,8 @@ private:
 
 	void initSockets();
 	void prepareConnectios();
+	void saveLastNeutralSettings();
+	void restoreLastNeutralSettings();
 	void ensureFullSystemMixerVolume();
 	bool deviceTypeIsOnyxM() const;
 	void sendStopArgonIfOnyxM();

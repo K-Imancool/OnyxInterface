@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 import BackEnd 1.0
+import Ui 1.0
 
 Rectangle {
 
@@ -11,7 +12,7 @@ Rectangle {
 
     property bool argonAvailable: true
 
-    color: "#2c2c2c"
+    color: UiPalette.caseBase
 
     NeutralEl {
         id: neutralView
@@ -35,10 +36,10 @@ Rectangle {
             top: peripheryPanelRoot.argonAvailable ? argonCard.bottom : parent.top
             bottom: neutralView.top
         }
-        color: "white"
+        color: UiPalette.background
         radius: 10
-        border.color: "purple"
-        border.width: 3
+        border.color: UiPalette.caseSteel
+        border.width: 2
     }
 
     Rectangle {
@@ -50,10 +51,10 @@ Rectangle {
             right: parent.right
         }
         height: visible ? argonView.compactContentHeight : 0
-        color: "white"
+        color: UiPalette.background
         radius: 10
-        border.color: "purple"
-        border.width: 3
+        border.color: UiPalette.caseSteel
+        border.width: 2
 
         Argon {
             id: argonView

@@ -33,6 +33,8 @@
         <file>ProgItemList.qml</file>
         <file>MainMenu.qml</file>
         <file>WorkScreen.qml</file>
+        <file>Ui/qmldir</file>
+        <file>Ui/UiPalette.qml</file>
         <file>MenuActionButton.qml</file>
         <file>MenuLoader.qml</file>
         <file>SettingsMenu.qml</file>

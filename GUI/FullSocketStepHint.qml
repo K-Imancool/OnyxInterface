@@ -1,11 +1,12 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Ui 1.0
 
 Item {
     id: control
     property string line1: ""
     property string line2: ""
-    property color textColor: "#5A6478"
+    property color textColor: UiPalette.textSecondary
     property int rowHeight: 76
 
     implicitHeight: rowHeight

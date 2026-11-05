@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 import BackEnd 1.0
+import Ui 1.0
 
 Drawer {
     id: argonDrawerRoot
@@ -11,12 +12,12 @@ Drawer {
     closePolicy: Popup.NoAutoClose
 
     background: Rectangle {
-        color: "white"
+        color: UiPalette.background
     }
 
     Rectangle {
         anchors.fill: parent
-        color: "white"
+        color: UiPalette.background
         z: -1
 
         MouseArea {
@@ -43,7 +44,7 @@ Drawer {
             }
             horizontalAlignment: Qt.AlignHCenter
             text: qsTr("НАСТРОЙКА ГАЗОВОГО ТРАКТА")
-            color: fotekBlue
+            color: UiPalette.text
             font.pixelSize: 30
             font.bold: true
         }
@@ -133,7 +134,7 @@ Drawer {
             text: qsTr("X")
             font.pixelSize: 32
             font.bold: true
-            color: "black"
+            color: UiPalette.text
 //            color: fotekBlue
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter

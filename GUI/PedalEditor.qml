@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 // import QtQuick.Layouts 1.15
 import StratifyLabs.UI 2.0
+import Ui 1.0
 
 // Popup {
 Rectangle {
@@ -12,7 +13,7 @@ Rectangle {
     signal pedSelected(int index)
 
     id: pedalSelectRoot
-    color: "#6a6a6a"
+    color: UiPalette.caseBase
 
     function pedalTypeAllowed(pedalType) {
         for (var i = 0; i < shownPedalsArray.length; ++i) {
@@ -113,20 +114,20 @@ Rectangle {
             visible: pedalSelectRoot.showSinglePed
             width: layoutRow.elementSize
             height: layoutRow.elementSize
-            color: pedalSelectRoot.selectedPed === 1 ? "cyan" : "transparent"
+            color: pedalSelectRoot.selectedPed === 1 ? UiPalette.caseMist : "transparent"
             radius: 8
             border {
                 width: 1
-                color: "white"
+                color: UiPalette.accent
             }
             Rectangle {
                 width: parent.width * .3
                 height: parent.height * .75
                 radius: 6
-                color: "blue"
+                color: UiPalette.coag
                 border {
                     width: 1
-                    color: "white"
+                    color: UiPalette.coagInk
                 }
                 anchors {
                     verticalCenter: parent.verticalCenter
@@ -143,20 +144,20 @@ Rectangle {
             visible: pedalSelectRoot.showDoublePed
             width: layoutRow.elementSize
             height: layoutRow.elementSize
-            color: pedalSelectRoot.selectedPed === 2 ? "cyan" : "transparent"
+            color: pedalSelectRoot.selectedPed === 2 ? UiPalette.caseMist : "transparent"
             radius: 8
             border {
                 width: 1
-                color: "white"
+                color: UiPalette.accent
             }
             Rectangle {
                 width: parent.width * .3
                 height: parent.height * .75
                 radius: 6
-                color: "yellow"
+                color: UiPalette.cut
                 border {
                     width: 1
-                    color: "black"
+                    color: UiPalette.cutInk
                 }
                 anchors {
                     left: parent.left
@@ -168,10 +169,10 @@ Rectangle {
                 width: parent.width * .3
                 height: parent.height * .75
                 radius: 6
-                color: "blue"
+                color: UiPalette.coag
                 border {
                     width: 1
-                    color: "white"
+                    color: UiPalette.coagInk
                 }
                 anchors {
                     right: parent.right
@@ -189,20 +190,20 @@ Rectangle {
             visible: pedalSelectRoot.showBiHandle
             width: layoutRow.elementSize
             height: layoutRow.elementSize
-            color: pedalSelectRoot.selectedPed === 3 ? "cyan" : "transparent"
+            color: pedalSelectRoot.selectedPed === 3 ? UiPalette.caseMist : "transparent"
             radius: 8
             border {
                 width: 1
-                color: "white"
+                color: UiPalette.accent
             }
             Rectangle {
                 width: parent.width * .65
                 height: parent.height * .65
                 radius: width/2
-                color: "purple"
+                color: UiPalette.bipolar
                 border {
                     width: 2
-                    color: "white"
+                    color: UiPalette.coagInk
                 }
                 anchors.centerIn: parent;
             }
@@ -217,20 +218,20 @@ Rectangle {
             visible: pedalSelectRoot.showMonoHandle
             width: layoutRow.elementSize
             height: layoutRow.elementSize
-            color: pedalSelectRoot.selectedPed === 4 ? "cyan" : "transparent"
+            color: pedalSelectRoot.selectedPed === 4 ? UiPalette.caseMist : "transparent"
             radius: 8
             border {
                 width: 1
-                color: "white"
+                color: UiPalette.accent
             }
             Rectangle {
                 width: parent.width * .42
                 height: parent.height * .42
                 radius: width/2
-                color: "yellow"
+                color: UiPalette.cut
                 border {
                     width: 2
-                    color: "black"
+                    color: UiPalette.cutInk
                 }
                 anchors {
                     top: parent.top
@@ -242,10 +243,10 @@ Rectangle {
                 width: parent.width * .42
                 height: parent.height * .42
                 radius: width/2
-                color: "blue"
+                color: UiPalette.coag
                 border {
                     width: 2
-                    color: "white"
+                    color: UiPalette.coagInk
                 }
                 anchors {
                     bottom: parent.bottom
@@ -262,12 +263,12 @@ Rectangle {
             id: emptyPed
             width: layoutRow.elementSize
             height: layoutRow.elementSize
-            color: pedalSelectRoot.selectedPed === 0 ? "cyan" : "transparent"
+            color: pedalSelectRoot.selectedPed === 0 ? UiPalette.caseMist : "transparent"
             radius: 8
 
             border {
                 width: 1
-                color: "white"
+                color: UiPalette.accent
             }
 
             Text {
@@ -275,7 +276,7 @@ Rectangle {
                 text: "✕"
                 font.pixelSize: parent.height * 0.6
                 font.bold: true
-                color: "gray"
+                color: UiPalette.caseMist
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }

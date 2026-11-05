@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
+import Ui 1.0
 
 Dialog {
     id: root
@@ -58,7 +59,7 @@ Dialog {
 
     header: Rectangle {
         height: 56
-        color: fotekGreen
+        color: UiPalette.accent
 
         Label {
             anchors.fill: parent
@@ -67,12 +68,12 @@ Dialog {
             font.pixelSize: 36
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
-            color: "black"
+            color: UiPalette.accentInk
         }
     }
 
     background: Rectangle {
-        color: "#f5f5f5"
+        color: UiPalette.background
     }
 
     contentItem: Rectangle {
@@ -93,7 +94,7 @@ Dialog {
                 font.pixelSize: 26
                 font.bold: true
                 wrapMode: Text.WordWrap
-                color:  "#5A6478"
+                color: UiPalette.textSecondary
             }
 
             RowLayout {
@@ -114,7 +115,7 @@ Dialog {
                         contentItem: Text {
                             text: modelData
                             font.pixelSize: 26  // пункты в выпадающем списке
-                            color: "black"
+                            color: UiPalette.text
                             elide: Text.ElideRight
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -128,14 +129,14 @@ Dialog {
                     Layout.preferredHeight: 72
                     visible: root.isNewScope
                     placeholderText: qsTr("Название папки")
-                    color: "black"
+                    color: UiPalette.text
                     font.pixelSize: 28
                     selectByMouse: true
                     activeFocusOnPress: true
                     inputMethodHints: Qt.ImhNoPredictiveText
                     background: Rectangle {
-                        color: "#ffffff"
-                        border.color: newScopeNameInput.activeFocus ? "#4a9eff" : "#7a7a7a"
+                        color: UiPalette.background
+                        border.color: newScopeNameInput.activeFocus ? UiPalette.accent : UiPalette.border
                         border.width: 2
                         radius: 6
                     }
@@ -180,7 +181,7 @@ Dialog {
                 font.pixelSize: 26
                 font.bold: true
                 wrapMode: Text.WordWrap
-                color:  "#5A6478"
+                color: UiPalette.textSecondary
             }
 
             TextField {
@@ -188,14 +189,14 @@ Dialog {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 72
                 placeholderText: qsTr("Название")
-                color: "black"
+                color: UiPalette.text
                 font.pixelSize: 28
                 selectByMouse: true
                 activeFocusOnPress: true
                 inputMethodHints: Qt.ImhNoPredictiveText
                 background: Rectangle {
-                    color: "#ffffff"
-                    border.color: progNameInput.activeFocus ? "#4a9eff" : "#7a7a7a"
+                    color: UiPalette.background
+                    border.color: progNameInput.activeFocus ? UiPalette.accent : UiPalette.border
                     border.width: 2
                     radius: 6
                 }
@@ -233,6 +234,7 @@ Dialog {
                 Layout.fillHeight: true
                 text: qsTr("ОТМЕНА")
                 labelPixelSize: 34
+                secondaryColor: UiPalette.textSecondary
                 onPressed: reject()
             }
 
@@ -244,6 +246,9 @@ Dialog {
                 text: qsTr("ПРИНЯТЬ")
                 labelPixelSize: 34
                 primary: true
+                primaryEnabledColor: UiPalette.accent
+                primaryDisabledColor: UiPalette.accentDisabled
+                labelColor: UiPalette.accentInk
                 enabled: progName.length > 0 && scopeName.length > 0
                 onPressed: {
                     if (progName.length > 0
