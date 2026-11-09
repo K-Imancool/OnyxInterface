@@ -34,6 +34,16 @@ Item {
     property bool videoPlayerVisible: false
     property bool touchScreenTestVisible: false
 
+    function releaseTouchTest() {
+        if (typeof touchUsbMonitor !== "undefined" && touchUsbMonitor)
+            touchUsbMonitor.releaseHeldPress()
+    }
+
+    Component.onDestruction: {
+        if (touchScreenTestVisible)
+            releaseTouchTest()
+    }
+
     function closeVideoPlayer() {
         videoPlayerVisible = false
         videoClickGuard.stop()
@@ -83,7 +93,7 @@ Item {
         color: "#F3F5F9"
     }
 
-    // Временная кнопка отладки тачскрина — убрать после проверки.
+    // Временная кнопка отладки тачскрина — убрать после проверки. TEST
     DialogActionButton {
         id: debugTouchTestButton
         z: 50
@@ -338,6 +348,9 @@ Item {
         ignoreUnknownSignals: true
 
         function onReturnButtonPressed() {
+            // Сначала снять захват, пока область проверки ещё жива.
+            // Иначе отпускание попадает в «☰» на рабочем экране.
+            settingsScreen.releaseTouchTest()
             settingsScreen.touchScreenTestVisible = false
         }
     }

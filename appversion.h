@@ -36,4 +36,12 @@
 //inline constexpr const char *kOnyxAppVersion = "1.34"; // 03.11.26 на внимании второй далёкий тап за 100 мс не кликает
 //inline constexpr const char *kOnyxAppVersion = "1.35"; // 03.11.26 на внимании чужой End и далёкий Begin палец не отпускают
 //inline constexpr const char *kOnyxAppVersion = "1.36"; // 03.11.26 кружок проверки тача гаснет, когда нажатия уже нет
-inline constexpr const char *kOnyxAppVersion = "1.37"; // 03.11.26 на внимании два кадра на месте становятся пальцем
+//inline constexpr const char *kOnyxAppVersion = "1.37"; // 03.11.26 на внимании два кадра на месте становятся пальцем
+//inline constexpr const char *kOnyxAppVersion = "1.38"; // 05.11.26 сбой не глушит проверку тача, вход в неё сбрасывает зависший жест
+//inline constexpr const char *kOnyxAppVersion = "1.39"; // 05.11.26 возврат на полосе не отпускает палец, «+»/«−» меньше шагают после отпускания
+//inline constexpr const char *kOnyxAppVersion = "1.40"; // 06.11.26 зависший кружок отпускается сам и не жмёт меню при выходе
+//inline constexpr const char *kOnyxAppVersion = "1.41"; // 06.11.26 сброс зажатого тача доходит до окна и не отменяется следующим кадром
+//inline constexpr const char *kOnyxAppVersion = "1.42"; // 06.11.26 поле проверки не оставляет захват, если живых кадров уже нет
+//inline constexpr const char *kOnyxAppVersion = "1.18"; // 06.11.26 с изменённой цветовой гаммой
+//inline constexpr const char *kOnyxAppVersion = "1.19"; // 09.11.26 WINSTARTP Mouse не остаётся глухим после ожидания отпускания
+inline constexpr const char *kOnyxAppVersion = "1.20"; // 09.11.26 фильтрация тача выключена, порт и призраки в проверке остаются

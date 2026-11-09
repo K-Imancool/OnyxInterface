@@ -40,6 +40,9 @@ class TouchUsbMonitor : public QObject
     Q_PROPERTY(bool recovering READ recovering NOTIFY recoveringChanged)
     Q_PROPERTY(QString state READ state NOTIFY stateChanged)
     Q_PROPERTY(QString detail READ detail NOTIFY detailChanged)
+    // TEST: квадрат в углу экрана. Удалить вместе с main.qml после теста восстановления тача.
+    Q_PROPERTY(int testRecoverAttempts READ testRecoverAttempts NOTIFY testRecoverAttemptsChanged)
+    Q_PROPERTY(bool testRecoverVisible READ testRecoverVisible NOTIFY testRecoverVisibleChanged)
 
 public:
     static constexpr quint8 FaultWarningCode = 0x09;
@@ -53,10 +56,16 @@ public:
     bool recovering() const { return m_recovering; }
     QString state() const { return m_state; }
     QString detail() const { return m_detail; }
+    // TEST: см. testRecoverAttempts. Удалить после теста.
+    int testRecoverAttempts() const { return m_testRecoverAttempts; }
+    bool testRecoverVisible() const { return m_testRecoverVisible; }
 
     Q_INVOKABLE void check();
     // Обнуляет touch-trace.log. Вызывается при входе в проверку тача.
     Q_INVOKABLE void clearTouchTrace();
+    // Снимает зажатый жест и захват. Выход из проверки тача зовёт это
+    // до уничтожения экрана, иначе отпускание падает на кнопку меню.
+    Q_INVOKABLE void releaseHeldPress();
 
 signals:
     void touchOkChanged();
@@ -64,6 +73,9 @@ signals:
     void recoveringChanged();
     void stateChanged();
     void detailChanged();
+    // TEST: удалить после теста.
+    void testRecoverAttemptsChanged();
+    void testRecoverVisibleChanged();
     void touchUsbFault(const QString &state, const QString &detail);
     // Точка, которую фильтр не отдал в UI. Проверка тача рисует её бледным кругом.
     void falsePoint(qreal x, qreal y);
@@ -94,6 +106,8 @@ private:
     bool isRecoverMute() const;
     void armPostRecoverMute();
     bool isPointerEvent(QEvent::Type type) const;
+    // Фильтрация выключена. Только помечает прыжок и лишний палец для TouchTest.
+    void observeGhosts(QEvent *event);
     bool filterMouseEvent(QObject *watched, QMouseEvent *mouse);
     bool filterTouchEvent(QObject *watched, QTouchEvent *touch);
     void beginContact(const QPointF &screenPos);
@@ -140,6 +154,7 @@ private:
     bool handleAttentionMouse(QObject *watched, QMouseEvent *mouse);
     bool handleAttentionTouch(QObject *watched, QTouchEvent *touch);
     void clearStableSlots();
+    void dropStalePointer();
     bool noteStableMove(QObject *watched, QTouchEvent *touch);
     void beginPrimaryPick(QObject *watched, QTouchDevice *device, const QTouchEvent *touch);
     bool handlePrimaryPick(QObject *watched, QTouchEvent *touch);
@@ -161,6 +176,10 @@ private:
     void noteTrace(const QString &tag);
     void reportFalsePoint(const QPointF &screenPos);
     void setRecovering(bool on);
+    // TEST: удалить после теста.
+    void setTestRecoverAttempts(int count);
+    void noteTestTouchLoss();
+    void hideTestRecoverBadge();
     void applyState(const QString &state, const QString &detail, bool logFault);
     void raiseScreenFault();
     void clearScreenFault();
@@ -178,9 +197,14 @@ private:
     QTimer *m_stitchTimer = nullptr;
     QTimer *m_confirmTimer = nullptr;
     QTimer *m_attnTimer = nullptr;
+    // TEST: гасит квадрат попыток. Удалить после теста.
+    QTimer *m_testRecoverHideTimer = nullptr;
     QElapsedTimer m_checkStarted;
     QElapsedTimer m_portOnSince;
     QElapsedTimer m_pointerDownSince;
+    // Когда в интерфейс последний раз ушло живое движение. Старый захват
+    // без таких кадров не должен глотать новое касание.
+    QElapsedTimer m_lastLiveAt;
     QElapsedTimer m_postRecoverMuteSince;
     QElapsedTimer m_postActivationSince;
     QElapsedTimer m_releasedAt;
@@ -222,9 +246,14 @@ private:
     bool m_touchOk = true;
     bool m_faultActive = false;
     bool m_recovering = false;
+    // TEST: попытки сброса порта и флаг «потеря уже была». Удалить после теста.
+    int m_testRecoverAttempts = 0;
+    bool m_testRecoverVisible = false;
     bool m_screenFaultShown = false;
     bool m_activationWasOn = false;
     bool m_pointerDown = false;
+    bool m_ghostDown = false;
+    QPointF m_ghostPos;
     bool m_gestureDirty = false;
     bool m_stitchPending = false;
     bool m_stitchOwesTouchEnd = false;

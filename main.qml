@@ -853,6 +853,30 @@ Window {
         z: 1000000
         enabled: false
 
+        // TEST: квадрат попыток восстановления тача (WINSTARTP и любой другой вход).
+        // Удалить после теста вместе с testRecoverAttempts / testRecoverVisible в TouchUsbMonitor.
+        Rectangle {
+            anchors {
+                right: parent.right
+                bottom: parent.bottom
+                rightMargin: 8
+                bottomMargin: 8
+            }
+            width: 36
+            height: 36
+            radius: 2
+            color: "#E53935"
+            visible: touchUsbMonitor && touchUsbMonitor.testRecoverVisible
+
+            Text {
+                anchors.centerIn: parent
+                text: touchUsbMonitor ? touchUsbMonitor.testRecoverAttempts : ""
+                color: "white"
+                font.pixelSize: 18
+                font.bold: true
+            }
+        }
+
         SystemMonitor {
             id: systemMonitor
             visible: appControl && appControl.cpuMonitorVisible

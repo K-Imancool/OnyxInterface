@@ -83,9 +83,9 @@ Item {
                 stepBtn.activated()
                 if (!stepBtn.holdRepeat)
                     return
-                // Быстрый возврат после blip — сразу снова tick, без repeatDelay.
+                // Быстрый возврат после короткого дребезга — сразу снова tick, без repeatDelay.
                 if (stepBtn.resumeRepeatEligible
-                        && (Date.now() - stepBtn.lastReleaseMs) < 280) {
+                        && (Date.now() - stepBtn.lastReleaseMs) < 80) {
                     stepBtn.resumeRepeatEligible = false
                     repeatTick.start()
                 } else {

@@ -48,6 +48,8 @@ constexpr int kPortProbeTries = 20;
 // Пауза после старта UI: на исправной плате 222a успевает перечислиться.
 // Если мыши всё ещё нет — тот же сброс порта, что после активации.
 constexpr int kStartupCheckDelayMs = 3000;
+// TEST: сколько квадрат попыток виден после появления. Удалить после теста.
+constexpr int kTestRecoverHideMs = 4000;
 // После появления WINSTARTP Mouse usbhid часто шлёт ложный press.
 constexpr qint64 kPostRecoverMuteMs = 500;
 // Живой свайп в логе — не больше ~55 px и ~9 px по Y за кадр.
@@ -78,9 +80,10 @@ constexpr qint64 kWatchRejoinMs = 400;
 constexpr qint64 kFastRebeginMs = 50;
 constexpr qreal kFastRebeginMinDxPx = 30.0;
 // Повышенная готовность после ACT. End не отпускает палец сразу:
-// за 100 мс рядом (±10) может вернуться тот же контакт. Move дальше
-// 25 px по X — помеха. Новый Begin подтверждаем по тому, что будет дальше.
-constexpr qint64 kAttentionHoldMs = 100;
+// за этот срок на той же полосе может вернуться тот же контакт.
+// Короткий срок, чтобы «+»/«−» после отпускания не делали лишние шаги.
+// Move дальше 25 px по X — помеха. Новый Begin подтверждаем по следующему кадру.
+constexpr qint64 kAttentionHoldMs = 40;
 constexpr qreal kAttentionNearPx = 10.0;
 constexpr qreal kAttentionMaxDxPx = 25.0;
 // Если release потерян — не держим состояние вечно.
@@ -124,6 +127,39 @@ bool touchPointHeld(Qt::TouchPointState state)
     return state == Qt::TouchPointPressed
             || state == Qt::TouchPointMoved
             || state == Qt::TouchPointStationary;
+}
+
+// Ближайший по X удержанный слот на той же горизонтали. Чужой слот выше
+// порога по Y сюда не попадает: это уже другое место, не возврат пальца.
+const QTouchEvent::TouchPoint *closestSameLineHeld(
+        const QList<QTouchEvent::TouchPoint> &points,
+        const QPointF &origin,
+        int skipId,
+        qreal *dxOut)
+{
+    const QTouchEvent::TouchPoint *keep = nullptr;
+    qreal keepDx = 0;
+    for (const auto &point : points) {
+        if (!touchPointHeld(point.state())) {
+            continue;
+        }
+        if (skipId >= 0 && point.id() == skipId) {
+            continue;
+        }
+        const qreal dx = qAbs(point.screenPos().x() - origin.x());
+        const qreal dy = qAbs(point.screenPos().y() - origin.y());
+        if (dy > kSameLineDyPx) {
+            continue;
+        }
+        if (!keep || dx < keepDx) {
+            keep = &point;
+            keepDx = dx;
+        }
+    }
+    if (dxOut) {
+        *dxOut = keepDx;
+    }
+    return keep;
 }
 
 QList<QTouchEvent::TouchPoint> &mutableTouchPoints(QTouchEvent *touch)
@@ -281,6 +317,7 @@ QString touchInputPresentDetail()
 } // namespace
 
 void releaseSceneGrab(QObject *target);
+void sendTouchCancel(QObject *target, QTouchDevice *device);
 
 TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
     : QObject(parent)
@@ -292,6 +329,7 @@ TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
     , m_stitchTimer(new QTimer(this))
     , m_confirmTimer(new QTimer(this))
     , m_attnTimer(new QTimer(this))
+    , m_testRecoverHideTimer(new QTimer(this))
 {
     m_stepTimer->setSingleShot(true);
     connect(m_stepTimer, &QTimer::timeout, this, &TouchUsbMonitor::onPortStep);
@@ -312,6 +350,10 @@ TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
 
     m_attnTimer->setSingleShot(true);
     connect(m_attnTimer, &QTimer::timeout, this, &TouchUsbMonitor::onAttentionHoldTimeout);
+
+    // TEST: удалить после теста вместе с квадратом в main.qml.
+    m_testRecoverHideTimer->setSingleShot(true);
+    connect(m_testRecoverHideTimer, &QTimer::timeout, this, &TouchUsbMonitor::hideTestRecoverBadge);
 
     if (QCoreApplication *app = QCoreApplication::instance()) {
         app->installEventFilter(this);
@@ -402,7 +444,11 @@ void TouchUsbMonitor::onActivationChanged(bool active)
     writeTouchTrace(QStringLiteral("ACT off"));
     writeTouchTrace(QStringLiteral("WATCH on"));
     // Касание, начатое во время глушения, первой точкой не считаем.
+    // WINSTARTP Mouse тач-кадров не шлёт, поэтому срок ждём по часам, не по слоту.
     m_waitForLift = true;
+    if (!m_releasedAt.isValid()) {
+        m_releasedAt.start();
+    }
     m_activationWasOn = false;
     m_falseSeen = false;
     m_lastFalseAt.invalidate();
@@ -468,6 +514,8 @@ void TouchUsbMonitor::beginContact(const QPointF &screenPos)
     m_contactPos = screenPos;
     m_lastAcceptedPos = screenPos;
     m_pointerDownSince.start();
+    m_lastLiveAt.start();
+    m_uiHasPress = true;
     clearStableSlots();
 }
 
@@ -478,6 +526,7 @@ void TouchUsbMonitor::endContact()
     m_liveTouchId = -1;
     m_liveTouchReleased = false;
     m_releasedAt.start();
+    m_lastLiveAt.invalidate();
     // Чистое отпускание: следующий тап не звено цепочки и не ждёт карантин.
     m_chainRisk = false;
     clearStableSlots();
@@ -510,8 +559,13 @@ void TouchUsbMonitor::clearContactState()
     }
     if (releaseUi && releaseTarget) {
         m_deliveringStitchRelease = true;
+        const int touchId = m_primaryTouchId >= 0 ? m_primaryTouchId : m_liveTouchId;
+        if (touchId >= 0) {
+            sendDelayedTouchEnd(releaseTarget, m_attnDevice, touchId, releasePos);
+        }
         sendDelayedMouseRelease(releaseTarget, releasePos);
         releaseSceneGrab(releaseTarget);
+        sendTouchCancel(releaseTarget, m_attnDevice);
         m_deliveringStitchRelease = false;
     }
     m_quarantine = false;
@@ -532,6 +586,7 @@ void TouchUsbMonitor::clearContactState()
     m_contactPos = {};
     m_lastAcceptedPos = {};
     m_releasedAt.invalidate();
+    m_lastLiveAt.invalidate();
     m_stitchTarget.clear();
     m_stitchDevice = nullptr;
     m_stitchTouchId = -1;
@@ -604,6 +659,10 @@ void TouchUsbMonitor::pollAttention()
         } else if (m_attnPhase == AttnPhase::Begin) {
             // Неподтверждённое нажатие не отдаём: отпускания после него уже не будет.
             rejectBeginWait(m_attnPos);
+        } else if (m_pointerDown || m_uiHasPress) {
+            // Минута кончилась на зажатом жесте. Иначе палец так и висит,
+            // а короткий сброс уже не работает.
+            releaseHeldPress();
         }
         clearStableSlots();
     }
@@ -846,6 +905,18 @@ void releaseSceneGrab(QObject *target)
     grabber->ungrabMouse();
 }
 
+void sendTouchCancel(QObject *target, QTouchDevice *device)
+{
+    auto *window = qobject_cast<QWindow *>(target);
+    if (!window) {
+        return;
+    }
+    // TouchEnd по одному id не снимает остальные захваты. Cancel гасит все.
+    QTouchEvent cancel(QEvent::TouchCancel, device, Qt::NoModifier);
+    cancel.setWindow(window);
+    QCoreApplication::sendEvent(window, &cancel);
+}
+
 void TouchUsbMonitor::commitReleaseStitch()
 {
     if (m_deliveringStitchRelease) {
@@ -899,7 +970,9 @@ void TouchUsbMonitor::expireStalePointerState()
     if (m_pointerDown
             && m_pointerDownSince.isValid()
             && m_pointerDownSince.elapsed() > kPointerLockTimeoutMs) {
-        clearContactState();
+        releaseHeldPress();
+        // Хвост того же слота не должен сразу зажать экран снова.
+        m_waitForLift = true;
     }
 }
 
@@ -1018,6 +1091,12 @@ void TouchUsbMonitor::beginPrimaryPick(QObject *watched, QTouchDevice *device, c
         if (!touchPointHeld(point.state()) || m_pickCount >= 2) {
             continue;
         }
+        if (attentionActive()
+                && (recentFarContact(point.screenPos()) || isFastRebegin(point.screenPos())
+                    || isAttentionSameLineJump(point.screenPos()))) {
+            reportFalsePoint(point.screenPos());
+            continue;
+        }
         m_pickId[m_pickCount] = point.id();
         m_pickStart[m_pickCount] = point.screenPos();
         m_pickPos[m_pickCount] = point.screenPos();
@@ -1028,6 +1107,15 @@ void TouchUsbMonitor::beginPrimaryPick(QObject *watched, QTouchDevice *device, c
 
 void TouchUsbMonitor::deliverPickedPress(int touchId, const QPointF &screenPos, bool alsoRelease)
 {
+    if (attentionActive()
+            && (recentFarContact(screenPos) || isFastRebegin(screenPos)
+                || isAttentionSameLineJump(screenPos))) {
+        reportFalsePoint(screenPos);
+        noteFalseTouch();
+        noteTrace(QStringLiteral("GHOST"));
+        clearPrimaryPick();
+        return;
+    }
     QObject *target = m_pickTarget.data();
     if (!target) {
         target = m_lastWindow.data();
@@ -1158,7 +1246,7 @@ bool TouchUsbMonitor::consumeFreshContact(QObject *watched, QTouchDevice *device
     if (m_pointerDown) {
         return false;
     }
-    // Обычный путь, не только ожидание нового нажатия: 100 мс после End
+    // Обычный путь, не только ожидание нового нажатия: сразу после End
     // точка дальше ±10 не становится пальцем.
     if (rejectRecentFarContact(screenPos)) {
         return true;
@@ -1452,6 +1540,23 @@ bool TouchUsbMonitor::armBeginWait(QObject *watched, QTouchDevice *device, int t
 {
     // Сразу после настоящего тапа далёкая точка — не второй палец.
     if (rejectRecentFarContact(screenPos)) {
+        noteFalseTouch();
+        return false;
+    }
+    // Тот же палец после End приходит сюда, не в consumeFreshContact:
+    // одиночный Begin на внимании до него не доходит. Чистый «+»/«−»
+    // chainRisk не держит и проходит. Сбойная полоса — нет.
+    if (glueFastRebegin(watched, device, touchId, screenPos)) {
+        return false;
+    }
+    if (isAttentionSameLineJump(screenPos)) {
+        reportFalsePoint(screenPos);
+        noteFalseTouch();
+        if (m_traceInEvent) {
+            noteTrace(QStringLiteral("GHOST"));
+        } else {
+            writeTouchTrace(QStringLiteral("GHOST"), screenPos);
+        }
         return false;
     }
     m_attnPhase = AttnPhase::Begin;
@@ -1498,9 +1603,16 @@ void TouchUsbMonitor::commitReleaseWait()
         sendDelayedMouseRelease(target, pos);
     }
     releaseSceneGrab(target);
+    sendTouchCancel(target, device);
     m_deliveringStitchRelease = false;
 
+    // endContact снимает chainRisk. После сбойного удержания полоса
+    // ещё под подозрением: иначе следующий Begin на ней становится кликом.
+    const bool keepChain = m_chainRisk;
     endContact();
+    if (keepChain) {
+        m_chainRisk = true;
+    }
     m_primaryTouchId = -1;
     m_ignoreForeignUntilClear = false;
 }
@@ -1581,6 +1693,22 @@ void TouchUsbMonitor::onAttentionHoldTimeout()
     }
 }
 
+void TouchUsbMonitor::dropStalePointer()
+{
+    // Жест числится зажатым, а в интерфейс нажатие не попадало.
+    // Иначе проверка тача молчит, кнопка «Назад» при этом ещё нажимается.
+    if (!m_pointerDown || m_uiHasPress || m_attnPhase == AttnPhase::Begin) {
+        return;
+    }
+    if (m_attnTimer) {
+        m_attnTimer->stop();
+    }
+    m_attnPhase = AttnPhase::None;
+    endContact();
+    m_releasedAt.invalidate();
+    m_primaryTouchId = -1;
+}
+
 void TouchUsbMonitor::clearStableSlots()
 {
     m_stableCount = 0;
@@ -1589,8 +1717,8 @@ void TouchUsbMonitor::clearStableSlots()
 
 bool TouchUsbMonitor::noteStableMove(QObject *watched, QTouchEvent *touch)
 {
-    // Палец ещё не зажат. Слот, который два кадра подряд стоит в ±10,
-    // и есть палец. Шаг дальше 25 px по X в выбор не входит.
+    // Палец ещё не зажат. Два кадра подряд в пределах порога прыжка — это палец.
+    // Шаг дальше 25 px по X или 40 px по Y в выбор не входит.
     const auto &points = touch->touchPoints();
     // Повтор того же кадра на соседний QObject не считается вторым кадром.
     const bool echo = m_stableAt.isValid() && m_stableAt.elapsed() < 8;
@@ -1598,6 +1726,7 @@ bool TouchUsbMonitor::noteStableMove(QObject *watched, QTouchEvent *touch)
     StableSlot next[kStableSlotCount];
     int nextCount = 0;
     int best = -1;
+    qreal bestStep = 0;
     bool anyHeld = false;
     bool anyFresh = false;
 
@@ -1616,14 +1745,15 @@ bool TouchUsbMonitor::noteStableMove(QObject *watched, QTouchEvent *touch)
         }
         if (prev >= 0) {
             const qreal dx = qAbs(at.x() - m_stableSlot[prev].pos.x());
-            if (dx > kAttentionMaxDxPx) {
+            const qreal dy = qAbs(at.y() - m_stableSlot[prev].pos.y());
+            if (dx > kAttentionMaxDxPx || dy > kMaxDyPx) {
                 used[prev] = true;
                 reportFalsePoint(at);
                 anyFresh = true;
                 continue;
             }
         } else {
-            qreal bestDist = kAttentionNearPx;
+            qreal bestDist = qMax(kAttentionMaxDxPx, kMaxDyPx);
             for (int i = 0; i < m_stableCount; ++i) {
                 if (used[i]) {
                     continue;
@@ -1631,7 +1761,7 @@ bool TouchUsbMonitor::noteStableMove(QObject *watched, QTouchEvent *touch)
                 const qreal dx = qAbs(at.x() - m_stableSlot[i].pos.x());
                 const qreal dy = qAbs(at.y() - m_stableSlot[i].pos.y());
                 const qreal dist = qMax(dx, dy);
-                if (dx <= kAttentionNearPx && dy <= kAttentionNearPx && dist <= bestDist) {
+                if (dx <= kAttentionMaxDxPx && dy <= kMaxDyPx && dist <= bestDist) {
                     prev = i;
                     bestDist = dist;
                 }
@@ -1640,15 +1770,16 @@ bool TouchUsbMonitor::noteStableMove(QObject *watched, QTouchEvent *touch)
 
         int seen = 1;
         bool fresh = prev < 0;
+        qreal step = 0;
         if (prev >= 0) {
             const qreal dx = qAbs(at.x() - m_stableSlot[prev].pos.x());
             const qreal dy = qAbs(at.y() - m_stableSlot[prev].pos.y());
+            step = qMax(dx, dy);
             if (echo && dx < 1.0 && dy < 1.0) {
                 seen = m_stableSlot[prev].seen;
-            } else if (dx <= kAttentionNearPx && dy <= kAttentionNearPx) {
-                seen = m_stableSlot[prev].seen + 1;
-                fresh = true;
             } else {
+                // Дрожь больше ±10, но меньше порога прыжка — тот же палец.
+                seen = m_stableSlot[prev].seen + 1;
                 fresh = true;
             }
             used[prev] = true;
@@ -1661,9 +1792,12 @@ bool TouchUsbMonitor::noteStableMove(QObject *watched, QTouchEvent *touch)
             continue;
         }
         next[nextCount] = StableSlot{point.id(), at, seen};
-        if (seen >= 2 && !recentFarContact(at)
-                && (best < 0 || seen > next[best].seen)) {
+        if (seen >= 2 && !recentFarContact(at) && !isFastRebegin(at)
+                && !isAttentionSameLineJump(at)
+                && (best < 0 || seen > next[best].seen
+                    || (seen == next[best].seen && step < bestStep))) {
             best = nextCount;
+            bestStep = step;
         }
         ++nextCount;
     }
@@ -1716,27 +1850,27 @@ bool TouchUsbMonitor::handleAttentionMouse(QObject *watched, QMouseEvent *mouse)
             noteTrace(QStringLiteral("HOLD"));
             return true;
         }
-        if ((press || move) && attentionNear(pos)) {
+        const qreal dx = qAbs(pos.x() - m_attnOrigin.x());
+        const qreal dy = qAbs(pos.y() - m_attnOrigin.y());
+        // Рядом — тот же палец, срок отпускания отменяем. Сдвиг по полосе
+        // срок не трогает: иначе кружок остаётся зажатым, пока идут помехи.
+        if ((press || move) && dx <= kAttentionMaxDxPx && dy <= kMaxDyPx) {
             m_attnTimer->stop();
             m_attnPhase = AttnPhase::None;
-            m_lastAcceptedPos = pos;
             m_pointerDown = true;
+            m_uiHasPress = true;
             m_liveTouchReleased = false;
+            m_lastAcceptedPos = pos;
             noteTrace(QStringLiteral("CONT"));
             return press;
         }
-        if (press) {
-            // Далёкое нажатие не отпускает палец: ждём свои 100 мс.
+        if (press || move) {
             reportFalsePoint(pos);
-            noteTrace(QStringLiteral("GHOST"));
+            noteFalseTouch();
+            noteTrace(press ? QStringLiteral("GHOST") : QStringLiteral("JUMP"));
             return true;
         }
-        if (move && attentionWide(pos)) {
-            reportFalsePoint(pos);
-            noteTrace(QStringLiteral("JUMP"));
-            return true;
-        }
-        return move || press;
+        return true;
     }
 
     if (m_attnPhase == AttnPhase::Begin) {
@@ -1749,6 +1883,7 @@ bool TouchUsbMonitor::handleAttentionMouse(QObject *watched, QMouseEvent *mouse)
             // отдаст нажатие уже без пальца, и кружок не погаснет.
             if (attentionWide(pos)) {
                 rejectBeginWait(pos);
+                noteFalseTouch();
             } else {
                 m_attnPos = pos;
                 confirmBeginWait(true);
@@ -1759,6 +1894,7 @@ bool TouchUsbMonitor::handleAttentionMouse(QObject *watched, QMouseEvent *mouse)
         if (move) {
             if (attentionWide(pos)) {
                 reportFalsePoint(pos);
+                noteFalseTouch();
                 noteTrace(QStringLiteral("JUMP"));
                 return true;
             }
@@ -1789,6 +1925,9 @@ bool TouchUsbMonitor::handleAttentionMouse(QObject *watched, QMouseEvent *mouse)
         const qreal dy = qAbs(pos.y() - m_lastAcceptedPos.y());
         if (dx > kAttentionMaxDxPx || dy > kMaxDyPx) {
             reportFalsePoint(pos);
+            noteFalseTouch();
+            m_chainRisk = true;
+            armReleaseWait(watched, nullptr, m_primaryTouchId);
             noteTrace(QStringLiteral("JUMP"));
             return true;
         }
@@ -1809,37 +1948,49 @@ bool TouchUsbMonitor::handleAttentionMouse(QObject *watched, QMouseEvent *mouse)
 
 bool TouchUsbMonitor::handleAttentionTouch(QObject *watched, QTouchEvent *touch)
 {
+    dropStalePointer();
     const QEvent::Type type = touch->type();
     const auto &points = touch->touchPoints();
     const QTouchEvent::TouchPoint *held = firstHeldPoint(points);
 
     if (m_attnPhase == AttnPhase::Release) {
-        if (type == QEvent::TouchEnd || type == QEvent::TouchCancel) {
-            noteTrace(QStringLiteral("HOLD"));
-            return true;
-        }
-        if (held && attentionNear(held->screenPos())) {
+        // Смотрим все слоты, не только первый: призрак в начале списка
+        // раньше прятал палец у исходной точки. Отпускание отменяет только
+        // точка в пределах порога прыжка. Дальше по полосе срок не сдвигаем.
+        qreal keepDx = 0;
+        const QTouchEvent::TouchPoint *keep =
+                closestSameLineHeld(points, m_attnOrigin, -1, &keepDx);
+        const qreal keepDy = keep ? qAbs(keep->screenPos().y() - m_attnOrigin.y()) : 0;
+        if (keep && keepDx <= kAttentionMaxDxPx && keepDy <= kMaxDyPx) {
+            for (const auto &point : points) {
+                if (touchPointHeld(point.state()) && point.id() != keep->id()) {
+                    reportFalsePoint(point.screenPos());
+                }
+            }
             m_attnTimer->stop();
             m_attnPhase = AttnPhase::None;
             m_pointerDown = true;
-            m_lastAcceptedPos = held->screenPos();
-            m_primaryTouchId = held->id();
-            m_liveTouchId = held->id();
+            m_uiHasPress = true;
+            m_primaryTouchId = keep->id();
+            m_liveTouchId = keep->id();
             m_liveTouchReleased = false;
+            m_lastAcceptedPos = keep->screenPos();
             noteTrace(QStringLiteral("CONT"));
             return type == QEvent::TouchBegin;
         }
         if (type == QEvent::TouchBegin && held) {
-            // Не рядом с удержанной точкой — не новый палец и не отпускание.
             reportFalsePoint(held->screenPos());
+            noteFalseTouch();
             noteTrace(QStringLiteral("GHOST"));
             return true;
         }
-        if (held && attentionWide(held->screenPos())) {
+        if (held) {
             reportFalsePoint(held->screenPos());
+            noteFalseTouch();
             noteTrace(QStringLiteral("JUMP"));
             return true;
         }
+        noteTrace(QStringLiteral("HOLD"));
         return true;
     }
 
@@ -1883,6 +2034,7 @@ bool TouchUsbMonitor::handleAttentionTouch(QObject *watched, QTouchEvent *touch)
             const QPointF at = ours->screenPos();
             if (attentionWide(at)) {
                 rejectBeginWait(at);
+                noteFalseTouch();
             } else {
                 m_attnPos = at;
                 confirmBeginWait(true);
@@ -1901,12 +2053,14 @@ bool TouchUsbMonitor::handleAttentionTouch(QObject *watched, QTouchEvent *touch)
             // Слота, который ждали, в кадре нет. Нажатие без будущего
             // Release оставило бы кружок включённым.
             rejectBeginWait(held ? held->screenPos() : m_attnPos);
+            noteFalseTouch();
             return true;
         }
         if (ours && touchPointHeld(ours->state())) {
             const QPointF at = ours->screenPos();
             if (attentionWide(at)) {
                 rejectBeginWait(at);
+                noteFalseTouch();
                 return true;
             }
             m_attnPos = at;
@@ -1947,13 +2101,32 @@ bool TouchUsbMonitor::handleAttentionTouch(QObject *watched, QTouchEvent *touch)
             }
         }
         if (ourStillHeld) {
+            noteFalseTouch();
+            m_chainRisk = true;
             noteTrace(QStringLiteral("JUMP"));
             return true;
         }
-        if (nearHeld) {
-            m_primaryTouchId = nearHeld->id();
-            m_liveTouchId = nearHeld->id();
-            m_lastAcceptedPos = nearHeld->screenPos();
+        qreal lineDx = 0;
+        const QTouchEvent::TouchPoint *lineHeld =
+                closestSameLineHeld(points, m_lastAcceptedPos, m_primaryTouchId, &lineDx);
+        if (!lineHeld) {
+            lineHeld = nearHeld;
+            if (lineHeld) {
+                lineDx = qAbs(lineHeld->screenPos().x() - m_lastAcceptedPos.x());
+            }
+        }
+        if (lineHeld) {
+            m_primaryTouchId = lineHeld->id();
+            m_liveTouchId = lineHeld->id();
+            const qreal lineDy = qAbs(lineHeld->screenPos().y() - m_lastAcceptedPos.y());
+            if (lineDx <= kAttentionMaxDxPx && lineDy <= kMaxDyPx) {
+                m_lastAcceptedPos = lineHeld->screenPos();
+                noteTrace(QStringLiteral("CONT"));
+                return true;
+            }
+            reportFalsePoint(lineHeld->screenPos());
+            noteFalseTouch();
+            m_chainRisk = true;
             noteTrace(QStringLiteral("CONT"));
             return true;
         }
@@ -1970,6 +2143,25 @@ bool TouchUsbMonitor::handleAttentionTouch(QObject *watched, QTouchEvent *touch)
             }
         }
         if (!our || !touchPointHeld(our->state())) {
+            qreal replDx = 0;
+            const QTouchEvent::TouchPoint *repl =
+                    closestSameLineHeld(points, m_lastAcceptedPos, m_primaryTouchId, &replDx);
+            if (repl) {
+                const qreal replDy = qAbs(repl->screenPos().y() - m_lastAcceptedPos.y());
+                if (replDx <= kAttentionMaxDxPx && replDy <= kMaxDyPx) {
+                    m_primaryTouchId = repl->id();
+                    m_liveTouchId = repl->id();
+                    m_lastAcceptedPos = repl->screenPos();
+                    noteTrace(QStringLiteral("CONT"));
+                    return false;
+                }
+                reportFalsePoint(repl->screenPos());
+                noteFalseTouch();
+                m_chainRisk = true;
+                armReleaseWait(watched, touch->device(), m_primaryTouchId);
+                noteTrace(QStringLiteral("JUMP"));
+                return true;
+            }
             armReleaseWait(watched, touch->device(), m_primaryTouchId);
             noteTrace(QStringLiteral("HOLD"));
             return true;
@@ -1977,9 +2169,38 @@ bool TouchUsbMonitor::handleAttentionTouch(QObject *watched, QTouchEvent *touch)
         const qreal dx = qAbs(our->screenPos().x() - m_lastAcceptedPos.x());
         const qreal dy = qAbs(our->screenPos().y() - m_lastAcceptedPos.y());
         if (dx > kAttentionMaxDxPx || dy > kMaxDyPx) {
+            qreal replDx = 0;
+            const QTouchEvent::TouchPoint *repl =
+                    closestSameLineHeld(points, m_lastAcceptedPos, our->id(), &replDx);
+            if (repl) {
+                const qreal replDy = qAbs(repl->screenPos().y() - m_lastAcceptedPos.y());
+                if (replDx <= kAttentionMaxDxPx && replDy <= kMaxDyPx) {
+                    reportFalsePoint(our->screenPos());
+                    m_primaryTouchId = repl->id();
+                    m_liveTouchId = repl->id();
+                    m_lastAcceptedPos = repl->screenPos();
+                    noteTrace(QStringLiteral("CONT"));
+                    return false;
+                }
+            }
             reportFalsePoint(our->screenPos());
+            noteFalseTouch();
+            m_chainRisk = true;
+            armReleaseWait(watched, touch->device(), m_primaryTouchId);
             noteTrace(QStringLiteral("JUMP"));
             return true;
+        }
+        // После сбоя цепочка коротких шагов не уводит якорь от места нажатия.
+        if (m_chainRisk) {
+            const qreal fromX = qAbs(our->screenPos().x() - m_contactPos.x());
+            const qreal fromY = qAbs(our->screenPos().y() - m_contactPos.y());
+            if (fromX > kSameLineDxPx && fromY <= kSameLineDyPx) {
+                reportFalsePoint(our->screenPos());
+                noteFalseTouch();
+                armReleaseWait(watched, touch->device(), m_primaryTouchId);
+                noteTrace(QStringLiteral("JUMP"));
+                return true;
+            }
         }
         return false;
     }
@@ -1991,6 +2212,33 @@ bool TouchUsbMonitor::handleAttentionTouch(QObject *watched, QTouchEvent *touch)
             }
         }
         if (heldCount != 1 || !held) {
+            // Два слота не обходят ожидание: хвост той же полосы нажатием не берём.
+            const QTouchEvent::TouchPoint *good = nullptr;
+            int goodCount = 0;
+            for (const auto &point : points) {
+                if (!touchPointHeld(point.state())) {
+                    continue;
+                }
+                const QPointF at = point.screenPos();
+                if (recentFarContact(at) || isFastRebegin(at) || isAttentionSameLineJump(at)) {
+                    reportFalsePoint(at);
+                    continue;
+                }
+                good = &point;
+                ++goodCount;
+            }
+            if (goodCount == 0) {
+                noteFalseTouch();
+                noteTrace(QStringLiteral("GHOST"));
+                return true;
+            }
+            if (goodCount == 1 && good) {
+                if (!armBeginWait(watched, touch->device(), good->id(), good->screenPos())) {
+                    return true;
+                }
+                noteTrace(QStringLiteral("HOLD"));
+                return true;
+            }
             return false;
         }
         if (!armBeginWait(watched, touch->device(), held->id(), held->screenPos())) {
@@ -2010,11 +2258,27 @@ bool TouchUsbMonitor::filterMouseEvent(QObject *watched, QMouseEvent *mouse)
     const QEvent::Type type = mouse->type();
     const QPointF pos = mouse->screenPos();
     expireStalePointerState();
+    dropStalePointer();
 
     // Пока не выбрали слот или не дождались отпускания чужого кадра,
     // синтезированная мышь не должна зажать кружок в ложной точке.
-    if (m_pickingPrimary || m_waitForLift) {
-        return true;
+    // WINSTARTP Mouse — это сама мышь, не хвост тача. Её клик глушить нельзя:
+    // пустого тач-кадра, который снял бы ожидание, у этой прошивки нет.
+    const bool hardwareMouse = mouse->source() == Qt::MouseEventNotSynthesized;
+    if (m_waitForLift) {
+        const bool pauseOver = !m_releasedAt.isValid()
+                || m_releasedAt.elapsed() > kAttentionHoldMs;
+        if (hardwareMouse || pauseOver || type == QEvent::MouseButtonRelease) {
+            m_waitForLift = false;
+        } else {
+            return true;
+        }
+    }
+    if (m_pickingPrimary) {
+        if (!hardwareMouse) {
+            return true;
+        }
+        clearPrimaryPick();
     }
 
     if (m_quarantine) {
@@ -2054,14 +2318,14 @@ bool TouchUsbMonitor::filterMouseEvent(QObject *watched, QMouseEvent *mouse)
             commitReleaseStitch();
         }
         if (m_pointerDown) {
-            if (kStitchEnabled && isJumpMove(pos)) {
+            if (isJumpMove(pos)) {
                 reportFalsePoint(pos);
                 markGestureDirty();
-                keepReleaseStitch(pos, -1);
+                if (kStitchEnabled) {
+                    keepReleaseStitch(pos, -1);
+                }
+                armReleaseWait(watched, nullptr, m_primaryTouchId);
                 return true;
-            }
-            if (isJumpMove(pos)) {
-                markGestureDirty();
             }
             onLiveTouchEvidence();
             return false;
@@ -2087,16 +2351,15 @@ bool TouchUsbMonitor::filterMouseEvent(QObject *watched, QMouseEvent *mouse)
             keepReleaseStitch(pos, -1);
             return true;
         }
-        // QMouseEvent в Qt 5 не даёт поменять screenPos — при склейке прыжок в UI не кладём.
-        if (kStitchEnabled && (m_gestureDirty || isJumpMove(pos))) {
+        // QMouseEvent в Qt 5 не даёт поменять screenPos. Прыжок в UI не кладём
+        // и якорь им не двигаем, даже когда склейка выключена.
+        if (isJumpMove(pos) || (kStitchEnabled && m_gestureDirty)) {
             if (isJumpMove(pos)) {
                 reportFalsePoint(pos);
             }
             markGestureDirty();
+            armReleaseWait(watched, nullptr, m_primaryTouchId);
             return true;
-        }
-        if (isJumpMove(pos)) {
-            markGestureDirty();
         }
         m_lastAcceptedPos = pos;
         return false;
@@ -2116,6 +2379,11 @@ bool TouchUsbMonitor::filterMouseEvent(QObject *watched, QMouseEvent *mouse)
             }
             return true;
         }
+        // Чужой Release без зажатого пальца окно после End не открывает:
+        // иначе следующий тап дальше ±10 съедается как призрак.
+        if (!m_pointerDown) {
+            return false;
+        }
         endContact();
         return false;
     }
@@ -2129,19 +2397,20 @@ bool TouchUsbMonitor::filterTouchEvent(QObject *watched, QTouchEvent *touch)
     expireStalePointerState();
 
     if (m_waitForLift) {
-        if (type == QEvent::TouchBegin) {
+        bool anyHeld = false;
+        for (const auto &point : touch->touchPoints()) {
+            if (touchPointHeld(point.state())) {
+                anyHeld = true;
+                break;
+            }
+        }
+        // Пустой кадр или пауза после сброса. Begin в ту же миллисекунду
+        // не снимает ожидание: иначе хвост сразу зажимает экран снова.
+        const bool pauseOver = m_releasedAt.isValid()
+                && m_releasedAt.elapsed() > kAttentionHoldMs;
+        if (!anyHeld || (pauseOver && type == QEvent::TouchBegin)) {
             m_waitForLift = false;
         } else {
-            bool anyHeld = false;
-            for (const auto &point : touch->touchPoints()) {
-                if (touchPointHeld(point.state())) {
-                    anyHeld = true;
-                    break;
-                }
-            }
-            if (!anyHeld) {
-                m_waitForLift = false;
-            }
             return true;
         }
     }
@@ -2202,9 +2471,16 @@ bool TouchUsbMonitor::filterTouchEvent(QObject *watched, QTouchEvent *touch)
         // она проваливается в кнопку под оверлеем проверки.
         if (m_pointerDown && first
                 && (!isSameAsLast(pos) || m_gestureDirty || m_stitchPending)) {
-            return absorbContinuingTouch(touch);
+            const bool stale = !m_lastLiveAt.isValid()
+                    || m_lastLiveAt.elapsed() > kWatchRejoinMs;
+            if (!stale) {
+                return absorbContinuingTouch(touch);
+            }
+            // Долго нет живого кадра: старый захват отпускаем и отдаём этот тап.
+            // Иначе поле проверки молчит, а «Назад» над ним ещё нажимается.
+            releaseHeldPress();
         }
-        // В первые 100 мс после End далёкая точка не палец. Близкая в том же
+        // Сразу после End далёкая точка не палец. Близкая в том же
         // кадре остаётся, чужие слоты из кадра убираем.
         if (!m_pointerDown && m_releasedAt.isValid()
                 && m_releasedAt.elapsed() <= kAttentionHoldMs && attentionActive()) {
@@ -2417,14 +2693,15 @@ bool TouchUsbMonitor::filterTouchEvent(QObject *watched, QTouchEvent *touch)
             reportFalsePoint(point.screenPos());
         }
         keepOnlyTouchId(touch, m_primaryTouchId);
-        if (kStitchEnabled && (m_gestureDirty || isJumpMove(primary->screenPos()))) {
+        if (isJumpMove(primary->screenPos()) || (kStitchEnabled && m_gestureDirty)) {
             markGestureDirty();
-            keepReleaseStitch(touch);
-            // Прыжок в UI не кладём: точка остаётся на последнем хорошем месте.
+            if (kStitchEnabled) {
+                keepReleaseStitch(touch);
+            }
+            // Прыжок в UI не кладём. Срок один, повторные кадры его не двигают:
+            // иначе после минуты внимания сброс уже не наступает.
+            armReleaseWait(watched, touch->device(), m_primaryTouchId);
             return true;
-        }
-        if (isJumpMove(primary->screenPos())) {
-            markGestureDirty();
         }
         m_lastAcceptedPos = primary->screenPos();
         return false;
@@ -2453,8 +2730,45 @@ bool TouchUsbMonitor::filterTouchEvent(QObject *watched, QTouchEvent *touch)
     return false;
 }
 
+void TouchUsbMonitor::releaseHeldPress()
+{
+    if (m_deliveringStitchRelease) {
+        return;
+    }
+    QObject *target = m_attnTarget.data();
+    if (!target) {
+        target = m_lastWindow.data();
+    }
+    const bool held = m_pointerDown || m_uiHasPress || m_attnPhase != AttnPhase::None;
+    if (!held) {
+        // Фильтр уже отпустил палец, а область могла остаться с захватом.
+        // mouseGrabber бывает пуст, когда держит именно тач.
+        sendTouchCancel(target, m_attnDevice);
+        releaseSceneGrab(target);
+        return;
+    }
+    if (m_attnPhase != AttnPhase::Release) {
+        m_attnPhase = AttnPhase::Release;
+        m_attnOrigin = m_lastAcceptedPos;
+        m_attnPos = m_lastAcceptedPos;
+        if (m_attnTouchId < 0) {
+            m_attnTouchId = m_primaryTouchId >= 0 ? m_primaryTouchId : m_liveTouchId;
+        }
+        if (!m_attnTarget) {
+            m_attnTarget = m_lastWindow;
+        }
+    }
+    if (m_attnTimer) {
+        m_attnTimer->stop();
+    }
+    writeTouchTrace(QStringLiteral("UI release"), m_lastAcceptedPos);
+    commitReleaseWait();
+}
+
 void TouchUsbMonitor::clearTouchTrace()
 {
+    // Вход в проверку тача. Зависший жест с прошлого экрана сюда не переносим.
+    clearContactState();
     if (!m_traceFile.isOpen()) {
         return;
     }
@@ -2584,6 +2898,69 @@ void TouchUsbMonitor::writeTouchTraceAt(const QString &line, const QPointF &pos,
     m_traceFile.flush();
 }
 
+void TouchUsbMonitor::observeGhosts(QEvent *event)
+{
+    // Событие не меняем и не глотаем. Бледный круг в проверке тача — только отметка.
+    if (auto *mouse = dynamic_cast<QMouseEvent *>(event)) {
+        const QPointF pos = mouse->screenPos();
+        const bool press = mouse->type() == QEvent::MouseButtonPress
+                || mouse->type() == QEvent::MouseButtonDblClick;
+        if (press && mouse->button() == Qt::LeftButton) {
+            m_ghostDown = true;
+            m_ghostPos = pos;
+            return;
+        }
+        if (mouse->type() == QEvent::MouseButtonRelease && mouse->button() == Qt::LeftButton) {
+            m_ghostDown = false;
+            return;
+        }
+        if (m_ghostDown && (mouse->buttons() & Qt::LeftButton)
+                && (qAbs(pos.x() - m_ghostPos.x()) > kMaxDxPx
+                    || qAbs(pos.y() - m_ghostPos.y()) > kMaxDyPx)) {
+            reportFalsePoint(pos);
+            return;
+        }
+        if (m_ghostDown && (mouse->buttons() & Qt::LeftButton)) {
+            m_ghostPos = pos;
+        }
+        return;
+    }
+
+    auto *touch = dynamic_cast<QTouchEvent *>(event);
+    if (!touch) {
+        return;
+    }
+    const QTouchEvent::TouchPoint *primary = nullptr;
+    for (const auto &point : touch->touchPoints()) {
+        if (!touchPointHeld(point.state())) {
+            continue;
+        }
+        if (!primary) {
+            primary = &point;
+            continue;
+        }
+        reportFalsePoint(point.screenPos());
+    }
+    if (!primary) {
+        if (event->type() == QEvent::TouchEnd || event->type() == QEvent::TouchCancel) {
+            m_ghostDown = false;
+        }
+        return;
+    }
+    const QPointF pos = primary->screenPos();
+    if (!m_ghostDown || primary->state() == Qt::TouchPointPressed) {
+        m_ghostDown = true;
+        m_ghostPos = pos;
+        return;
+    }
+    if (qAbs(pos.x() - m_ghostPos.x()) > kMaxDxPx
+            || qAbs(pos.y() - m_ghostPos.y()) > kMaxDyPx) {
+        reportFalsePoint(pos);
+        return;
+    }
+    m_ghostPos = pos;
+}
+
 bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
 {
     if (!isPointerEvent(event->type())) {
@@ -2593,7 +2970,7 @@ bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
     if (qobject_cast<QWindow *>(watched)) {
         m_lastWindow = watched;
     }
-    pollAttention();
+    // pollAttention(); // фильтрация выключена: таймер внимания не отпускает жест сам
 
     const bool nested = m_traceInEvent;
     const QString savedTag = m_traceTag;
@@ -2624,20 +3001,11 @@ bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
         return QObject::eventFilter(watched, event);
     }
 
-    if (isActivationMute() || isRecoverMute()) {
-        const QString line = label.isEmpty()
-                ? QStringLiteral("MUTE")
-                : QStringLiteral("MUTE %1").arg(label);
-        if (hasPos) {
-            writeTouchTrace(line, pos);
-        } else {
-            writeTouchTrace(line);
-        }
-        m_traceInEvent = nested;
-        m_traceTag = savedTag;
-        return true;
-    }
-
+    // Фильтрация выключена: глушение при активации и разбор кадра не глотают касание.
+    // if (isActivationMute() || isRecoverMute()) { ... return true; }
+    observeGhosts(event);
+    const bool filtered = false;
+    /*
     bool filtered = false;
     switch (event->type()) {
     case QEvent::MouseButtonPress:
@@ -2655,6 +3023,7 @@ bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
     default:
         break;
     }
+    */
 
     QString status = m_traceTag;
     if (status.isEmpty()) {
@@ -2695,6 +3064,9 @@ bool TouchUsbMonitor::eventFilter(QObject *watched, QEvent *event)
 
     if (filtered) {
         return true;
+    }
+    if (m_pointerDown) {
+        m_lastLiveAt.start();
     }
     return QObject::eventFilter(watched, event);
 }
@@ -2749,6 +3121,36 @@ void TouchUsbMonitor::setRecovering(bool on)
     }
     m_recovering = on;
     emit recoveringChanged();
+}
+
+// TEST: удалить после теста вместе с квадратом в main.qml.
+void TouchUsbMonitor::setTestRecoverAttempts(int count)
+{
+    if (m_testRecoverAttempts == count) {
+        return;
+    }
+    m_testRecoverAttempts = count;
+    emit testRecoverAttemptsChanged();
+}
+
+// TEST: любая потеря входа (WINSTARTP Mouse, PIC16F1459 и прочие). Удалить после теста.
+void TouchUsbMonitor::noteTestTouchLoss()
+{
+    if (!m_testRecoverVisible) {
+        m_testRecoverVisible = true;
+        emit testRecoverVisibleChanged();
+    }
+    m_testRecoverHideTimer->start(kTestRecoverHideMs);
+}
+
+// TEST: удалить после теста.
+void TouchUsbMonitor::hideTestRecoverBadge()
+{
+    if (!m_testRecoverVisible) {
+        return;
+    }
+    m_testRecoverVisible = false;
+    emit testRecoverVisibleChanged();
 }
 
 void TouchUsbMonitor::raiseScreenFault()
@@ -2877,6 +3279,9 @@ void TouchUsbMonitor::beginMouseCheck(const QString &missingDetail)
 
     qWarning().noquote() << "TouchUsbMonitor: touch input missing,"
                          << missingDetail << ", port reset";
+    // TEST: квадрат в углу. Удалить после теста.
+    setTestRecoverAttempts(0);
+    noteTestTouchLoss();
     writeTouchTrace(QStringLiteral("RECOVER start %1").arg(missingDetail));
     clearContactState();
     setRecovering(true);
@@ -2911,6 +3316,8 @@ void TouchUsbMonitor::kickPortCycle()
 
     m_activeDisablePath = path;
     qWarning().noquote() << "TouchUsbMonitor: port off cycle" << (m_cycle + 1) << path;
+    // TEST: цифра в квадрате = номер этого сброса порта. Удалить после теста.
+    setTestRecoverAttempts(m_cycle + 1);
     if (!writePortDisable(path, true)) {
         ++m_cycle;
         m_portPhase = 0;

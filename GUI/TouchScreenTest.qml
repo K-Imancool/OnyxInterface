@@ -194,6 +194,7 @@ Item {
     }
 
     MouseArea {
+        id: touchArea
         anchors.fill: parent
         z: 1
         hoverEnabled: false
@@ -274,6 +275,14 @@ Item {
         repeat: true
         running: true
         onTriggered: {
+            // Кружок уже погашен, а область всё ещё держит захват:
+            // новые касания ест она, «Назад» над ней ещё нажимается.
+            if (touchArea.pressed && !touchTestRoot.pressedNow) {
+                touchArea.ungrabMouse()
+                if (typeof touchUsbMonitor !== "undefined" && touchUsbMonitor)
+                    touchUsbMonitor.releaseHeldPress()
+                return
+            }
             if (touchTestRoot.pressedNow && !touchTestRoot.watchdogTripped) {
                 var elapsedMs = Date.now() - touchTestRoot.pressTimestampMs
                 if (elapsedMs > touchTestRoot.watchdogThresholdMs) {
@@ -281,6 +290,10 @@ Item {
                     touchTestRoot.watchdogTripped = true
                     touchTestRoot.statusText = qsTr("Подозрение на зависание: %1 мс").arg(Math.round(elapsedMs))
                     touchTestRoot.appendLog(qsTr("подозрение на зависание %1 ms").arg(Math.round(elapsedMs)))
+                    touchArea.ungrabMouse()
+                    if (typeof touchUsbMonitor !== "undefined" && touchUsbMonitor)
+                        touchUsbMonitor.releaseHeldPress()
+                    touchTestRoot.pressedNow = false
                 }
             }
         }

@@ -75,7 +75,7 @@ Rectangle {
         anchors.fill: parent
         font.pixelSize: Math.min(width, height) * 0.8
         font.bold: true
-        color: UiPalette.danger
+        color: UiPalette.neSelected
         visible: !cylConnected
         horizontalAlignment: Qt.AlignHCenter
         verticalAlignment: Qt.AlignVCenter

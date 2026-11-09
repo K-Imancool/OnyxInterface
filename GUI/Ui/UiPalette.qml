@@ -23,7 +23,7 @@ QtObject {
     readonly property color success: "#10B981"
     readonly property color danger: "#EF4444"
     readonly property color neSelected: "#FAA731"   // выбранная кнопка НЭ
-    readonly property color neGreen: "#00DC4A"      // подключённый нейтральный электрод
+    readonly property color neGreen: "#00AC2A"      // подключённый нейтральный электрод
 
     // Резание
     readonly property color cut: "#FFDD00"
