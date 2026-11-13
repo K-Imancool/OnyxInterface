@@ -1006,7 +1006,7 @@ void LinkStm::readRxCommand()
         // TODO - сделать проверку, что режим и выход совпадают с тем, что мы передали при активации
         
         if (m_rxCommand.data.size() >= 2) {
-            unitState.argonRealRate = static_cast<quint8>(m_rxCommand.data.at(1)) & 0x3F; // Реальный расход от 0,0 до 8,0 (0-80)
+            unitState.argonRealRate = static_cast<quint8>(m_rxCommand.data.at(1)) & 0x7F; // Реальный расход от 0,0 до 8,0 (0-80)
         }
         forceUnitStateEmit = true;
         break;
@@ -1038,7 +1038,7 @@ void LinkStm::readRxCommand()
             emit sigPowerOffCommand();
         } else if (m_rxCommand.com == ArgonBlowAck) {
             if (m_rxCommand.data.size() >= 2) {
-                unitState.argonRealRate = static_cast<quint8>(m_rxCommand.data.at(1)) & 0x3F; // Реальный расход от 0,0 до 8,0 (0-80)
+                unitState.argonRealRate = static_cast<quint8>(m_rxCommand.data.at(1)) & 0x7F; // Реальный расход от 0,0 до 8,0 (0-80)
             }
             forceUnitStateEmit = true;
         }

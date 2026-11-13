@@ -11,6 +11,7 @@
 
 class DeviceLogManager;
 class PeriphHandler;
+class UiClickSound;
 class QMouseEvent;
 class QTimer;
 class QTouchDevice;
@@ -25,7 +26,8 @@ class QTouchEvent;
  *   только когда ложных касаний уже нет. Новый Begin на той же строке вскоре после End
  *   не становится кликом, пока не видно, что это живой палец;
  * - дубликат Begin в ту же точку не глотаем (иначе окно не получает press);
- * - во время активации глушим pointer, кроме AutoStartStop (ACC).
+ * - во время активации глушим звук клика, кроме AutoStartStop (ACC).
+ *   Pointer-события в UI не глотаем.
  * При старте и пока виден USB-тач (ILITEK 222a:0001 или PIC16F1459 04d8:4931),
  * запоминается его USB-порт.
  * После старта UI и после каждой активации проверяется вход
@@ -50,6 +52,7 @@ public:
     explicit TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent = nullptr);
 
     void setPeriphHandler(PeriphHandler *periph);
+    void setClickSound(UiClickSound *clickSound);
 
     bool touchOk() const { return m_touchOk; }
     bool faultActive() const { return m_faultActive; }
@@ -103,6 +106,7 @@ private:
     QString resolvePortDisablePath();
     bool writePortDisable(const QString &path, bool disabled);
     bool isActivationMute() const;
+    void syncActivationClickMute();
     bool isRecoverMute() const;
     void armPostRecoverMute();
     bool isPointerEvent(QEvent::Type type) const;
@@ -190,6 +194,7 @@ private:
 
     DeviceLogManager *m_deviceLog = nullptr;
     PeriphHandler *m_periph = nullptr;
+    UiClickSound *m_clickSound = nullptr;
     QTimer *m_stepTimer = nullptr;
     QTimer *m_deadlineTimer = nullptr;
     QTimer *m_portProbeTimer = nullptr;

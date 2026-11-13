@@ -47,6 +47,11 @@ void UiClickSound::setEnabled(bool enabled)
     emit enabledChanged();
 }
 
+void UiClickSound::setActivationMuted(bool muted)
+{
+    m_activationMuted = muted;
+}
+
 void UiClickSound::play(bool force)
 {
     QElapsedTimer filterTimer;
@@ -123,7 +128,10 @@ bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
         m_touchSeen = true;
         const QPointF globalPos = touchEvent->touchPoints().first().screenPos();
         PlayTrace trace;
-        if (isOnSettingsVolumeSlider(window, globalPos)) {
+        if (m_activationMuted) {
+            trace.decision = "skip-activation";
+            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
+        } else if (isOnSettingsVolumeSlider(window, globalPos)) {
             trace.decision = "skip-slider";
             trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
         } else {
@@ -155,7 +163,10 @@ bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
             break;
         }
         PlayTrace trace;
-        if (isOnSettingsVolumeSlider(window, mouseEvent->globalPos())) {
+        if (m_activationMuted) {
+            trace.decision = "skip-activation";
+            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
+        } else if (isOnSettingsVolumeSlider(window, mouseEvent->globalPos())) {
             trace.decision = "skip-slider";
             trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
         } else {

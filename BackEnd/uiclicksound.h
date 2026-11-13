@@ -23,6 +23,10 @@ public:
     bool enabled() const;
     void setEnabled(bool enabled);
 
+    /// Ложные касания во время активации (кроме АСС) не щёлкают.
+    /// Превью громкости и play(force) не глушатся.
+    void setActivationMuted(bool muted);
+
     /// Обычный клик: всегда 30% Pulse. force=true — даже если звук выключен.
     Q_INVOKABLE void play(bool force = false);
     /// Превью слайдера громкости: уровни 0..3 → 20/30/45/60%. Всегда играет.
@@ -55,6 +59,7 @@ private:
     QString m_paplayBin;
     QPointer<QQuickItem> m_volumeSlider;
     bool m_enabled = true;
+    bool m_activationMuted = false;
     bool m_touchSeen = false;
     QElapsedTimer m_lastPlay;
     QElapsedTimer m_lastInput;

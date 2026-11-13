@@ -104,19 +104,19 @@ Rectangle {
                 Rectangle {
                     id: progDeleteSign
                     height: parent.height
-                    width: 40*5
-                    color: UiPalette.danger
-                    border.color: UiPalette.danger
+                    width: 250
+                    color: UiPalette.surface
+                    border.color: UiPalette.border
                     border.width: 1
                     radius: 6
                     visible: theModel.subProgCount > 1 && !theModel.endoProgramView
 
                     Text {
-                        text: qsTr("удалить")
+                        text: qsTr("удалить лист")
                         horizontalAlignment: Qt.AlignHCenter
                         verticalAlignment: Qt.AlignVCenter
                         anchors.fill: parent
-                        color: UiPalette.darkInk
+                        color: UiPalette.text
                         font.pixelSize: 30
                         font.bold: true
                     }

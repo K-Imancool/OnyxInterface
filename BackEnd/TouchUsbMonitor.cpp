@@ -2,6 +2,7 @@
 #include "DeviceLogManager.h"
 #include "apppaths.h"
 #include "periphhandler.h"
+#include "uiclicksound.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -418,6 +419,20 @@ void TouchUsbMonitor::setPeriphHandler(PeriphHandler *periph)
     }
 }
 
+void TouchUsbMonitor::setClickSound(UiClickSound *clickSound)
+{
+    m_clickSound = clickSound;
+    syncActivationClickMute();
+}
+
+void TouchUsbMonitor::syncActivationClickMute()
+{
+    if (!m_clickSound) {
+        return;
+    }
+    m_clickSound->setActivationMuted(isActivationMute());
+}
+
 void TouchUsbMonitor::onActivationChanged(bool active)
 {
     // На старте/стопе активации сбрасываем состояние фильтра.
@@ -436,8 +451,10 @@ void TouchUsbMonitor::onActivationChanged(bool active)
             qWarning("TouchUsbMonitor: AutoStartStop — pointer allowed (touch stops activation)");
             writeTouchTrace(QStringLiteral("ACT on mute=0 AutoStartStop"));
         }
+        syncActivationClickMute();
         return;
     }
+    syncActivationClickMute();
     if (!m_activationWasOn) {
         return;
     }

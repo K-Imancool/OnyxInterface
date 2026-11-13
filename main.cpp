@@ -678,6 +678,7 @@ int main(int argc, char *argv[])
     ctrl->setDeviceLogManager(deviceLog);
 
     auto *touchUsbMonitor = new TouchUsbMonitor(deviceLog, &app);
+    touchUsbMonitor->setClickSound(uiClickSound);
     touchUsbMonitor->setPeriphHandler(ctrl->getPeripheryHandle());
     engine.rootContext()->setContextProperty(QStringLiteral("touchUsbMonitor"), touchUsbMonitor);
     // После журнала: 100 мс LOW на GPIO0_D5 сразу даст P|7, а не пустой logPowerOff.
