@@ -198,7 +198,8 @@ private:
     void pedalRemover(int socketToSkip, int pedalToRemove);
 
     int coagInstrumentButtonValue(int socketRow) const;
-    void syncBi2HandlePedal(int socketRow);
+    // activateHandle: выбрать BiHandle, если инструмент с кнопкой выбран в ТЕРМОШОВ.
+    void syncBi2HandlePedal(int socketRow, bool activateHandle = false);
 
     /**
      * @brief populateRoles - метамагическая запонялка имён ролей по именам енума ролей
@@ -218,7 +219,6 @@ private:
     int m_subProgIdx = 0;
     int activeSocket = -1;
     bool m_endoProgramView = false;
-    quint64 m_activationSequence = 0;
 
     QStringList m_socketNames;
     QHash<int, QByteArray> m_roles;

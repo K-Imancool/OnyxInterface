@@ -61,7 +61,7 @@ void UiClickSound::play(bool force)
 
 void UiClickSound::playPreview(int level)
 {
-    static const int kPreviewPercents[] = {20, 30, 45, 60};
+    static const int kPreviewPercents[] = {40, 60, 80, 100};
     const int clamped = qBound(0, level, 3);
     QElapsedTimer filterTimer;
     filterTimer.start();
@@ -91,6 +91,73 @@ bool UiClickSound::isOnSettingsVolumeSlider(QQuickWindow *window, const QPointF 
     return QRectF(0, 0, slider->width(), slider->height()).contains(local);
 }
 
+bool UiClickSound::previewVolumeSlider(QQuickWindow *window, const QPointF &globalPos)
+{
+    if (!isOnSettingsVolumeSlider(window, globalPos)) {
+        return false;
+    }
+    const int level = volumeLevelAt(m_volumeSlider.data(), globalPos);
+    playPreview(level);
+    emit volumeSliderTouched(level);
+    return true;
+}
+
+int UiClickSound::volumeLevelAt(const QQuickItem *slider, const QPointF &globalPos) const
+{
+    if (!slider) {
+        return 0;
+    }
+
+    // Та же геометрия, что QQuickSliderPrivate::positionAt + snapPosition + valueAt:
+    // на TouchBegin value слайдера ещё предыдущий.
+    const QPointF point = slider->mapFromGlobal(globalPos);
+    const qreal from = slider->property("from").toReal();
+    const qreal to = slider->property("to").toReal();
+    const qreal step = slider->property("stepSize").toReal();
+    const bool horizontal = slider->property("orientation").toInt() != Qt::Vertical;
+
+    const QObject *handleObject = slider->property("handle").value<QObject *>();
+    const auto *handle = qobject_cast<const QQuickItem *>(handleObject);
+    const qreal handleSize = handle
+            ? (horizontal ? handle->width() : handle->height())
+            : 0.0;
+    const qreal offset = handleSize / 2.0;
+    const qreal extent = (horizontal
+                          ? slider->property("availableWidth").toReal()
+                          : slider->property("availableHeight").toReal())
+            - handleSize;
+
+    qreal pos = 0.0;
+    if (!qFuzzyIsNull(extent)) {
+        if (horizontal) {
+            if (slider->property("mirrored").toBool()) {
+                pos = (slider->width() - point.x()
+                       - slider->property("rightPadding").toReal() - offset) / extent;
+            } else {
+                pos = (point.x() - slider->property("leftPadding").toReal() - offset) / extent;
+            }
+        } else {
+            pos = (slider->height() - point.y()
+                   - slider->property("bottomPadding").toReal() - offset) / extent;
+        }
+    }
+    pos = qBound<qreal>(0.0, pos, 1.0);
+
+    const qreal range = to - from;
+    if (!qFuzzyIsNull(range) && !qFuzzyIsNull(step)) {
+        const qreal effectiveStep = step / range;
+        if (!qFuzzyIsNull(effectiveStep)) {
+            pos = qRound(pos / effectiveStep) * effectiveStep;
+        }
+    }
+
+    const qreal span = range * pos;
+    const qreal value = qFuzzyIsNull(step)
+            ? from + span
+            : from + qRound(span / step) * step;
+    return qRound(value);
+}
+
 void UiClickSound::logClick(const char *origin, const PlayTrace &trace, qint64 filterMs) const
 {
     if (!clickLatencyLogEnabled()) {
@@ -113,7 +180,7 @@ void UiClickSound::logClick(const char *origin, const PlayTrace &trace, qint64 f
 bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
 {
     auto *window = qobject_cast<QQuickWindow *>(watched);
-    if (!window || !m_enabled) {
+    if (!window) {
         return false;
     }
 
@@ -127,12 +194,16 @@ bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
         filterTimer.start();
         m_touchSeen = true;
         const QPointF globalPos = touchEvent->touchPoints().first().screenPos();
+        if (previewVolumeSlider(window, globalPos)) {
+            m_lastInput.restart();
+            break;
+        }
+        if (!m_enabled) {
+            break;
+        }
         PlayTrace trace;
         if (m_activationMuted) {
             trace.decision = "skip-activation";
-            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
-        } else if (isOnSettingsVolumeSlider(window, globalPos)) {
-            trace.decision = "skip-slider";
             trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
         } else {
             trace = playAtPercent(kNormalClickPercent, false);
@@ -162,12 +233,16 @@ bool UiClickSound::eventFilter(QObject *watched, QEvent *event)
             logClick("mouse", trace, filterTimer.elapsed());
             break;
         }
+        if (previewVolumeSlider(window, mouseEvent->globalPos())) {
+            m_lastInput.restart();
+            break;
+        }
+        if (!m_enabled) {
+            break;
+        }
         PlayTrace trace;
         if (m_activationMuted) {
             trace.decision = "skip-activation";
-            trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
-        } else if (isOnSettingsVolumeSlider(window, mouseEvent->globalPos())) {
-            trace.decision = "skip-slider";
             trace.sincePlayMs = m_lastPlay.isValid() ? m_lastPlay.elapsed() : -1;
         } else {
             trace = playAtPercent(kNormalClickPercent, false);

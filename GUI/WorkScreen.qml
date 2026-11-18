@@ -28,6 +28,10 @@ Item {
     property alias saveProgDialog: saveProgDialog
     property alias keyboardLoader: keyboardLoader
 
+    // После «Сохранить» в диалоге выхода меню открывается только когда сохранение принято.
+    property bool openMenuAfterSave: false
+    readonly property bool unsavedExitBlocksActivation: unsavedExitDialog.opened || openMenuAfterSave
+
     // Во время активации режима без ARGON скрываем баллоны и расход на боковой панели.
     readonly property bool activationHidesArgon: {
         if (!periphHandle.activation && !activationIndicator.opened)
@@ -54,6 +58,17 @@ Item {
 
     function pedalDrawerBlockedForSocket(socketId) {
         return monoSprayM1M2Active && (socketId === 2 || socketId === 3)
+    }
+
+    function openWorkMenu() {
+        if (menuLoad.loaderSourceBaseName() === "")
+            menuLoad.navigateTo("qrc:/MainMenu.qml")
+        leftDrawer.open()
+    }
+
+    onUnsavedExitBlocksActivationChanged: {
+        if (host)
+            host.activationEnable()
     }
 
     onActivationHidesArgonChanged: {
@@ -333,8 +348,8 @@ Item {
                     Layout.fillHeight: true
                     text: qsTr("ПРИНЯТЬ")
                     primary: true
-                    primaryEnabledColor: UiPalette.accent
-                    labelColor: UiPalette.accentInk
+                    primaryEnabledColor: "#264093"
+                    labelColor: "white"
                     onPressed: {
                         overwriteConfirmDialog.close()
                         saveProgDialog.accept()
@@ -390,12 +405,94 @@ Item {
                     Layout.fillHeight: true
                     text: qsTr("ПРИНЯТЬ")
                     primary: true
-                    primaryEnabledColor: UiPalette.accent
-                    labelColor: UiPalette.accentInk
+                    primaryEnabledColor: "#264093"
+                    labelColor: "white"
                     onPressed: endoProgramMixDialog.close()
                 }
 
                 Item { Layout.fillWidth: true }
+            }
+        }
+    }
+    Dialog {
+        id: unsavedExitDialog
+        modal: true
+        closePolicy: Popup.NoAutoClose
+        width: parent ? Math.min(parent.width - 80, 1100) : 1100
+        height: 360
+        x: parent ? Math.round((parent.width - width) / 2) : 0
+        y: parent ? Math.round((parent.height - height) / 2) : 0
+
+        background: Rectangle {
+            color: UiPalette.background
+            border.color: UiPalette.accent
+            border.width: 3
+        }
+
+        contentItem: Rectangle {
+            color: "transparent"
+
+            Text {
+                anchors.fill: parent
+                anchors.leftMargin: 36
+                anchors.rightMargin: 36
+                wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                text: qsTr("Имеются несохранённые изменения.\nСохранить программу перед выходом в меню?")
+                font.pixelSize: 34
+                font.bold: true
+                color: UiPalette.text
+            }
+        }
+
+        footer: Rectangle {
+            color: "transparent"
+            implicitHeight: 118
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 24
+                anchors.rightMargin: 24
+                anchors.topMargin: 16
+                anchors.bottomMargin: 16
+                spacing: 16
+
+                DialogActionButton {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    text: qsTr("ОТМЕНА")
+                    labelPixelSize: 28
+                    secondaryColor: UiPalette.textSecondary
+                    onPressed: unsavedExitDialog.close()
+                }
+
+                DialogActionButton {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    text: qsTr("НЕ СОХРАНЯТЬ")
+                    labelPixelSize: 28
+                    secondaryColor: UiPalette.textSecondary
+                    onPressed: {
+                        unsavedExitDialog.close()
+                        openWorkMenu()
+                    }
+                }
+
+                DialogActionButton {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    text: qsTr("СОХРАНИТЬ")
+                    labelPixelSize: 28
+                    primary: true
+                    primaryEnabledColor: "#264093"
+                    labelColor: "white"
+                    onPressed: {
+                        unsavedExitDialog.close()
+                        openMenuAfterSave = true
+                        saveProgDialog.open()
+                    }
+                }
             }
         }
     }
@@ -417,9 +514,14 @@ Item {
             host.currentProgramIsUser = true
             host.setCurrentProgram(saveProgDialog.scopeName, saveProgDialog.progName, true, false)
             Qt.inputMethod.hide()
+            if (openMenuAfterSave) {
+                openMenuAfterSave = false
+                openWorkMenu()
+            }
         }
         function onRejected() {
             Qt.inputMethod.hide()
+            openMenuAfterSave = false
         }
         // function onOpened() {
         //     // saveProgDialog.progName = ""
@@ -680,9 +782,11 @@ Item {
     Connections {
         target: statusDummy
         function onDrawerCalled() {
-            if (menuLoad.loaderSourceBaseName() === "")
-                menuLoad.navigateTo("qrc:/MainMenu.qml")
-            leftDrawer.open()
+            if (host.hasUnsavedChanges) {
+                unsavedExitDialog.open()
+                return
+            }
+            openWorkMenu()
         }
         function onSaveCalled() {
             saveProgDialog.open()

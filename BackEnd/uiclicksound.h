@@ -27,9 +27,9 @@ public:
     /// Превью громкости и play(force) не глушатся.
     void setActivationMuted(bool muted);
 
-    /// Обычный клик: всегда 30% Pulse. force=true — даже если звук выключен.
+    /// Обычный клик: всегда 60% Pulse. force=true — даже если звук выключен.
     Q_INVOKABLE void play(bool force = false);
-    /// Превью слайдера громкости: уровни 0..3 → 20/30/45/60%. Всегда играет.
+    /// Превью слайдера громкости: уровни 0..3 → 40/60/80/100%. Всегда играет.
     Q_INVOKABLE void playPreview(int level);
     Q_INVOKABLE void stop();
 
@@ -37,6 +37,8 @@ public:
 
 signals:
     void enabledChanged();
+    /// Касание слайдера громкости: уровень по координате пальца, не по старому value.
+    void volumeSliderTouched(int level);
 
 private:
     struct PlayTrace {
@@ -48,10 +50,12 @@ private:
     void loadSource();
     PlayTrace playAtPercent(int percent, bool force);
     bool isOnSettingsVolumeSlider(QQuickWindow *window, const QPointF &globalPos);
+    bool previewVolumeSlider(QQuickWindow *window, const QPointF &globalPos);
+    int volumeLevelAt(const QQuickItem *slider, const QPointF &globalPos) const;
     void logClick(const char *origin, const PlayTrace &trace, qint64 filterMs) const;
 
     static constexpr qint64 kMinIntervalMs = 220;
-    static constexpr int kNormalClickPercent = 30;
+    static constexpr int kNormalClickPercent = 60;
     static constexpr int kPulseVolumeNorm = 65536;
     static constexpr const char *kVolumeSliderObjectName = "settingsVolumeSlider";
 

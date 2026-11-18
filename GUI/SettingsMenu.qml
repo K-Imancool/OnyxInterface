@@ -243,19 +243,15 @@ Item {
                                 leftPadding: 18
                                 rightPadding: 18
                                 onPressedChanged: {
-                                    if (pressed) {
-                                        // value обновляется после press — клик на следующем тике.
-                                        Qt.callLater(function() {
-                                            settingsMenuRoot.applyVolumeLevel(volumeSlider.value)
-                                            if (typeof uiClickSound !== "undefined" && uiClickSound) {
-                                                uiClickSound.playPreview(Math.round(volumeSlider.value))
-                                            }
-                                        })
-                                    } else {
+                                    if (!pressed)
                                         settingsMenuRoot.saveVolumeLevel(value)
-                                    }
                                 }
                                 onMoved: settingsMenuRoot.applyVolumeLevel(value)
+
+                                Connections {
+                                    target: (typeof uiClickSound !== "undefined") ? uiClickSound : null
+                                    onVolumeSliderTouched: settingsMenuRoot.applyVolumeLevel(level)
+                                }
 
                                 background: Item {
                                     x: volumeSlider.leftPadding

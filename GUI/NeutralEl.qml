@@ -301,6 +301,7 @@ Rectangle {
                 right: parent.right
                 rightMargin: 10
                 topMargin: 10
+                leftMargin: 50
             }
         }
         MassSelectionBut {
@@ -308,12 +309,13 @@ Rectangle {
             type: 1
             line1Text: qsTr("5-15 кг")
 //            line1Text: qsTr("<b>Ребёнок</b>: 5-15 кг")
-            powerValueText: "75"
+            powerValueText: qsTr("75 Вт")
             iconSource: neutralEl.neIconsBasePath + "NE_kid.png"
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
                 rightMargin: 10
+                leftMargin: 20
             }
         }
         MassSelectionBut {
@@ -321,7 +323,7 @@ Rectangle {
             type: 0
             line1Text: qsTr("&lt; 5 кг")
 //            line1Text: qsTr("<b>Младенец</b>: &lt; 5 кг")
-            powerValueText: "50"
+            powerValueText: qsTr("50 Вт")
             iconSource: neutralEl.neIconsBasePath + "NE_baby.png"
             anchors {
                 bottom: parent.bottom

@@ -246,9 +246,9 @@ Dialog {
                 text: qsTr("ПРИНЯТЬ")
                 labelPixelSize: 34
                 primary: true
-                primaryEnabledColor: UiPalette.accent
-                primaryDisabledColor: UiPalette.accentDisabled
-                labelColor: UiPalette.accentInk
+                primaryEnabledColor: "#264093"
+                primaryDisabledColor: "#26409370"
+                labelColor: "white"
                 enabled: progName.length > 0 && scopeName.length > 0
                 onPressed: {
                     if (progName.length > 0

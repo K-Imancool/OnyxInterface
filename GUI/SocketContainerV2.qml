@@ -490,8 +490,8 @@ Rectangle {
                     Layout.fillHeight: true
                     text: qsTr("ПРИНЯТЬ")
                     primary: true
-                    primaryEnabledColor: UiPalette.danger
-                    labelColor: UiPalette.darkInk
+                    primaryEnabledColor: "#264093"
+                    labelColor: "white"
                     labelPixelSize: 34
                     onPressed: {
                         recomHandle.removeSubProg()

@@ -154,13 +154,13 @@ Rectangle {
             }
             color: "transparent"
             Rectangle {
-                width: parent.height *.8
+                width: parent.height *.85
                 height: width
                 radius: width/2
                 color: UiPalette.bipolar
                 border {
-                    color: UiPalette.accentInk
-                    width:2
+                    color: "white"
+                    width:7
                 }
                 anchors.centerIn: parent
             }

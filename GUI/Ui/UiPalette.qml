@@ -26,12 +26,14 @@ QtObject {
     readonly property color neGreen: "#00AC2A"      // подключённый нейтральный электрод
 
     // Резание
-    readonly property color cut: "#FFDD00"
+    readonly property color cut: "yellow"
+//    readonly property color cut: "#FFDD00"
     readonly property color cutSoft: "#FFE98A"
     readonly property color cutText: "#D9A000"      // жёлтый текст на светлом фоне
 
     // Коагуляция
-    readonly property color coag: "#0F62FE"
+    readonly property color coag: "blue"
+//    readonly property color coag: "#0F62FE"
     readonly property color coagSoft: "#74B0FF"     // текст коагуляции на тёмном фоне
     readonly property color coagDeep: "#003375"
 
@@ -41,9 +43,8 @@ QtObject {
     readonly property color darkInk: "#F0F4F6"
     readonly property color accentInk: "#F0F4F6"
 
-    // Биполярный инструмент. В гамме отдельного цвета нет — акцентный циан,
-    // чтобы не сливался ни с резанием, ни с коагуляцией.
-    readonly property color bipolar: "#00A8CC"
+    // Биполярный инструмент. Фиолетовый, отдельно от жёлтого резания и синей коагуляции.
+    readonly property color bipolar: "#800080"
 
     /*
     Прежние цвета. Чтобы вернуть, подставьте эти значения в свойства выше.

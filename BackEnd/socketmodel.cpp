@@ -1,6 +1,5 @@
 #include "socketmodel.h"
 #include <QQmlEngine>
-#include <QTimer>
 #include <QDebug>
 // #include <algorithm>
 
@@ -1023,40 +1022,22 @@ void SocketModel::slotRemoveSubProg()
 
 void SocketModel::startActivation(int socketId, bool isCut)
 {
-    const quint64 activationSequence = ++m_activationSequence;
-    QTimer::singleShot(0, this, [this, socketId, isCut, activationSequence]() {
-        if (activationSequence != m_activationSequence) {
-            return;
+    expandSocket(socketId);
+    // Повтор той же активации не меняет роль, и QML не вызовет обработчик.
+    // Сброс и установка здесь же: отложенный open() пересекался со stop.
+    const Onyx::SocStatus newStatus = isCut ? Onyx::S_ACTIVE_CUT : Onyx::S_ACTIVE_COAG;
+    if (m_itemsMapPtr && socketId < static_cast<int>(m_itemsMapPtr->size())) {
+        auto iter = m_itemsMapPtr->find(socketId);
+        if (iter != m_itemsMapPtr->end() && !iter->second.isNull()) {
+            if (iter->second->socketStatus() == newStatus)
+                qmlSetData(socketId, Onyx::S_ENABLED, "socketstatus");
+            qmlSetData(socketId, newStatus, "socketstatus");
         }
-
-        expandSocket(socketId);
-        // Сначала сбрасываем статус, чтобы QML увидел изменение при повторной активации
-        Onyx::SocStatus newStatus = isCut ? Onyx::S_ACTIVE_CUT : Onyx::S_ACTIVE_COAG;
-        if (m_itemsMapPtr && socketId < static_cast<int>(m_itemsMapPtr->size())) {
-            auto iter = m_itemsMapPtr->find(socketId);
-            if (iter != m_itemsMapPtr->end() && !iter->second.isNull()) {
-                // Если статус уже установлен, сначала сбрасываем его
-                if (iter->second->socketStatus() == newStatus) {
-                    qmlSetData(socketId, Onyx::S_ENABLED, "socketstatus");
-                    // Даём время QML обработать изменение
-                    QTimer::singleShot(10, this, [this, socketId, newStatus, activationSequence]() {
-                        if (activationSequence != m_activationSequence) {
-                            return;
-                        }
-                        qmlSetData(socketId, newStatus, "socketstatus");
-                    });
-                } else {
-                    qmlSetData(socketId, newStatus, "socketstatus");
-                }
-            }
-        }
-    });
+    }
 }
 
 void SocketModel::stopActivation()
 {
-    ++m_activationSequence;
-
     if (m_itemsMapPtr == nullptr || m_instrMapPtr == nullptr) {
         return ;
     }
@@ -1110,6 +1091,9 @@ bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMa
     QVector<int> roles;
 
     if (isModeCoag) {
+        const CSurgModePtr targetMode = iter->second->getMode(modeIndex, true);
+        const int instrBefore = targetMode.isNull() ? -1 : targetMode->selectedInstrId();
+
         if (iter->second->setCoagModeIndex(modeIndex)) {
             roles.append(CoagModeIndex);
             roles.append(CoagModeName);
@@ -1148,15 +1132,19 @@ bool SocketModel::commitModeChange(int socketId, int modeIndex, const QVariantMa
             roles.append(CoagModePower);
             res = true;
         }
+        bool instrumentChanged = false;
         if (iter->second->setInstrumIndex(param.value("instrindex").toInt(), true)) {
             roles.append(CoagModeInstrName);
             roles.append(CoagModeInstrIndex);
             roles.append(CoagModeInstrID);
             roles.append(CoagModeInstrNum);  // Добавляем Num для обновления изображения
             res = true;
+            const CSurgModePtr modeAfter = iter->second->curCoagMode();
+            const int instrAfter = modeAfter.isNull() ? -1 : modeAfter->selectedInstrId();
+            instrumentChanged = instrAfter != instrBefore;
         }
         if (res) {
-            syncBi2HandlePedal(socketId);
+            syncBi2HandlePedal(socketId, instrumentChanged);
             emit dataChanged(idx, idx, roles);
         }
         return res;
@@ -1477,7 +1465,7 @@ int SocketModel::coagInstrumentButtonValue(int socketRow) const
     return instrIter->second->hadleType();
 }
 
-void SocketModel::syncBi2HandlePedal(int socketRow)
+void SocketModel::syncBi2HandlePedal(int socketRow, bool activateHandle)
 {
     const auto resolved = resolveSocket(socketRow);
     if (!resolved.itemsMap || !resolved.instrMap) {
@@ -1498,7 +1486,16 @@ void SocketModel::syncBi2HandlePedal(int socketRow)
     socketItem.updateBi2AllowedPedals(hasHandleButton);
 
     QVector<int> roles = {SocketAllowedPedal};
-    if (!hasHandleButton && socketItem.pedal() == Onyx::INSTR_BUTTON_BI) {
+    const CSurgModePtr coagMode = socketItem.curCoagMode();
+    const int modeId = coagMode.isNull() ? ESHF::NO_MODE : coagMode->id();
+    const bool termoshov = modeId == ESHF::TERMOSHOV || modeId == ESHF::TERMOSHOV_A;
+
+    if (activateHandle && termoshov && hasHandleButton) {
+        if (socketItem.pedal() != Onyx::INSTR_BUTTON_BI
+                && socketItem.setPedal(Onyx::INSTR_BUTTON_BI)) {
+            roles.append(SocketPedal);
+        }
+    } else if (!hasHandleButton && socketItem.pedal() == Onyx::INSTR_BUTTON_BI) {
         socketItem.setPedal(Onyx::NO_PED);
         roles.append(SocketPedal);
     }

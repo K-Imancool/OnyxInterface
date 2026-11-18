@@ -721,9 +721,9 @@ void ControlCenter::resetSystem()
     m_shutdownStarted = true;
 
     const QList<QPair<QString, QStringList>> rebootActions = {
-        {QStringLiteral("systemctl"), {QStringLiteral("reboot")}},
-        {QStringLiteral("shutdown"), {QStringLiteral("-r"), QStringLiteral("now")}},
-        {QStringLiteral("reboot"), {}},
+        {QStringLiteral("systemctl"), {QStringLiteral("--no-wall"), QStringLiteral("reboot")}},
+        {QStringLiteral("shutdown"), {QStringLiteral("--no-wall"), QStringLiteral("-r"), QStringLiteral("now")}},
+        {QStringLiteral("reboot"), {QStringLiteral("--no-wall")}},
     };
 
     for (const auto &action : rebootActions) {
@@ -771,16 +771,17 @@ void ControlCenter::shutdownSystem()
     m_shutdownStarted = true;
 
     // --no-block: при аварии питания systemctl poweroff иначе может не вернуться.
+    // --no-wall: не слать «Broadcast message» / «The system will power off now!» на tty.
     // User-сервис: polkit login1.power-off для kikorik (см. roc-rk3566-zero-install).
     const QList<QPair<QString, QStringList>> powerOffActions = {
-        {QStringLiteral("/usr/bin/systemctl"), {QStringLiteral("poweroff"), QStringLiteral("--no-block")}},
-        {QStringLiteral("systemctl"), {QStringLiteral("poweroff"), QStringLiteral("--no-block")}},
+        {QStringLiteral("/usr/bin/systemctl"), {QStringLiteral("--no-wall"), QStringLiteral("poweroff"), QStringLiteral("--no-block")}},
+        {QStringLiteral("systemctl"), {QStringLiteral("--no-wall"), QStringLiteral("poweroff"), QStringLiteral("--no-block")}},
         {QStringLiteral("/usr/bin/loginctl"), {QStringLiteral("poweroff")}},
         {QStringLiteral("loginctl"), {QStringLiteral("poweroff")}},
-        {QStringLiteral("/sbin/shutdown"), {QStringLiteral("-h"), QStringLiteral("now")}},
-        {QStringLiteral("shutdown"), {QStringLiteral("-h"), QStringLiteral("now")}},
-        {QStringLiteral("/sbin/poweroff"), {}},
-        {QStringLiteral("poweroff"), {}},
+        {QStringLiteral("/sbin/shutdown"), {QStringLiteral("--no-wall"), QStringLiteral("-h"), QStringLiteral("now")}},
+        {QStringLiteral("shutdown"), {QStringLiteral("--no-wall"), QStringLiteral("-h"), QStringLiteral("now")}},
+        {QStringLiteral("/sbin/poweroff"), {QStringLiteral("--no-wall")}},
+        {QStringLiteral("poweroff"), {QStringLiteral("--no-wall")}},
     };
 
     for (const auto &action : powerOffActions) {

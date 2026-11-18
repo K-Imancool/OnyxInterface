@@ -1372,6 +1372,14 @@ Max. 50</translation>
 Max. 75</translation>
     </message>
     <message>
+        <source>75 Вт</source>
+        <translation>75 W</translation>
+    </message>
+    <message>
+        <source>50 Вт</source>
+        <translation>50 W</translation>
+    </message>
+    <message>
         <source>Пациент:</source>
         <translation>Patient:</translation>
     </message>
@@ -1982,6 +1990,10 @@ EMPTY</translation>
         <translation>Not saved</translation>
     </message>
     <message>
+        <source>НЕ СОХРАНЕНО!</source>
+        <translation>NOT SAVED!</translation>
+    </message>
+    <message>
         <source>СЕРИЙНЫЙ НОМЕР И ТИП</source>
         <translation>Serial number and type</translation>
     </message>
@@ -2138,6 +2150,10 @@ SETTINGS</translation>
     <message>
         <source>удалить</source>
         <translation>delete</translation>
+    </message>
+    <message>
+        <source>удалить лист</source>
+        <translation>delete sheet</translation>
     </message>
     <message>
         <source>Подтверждение удаления</source>
@@ -2565,6 +2581,10 @@ Recent events:
     <message>
         <source>Подозрение на зависание: %1 мс</source>
         <translation>Possible freeze: %1 ms</translation>
+    </message>
+    <message>
+        <source>подозрение на зависание %1 ms</source>
+        <translation>possible freeze %1 ms</translation>
     </message>
     <message>
         <source>сброс по таймеру %1 ms</source>
@@ -3565,6 +3585,10 @@ This cannot be undone.</translation>
     <message>
         <source>Ошибка связи: CRC не совпадает</source>
         <translation>Communication error: CRC mismatch</translation>
+    </message>
+    <message>
+        <source>Ошибка сенсорного экрана</source>
+        <translation>Touch screen error</translation>
     </message>
     <message>
         <source>Ошибка связи с аргоновым модулем: передача не выполнена</source>

@@ -759,9 +759,12 @@ bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
 				                instrumConstraints,
 				                progId > 0 && progId < 1000);
 			}
-			// OutEnabled_MASK: MSB→LSB — БИ1 cut/coag … МОНО2 cut/coag
-			bool cutEna = hasNonZeroDigit(progItem.at(29).toInt(), 7 - 2 * i);
-			bool coagEna = hasNonZeroDigit(progItem.at(29).toInt(), 6 - 2 * i);
+			// OutEnabled_MASK: разряды 0..7 — БИ1 cut/coag … МОНО2 cut/coag.
+			// Разряд 8 — на БИ2 выбрана кнопка BiHandle.
+			const int outMask = progItem.at(29).toInt();
+			bool cutEna = hasNonZeroDigit(outMask, 7 - 2 * i);
+			bool coagEna = hasNonZeroDigit(outMask, 6 - 2 * i);
+			const bool biHandle = hasNonZeroDigit(outMask, 8);
 
 			const int singleIdx = listsPedalColumnToSocketIndex(progItem.at(27).toInt());
 			const int doubleIdx = listsPedalColumnToSocketIndex(progItem.at(28).toInt());
@@ -769,6 +772,8 @@ bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
 				socket->setPedal(Onyx::DOUBLE_PED);
 			} else if (singleIdx >= 0 && i == singleIdx) {
 				socket->setPedal(Onyx::SINGLE_PED);
+			} else if (biHandle && i == 1) {
+				socket->setPedal(Onyx::INSTR_BUTTON_BI);
 			} else {
 				socket->setPedal(Onyx::NO_PED);
 			}
@@ -1795,7 +1800,7 @@ QList<QStringList> ProgLoader::prepSaveState()
 			curList.append(builder.makeSocketString(j,i));
 		}
 		curList.append(builder.makePedalString(i));
-        curList.append(builder.makeOutEnableMask());
+        curList.append(builder.makeOutEnableMask(i));
 	}
 	return listsStr;
 }

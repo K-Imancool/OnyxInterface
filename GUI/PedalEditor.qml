@@ -197,15 +197,19 @@ Rectangle {
                 color: UiPalette.accent
             }
             Rectangle {
-                width: parent.width * .65
-                height: parent.height * .65
-                radius: width/2
-                color: UiPalette.bipolar
-                border {
-                    width: 2
-                    color: UiPalette.coagInk
+                width: parent.width * .72
+                height: parent.height * .72
+                radius: width / 2
+                color: "white"
+                anchors.centerIn: parent
+
+                Rectangle {
+                    width: parent.width * .62
+                    height: parent.height * .62
+                    radius: width / 2
+                    color: UiPalette.bipolar
+                    anchors.centerIn: parent
                 }
-                anchors.centerIn: parent;
             }
 
             MouseArea {

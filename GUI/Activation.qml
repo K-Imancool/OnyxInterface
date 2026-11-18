@@ -3,7 +3,9 @@ import QtQuick.Controls 2.15
 import BackEnd 1.0
 import Ui 1.0
 
-Popup {
+// Не Popup: у Qt 5.15 быстрые open/close модального Popup рвут переход,
+// плашка остаётся скрытой, а оверлей ещё несколько секунд съедает касания.
+Item {
     id: activationPopup
 
     property string socketName
@@ -12,6 +14,7 @@ Popup {
     property bool isCoag: false
     property bool isEndo: false
     property int activeSocketId: -1
+    property bool opened: false
     readonly property int autoModeAcc: 2
 
     readonly property color foregroundColor: isCoag ? UiPalette.coagInk : UiPalette.cutInk
@@ -30,6 +33,8 @@ Popup {
         return Math.max(modeNameMinPixelSize, fitted)
     }
 
+    visible: opened
+
     TextMetrics {
         id: modeNameBaseMetrics
         text: modeName
@@ -38,38 +43,158 @@ Popup {
         font.bold: modeNameLabel.font.bold
     }
 
-    modal: true
-    dim: false
-    closePolicy: Popup.NoAutoClose
-    padding: 0
-    Overlay.modal: Item {}
+    function open() {
+        opened = true
+    }
+
+    function close() {
+        if (!opened)
+            return
+        opened = false
+        activeSocketId = -1
+    }
 
     function stopIfAccTouch() {
         if (activeSocketId >= 0 && periphHandle.autoMode(activeSocketId) === autoModeAcc)
             appControl.stopActivation()
     }
 
-    onClosed: {
-        activeSocketId = -1
+    Rectangle {
+        anchors.fill: parent
+        color: isCoag ? UiPalette.coag : UiPalette.cut
+        radius: 20
+        border.color: foregroundColor
+        border.width: 3
     }
 
-    // Popup рисуется в Overlay поверх WorkScreen; без этого касание вне плашки
-    // глотается модальным слоем и не останавливает АСС.
-    MouseArea {
-        parent: Overlay.overlay
-        anchors.fill: parent
-        z: 1000000
-        enabled: activationPopup.opened
-        visible: activationPopup.opened
-        propagateComposedEvents: false
-        preventStealing: true
+    Column {
+        anchors.centerIn: parent
+        spacing: 32
 
-        onPressed: function(mouse) {
-            activationPopup.stopIfAccTouch()
-            mouse.accepted = true
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: qsTr("АКТИВАЦИЯ ") + socketName
+            font.pixelSize: 64
+            font.bold: true
+            color: foregroundColor
         }
-        onReleased: function(mouse) { mouse.accepted = true }
-        onClicked: function(mouse) { mouse.accepted = true }
+
+        Rectangle {
+            width: 560
+            height: 4
+            color: foregroundColor
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+        Label {
+            id: modeNameLabel
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: modeName
+            font.pixelSize: activationPopup.modeNamePixelSize
+            color: foregroundColor
+        }
+
+        Rectangle {
+            id: powerInfoRect
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 680
+            height: 280
+            color: "transparent"
+
+            Column {
+                visible: !activationPopup.isEndo
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: parent.width
+                spacing: 16
+                Label {
+                    width: parent.width
+                    font.pixelSize: 56
+                    font.bold: true
+                    color: foregroundColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    text: qsTr("Мощность")
+                }
+                Label {
+                    width: parent.width
+                    height: parent.height - parent.children[0].height - parent.spacing
+                    font.pixelSize: 140
+                    font.bold: true
+                    color: foregroundColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    text: activationPopup.power
+                }
+            }
+
+            Column {
+                id: endoCutColumn
+                visible: activationPopup.isEndo
+                anchors.left: parent.left
+                anchors.right: parent.horizontalCenter
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                spacing: 16
+                Label {
+                    width: parent.width
+                    font.pixelSize: 56
+                    font.bold: true
+                    color: foregroundColor
+                    text: qsTr("Эффект\nрезания")
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                Label {
+                    width: parent.width
+                    height: parent.height - parent.children[0].height - parent.spacing
+                    font.pixelSize: 140
+                    font.bold: true
+                    color: foregroundColor
+                    text: Math.floor(activationPopup.power / 10)
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+            Column {
+                id: endoCoagColumn
+                visible: activationPopup.isEndo
+                anchors.left: parent.horizontalCenter
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                spacing: 16
+                Label {
+                    width: parent.width
+                    font.pixelSize: 56
+                    font.bold: true
+                    color: foregroundColor
+                    text: qsTr("Эффект\nкоагуляции")
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+                Label {
+                    width: parent.width
+                    height: parent.height - parent.children[0].height - parent.spacing
+                    font.pixelSize: 140
+                    font.bold: true
+                    color: foregroundColor
+                    text: activationPopup.power % 10
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 10
+        color: "transparent"
+        border.color: foregroundColor
+        border.width: 3
+        radius: 15
     }
 
     MouseArea {
@@ -86,147 +211,4 @@ Popup {
             mouse.accepted = true
         }
     }
-
-    background: Rectangle {
-        color: isCoag ? UiPalette.coag : UiPalette.cut
-        radius: 20
-        border.color: foregroundColor
-        border.width: 3
-        opacity: 1.0
-    }
-
-    contentItem: Item {
-        Column {
-            anchors.centerIn: parent
-            spacing: 32
-
-            Label {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("АКТИВАЦИЯ ") + socketName
-                font.pixelSize: 64
-                font.bold: true
-                color: foregroundColor
-            }
-
-            Rectangle {
-                width: 560
-                height: 4
-                color: foregroundColor
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-            Label {
-                id: modeNameLabel
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: modeName
-                font.pixelSize: activationPopup.modeNamePixelSize
-                color: foregroundColor
-            }
-
-            Rectangle {
-                id: powerInfoRect
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 680
-                height: 280
-                color: "transparent"
-
-                Column {
-                    visible: !activationPopup.isEndo
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    spacing: 16
-                    Label {
-                        width: parent.width
-                        font.pixelSize: 56
-                        font.bold: true
-                        color: foregroundColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: qsTr("Мощность")
-                    }
-                    Label {
-                        width: parent.width
-                        height: parent.height - parent.children[0].height - parent.spacing
-                        font.pixelSize: 140
-                        font.bold: true
-                        color: foregroundColor
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: activationPopup.power
-                    }
-                }
-
-                Column {
-                    id: endoCutColumn
-                    visible: activationPopup.isEndo
-                    anchors.left: parent.left
-                    anchors.right: parent.horizontalCenter
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    spacing: 16
-                    Label {
-                        width: parent.width
-                        font.pixelSize: 56
-                        font.bold: true
-                        color: foregroundColor
-                        text: qsTr("Эффект\nрезания")
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    Label {
-                        width: parent.width
-                        height: parent.height - parent.children[0].height - parent.spacing
-                        font.pixelSize: 140
-                        font.bold: true
-                        color: foregroundColor
-                        text: Math.floor(activationPopup.power / 10)
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
-                Column {
-                    id: endoCoagColumn
-                    visible: activationPopup.isEndo
-                    anchors.left: parent.horizontalCenter
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    spacing: 16
-                    Label {
-                        width: parent.width
-                        font.pixelSize: 56
-                        font.bold: true
-                        color: foregroundColor
-                        text: qsTr("Эффект\nкоагуляции")
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    Label {
-                        width: parent.width
-                        height: parent.height - parent.children[0].height - parent.spacing
-                        font.pixelSize: 140
-                        font.bold: true
-                        color: foregroundColor
-                        text: activationPopup.power % 10
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: 10
-            color: "transparent"
-            border.color: foregroundColor
-            border.width: 3
-            radius: 15
-        }
-    }
-
-    enter: Transition {}
-    exit: Transition {}
 }

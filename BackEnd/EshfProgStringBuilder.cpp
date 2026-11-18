@@ -68,10 +68,20 @@ QStringList EshfProgStringBuilder::makePedalString(size_t pageNum)
 	return res;
 }
 
-QString EshfProgStringBuilder::makeOutEnableMask()
+QString EshfProgStringBuilder::makeOutEnableMask(size_t pageNum)
 {
-	//заглушка
-	return QString::number(11111111);
+	// Младшие 8 разрядов — маска выходов.
+	// 9-й разряд: кнопка BiHandle выбрана на БИ2.
+	int mask = 11111111;
+	if (!m_sockets.empty() && pageNum < m_sockets.size()) {
+		const auto& page = m_sockets.at(pageNum);
+		const auto it = page.find(1);
+		if (it != page.end() && !it->second.isNull()
+		        && it->second->pedal() == Onyx::INSTR_BUTTON_BI) {
+			mask += 100000000;
+		}
+	}
+	return QString::number(mask);
 }
 
 void EshfProgStringBuilder::setState(const std::vector<std::map<int, SockPtr> >& sockets,

@@ -1372,6 +1372,14 @@ Máx. 50</translation>
 Máx. 75</translation>
     </message>
     <message>
+        <source>75 Вт</source>
+        <translation>75 W</translation>
+    </message>
+    <message>
+        <source>50 Вт</source>
+        <translation>50 W</translation>
+    </message>
+    <message>
         <source>Пациент:</source>
         <translation>Paciente:</translation>
     </message>
@@ -1982,6 +1990,10 @@ VACÍO</translation>
         <translation>No guardado</translation>
     </message>
     <message>
+        <source>НЕ СОХРАНЕНО!</source>
+        <translation>¡NO GUARDADO!</translation>
+    </message>
+    <message>
         <source>СЕРИЙНЫЙ НОМЕР И ТИП</source>
         <translation>Número de serie y tipo</translation>
     </message>
@@ -2124,7 +2136,7 @@ Esta acción no se puede deshacer.</translation>
         <source>СВЕДЕНИЯ
 ОБ АППАРАТЕ</source>
         <translation>INFORMACIÓN
-DEL APARATO</translation>
+DEL EQUIPO</translation>
     </message>
     <message>
         <source>ДОПОЛНИТЕЛЬНЫЕ
@@ -2138,6 +2150,10 @@ ADICIONALES</translation>
     <message>
         <source>удалить</source>
         <translation>eliminar</translation>
+    </message>
+    <message>
+        <source>удалить лист</source>
+        <translation>eliminar hoja</translation>
     </message>
     <message>
         <source>Подтверждение удаления</source>
@@ -2565,6 +2581,10 @@ A-STOP</translation>
     <message>
         <source>Подозрение на зависание: %1 мс</source>
         <translation>Posible bloqueo: %1 ms</translation>
+    </message>
+    <message>
+        <source>подозрение на зависание %1 ms</source>
+        <translation>posible bloqueo %1 ms</translation>
     </message>
     <message>
         <source>сброс по таймеру %1 ms</source>
@@ -3565,6 +3585,10 @@ Esta acción no se puede deshacer.</translation>
     <message>
         <source>Ошибка связи: CRC не совпадает</source>
         <translation>Error de comunicación: CRC no coincide</translation>
+    </message>
+    <message>
+        <source>Ошибка сенсорного экрана</source>
+        <translation>Error de la pantalla táctil</translation>
     </message>
     <message>
         <source>Ошибка связи с аргоновым модулем: передача не выполнена</source>
