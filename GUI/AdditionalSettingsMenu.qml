@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import CuteKeyboard 1.0
+import Ui 1.0
+import "DeviceType.js" as DeviceType
 
 Item {
     id: additionalSettingsRoot
@@ -66,9 +68,9 @@ Item {
 
     function deviceTypeValue() {
         if (typeof savedJson === "undefined" || !savedJson) {
-            return "ONYX-AM"
+            return DeviceType.Default
         }
-        return String(savedJson.readString("deviceType", "ONYX-AM")).trim().toUpperCase()
+        return String(savedJson.readString("deviceType", DeviceType.Default))
     }
 
     function unlockKeyDigits(value) {
@@ -274,13 +276,14 @@ Item {
     Dialog {
         id: servicePasswordDialog
         property string passwordError: ""
+        property bool keyboardChromeHeld: false
         parent: Overlay.overlay
         modal: true
-        width: Math.min(Overlay.overlay ? Overlay.overlay.width * 0.92 : 760, 760)
-        height: 360
-        x: parent ? (parent.width - width) / 2 : 0
-        // У верхнего края — кнопки остаются над виртуальной клавиатурой
-        y: 48
+        padding: 0
+        width: parent ? parent.width : 1280
+        height: parent ? parent.height : 800
+        x: 0
+        y: 0
         title: ""
         Overlay.modal: Rectangle {
             color: "#E8ECF2"
@@ -288,11 +291,14 @@ Item {
 
         contentItem: Rectangle {
             color: "white"
-            radius: additionalSettingsRoot.panelRadius
 
             ColumnLayout {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 anchors.margins: 28
+                anchors.bottomMargin: KeyboardCoordinator.keyboardGap(servicePasswordDialog.height) + 8
                 spacing: 16
 
                 Label {
@@ -359,6 +365,22 @@ Item {
             Qt.inputMethod.show()
         }
 
+        function holdKeyboardChrome() {
+            if (keyboardChromeHeld)
+                return
+            KeyboardCoordinator.acquire(KeyboardCoordinator.actionBarHeight)
+            keyboardChromeHeld = true
+        }
+
+        function releaseKeyboardChrome() {
+            servicePasswordInput.focus = false
+            Qt.inputMethod.hide()
+            if (!keyboardChromeHeld)
+                return
+            KeyboardCoordinator.release()
+            keyboardChromeHeld = false
+        }
+
         function trySubmit() {
             var accessLevel = additionalSettingsRoot.resolveServiceMenuAccessLevel(servicePasswordInput.text)
             if (accessLevel !== "") {
@@ -372,6 +394,7 @@ Item {
         }
 
         onOpened: {
+            holdKeyboardChrome()
             servicePasswordInput.text = ""
             servicePasswordDialog.passwordError = ""
             Qt.callLater(function() {
@@ -390,36 +413,31 @@ Item {
             }
         }
 
-        onClosed: {
-            servicePasswordInput.focus = false
-            Qt.inputMethod.hide()
-        }
+        onClosed: releaseKeyboardChrome()
 
         footer: Rectangle {
-            color: "transparent"
-            implicitHeight: 108
+            color: "white"
+            implicitHeight: KeyboardCoordinator.actionBarHeight
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 16
+            DialogActionButton {
+                anchors.left: parent.left
+                anchors.leftMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ОТМЕНА")
+                onPressed: servicePasswordDialog.close()
+            }
 
-                DialogActionButton {
-                    Layout.preferredWidth: 200
-                    Layout.fillHeight: true
-                    text: qsTr("ОТМЕНА")
-                    onPressed: servicePasswordDialog.close()
-                }
-
-                Item { Layout.fillWidth: true }
-
-                DialogActionButton {
-                    Layout.preferredWidth: 200
-                    Layout.fillHeight: true
-                    text: qsTr("ВОЙТИ")
-                    primary: true
-                    onPressed: servicePasswordDialog.trySubmit()
-                }
+            DialogActionButton {
+                anchors.right: parent.right
+                anchors.rightMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ВОЙТИ")
+                primary: true
+                onPressed: servicePasswordDialog.trySubmit()
             }
         }
     }
@@ -429,15 +447,16 @@ Item {
         property string passwordError: ""
         property string successMessage: ""
         property bool activationSucceeded: false
+        property bool keyboardChromeHeld: false
         readonly property bool showInputMode: !activationSucceeded && passwordError.length === 0
         readonly property bool showCloseOnly: activationSucceeded || passwordError.length > 0
         parent: Overlay.overlay
         modal: true
-        width: Math.min(Overlay.overlay ? Overlay.overlay.width * 0.92 : 820, 820)
-        height: 380
-        x: parent ? (parent.width - width) / 2 : 0
-        // У верхнего края — кнопки остаются над виртуальной клавиатурой
-        y: 48
+        padding: 0
+        width: parent ? parent.width : 1280
+        height: parent ? parent.height : 800
+        x: 0
+        y: 0
         title: ""
         Overlay.modal: Rectangle {
             color: "#E8ECF2"
@@ -445,11 +464,16 @@ Item {
 
         contentItem: Rectangle {
             color: "white"
-            radius: additionalSettingsRoot.panelRadius
 
             ColumnLayout {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 anchors.margins: 28
+                anchors.bottomMargin: (featureUnlockDialog.showInputMode
+                                      ? KeyboardCoordinator.keyboardGap(featureUnlockDialog.height)
+                                      : 0) + 8
                 spacing: 16
 
                 Label {
@@ -550,6 +574,22 @@ Item {
             featureUnlockDialog.successMessage = ""
         }
 
+        function holdKeyboardChrome() {
+            if (keyboardChromeHeld)
+                return
+            KeyboardCoordinator.acquire(KeyboardCoordinator.actionBarHeight)
+            keyboardChromeHeld = true
+        }
+
+        function releaseKeyboardChrome() {
+            featureUnlockInput.focus = false
+            Qt.inputMethod.hide()
+            if (!keyboardChromeHeld)
+                return
+            KeyboardCoordinator.release()
+            keyboardChromeHeld = false
+        }
+
         function ensureKeyboard() {
             if (!featureUnlockInput.activeFocus)
                 featureUnlockInput.forceActiveFocus()
@@ -570,13 +610,15 @@ Item {
 
             featureUnlockDialog.successMessage = ""
             if (additionalSettingsRoot.serialNumberValue() < 260000) {
-                featureUnlockDialog.passwordError = qsTr("Сначала сохраните серийный номер аппарата")
+                featureUnlockDialog.passwordError = qsTr("Сначала сохраните серийный номер генератора")
                 Qt.inputMethod.hide()
+                releaseKeyboardChrome()
                 return
             }
             if (typeof featureUnlock === "undefined" || !featureUnlock) {
                 featureUnlockDialog.passwordError = qsTr("Контроллер активации недоступен")
                 Qt.inputMethod.hide()
+                releaseKeyboardChrome()
                 return
             }
 
@@ -590,16 +632,19 @@ Item {
                 featureUnlockDialog.successMessage = qsTr("Опция №%1 успешно активирована").arg(activatedKey)
                 featureUnlockDialog.activationSucceeded = true
                 Qt.inputMethod.hide()
+                releaseKeyboardChrome()
                 return
             }
             featureUnlockDialog.successMessage = ""
-            featureUnlockDialog.passwordError = qsTr("Извините, ключ не верный! Попробуйте ещё раз или обратитесь к производителю")
+            featureUnlockDialog.passwordError = qsTr("Извините, ключ неверный! Попробуйте ещё раз или обратитесь к производителю")
             Qt.inputMethod.hide()
+            releaseKeyboardChrome()
         }
 
         onOpened: {
             featureUnlockInput.text = ""
             featureUnlockDialog.resetActivationState()
+            holdKeyboardChrome()
             Qt.callLater(function() {
                 featureUnlockDialog.ensureKeyboard()
             })
@@ -616,53 +661,49 @@ Item {
         }
 
         onClosed: {
-            featureUnlockInput.focus = false
+            releaseKeyboardChrome()
             featureUnlockDialog.resetActivationState()
-            Qt.inputMethod.hide()
         }
 
         footer: Rectangle {
-            color: "transparent"
-            implicitHeight: 108
+            color: "white"
+            implicitHeight: KeyboardCoordinator.actionBarHeight
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 16
+            DialogActionButton {
+                id: featureUnlockCancelButton
+                anchors.left: parent.left
+                anchors.leftMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                visible: featureUnlockDialog.showInputMode
+                text: qsTr("ОТМЕНА")
+                onPressed: featureUnlockDialog.close()
+            }
 
-                DialogActionButton {
-                    id: featureUnlockCancelButton
-                    Layout.preferredWidth: 200
-                    Layout.fillHeight: true
-                    visible: featureUnlockDialog.showInputMode
-                    text: qsTr("ОТМЕНА")
-                    onPressed: featureUnlockDialog.close()
-                }
+            DialogActionButton {
+                id: featureUnlockActivateButton
+                anchors.right: parent.right
+                anchors.rightMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: Math.max(KeyboardCoordinator.actionButtonWidth, 260)
+                height: KeyboardCoordinator.actionButtonHeight
+                visible: featureUnlockDialog.showInputMode
+                text: qsTr("АКТИВИРОВАТЬ")
+                primary: true
+                onPressed: featureUnlockDialog.trySubmit()
+            }
 
-                Item {
-                    Layout.fillWidth: true
-                    visible: featureUnlockDialog.showInputMode
-                }
-
-                DialogActionButton {
-                    id: featureUnlockActivateButton
-                    Layout.preferredWidth: 260
-                    Layout.fillHeight: true
-                    visible: featureUnlockDialog.showInputMode
-                    text: qsTr("АКТИВИРОВАТЬ")
-                    primary: true
-                    onPressed: featureUnlockDialog.trySubmit()
-                }
-
-                DialogActionButton {
-                    id: featureUnlockCloseButton
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    visible: featureUnlockDialog.showCloseOnly
-                    text: qsTr("ЗАКРЫТЬ")
-                    primary: true
-                    onPressed: featureUnlockDialog.close()
-                }
+            DialogActionButton {
+                id: featureUnlockCloseButton
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                width: 320
+                height: KeyboardCoordinator.actionButtonHeight
+                visible: featureUnlockDialog.showCloseOnly
+                text: qsTr("ЗАКРЫТЬ")
+                primary: true
+                onPressed: featureUnlockDialog.close()
             }
         }
     }

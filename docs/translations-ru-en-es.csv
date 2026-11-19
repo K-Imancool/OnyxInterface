@@ -5,7 +5,7 @@
 4;AboutScreen, updateWindow;МК раскачки;Driver MCU;MCU del excitador
 5;AboutScreen;МК нейтрального электрода;Neutral electrode MCU;MCU del electrodo neutro
 6;AboutScreen;Не указано;Not specified;No especificado
-7;AboutScreen, SerialNumberSettings, StartupInfoScreen;Тип аппарата;Unit type;Tipo de equipo
+7;AboutScreen, SerialNumberSettings, StartupInfoScreen;Тип генератора;Unit type;Tipo de equipo
 8;AboutScreen, SerialNumberSettings, ServiceMenu, StartupInfoScreen;Серийный номер;Serial number;Número de serie
 9;AboutScreen, SerialNumberSettings;Комментарии;Comments;Comentarios
 10;AboutScreen;Версии ПО модулей;Module firmware versions;Versiones de firmware de los módulos
@@ -16,7 +16,7 @@
 15;AboutScreen, WifiFileReceive, updateWindow;Модуль интерфейса;Interface module;Módulo de interfaz
 16;AboutScreen, WifiFileReceive, updateWindow;Медиафайлы;Media files;Archivos multimedia
 17;AboutScreen, updateWindow;Модуль;Module;Módulo
-18;AboutScreen, SettingsMenu;СВЕДЕНИЯ ОБ АППАРАТЕ;DEVICE INFORMATION;INFORMACIÓN DEL EQUIPO
+18;AboutScreen, SettingsMenu;СВЕДЕНИЯ О ГЕНЕРАТОРЕ;UNIT INFORMATION;INFORMACIÓN DEL EQUIPO
 19;Activation;АКТИВАЦИЯ;ACTIVATION;ACTIVACIÓN
 20;Activation;Мощность;Power;Potencia
 21;Activation;Эффект резания;Cut eff.;Corte ef.
@@ -35,7 +35,7 @@
 34;AdditionalSettingsMenu;Извините, ключ не верный! Попробуйте ещё раз или обратитесь к производителю;Sorry, the key is invalid! Please try again or contact the manufacturer;Lo sentimos, la clave no es válida. Inténtelo de nuevo o contacte con el fabricante
 35;AdditionalSettingsMenu;АКТИВИРОВАТЬ;ACTIVATE;ACTIVAR
 36;AdditionalSettingsMenu;ЗАКРЫТЬ;CLOSE;CERRAR
-37;AdditionalSettingsMenu;Сначала сохраните серийный номер аппарата;Save the device serial number first;Guarde primero el número de serie del equipo
+37;AdditionalSettingsMenu;Сначала сохраните серийный номер генератора;Save the unit serial number first;Guarde primero el número de serie del equipo
 38;AdditionalSettingsMenu;ЖУРНАЛ СОБЫТИЙ;EVENT LOG;REGISTRO DE EVENTOS
 39;AdditionalSettingsMenu, DateTimeSettings;НАСТРОЙКА ДАТЫ И ВРЕМЕНИ;DATE AND TIME;FECHA Y HORA
 40;AdditionalSettingsMenu, UserProgTransferMenu;ПЕРЕНОС ПРОГРАММ ПОЛЬЗОВАТЕЛЯ;USER PROGRAM TRANSFER;TRANSFERENCIA DE PROGRAMAS DE USUARIO
@@ -112,7 +112,7 @@
 111;FullscreenErrorOverlay;ПРОВЕРЬТЕ ДАВЛЕНИЕ В БАЛЛОНАХ. ПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ БАЛЛОНОВ. ПОЛНОСТЬЮ ОТКРОЙТЕ ВЕНТИЛИ БАЛЛОНОВ.;CHECK CYLINDER PRESSURE. CHECK CYLINDER CONNECTIONS. FULLY OPEN THE CYLINDER VALVES.;COMPRUEBE LA PRESIÓN DE LAS BOTELLAS. COMPRUEBE LA CONEXIÓN DE LAS BOTELLAS. ABRA COMPLETAMENTE LAS VÁLVULAS DE LAS BOTELLAS.
 112;FullscreenErrorOverlay;НЕПРОХОДИМОСТЬ ГАЗОВОГО ТРАКТА ИНСТРУМЕНТА. ПРОВЕРЬТЕ ИНСТРУМЕНТ И ДЕРЖАТЕЛЬ.;INSTRUMENT GAS PATH BLOCKAGE. CHECK THE INSTRUMENT AND HANDPIECE.;OBSTRUCCIÓN DE LA VÍA DE GAS DEL INSTRUMENTO. COMPRUEBE EL INSTRUMENTO Y EL MANGO.
 113;FullscreenErrorOverlay;ОШИБКА Е%1. ОБРАТИТЕСЬ В СЕРВИСНУЮ СЛУЖБУ;ERROR E%1. CONTACT THE SERVICE DEPARTMENT;ERROR E%1. ACUDA AL SERVICIO TÉCNICO
-114;FullscreenErrorOverlay;Выключите питание аппарата и включите его повторно через 15 секунд. Если ошибка повторится, обратитесь в сервисную службу.;Turn the unit off and turn it back on after 15 seconds. If the error persists, contact the service department.;Apague el aparato y vuelva a encenderlo transcurridos 15 segundos. Si el error continúa, acuda al servicio técnico.
+114;FullscreenErrorOverlay;Выключите питание генератора и включите его повторно через 15 секунд. Если ошибка повторится, обратитесь в сервисную службу.;Turn the unit off and turn it back on after 15 seconds. If the error persists, contact the service department.;Apague el equipo y vuelva a encenderlo transcurridos 15 segundos. Si el error continúa, acuda al servicio técnico.
 115;FullscreenErrorOverlay;КОАГУЛЯЦИЯ ЗАВЕРШЕНА;COAGULATION COMPLETE;COAGULACIÓN FINALIZADA
 116;FullscreenErrorOverlay;ПРОВЕРЬТЕ ИСПОЛЬЗУЕМЫЙ РАСТВОР (0,9% NaCl) В СЛУЧАЕ ПОВТОРЕНИЯ ОШИБКИ, ЗАМЕНИТЕ ИНСТРУМЕНТ И (ИЛИ) РЕЗЕКТОСКОП. ПРОВЕРЬТЕ ПОДКЛЮЧЕНИЕ ДЕРЖАТЕЛЯ И РЕЗЕКТОСКОПА.;CHECK THE IRRIGATION SOLUTION IN USE (0.9% NaCl) IF THE ERROR RECURS, REPLACE THE INSTRUMENT AND/OR THE RESECTOSCOPE. CHECK THE HANDPIECE AND RESECTOSCOPE CONNECTION.;COMPRUEBE LA SOLUCIÓN UTILIZADA (0,9% NaCl) SI EL ERROR SE REPITE, SUSTITUYA EL INSTRUMENTO Y/O EL RESECTOSCOPIO. COMPRUEBE LA CONEXIÓN DEL MANGO Y DEL RESECTOSCOPIO.
 117;FullscreenErrorOverlay;ПРОВЕРЬТЕ, ЧТО РАСТВОР НЕ ПОПАЛ В РЕЗЕКТОСКОП ИЛИ РАЗЪЁМ ПОДКЛЮЧЕНИЯ ДЕРЖАТЕЛЯ. ПРОСУШИТЕ РЕЗЕКТОСКОП И ДЕРЖАТЕЛЬ. В СЛУЧАЕ ПОВТОРЕНИЯ ОШИБКИ, ЗАМЕНИТЕ РЕЗЕКТОСКОП.;MAKE SURE THE SOLUTION HAS NOT ENTERED THE RESECTOSCOPE OR THE HANDPIECE CONNECTOR. DRY THE RESECTOSCOPE AND THE HANDPIECE. IF THE ERROR RECURS, REPLACE THE RESECTOSCOPE.;COMPRUEBE QUE LA SOLUCIÓN NO HAYA ENTRADO EN EL RESECTOSCOPIO NI EN EL CONECTOR DEL MANGO. SEQUE EL RESECTOSCOPIO Y EL MANGO. SI EL ERROR SE REPITE, SUSTITUYA EL RESECTOSCOPIO.
@@ -373,7 +373,7 @@
 372;RemoteUpdater;Обновление успешно применено;Update applied successfully;Actualización aplicada correctamente
 373;SecretKeysWindow;Генерация ключа;Key generation;Generación de clave
 374;SecretKeysWindow, UserProgDownload, UserProgUpload, WifiFileReceive, WifiLogDownload;Серийный номер:;Serial number:;Número de serie:
-375;SecretKeysWindow, UserProgDownload, UserProgUpload, WifiFileReceive, WifiLogDownload;Тип аппарата:;Unit type:;Tipo de equipo:
+375;SecretKeysWindow, UserProgDownload, UserProgUpload, WifiFileReceive, WifiLogDownload;Тип генератора:;Unit type:;Tipo de equipo:
 376;SecretKeysWindow;Номер ключа:;Key number:;Número de clave:
 377;SecretKeysWindow;Сгенерировать ключ;Generate key;Generar clave
 378;SecretKeysWindow;✓ Ключ сгенерирован успешно!;✓ Key generated successfully!;✓ ¡Clave generada correctamente!
@@ -385,7 +385,7 @@
 384;SecretKeysWindow;✗ Заполните все поля;✗ Fill in all fields;✗ Rellene todos los campos
 385;SecretKeysWindow;ℹ️ Информация:;ℹ️ Information:;ℹ️ Información:
 386;SecretKeysWindow;• Ключи генерируются криптографическим алгоритмом SHA-256;• Keys are generated with the SHA-256 cryptographic algorithm;• Las claves se generan con el algoritmo criptográfico SHA-256
-387;SecretKeysWindow;• Для каждого типа аппарата и номера ключа формируется отдельный 12-значный код;• A separate 12-digit code is generated for each unit type and key number;• Para cada tipo de equipo y número de clave se genera un código de 12 dígitos
+387;SecretKeysWindow;• Для каждого типа генератора и номера ключа формируется отдельный 12-значный код;• A separate 12-digit code is generated for each unit type and key number;• Para cada tipo de equipo y número de clave se genera un código de 12 dígitos
 388;SecretKeysWindow;• Соседние номера гарантированно имеют различные ключи;• Adjacent serial numbers are guaranteed to have different keys;• Los números consecutivos tienen garantizadas claves diferentes
 389;SecretKeysWindow;СЕКРЕТНЫЕ КЛЮЧИ;SECRET KEYS;CLAVES SECRETAS
 390;SecretKeysWindow;✓ КЛЮЧ ВЕРНЫЙ!;✓ KEY CORRECT!;✓ ¡CLAVE CORRECTA!
@@ -401,7 +401,7 @@
 400;ServiceMenu;СПЕЦ КОМАНДЫ;SPECIAL COMMANDS;COMANDOS ESPECIALES
 401;ServiceMenu;Обновление ПО;Software update;Actualización de software
 402;ServiceMenu;Настройки WiFi;Wi-Fi settings;Ajustes de Wi-Fi
-403;ServiceMenu;Об аппарате;About the unit;Acerca del equipo
+403;ServiceMenu;О генераторе;About the unit;Acerca del equipo
 404;ServiceMenu;Проверка тач-скрина;Touchscreen test;Prueba de pantalla táctil
 405;ServiceMenu;Лог обновлений;Update log;Registro de actualizaciones
 406;ServiceMenu;Секретные ключи;Secret keys;Claves secretas
@@ -453,7 +453,7 @@
 452;SpecialCommands;СПЕЦИАЛЬНЫЕ КОМАНДЫ;SPECIAL COMMANDS;COMANDOS ESPECIALES
 453;SprayM1M2WarningDialog;При включенной функции М1+М2 режим СПРЕЙ без подачи аргона может активироваться одновременно с выходов МОНО1 и МОНО2 синими кнопками держателей! Педали блокируются! Мощность каждого выхода может изменяться, в зависимости от работы второго выхода, поскольку поддерживается только суммарная мощность!;With M1+M2 enabled, SPRAY mode without argon can be activated at the same time from MONO1 and MONO2 using the blue handpiece buttons! Pedals are locked! The power of each output may change depending on the other output, because only the total power is supported!;Con la función M1+M2 activada, el modo SPRAY sin argón puede activarse a la vez desde MONO1 y MONO2 con los botones azules de los mangos. ¡Los pedales quedan bloqueados! La potencia de cada salida puede variar según la otra, porque solo se admite la potencia total.
 454;StartupInfoScreen;Не указан;Not specified;No especificado
-455;StartupInfoScreen;Информация об аппарате;Unit information;Información del equipo
+455;StartupInfoScreen;Информация о генераторе;Unit information;Información del equipo
 456;StartupInfoScreen;Версии ПО;Software versions;Versiones de software
 457;StartupInfoScreen;Дополнительно;Additional;Adicional
 458;StartupInfoScreen;повр;corr.;dañ.
@@ -521,7 +521,7 @@
 520;UserProgDownload, UserProgUpload, WifiLogDownload;Готово;Done;Listo
 521;UserProgDownload, UserProgUpload, WifiFileReceive, WifiLogDownload;QR появится после создания точки доступа;The QR code will appear after the access point is created;El código QR aparecerá después de crear el punto de acceso
 522;UserProgDownload;Имя файла для сохранения;File name to save;Nombre de archivo para guardar
-523;UserProgDownload;Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип аппарата.;"Enter a file name. Spaces and invalid characters will be replaced with “_”; the unit type is appended at the end.";"Introduzca un nombre de archivo. Los espacios y caracteres no válidos se sustituirán por «_»; al final se añade el tipo de aparato."
+523;UserProgDownload;Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип генератора.;"Enter a file name. Spaces and invalid characters will be replaced with “_”; the unit type is appended at the end.";"Introduzca un nombre de archivo. Los espacios y caracteres no válidos se sustituirán por «_»; al final se añade el tipo de equipo."
 524;UserProgDownload;Например: ИВАНОВ ХИРУРГИЯ;Example: IVANOV SURGERY;Ejemplo: IVANOV CIRUGIA
 525;UserProgDownload;ДАЛЕЕ;NEXT;SIGUIENTE
 526;UserProgDownload;ПОВТОРИТЬ;RETRY;REINTENTAR
@@ -538,7 +538,7 @@
 537;UserProgTransferController;База программ пользователя недоступна.;The user programs database is unavailable.;La base de programas de usuario no está disponible.
 538;UserProgTransferController;Не удалось открыть файл программ.;Failed to open the programs file.;No se pudo abrir el archivo de programas.
 539;UserProgTransferController;Файл не содержит программы пользователя.;The file does not contain user programs.;El archivo no contiene programas de usuario.
-540;UserProgTransferController;Не удалось открыть базу программ на аппарате.;Failed to open the programs database on the unit.;No se pudo abrir la base de programas en el aparato.
+540;UserProgTransferController;Не удалось открыть базу программ на генераторе.;Failed to open the programs database on the unit.;No se pudo abrir la base de programas en el equipo.
 541;UserProgTransferController;Не удалось начать запись в базу программ.;Failed to start writing to the programs database.;No se pudo iniciar la escritura en la base de programas.
 542;UserProgTransferController;Несовместимая структура файла программ.;Incompatible programs file structure.;Estructura incompatible del archivo de programas.
 543;UserProgTransferController;Не удалось прочитать папки из файла.;Failed to read folders from the file.;No se pudieron leer las carpetas del archivo.
@@ -550,9 +550,9 @@
 549;UserProgTransferController;В файле нет папок программ для загрузки.;The file has no program folders to import.;El archivo no contiene carpetas de programas para cargar.
 550;UserProgTransferController;Не удалось сохранить загруженные программы.;Failed to save the imported programs.;No se pudieron guardar los programas cargados.
 551;UserProgTransferController;Загружено программ: %1. Новых папок: %2. В существующие папки: %3.;Programs imported: %1. New folders: %2. Added to existing folders: %3.;Programas cargados: %1. Carpetas nuevas: %2. En carpetas existentes: %3.
-552;UserProgTransferMenu;При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-M/ONYX-AM на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон;To transfer your user programs from one ONYX-M/ONYX-AM unit to another, use a Wi-Fi device such as a smartphone;Si necesita transferir sus programas de usuario de un aparato ONYX-M/ONYX-AM a otro, use un dispositivo con Wi-Fi, por ejemplo un teléfono
-553;UserProgTransferMenu;СКАЧАТЬ С АППАРАТА НА УСТРОЙСТВО;DOWNLOAD FROM UNIT TO DEVICE;DESCARGAR DEL APARATO AL DISPOSITIVO
-554;UserProgTransferMenu;ЗАГРУЗИТЬ С УСТРОЙСТВА НА АППАРАТ;UPLOAD FROM DEVICE TO UNIT;CARGAR DEL DISPOSITIVO AL APARATO
+552;UserProgTransferMenu;При необходимости перенести Ваши пользовательские программы с одного генератора ONYX Pro/ONYX-A Pro на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон;To transfer your user programs from one ONYX Pro/ONYX-A Pro unit to another, use a Wi-Fi device such as a smartphone;Si necesita transferir sus programas de usuario de un equipo ONYX Pro/ONYX-A Pro a otro, use un dispositivo con Wi-Fi, por ejemplo un teléfono
+553;UserProgTransferMenu;СКАЧАТЬ С ГЕНЕРАТОРА НА УСТРОЙСТВО;DOWNLOAD FROM UNIT TO DEVICE;DESCARGAR DEL EQUIPO AL DISPOSITIVO
+554;UserProgTransferMenu;ЗАГРУЗИТЬ С УСТРОЙСТВА НА ГЕНЕРАТОР;UPLOAD FROM DEVICE TO UNIT;CARGAR DEL DISPOSITIVO AL EQUIPO
 555;UserProgUpload;ЗАГРУЗКА ПРОГРАММ ПОЛЬЗОВАТЕЛЯ;UPLOAD USER PROGRAMS;CARGA DE PROGRAMAS DE USUARIO
 556;UserProgUpload;4. Программы загружены;4. Programs uploaded;4. Programas cargados
 557;UserProgUpload;3. Откройте страницу и отправьте файл;3. Open the page and send the file;3. Abra la página y envíe el archivo

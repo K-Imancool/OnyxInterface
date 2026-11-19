@@ -18,7 +18,7 @@ public:
     // Проверка соответствия ключа номеру
     Q_INVOKABLE bool validateKey(int serialNumber, const QString &key);
 
-    // Генерация 12-значного ключа разблокировки с учетом типа аппарата и функции
+    // Генерация 12-значного ключа разблокировки с учетом типа генератора и функции
     Q_INVOKABLE QString generateUnlockKey(int serialNumber,
                                           const QString &deviceType,
                                           const QString &featureCode);

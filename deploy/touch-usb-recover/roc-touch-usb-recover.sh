@@ -2,10 +2,12 @@
 # Privileged helper: restore ILITEK touch (222a:0001) for UserInterface.
 # Called as: sudo -n /usr/local/sbin/roc-touch-usb-recover
 #
-# Здоровье = есть "WINSTARTP Mouse" (ABS/BTN для Qt). Одного "WINSTARTP"
-# (hid-multitouch) недостаточно — на ROC события тача идут с Mouse-интерфейса.
+# Здоровье = есть Mouse-узел ILITEK (ABS/BTN для Qt):
+# "WINSTARTP Mouse" или "W.R.Inc. HID-Mouse" — имя зависит от прошивки.
+# Одного "WINSTARTP" (hid-multitouch) недостаточно — на ROC события тача
+# идут с Mouse-интерфейса.
 #
-# Exit 0 — WINSTARTP Mouse есть.
+# Exit 0 — Mouse-узел есть.
 # Exit 1 — не удалось восстановить.
 set -euo pipefail
 
@@ -32,7 +34,7 @@ input_ok() {
         if ($i ~ /^N: Name=/) name=$i
         if ($i ~ /^H: Handlers=/) handlers=$i
       }
-      if (name ~ /WINSTARTP Mouse/) { found=1; exit }
+      if (name ~ /WINSTARTP Mouse/ || name ~ /W\.R\.Inc\. HID-Mouse/) { found=1; exit }
     }
     END { exit found ? 0 : 1 }
   ' /proc/bus/input/devices 2>/dev/null
@@ -119,18 +121,18 @@ if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
 fi
 
 if input_ok; then
-  log "ok: WINSTARTP Mouse already present"
+  log "ok: ILITEK Mouse already present"
   exit 0
 fi
 
 dev=""
 dev="$(find_touch_sysfs || true)"
 if [[ -n "${dev}" ]]; then
-  log "device at ${dev}, WINSTARTP Mouse missing"
+  log "device at ${dev}, ILITEK Mouse missing"
   # Сначала мягко: привязать второй HID-интерфейс (Mouse).
   try_bind_mouse_iface "${dev}" || true
   if wait_for_mouse; then
-    log "recovered: WINSTARTP Mouse after usbhid bind"
+    log "recovered: ILITEK Mouse after usbhid bind"
     exit 0
   fi
 fi
@@ -150,10 +152,10 @@ while (( try <= 2 )); do
     try_bind_mouse_iface "${dev}" || true
   fi
   if wait_for_mouse; then
-    log "recovered: WINSTARTP Mouse after try ${try}"
+    log "recovered: ILITEK Mouse after try ${try}"
     exit 0
   fi
-  log "try ${try}: WINSTARTP Mouse still missing"
+  log "try ${try}: ILITEK Mouse still missing"
   # На следующем круге снова резолвим порт — устройство могло сменить шину.
   disable_path="$(resolve_disable_path || true)"
   if [[ -z "${disable_path}" ]]; then
@@ -163,5 +165,5 @@ while (( try <= 2 )); do
   try=$((try + 1))
 done
 
-log "failed: no WINSTARTP Mouse after recover"
+log "failed: no ILITEK Mouse after recover"
 exit 1

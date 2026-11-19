@@ -285,9 +285,8 @@ Item {
 	ProgSaveDialog {
 		id: saveProgDialog
 		width: parent.width
-        height: 490
+        height: parent.height
         x: 0
-        // У верхнего края: кнопки остаются над виртуальной клавиатурой
         y: 0
         originalProgName: host.currentProgName
         originalScopeName: host.currentScopeName
@@ -296,10 +295,20 @@ Item {
     Dialog {
         id: overwriteConfirmDialog
         modal: true
-        width: saveProgDialog.width
-        height: saveProgDialog.height
-        x: saveProgDialog.x
-        y: saveProgDialog.y
+        parent: Overlay.overlay
+        width: Math.min(parent ? parent.width - 80 : 1000, 1000)
+        height: 420
+        x: parent ? Math.round((parent.width - width) / 2) : 0
+        y: parent ? Math.round((parent.height - height) / 2) : 0
+
+        onOpened: {
+            saveProgDialog.clearTextFieldFocus()
+            Qt.inputMethod.hide()
+        }
+        onClosed: {
+            if (saveProgDialog.opened)
+                saveProgDialog.restoreInputFocus()
+        }
 
         background: Rectangle {
             color: UiPalette.background
@@ -323,37 +332,32 @@ Item {
 
         footer: Rectangle {
             color: "transparent"
-            implicitHeight: 108
+            implicitHeight: KeyboardCoordinator.actionBarHeight
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 20
-                anchors.rightMargin: 20
-                anchors.topMargin: 20
-                anchors.bottomMargin: 20
-                spacing: 16
+            DialogActionButton {
+                anchors.left: parent.left
+                anchors.leftMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ОТМЕНА")
+                secondaryColor: UiPalette.textSecondary
+                onPressed: overwriteConfirmDialog.close()
+            }
 
-                DialogActionButton {
-                    Layout.preferredWidth: 220
-                    Layout.fillHeight: true
-                    text: qsTr("ОТМЕНА")
-                    secondaryColor: UiPalette.textSecondary
-                    onPressed: overwriteConfirmDialog.close()
-                }
-
-                Item { Layout.fillWidth: true }
-
-                DialogActionButton {
-                    Layout.preferredWidth: 220
-                    Layout.fillHeight: true
-                    text: qsTr("ПРИНЯТЬ")
-                    primary: true
-                    primaryEnabledColor: "#264093"
-                    labelColor: "white"
-                    onPressed: {
-                        overwriteConfirmDialog.close()
-                        saveProgDialog.accept()
-                    }
+            DialogActionButton {
+                anchors.right: parent.right
+                anchors.rightMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ПРИНЯТЬ")
+                primary: true
+                primaryEnabledColor: "#264093"
+                labelColor: "white"
+                onPressed: {
+                    overwriteConfirmDialog.close()
+                    saveProgDialog.accept()
                 }
             }
         }
@@ -361,10 +365,10 @@ Item {
     Dialog {
         id: endoProgramMixDialog
         modal: true
-        width: saveProgDialog.width
-        height: saveProgDialog.height
-        x: Math.round((parent.width - width) / 2)
-        y: Math.round((parent.height - height) / 2)
+        width: Math.min(parent ? parent.width - 80 : 1000, 1000)
+        height: 420
+        x: parent ? Math.round((parent.width - width) / 2) : 0
+        y: parent ? Math.round((parent.height - height) / 2) : 0
 
         background: Rectangle {
             color: UiPalette.background
@@ -983,15 +987,20 @@ Item {
 
    // }
    
-   // Клавиатура только в дереве, когда реально нужна — иначе InputPanel (z:9999) перехватывает тач.
+   // Клавиатура только когда нужна — иначе InputPanel перехватывает тач.
+   // В Overlay выше модальных диалогов; bottomReserve — полоса ОТМЕНА/ПРИНЯТЬ.
    Loader {
       id: keyboardLoader
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.bottom: parent.bottom
-      z: 9999
+      parent: Overlay.overlay ? Overlay.overlay : workRoot
+      width: parent ? parent.width : workRoot.width
+      anchors.left: parent ? parent.left : undefined
+      anchors.right: parent ? parent.right : undefined
+      anchors.bottom: parent ? parent.bottom : undefined
+      z: 10001
       active: Qt.inputMethod.visible
       sourceComponent: keyboardPanelComponent
+
+      readonly property int panelHostHeight: parent ? parent.height : host.height
    }
 
    Component {
@@ -999,7 +1008,9 @@ Item {
 
       CuteKeyboardUi.InputPanel {
          id: inputPanel
-         y: host.height
+         y: active
+            ? (keyboardLoader.panelHostHeight - height - KeyboardCoordinator.bottomReserve)
+            : keyboardLoader.panelHostHeight
          languageLayout: host.keyboardPrimaryLayout()
          availableLanguageLayouts: host.availableKeyboardLayouts()
          btnTextFontFamily: "DejaVu Sans"
@@ -1105,27 +1116,6 @@ Item {
             interval: 120
             repeat: false
             onTriggered: inputPanel.applyKeyboardUppercase()
-         }
-
-         states: State {
-            name: "visible"
-            when: inputPanel.active
-            PropertyChanges {
-               target: inputPanel
-               y: host.height - inputPanel.height
-            }
-         }
-         transitions: Transition {
-            from: ""
-            to: "visible"
-            reversible: true
-            ParallelAnimation {
-               NumberAnimation {
-                  properties: "y"
-                  duration: 0
-                  easing.type: Easing.InOutQuad
-               }
-            }
          }
       }
    }

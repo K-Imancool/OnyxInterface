@@ -250,7 +250,9 @@ Item {
 
                                 Connections {
                                     target: (typeof uiClickSound !== "undefined") ? uiClickSound : null
-                                    onVolumeSliderTouched: settingsMenuRoot.applyVolumeLevel(level)
+                                    function onVolumeSliderTouched(level) {
+                                        settingsMenuRoot.applyVolumeLevel(level)
+                                    }
                                 }
 
                                 background: Item {
@@ -459,7 +461,7 @@ Item {
                     MenuActionButton {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        text: qsTr("СВЕДЕНИЯ\nОБ АППАРАТЕ")
+                        text: qsTr("СВЕДЕНИЯ\nО ГЕНЕРАТОРЕ")
                         iconSource: settingsMenuRoot.iconsBasePath + "iconInfo.png"
                         iconSize: settingsMenuRoot.menuActionIconSize
                         iconCenter: false

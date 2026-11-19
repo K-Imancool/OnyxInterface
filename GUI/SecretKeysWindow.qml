@@ -5,12 +5,13 @@ import QtQuick.CuteKeyboard 1.0 as CuteKeyboardUi
 import CuteKeyboard 1.0
 
 import StratifyLabs.UI 2.0
+import "DeviceType.js" as DeviceType
 
 ServiceFrame {
     id: secretKeysRoot
     title: qsTr("СЕКРЕТНЫЕ КЛЮЧИ")
 
-    readonly property var deviceTypeOptions: ["ONYX-M", "ONYX-AM"]
+    readonly property var deviceTypeOptions: DeviceType.Options
     readonly property var featureKeyOptions: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
     readonly property int sectionFontSize: 32
     readonly property int labelFontSize: 28
@@ -123,14 +124,14 @@ ServiceFrame {
                         Row {
                             spacing: 12
                             Text {
-                                text: qsTr("Тип аппарата:")
+                                text: qsTr("Тип генератора:")
                                 color: "white"
                                 font.pixelSize: secretKeysRoot.labelFontSize
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                             ComboBox {
                                 id: generationDeviceType
-                                width: 200
+                                width: 240
                                 height: secretKeysRoot.fieldHeight
                                 font.pixelSize: secretKeysRoot.fieldFontSize
                                 model: secretKeysRoot.deviceTypeOptions
@@ -262,14 +263,14 @@ ServiceFrame {
                         Row {
                             spacing: 12
                             Text {
-                                text: qsTr("Тип аппарата:")
+                                text: qsTr("Тип генератора:")
                                 color: "white"
                                 font.pixelSize: secretKeysRoot.labelFontSize
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                             ComboBox {
                                 id: validationDeviceType
-                                width: 200
+                                width: 240
                                 height: secretKeysRoot.fieldHeight
                                 font.pixelSize: secretKeysRoot.fieldFontSize
                                 model: secretKeysRoot.deviceTypeOptions
@@ -390,7 +391,7 @@ ServiceFrame {
                         color: "#cfd8dc"
                         font.pixelSize: secretKeysRoot.infoFontSize
                         wrapMode: Text.WordWrap
-                        text: qsTr("• Для каждого типа аппарата и номера ключа формируется отдельный 12-значный код")
+                        text: qsTr("• Для каждого типа генератора и номера ключа формируется отдельный 12-значный код")
                     }
                     Text {
                         width: parent.width

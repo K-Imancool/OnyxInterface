@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
 import StratifyLabs.UI 2.0
+import "DeviceType.js" as DeviceType
 
 Item {
     id: root
@@ -61,7 +62,10 @@ Item {
     }
 
     readonly property string deviceSerialDisplay: savedJsonFieldOrDash("serialNumber")
-    readonly property string deviceTypeDisplay: savedJsonFieldOrDash("deviceType")
+    readonly property string deviceTypeDisplay: {
+        var raw = savedJsonFieldOrDash("deviceType")
+        return raw === "—" ? raw : DeviceType.displayName(raw)
+    }
     readonly property int fontTitle: 36
     readonly property int fontBody: 26
     readonly property int fontCaption: 24
@@ -273,7 +277,7 @@ Item {
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontCaption
                             text: qsTr("Серийный номер: ") + root.deviceSerialDisplay
-                                  + qsTr(" · ") + qsTr("Тип аппарата: ") + root.deviceTypeDisplay
+                                  + qsTr(" · ") + qsTr("Тип генератора: ") + root.deviceTypeDisplay
                                   + qsTr(" · Wi‑Fi: ") + (wifiProbe.wifiState ? qsTr("вкл") : qsTr("выкл"))
                         }
 

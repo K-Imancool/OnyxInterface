@@ -404,7 +404,7 @@ bool UserProgTransferController::importFromFile(const QString &srcPath,
         } else {
             QSqlDatabase destDb = QSqlDatabase::database(destReader->connectionName());
             if (!destDb.isValid() || !destDb.open()) {
-                setError(tr("Не удалось открыть базу программ на аппарате."));
+                setError(tr("Не удалось открыть базу программ на генераторе."));
             } else if (!destReader->beginTransaction()) {
                 setError(tr("Не удалось начать запись в базу программ."));
             } else {

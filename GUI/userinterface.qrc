@@ -35,6 +35,7 @@
         <file>WorkScreen.qml</file>
         <file>Ui/qmldir</file>
         <file>Ui/UiPalette.qml</file>
+        <file>Ui/KeyboardCoordinator.qml</file>
         <file>MenuActionButton.qml</file>
         <file>MenuLoader.qml</file>
         <file>SettingsMenu.qml</file>
@@ -44,6 +45,7 @@
         <file>ServiceFrame.qml</file>
         <file>SpecialCommands.qml</file>
         <file>FullscreenErrorOverlay.qml</file>
+        <file>DeviceType.js</file>
         <file>SerialNumberSettings.qml</file>
         <file>Pedal.qml</file>
         <file>PedalEditor.qml</file>

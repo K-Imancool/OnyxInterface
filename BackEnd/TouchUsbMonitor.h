@@ -31,7 +31,8 @@ class QTouchEvent;
  * При старте и пока виден USB-тач (ILITEK 222a:0001 или PIC16F1459 04d8:4931),
  * запоминается его USB-порт.
  * После старта UI и после каждой активации проверяется вход
- * ("WINSTARTP Mouse" либо "PIC16F1459"). Если узла нет — порт перезапускается.
+ * ("WINSTARTP Mouse", "W.R.Inc. HID-Mouse" либо "PIC16F1459").
+ * Если узла нет — порт перезапускается.
  * Ошибка 0x09 через 15 с без входа; снимается, когда вход снова есть.
  */
 class TouchUsbMonitor : public QObject
@@ -42,9 +43,6 @@ class TouchUsbMonitor : public QObject
     Q_PROPERTY(bool recovering READ recovering NOTIFY recoveringChanged)
     Q_PROPERTY(QString state READ state NOTIFY stateChanged)
     Q_PROPERTY(QString detail READ detail NOTIFY detailChanged)
-    // TEST: квадрат в углу экрана. Удалить вместе с main.qml после теста восстановления тача.
-    Q_PROPERTY(int testRecoverAttempts READ testRecoverAttempts NOTIFY testRecoverAttemptsChanged)
-    Q_PROPERTY(bool testRecoverVisible READ testRecoverVisible NOTIFY testRecoverVisibleChanged)
 
 public:
     static constexpr quint8 FaultWarningCode = 0x09;
@@ -59,9 +57,6 @@ public:
     bool recovering() const { return m_recovering; }
     QString state() const { return m_state; }
     QString detail() const { return m_detail; }
-    // TEST: см. testRecoverAttempts. Удалить после теста.
-    int testRecoverAttempts() const { return m_testRecoverAttempts; }
-    bool testRecoverVisible() const { return m_testRecoverVisible; }
 
     Q_INVOKABLE void check();
     // Обнуляет touch-trace.log. Вызывается при входе в проверку тача.
@@ -76,9 +71,6 @@ signals:
     void recoveringChanged();
     void stateChanged();
     void detailChanged();
-    // TEST: удалить после теста.
-    void testRecoverAttemptsChanged();
-    void testRecoverVisibleChanged();
     void touchUsbFault(const QString &state, const QString &detail);
     // Точка, которую фильтр не отдал в UI. Проверка тача рисует её бледным кругом.
     void falsePoint(qreal x, qreal y);
@@ -180,10 +172,6 @@ private:
     void noteTrace(const QString &tag);
     void reportFalsePoint(const QPointF &screenPos);
     void setRecovering(bool on);
-    // TEST: удалить после теста.
-    void setTestRecoverAttempts(int count);
-    void noteTestTouchLoss();
-    void hideTestRecoverBadge();
     void applyState(const QString &state, const QString &detail, bool logFault);
     void raiseScreenFault();
     void clearScreenFault();
@@ -202,8 +190,6 @@ private:
     QTimer *m_stitchTimer = nullptr;
     QTimer *m_confirmTimer = nullptr;
     QTimer *m_attnTimer = nullptr;
-    // TEST: гасит квадрат попыток. Удалить после теста.
-    QTimer *m_testRecoverHideTimer = nullptr;
     QElapsedTimer m_checkStarted;
     QElapsedTimer m_portOnSince;
     QElapsedTimer m_pointerDownSince;
@@ -251,9 +237,6 @@ private:
     bool m_touchOk = true;
     bool m_faultActive = false;
     bool m_recovering = false;
-    // TEST: попытки сброса порта и флаг «потеря уже была». Удалить после теста.
-    int m_testRecoverAttempts = 0;
-    bool m_testRecoverVisible = false;
     bool m_screenFaultShown = false;
     bool m_activationWasOn = false;
     bool m_pointerDown = false;

@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
+import "DeviceType.js" as DeviceType
 
 Window {
 	id: container
@@ -126,8 +127,9 @@ Window {
         if (typeof savedJson === "undefined" || !savedJson) {
             return true
         }
-        var deviceType = String(savedJson.readString("deviceType", "ONYX-AM")).trim().toUpperCase()
-        return deviceType === "ONYX-AM"
+        var deviceType = String(savedJson.readString("deviceType", "ONYX-A Pro"))
+        // Аргон только не на ONYX Pro (совместимо с ONYX-M / ONYX-AM и новыми именами).
+        return !DeviceType.isOnyxM(deviceType)
     }
 
     function refreshArgonAvailability() {
@@ -736,7 +738,7 @@ Window {
                 right: parent.right
                 bottom: parent.bottom
             }
-            height: 10
+            height: 15
             z: 1000
             color: "#D7DCE6"
             visible: container.workScreenLoadStarted && !container.workReady
@@ -777,7 +779,7 @@ Window {
             visible: workScreenLoadBar.visible
             text: qsTr("Подготовка компонентов...")
             color: "#5C6575"
-            font.pixelSize: 20
+            font.pixelSize: 26
         }
     }
 
@@ -853,30 +855,6 @@ Window {
         anchors.fill: parent
         z: 1000000
         enabled: false
-
-        // TEST: квадрат попыток восстановления тача (WINSTARTP и любой другой вход).
-        // Удалить после теста вместе с testRecoverAttempts / testRecoverVisible в TouchUsbMonitor.
-        Rectangle {
-            anchors {
-                right: parent.right
-                bottom: parent.bottom
-                rightMargin: 8
-                bottomMargin: 8
-            }
-            width: 36
-            height: 36
-            radius: 2
-            color: "#E53935"
-            visible: touchUsbMonitor && touchUsbMonitor.testRecoverVisible
-
-            Text {
-                anchors.centerIn: parent
-                text: touchUsbMonitor ? touchUsbMonitor.testRecoverAttempts : ""
-                color: "white"
-                font.pixelSize: 18
-                font.bold: true
-            }
-        }
 
         SystemMonitor {
             id: systemMonitor

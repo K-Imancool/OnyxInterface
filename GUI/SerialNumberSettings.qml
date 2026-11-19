@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 import StratifyLabs.UI 2.0
+import "DeviceType.js" as DeviceType
 
 ServiceFrame {
     id: serialRoot
@@ -18,7 +19,7 @@ ServiceFrame {
     property string serialNumber: ""
     property string deviceType: ""
     property string featureNotes: ""
-    readonly property var deviceTypeOptions: ["ONYX-M", "ONYX-AM"]
+    readonly property var deviceTypeOptions: DeviceType.Options
     readonly property int minSerialNumber: 260000
     readonly property int maxSerialNumber: 1000000
     property bool serialValid: false
@@ -138,11 +139,11 @@ ServiceFrame {
     Component.onCompleted: {
         if (typeof savedJson !== "undefined" && savedJson) {
             serialRoot.serialNumber = savedJson.readString("serialNumber", "")
-            serialRoot.deviceType = savedJson.readString("deviceType", "")
+            serialRoot.deviceType = DeviceType.displayName(savedJson.readString("deviceType", ""))
             serialRoot.featureNotes = savedJson.readString("featureNotes", "")
         }
         if (deviceTypeOptions.indexOf(serialRoot.deviceType) < 0) {
-            serialRoot.deviceType = deviceTypeOptions[1]
+            serialRoot.deviceType = DeviceType.Default
         }
         serialRoot.serialValid = isSerialValid(serialRoot.serialNumber)
         serialRoot.serialSaveStatus = serialRoot.serialValid
@@ -265,7 +266,7 @@ ServiceFrame {
             }
 
             Text {
-                text: qsTr("Тип аппарата")
+                text: qsTr("Тип генератора")
                 Layout.preferredWidth: serialRoot.labelWidth
                 Layout.preferredHeight: serialRoot.rowHeight
                 horizontalAlignment: Text.AlignLeft

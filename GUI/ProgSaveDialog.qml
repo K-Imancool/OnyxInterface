@@ -16,13 +16,26 @@ Dialog {
     property string originalScopeName: ""
     property bool currentProgramIsUser: false
     property bool isNewScope: false
+    property bool keyboardChromeHeld: false
 
     modal: true
+    padding: 0
+    width: parent ? parent.width : 1280
+    height: parent ? parent.height : 800
+    x: 0
+    y: 0
 
     function ensureKeyboard(field) {
         if (!field.activeFocus)
             field.forceActiveFocus()
         Qt.inputMethod.show()
+    }
+
+    function restoreInputFocus() {
+        Qt.callLater(function() {
+            progNameInput.forceActiveFocus()
+            Qt.inputMethod.show()
+        })
     }
 
     function clearTextFieldFocus() {
@@ -32,8 +45,25 @@ Dialog {
             newScopeNameInput.focus = false
     }
 
+    function holdKeyboardChrome() {
+        if (keyboardChromeHeld)
+            return
+        KeyboardCoordinator.acquire(KeyboardCoordinator.actionBarHeight)
+        keyboardChromeHeld = true
+    }
+
+    function releaseKeyboardChrome() {
+        clearTextFieldFocus()
+        Qt.inputMethod.hide()
+        if (!keyboardChromeHeld)
+            return
+        KeyboardCoordinator.release()
+        keyboardChromeHeld = false
+    }
+
     onOpened: {
         console.log("openSaveDia")
+        holdKeyboardChrome()
         recomHandle.isRecomProgs = false
         scopeNameBox.model = recomHandle.scopeNameList
         var scopeIndex = originalScopeName.length > 0
@@ -47,6 +77,8 @@ Dialog {
             Qt.inputMethod.show()
         })
     }
+
+    onClosed: releaseKeyboardChrome()
 
     Connections {
         target: Qt.inputMethod
@@ -80,11 +112,14 @@ Dialog {
         color: "transparent"
 
         ColumnLayout {
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
             anchors.leftMargin: 32
             anchors.rightMargin: 32
             anchors.topMargin: 16
-            anchors.bottomMargin: 16
+            anchors.bottomMargin: KeyboardCoordinator.keyboardGap(root.height) + 8
             spacing: 18
 
             Label {
@@ -114,7 +149,7 @@ Dialog {
                         height: 64
                         contentItem: Text {
                             text: modelData
-                            font.pixelSize: 26  // пункты в выпадающем списке
+                            font.pixelSize: 26
                             color: UiPalette.text
                             elide: Text.ElideRight
                             verticalAlignment: Text.AlignVCenter
@@ -214,51 +249,48 @@ Dialog {
                     }
                 }
             }
+
+            Item { Layout.fillHeight: true }
         }
     }
 
     footer: Rectangle {
-        color: "transparent"
-        implicitHeight: 120
+        color: UiPalette.background
+        implicitHeight: KeyboardCoordinator.actionBarHeight
 
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 24
-            anchors.rightMargin: 24
-            anchors.topMargin: 16
-            anchors.bottomMargin: 16
-            spacing: 18
+        DialogActionButton {
+            anchors.left: parent.left
+            anchors.leftMargin: KeyboardCoordinator.screenMargin
+            anchors.verticalCenter: parent.verticalCenter
+            width: KeyboardCoordinator.actionButtonWidth
+            height: KeyboardCoordinator.actionButtonHeight
+            text: qsTr("ОТМЕНА")
+            labelPixelSize: 30
+            secondaryColor: UiPalette.textSecondary
+            onPressed: reject()
+        }
 
-            DialogActionButton {
-                Layout.preferredWidth: 220
-                Layout.fillHeight: true
-                text: qsTr("ОТМЕНА")
-                labelPixelSize: 34
-                secondaryColor: UiPalette.textSecondary
-                onPressed: reject()
-            }
-
-            Item { Layout.fillWidth: true }
-
-            DialogActionButton {
-                Layout.preferredWidth: 220
-                Layout.fillHeight: true
-                text: qsTr("ПРИНЯТЬ")
-                labelPixelSize: 34
-                primary: true
-                primaryEnabledColor: "#264093"
-                primaryDisabledColor: "#26409370"
-                labelColor: "white"
-                enabled: progName.length > 0 && scopeName.length > 0
-                onPressed: {
-                    if (progName.length > 0
-                            && scopeName.length > 0
-                            && recomHandle.userProgExists(scopeName, progName)) {
-                        overwriteConfirmationRequested()
-                        return
-                    }
-                    accept()
+        DialogActionButton {
+            anchors.right: parent.right
+            anchors.rightMargin: KeyboardCoordinator.screenMargin
+            anchors.verticalCenter: parent.verticalCenter
+            width: KeyboardCoordinator.actionButtonWidth
+            height: KeyboardCoordinator.actionButtonHeight
+            text: qsTr("ПРИНЯТЬ")
+            labelPixelSize: 30
+            primary: true
+            primaryEnabledColor: "#264093"
+            primaryDisabledColor: "#26409370"
+            labelColor: "white"
+            enabled: progName.length > 0 && scopeName.length > 0
+            onPressed: {
+                if (progName.length > 0
+                        && scopeName.length > 0
+                        && recomHandle.userProgExists(scopeName, progName)) {
+                    overwriteConfirmationRequested()
+                    return
                 }
+                accept()
             }
         }
     }

@@ -85,65 +85,87 @@ Rectangle {
     
     color: "transparent"
     
+    // Стиль ± как в FullSocketPowerRow.StepButton (контур + оранжевая рамка).
     component CustomButton: Rectangle {
         id: rootCustomBut
         property int delta
         property string iconText
-        property bool isPressed: mouseArea.pressed
-        
+        property bool interactive: true
+        property bool isPressed: false
+        // Те же фирменные цвета, что у кнопок мощности в FullSocketPowerRow.
+        readonly property color stepBlue: "#264093"
+        readonly property color stepOrange: "#faa731"
+
         signal pressed()
 
         radius: 16
-        color: isPressed ? fotekOrange : fotekBlue
-        border {
-            color: "#00000030"
-            width: 1
-        }
-        
+        color: !interactive
+               ? UiPalette.surface
+               : (isPressed ? stepOrange : UiPalette.background)
+        border.width: interactive ? 2 : 1
+        border.color: interactive ? stepOrange : UiPalette.border
+
         Text {
             anchors.centerIn: parent
             text: iconText
-            font.pixelSize: 44
+            font.pixelSize: 50
             font.bold: true
-            color: isPressed ? UiPalette.cutInk : UiPalette.accentInk
+            color: !rootCustomBut.interactive
+                   ? UiPalette.textSecondary
+                   : (rootCustomBut.isPressed ? "black" : rootCustomBut.stepBlue)
         }
-        
+
         MouseArea {
             id: mouseArea
             anchors.fill: parent
-            
+            // Всегда enabled: при interactive→false не теряем released/canceled.
+
             onPressed: {
-                // Первое срабатывание СРАЗУ при нажатии (как в ModePowerRect)
+                if (!rootCustomBut.interactive) {
+                    mouse.accepted = true
+                    return
+                }
+                rootCustomBut.isPressed = true
                 rootCustomBut.pressed()
-                // Запускаем таймер задержки перед автоповтором
                 delayTimer.start()
             }
-            
-            onReleased: {
-                delayTimer.stop()
-                autoRepeatTimer.stop()
-            }
-            
-            onCanceled: {
+
+            onReleased: rootCustomBut.endPress()
+            onCanceled: rootCustomBut.endPress()
+        }
+
+        function endPress() {
+            isPressed = false
+            delayTimer.stop()
+            autoRepeatTimer.stop()
+        }
+
+        onInteractiveChanged: {
+            if (!interactive) {
+                isPressed = false
                 delayTimer.stop()
                 autoRepeatTimer.stop()
             }
         }
-        
-        // Таймер задержки перед началом автоповтора
+
         Timer {
             id: delayTimer
-            interval: 500  // Задержка перед началом автоповтора (мс)
+            interval: 500
             repeat: false
             onTriggered: autoRepeatTimer.start()
         }
-        
-        // Таймер автоповтора
+
         Timer {
             id: autoRepeatTimer
-            interval: 150  // Интервал повторения в миллисекундах
+            interval: 150
             repeat: true
-            onTriggered: rootCustomBut.pressed()
+            onTriggered: {
+                if (!rootCustomBut.interactive) {
+                    rootCustomBut.endPress()
+                    return
+                }
+                rootCustomBut.pressed()
+            }
         }
     }
 
@@ -166,7 +188,7 @@ Rectangle {
             visible: showControls && !anyCylinderConnected
             height: 50
             width: parent.width
-            color: UiPalette.surface
+            color: UiPalette.attention
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -247,6 +269,7 @@ Rectangle {
             anchors.verticalCenter: flowControlsArea.verticalCenter
             delta: -10
             iconText: "−"
+            interactive: flowRate > minFlowRate
             visible: showControls
             onPressed: {
                 var newRate = Math.max(minFlowRate, flowRate + delta)
@@ -349,6 +372,7 @@ Rectangle {
             anchors.verticalCenter: flowControlsArea.verticalCenter
             delta: 10
             iconText: "+"
+            interactive: flowRate < maxFlowRate
             visible: showControls
             onPressed: {
                 var newRate = Math.min(maxFlowRate, flowRate + delta)

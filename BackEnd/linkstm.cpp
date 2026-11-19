@@ -437,7 +437,7 @@ void LinkStm::sendCommand()
         }
     }
 
-    // ONYX-M: не дожимаем уже отправленный запрос версии аргонового модуля.
+    // ONYX Pro: не дожимаем уже отправленный запрос версии аргонового модуля.
     if (!m_pollArgonModule && m_lastCommand.com == CurrentVersion && m_lastCommand.mc == MC_ARG) {
         clearMcVersionsForUnit(MC_ARG);
         m_state = STATE_OK;
@@ -845,7 +845,9 @@ quint8 LinkStm::linkErrorCode(quint8 error) const
 
 void LinkStm::reportError(quint8 error)
 {
-    if (m_argonPollStopped && error == ErrArgComm) {
+    // ONYX Pro: опрос выключен с boot; после 0x6B — m_argonPollStopped.
+    // Не показываем ErrArgComm, даже если 0x82 пришёл до stopArgon().
+    if (error == ErrArgComm && (!m_pollArgonModule || m_argonPollStopped)) {
         return;
     }
     error = linkErrorCode(error);

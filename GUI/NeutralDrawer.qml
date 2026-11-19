@@ -149,6 +149,7 @@ Drawer {
             color: UiPalette.text
             font.pixelSize: 24
             font.bold: true
+            visible: periphHandle.neutralElDivided
         }
 
         Label {
@@ -164,6 +165,7 @@ Drawer {
             color: UiPalette.text
             font.pixelSize: 36
             font.bold: true
+            visible: periphHandle.neutralElDivided
         }
 
         Label {

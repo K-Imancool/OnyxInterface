@@ -1,5 +1,6 @@
 #include "controlcenter.h"
 #include "DeviceLogManager.h"
+#include "devicetype.h"
 #include "featureunlockcontroller.h"
 #include "jsonstorage.h"
 #include "proghandle.h"
@@ -842,9 +843,8 @@ bool ControlCenter::deviceTypeIsOnyxM() const
         return false;
     }
     const QString deviceType = m_jsonStorage->readString(
-                QStringLiteral("deviceType"), QStringLiteral("ONYX-AM"))
-            .trimmed().toUpper();
-    return deviceType == QStringLiteral("ONYX-M");
+                QStringLiteral("deviceType"), DeviceType::defaultType());
+    return DeviceType::isOnyxM(deviceType);
 }
 
 void ControlCenter::sendStopArgonIfOnyxM()
@@ -855,6 +855,9 @@ void ControlCenter::sendStopArgonIfOnyxM()
     QMetaObject::invokeMethod(m_linkStm.data(), "setPollArgonModule", Qt::QueuedConnection,
                               Q_ARG(bool, false));
     QMetaObject::invokeMethod(m_linkStm.data(), "stopArgon", Qt::QueuedConnection);
+    if (m_periphery) {
+        m_periphery->dismissWarningCode(LinkStm::ErrArgComm);
+    }
 }
 
 void ControlCenter::applyStoredDeviceType()

@@ -28,7 +28,7 @@
         <translation>No especificado</translation>
     </message>
     <message>
-        <source>Тип аппарата</source>
+        <source>Тип генератора</source>
         <translation>Tipo de equipo</translation>
     </message>
     <message>
@@ -72,7 +72,7 @@
         <translation>Módulo</translation>
     </message>
     <message>
-        <source>СВЕДЕНИЯ ОБ АППАРАТЕ</source>
+        <source>СВЕДЕНИЯ О ГЕНЕРАТОРЕ</source>
         <translation>INFORMACIÓN DEL EQUIPO</translation>
     </message>
 </context>
@@ -158,7 +158,7 @@ ef.</translation>
         <translation>CERRAR</translation>
     </message>
     <message>
-        <source>Сначала сохраните серийный номер аппарата</source>
+        <source>Сначала сохраните серийный номер генератора</source>
         <translation>Guarde primero el número de serie del equipo</translation>
     </message>
     <message>
@@ -592,9 +592,9 @@ ABRA COMPLETAMENTE LAS VÁLVULAS DE LAS BOTELLAS.</translation>
         <translation>ERROR E%1. ACUDA AL SERVICIO TÉCNICO</translation>
     </message>
     <message>
-        <source>Выключите питание аппарата и включите его повторно через 15 секунд.
+        <source>Выключите питание генератора и включите его повторно через 15 секунд.
 Если ошибка повторится, обратитесь в сервисную службу.</source>
-        <translation>Apague el aparato y vuelva a encenderlo transcurridos 15 segundos.
+        <translation>Apague el equipo y vuelva a encenderlo transcurridos 15 segundos.
 Si el error continúa, acuda al servicio técnico.</translation>
     </message>
     <message>
@@ -1907,7 +1907,7 @@ VACÍO</translation>
         <translation>Número de serie:</translation>
     </message>
     <message>
-        <source>Тип аппарата:</source>
+        <source>Тип генератора:</source>
         <translation>Tipo de equipo:</translation>
     </message>
     <message>
@@ -1955,7 +1955,7 @@ VACÍO</translation>
         <translation>• Las claves se generan con el algoritmo criptográfico SHA-256</translation>
     </message>
     <message>
-        <source>• Для каждого типа аппарата и номера ключа формируется отдельный 12-значный код</source>
+        <source>• Для каждого типа генератора и номера ключа формируется отдельный 12-значный код</source>
         <translation>• Para cada tipo de equipo y número de clave se genera un código de 12 dígitos</translation>
     </message>
     <message>
@@ -2006,7 +2006,7 @@ VACÍO</translation>
         <translation>INGRESE EL NÚMERO DE SERIE DEL DISPOSITIVO</translation>
     </message>
     <message>
-        <source>Тип аппарата</source>
+        <source>Тип генератора</source>
         <translation>Tipo de equipo</translation>
     </message>
     <message>
@@ -2048,7 +2048,7 @@ VACÍO</translation>
         <translation>Ajustes de Wi-Fi</translation>
     </message>
     <message>
-        <source>Об аппарате</source>
+        <source>О генераторе</source>
         <translation>Acerca del equipo</translation>
     </message>
     <message>
@@ -2134,7 +2134,7 @@ Esta acción no se puede deshacer.</translation>
     </message>
     <message>
         <source>СВЕДЕНИЯ
-ОБ АППАРАТЕ</source>
+О ГЕНЕРАТОРЕ</source>
         <translation>INFORMACIÓN
 DEL EQUIPO</translation>
     </message>
@@ -2415,11 +2415,11 @@ La potencia de cada salida puede variar según la otra, porque solo se admite la
         <translation>No especificado</translation>
     </message>
     <message>
-        <source>Информация об аппарате</source>
+        <source>Информация о генераторе</source>
         <translation>Información del equipo</translation>
     </message>
     <message>
-        <source>Тип аппарата</source>
+        <source>Тип генератора</source>
         <translation>Tipo de equipo</translation>
     </message>
     <message>
@@ -2742,7 +2742,7 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Tipo de equipo: </translation>
     </message>
     <message>
@@ -2778,8 +2778,8 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <translation>Nombre de archivo para guardar</translation>
     </message>
     <message>
-        <source>Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип аппарата.</source>
-        <translation>Introduzca un nombre de archivo. Los espacios y caracteres no válidos se sustituirán por «_»; al final se añade el tipo de aparato.</translation>
+        <source>Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип генератора.</source>
+        <translation>Introduzca un nombre de archivo. Los espacios y caracteres no válidos se sustituirán por «_»; al final se añade el tipo de equipo.</translation>
     </message>
     <message>
         <source>Например: ИВАНОВ ХИРУРГИЯ</source>
@@ -2857,8 +2857,8 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <translation>El archivo no contiene programas de usuario.</translation>
     </message>
     <message>
-        <source>Не удалось открыть базу программ на аппарате.</source>
-        <translation>No se pudo abrir la base de programas en el aparato.</translation>
+        <source>Не удалось открыть базу программ на генераторе.</source>
+        <translation>No se pudo abrir la base de programas en el equipo.</translation>
     </message>
     <message>
         <source>Не удалось начать запись в базу программ.</source>
@@ -2916,24 +2916,24 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <translation>ATRÁS</translation>
     </message>
     <message>
-        <source>При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-M/ONYX-AM на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон</source>
-        <translation>Si necesita transferir sus programas de usuario de un aparato ONYX-M/ONYX-AM a otro, use un dispositivo con Wi-Fi, por ejemplo un teléfono</translation>
+        <source>При необходимости перенести Ваши пользовательские программы с одного генератора ONYX Pro/ONYX-A Pro на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон</source>
+        <translation>Si necesita transferir sus programas de usuario de un equipo ONYX Pro/ONYX-A Pro a otro, use un dispositivo con Wi-Fi, por ejemplo un teléfono</translation>
     </message>
     <message>
         <source>СКАЧАТЬ
-С АППАРАТА
+С ГЕНЕРАТОРА
 НА УСТРОЙСТВО</source>
         <translation>DESCARGAR
-DEL APARATO
+DEL EQUIPO
 AL DISPOSITIVO</translation>
     </message>
     <message>
         <source>ЗАГРУЗИТЬ
 С УСТРОЙСТВА
-НА АППАРАТ</source>
+НА ГЕНЕРАТОР</source>
         <translation>CARGAR
 DEL DISPOSITIVO
-AL APARATO</translation>
+AL EQUIPO</translation>
     </message>
 </context>
 <context>
@@ -3015,7 +3015,7 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Tipo de equipo: </translation>
     </message>
     <message>
@@ -3191,7 +3191,7 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Tipo de equipo: </translation>
     </message>
     <message>
@@ -3378,7 +3378,7 @@ Cuando se detecte la conexión, el código QR cambiará.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Tipo de equipo: </translation>
     </message>
     <message>
@@ -3462,6 +3462,20 @@ se sobrescribirá</translation>
     <message>
         <source>СВОБОДНЫЕ УСТАНОВКИ</source>
         <translation>AJUSTES LIBRES</translation>
+    </message>
+    <message>
+        <source>Имеются несохранённые изменения.
+Сохранить программу перед выходом в меню?</source>
+        <translation>Hay cambios sin guardar.
+¿Guardar el programa antes de salir al menú?</translation>
+    </message>
+    <message>
+        <source>НЕ СОХРАНЯТЬ</source>
+        <translation>NO GUARDAR</translation>
+    </message>
+    <message>
+        <source>СОХРАНИТЬ</source>
+        <translation>GUARDAR</translation>
     </message>
 </context>
 <context>

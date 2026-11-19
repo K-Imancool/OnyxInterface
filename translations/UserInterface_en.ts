@@ -28,7 +28,7 @@
         <translation>Not specified</translation>
     </message>
     <message>
-        <source>Тип аппарата</source>
+        <source>Тип генератора</source>
         <translation>Unit type</translation>
     </message>
     <message>
@@ -72,8 +72,8 @@
         <translation>Module</translation>
     </message>
     <message>
-        <source>СВЕДЕНИЯ ОБ АППАРАТЕ</source>
-        <translation>DEVICE INFORMATION</translation>
+        <source>СВЕДЕНИЯ О ГЕНЕРАТОРЕ</source>
+        <translation>UNIT INFORMATION</translation>
     </message>
 </context>
 <context>
@@ -158,8 +158,8 @@ eff.</translation>
         <translation>CLOSE</translation>
     </message>
     <message>
-        <source>Сначала сохраните серийный номер аппарата</source>
-        <translation>Save the device serial number first</translation>
+        <source>Сначала сохраните серийный номер генератора</source>
+        <translation>Save the unit serial number first</translation>
     </message>
     <message>
         <source>123456789012</source>
@@ -592,7 +592,7 @@ FULLY OPEN THE CYLINDER VALVES.</translation>
         <translation>ERROR E%1. CONTACT THE SERVICE DEPARTMENT</translation>
     </message>
     <message>
-        <source>Выключите питание аппарата и включите его повторно через 15 секунд.
+        <source>Выключите питание генератора и включите его повторно через 15 секунд.
 Если ошибка повторится, обратитесь в сервисную службу.</source>
         <translation>Turn the unit off and turn it back on after 15 seconds.
 If the error persists, contact the service department.</translation>
@@ -1907,7 +1907,7 @@ EMPTY</translation>
         <translation>Serial number:</translation>
     </message>
     <message>
-        <source>Тип аппарата:</source>
+        <source>Тип генератора:</source>
         <translation>Unit type:</translation>
     </message>
     <message>
@@ -1955,7 +1955,7 @@ EMPTY</translation>
         <translation>• Keys are generated with the SHA-256 cryptographic algorithm</translation>
     </message>
     <message>
-        <source>• Для каждого типа аппарата и номера ключа формируется отдельный 12-значный код</source>
+        <source>• Для каждого типа генератора и номера ключа формируется отдельный 12-значный код</source>
         <translation>• A separate 12-digit code is generated for each unit type and key number</translation>
     </message>
     <message>
@@ -2006,7 +2006,7 @@ EMPTY</translation>
         <translation>ENTER THE DEVICE SERIAL NUMBER</translation>
     </message>
     <message>
-        <source>Тип аппарата</source>
+        <source>Тип генератора</source>
         <translation>Unit type</translation>
     </message>
     <message>
@@ -2048,7 +2048,7 @@ EMPTY</translation>
         <translation>Wi-Fi settings</translation>
     </message>
     <message>
-        <source>Об аппарате</source>
+        <source>О генераторе</source>
         <translation>About the unit</translation>
     </message>
     <message>
@@ -2134,8 +2134,8 @@ This cannot be undone.</translation>
     </message>
     <message>
         <source>СВЕДЕНИЯ
-ОБ АППАРАТЕ</source>
-        <translation>DEVICE
+О ГЕНЕРАТОРЕ</source>
+        <translation>UNIT
 INFORMATION</translation>
     </message>
     <message>
@@ -2415,11 +2415,11 @@ The power of each output may change depending on the other output, because only 
         <translation>Not specified</translation>
     </message>
     <message>
-        <source>Информация об аппарате</source>
+        <source>Информация о генераторе</source>
         <translation>Unit information</translation>
     </message>
     <message>
-        <source>Тип аппарата</source>
+        <source>Тип генератора</source>
         <translation>Unit type</translation>
     </message>
     <message>
@@ -2742,7 +2742,7 @@ After a connection is detected, the QR code will change.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Unit type: </translation>
     </message>
     <message>
@@ -2778,7 +2778,7 @@ After a connection is detected, the QR code will change.</translation>
         <translation>File name to save</translation>
     </message>
     <message>
-        <source>Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип аппарата.</source>
+        <source>Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип генератора.</source>
         <translation>Enter a file name. Spaces and invalid characters will be replaced with “_”; the unit type is appended at the end.</translation>
     </message>
     <message>
@@ -2857,7 +2857,7 @@ After a connection is detected, the QR code will change.</translation>
         <translation>The file does not contain user programs.</translation>
     </message>
     <message>
-        <source>Не удалось открыть базу программ на аппарате.</source>
+        <source>Не удалось открыть базу программ на генераторе.</source>
         <translation>Failed to open the programs database on the unit.</translation>
     </message>
     <message>
@@ -2916,12 +2916,12 @@ After a connection is detected, the QR code will change.</translation>
         <translation>BACK</translation>
     </message>
     <message>
-        <source>При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-M/ONYX-AM на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон</source>
-        <translation>To transfer your user programs from one ONYX-M/ONYX-AM unit to another, use a Wi-Fi device such as a smartphone</translation>
+        <source>При необходимости перенести Ваши пользовательские программы с одного генератора ONYX Pro/ONYX-A Pro на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон</source>
+        <translation>To transfer your user programs from one ONYX Pro/ONYX-A Pro unit to another, use a Wi-Fi device such as a smartphone</translation>
     </message>
     <message>
         <source>СКАЧАТЬ
-С АППАРАТА
+С ГЕНЕРАТОРА
 НА УСТРОЙСТВО</source>
         <translation>DOWNLOAD
 FROM UNIT
@@ -2930,7 +2930,7 @@ TO DEVICE</translation>
     <message>
         <source>ЗАГРУЗИТЬ
 С УСТРОЙСТВА
-НА АППАРАТ</source>
+НА ГЕНЕРАТОР</source>
         <translation>UPLOAD
 FROM DEVICE
 TO UNIT</translation>
@@ -3015,7 +3015,7 @@ After a connection is detected, the QR code will change.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Unit type: </translation>
     </message>
     <message>
@@ -3191,7 +3191,7 @@ After a connection is detected, the QR code will change.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Unit type: </translation>
     </message>
     <message>
@@ -3378,7 +3378,7 @@ After a connection is detected, the QR code will change.</translation>
         <translation> · </translation>
     </message>
     <message>
-        <source>Тип аппарата: </source>
+        <source>Тип генератора: </source>
         <translation>Unit type: </translation>
     </message>
     <message>
@@ -3462,6 +3462,20 @@ will be overwritten</translation>
     <message>
         <source>СВОБОДНЫЕ УСТАНОВКИ</source>
         <translation>FREE MODE SETTINGS</translation>
+    </message>
+    <message>
+        <source>Имеются несохранённые изменения.
+Сохранить программу перед выходом в меню?</source>
+        <translation>There are unsaved changes.
+Save the program before returning to the menu?</translation>
+    </message>
+    <message>
+        <source>НЕ СОХРАНЯТЬ</source>
+        <translation>DON&apos;T SAVE</translation>
+    </message>
+    <message>
+        <source>СОХРАНИТЬ</source>
+        <translation>SAVE</translation>
     </message>
 </context>
 <context>

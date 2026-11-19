@@ -22,6 +22,7 @@ QtObject {
     readonly property color accentDisabled: "#6600A8CC"
     readonly property color success: "#10B981"
     readonly property color danger: "#EF4444"
+    readonly property color attention: "#ffab43"    // рыжеватые для предупреждений
     readonly property color neSelected: "#FAA731"   // выбранная кнопка НЭ
     readonly property color neGreen: "#00AC2A"      // подключённый нейтральный электрод
 
@@ -43,7 +44,7 @@ QtObject {
     readonly property color darkInk: "#F0F4F6"
     readonly property color accentInk: "#F0F4F6"
 
-    // Биполярный инструмент. Фиолетовый, отдельно от жёлтого резания и синей коагуляции.
+    // Кнопка термошовного инструмента. Фиолетовый, отдельно от жёлтого резания и синей коагуляции.
     readonly property color bipolar: "#800080"
 
     /*

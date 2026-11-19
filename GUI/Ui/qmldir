@@ -1,2 +1,3 @@
 module Ui
 singleton UiPalette 1.0 UiPalette.qml
+singleton KeyboardCoordinator 1.0 KeyboardCoordinator.qml

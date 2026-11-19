@@ -13,8 +13,8 @@
 | 4 | МК раскачки | Driver MCU | MCU del excitador |
 | 5 | МК нейтрального электрода | Neutral electrode MCU | MCU del electrodo neutro |
 | 6 | Не указано | Not specified | No especificado |
-| 7 | Об аппарате | About the unit | Acerca del equipo |
-| 8 | Тип аппарата | Unit type | Tipo de equipo |
+| 7 | О генераторе | About the unit | Acerca del equipo |
+| 8 | Тип генератора | Unit type | Tipo de equipo |
 | 9 | Серийный номер | Serial number | Número de serie |
 | 10 | Комментарии | Comments | Comentarios |
 | 11 | Версия приложения | Application version | Versión de la aplicación |
@@ -394,7 +394,7 @@
 | 345 | Назад | back | atrás |
 | 346 | Генерация ключа | Key generation | Generación de clave |
 | 347 | Серийный номер: | Serial number: | Número de serie: |
-| 348 | Тип аппарата: | Unit type: | Tipo de equipo: |
+| 348 | Тип генератора: | Unit type: | Tipo de equipo: |
 | 349 | Номер ключа: | Key number: | Número de clave: |
 | 350 | Функция: | Feature: | Función: |
 | 351 | Сгенерировать ключ | Generate key | Generar clave |
@@ -409,7 +409,7 @@
 | 360 | ✗ Заполните все поля | ✗ Fill in all fields | ✗ Rellene todos los campos |
 | 361 | ℹ️ Информация: | ℹ️ Information: | ℹ️ Información: |
 | 362 | • Ключи генерируются криптографическим алгоритмом SHA-256 | • Keys are generated with the SHA-256 cryptographic algorithm | • Las claves se generan con el algoritmo criptográfico SHA-256 |
-| 363 | • Для каждого типа аппарата и номера ключа формируется отдельный 12-значный код | • A separate 12-digit code is generated for each unit type and key number | • Para cada tipo de equipo y número de clave se genera un código de 12 dígitos |
+| 363 | • Для каждого типа генератора и номера ключа формируется отдельный 12-значный код | • A separate 12-digit code is generated for each unit type and key number | • Para cada tipo de equipo y número de clave se genera un código de 12 dígitos |
 | 364 | • Соседние номера гарантированно имеют различные ключи | • Adjacent serial numbers are guaranteed to have different keys | • Los números consecutivos tienen garantizadas claves diferentes |
 | | **Контекст: SerialNumberSettings** | | |
 | 365 | Введите серийный номер в диапазоне 260 000 - 1 000 000 | Enter a serial number in the range 260,000 - 1,000,000 | Introduzca un número de serie en el rango 260 000 - 1 000 000 |
@@ -418,7 +418,7 @@
 | 368 | СЕРИЙНЫЙ НОМЕР И ТИП | Serial number and type | Número de serie y tipo |
 | 369 | Серийный номер | Serial number | Número de serie |
 | 370 | Введите серийный номер | ENTER THE DEVICE SERIAL NUMBER | INGRESE EL NÚMERO DE SERIE DEL DISPOSITIVO |
-| 371 | Тип аппарата | Unit type | Tipo de equipo |
+| 371 | Тип генератора | Unit type | Tipo de equipo |
 | 372 | Комментарии | Comments | Comentarios |
 | 373 | Дата производства, особенности | Production date, notes | Fecha de fabricación, particularidades |
 | 374 | Вход без пароля | Login without password | Acceso sin contraseña |
@@ -431,7 +431,7 @@
 | 380 | Обновление ПО | Software update | Actualización de software |
 | 381 | Приём файлов по Wi‑Fi | Receive files over Wi‑Fi | Recepción de archivos por Wi‑Fi |
 | 382 | Настройки WiFi | Wi-Fi settings | Ajustes de Wi-Fi |
-| 383 | Об аппарате | About the unit | Acerca del equipo |
+| 383 | О генераторе | About the unit | Acerca del equipo |
 | 384 | Проверка тач-скрина | Touchscreen calibration | Calibración de pantalla táctil |
 | 385 | Лог обновлений | Update log | Registro de actualizaciones |
 | 386 | Секретные ключи | Secret keys | Claves secretas |
@@ -445,7 +445,7 @@
 | 393 | Все ключи: ВЫКЛ | All keys: OFF | Todas las claves: DESACTIVADAS |
 | | **Контекст: SettingsMenu** | | |
 | 394 | НАСТРОЙКИ | SETTINGS | AJUSTES |
-| 395 | СВЕДЕНИЯ ОБ АППАРАТЕ | DEVICE INFORMATION | INFORMACIÓN DEL EQUIPO |
+| 395 | СВЕДЕНИЯ О ГЕНЕРАТОРЕ | UNIT INFORMATION | INFORMACIÓN DEL EQUIPO |
 | 396 | ЯЗЫК | LANGUAGE | IDIOMA |
 | 397 | ГРОМКОСТЬ | VOLUME | VOLUMEN |
 | 398 | ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ | ADDITIONAL SETTINGS | AJUSTES ADICIONALES |
@@ -453,7 +453,7 @@
 | 400 | НАЗАД | BACK | ATRÁS |
 | 401 | Для разблокировки эндоскопических функций введите ключ | Enter the key to unlock endoscopic features | Introduzca la clave para desbloquear las funciones endoscópicas |
 | 402 | 123-456-789-012 | 123-456-789-012 | 123-456-789-012 |
-| 403 | Сначала сохраните серийный номер аппарата | Save the device serial number first | Guarde primero el número de serie del equipo |
+| 403 | Сначала сохраните серийный номер генератора | Save the unit serial number first | Guarde primero el número de serie del equipo |
 | 404 | РАЗБЛОКИРОВАТЬ | UNLOCK | DESBLOQUEAR |
 | | **Контекст: AdditionalSettingsMenu** | | |
 | 405 | ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ | ADDITIONAL SETTINGS | AJUSTES ADICIONALES |
@@ -474,7 +474,7 @@
 | 420 | Извините, ключ не верный! Попробуйте ещё раз или обратитесь к производителю | Sorry, the key is invalid! Please try again or contact the manufacturer | Lo sentimos, la clave no es válida. Inténtelo de nuevo o contacte con el fabricante |
 | 421 | АКТИВИРОВАТЬ | ACTIVATE | ACTIVAR |
 | 422 | ЗАКРЫТЬ | CLOSE | CERRAR |
-| 423 | Сначала сохраните серийный номер аппарата | Save the device serial number first | Guarde primero el número de serie del equipo |
+| 423 | Сначала сохраните серийный номер генератора | Save the unit serial number first | Guarde primero el número de serie del equipo |
 | | **Контекст: SocketContainerV2** | | |
 | 424 | удалить | delete | eliminar |
 | 425 | Подтверждение удаления | Confirm deletion | Confirmar eliminación |
@@ -533,8 +533,8 @@
 | 474 | Удалить все пользовательские программы?<br>Это действие необратимо. | All user programs will be DELETED! Continue? | ¡Todos los programas de usuario serán BORRADOS! ¿Continuar? |
 | | **Контекст: StartupInfoScreen** | | |
 | 475 | Не указан | Not specified | No especificado |
-| 476 | Информация об аппарате | Unit information | Información del equipo |
-| 477 | Тип аппарата | Unit type | Tipo de equipo |
+| 476 | Информация о генераторе | Unit information | Información del equipo |
+| 477 | Тип генератора | Unit type | Tipo de equipo |
 | 478 | Серийный номер | Serial number | Número de serie |
 | 479 | Версии ПО | Software versions | Versiones de software |
 | 480 | НАЗАД | BACK | ATRÁS |
@@ -605,7 +605,7 @@
 | 535 | 1. Включите приём | 1. Enable receiving | 1. Active la recepción |
 | 536 | 2. Подключитесь к Wi‑Fi | 2. Connect to Wi‑Fi | 2. Conéctese a la red Wi‑Fi |
 | 537 | 3. Откройте страницу загрузки | 3. Open the upload page | 3. Abra la página de carga |
-| 538 | Аппарат создаст временную точку доступа "ONYX-AM",<br>можете подключиться к ней, используя QR-код справа | The unit will create a temporary access point "ONYX-AM",<br>you can connect to it using the QR code on the right | El equipo creará un punto de acceso temporal "ONYX-AM",<br>puede conectarse a él usando el código QR de la derecha |
+| 538 | Генератор создаст временную точку доступа "ONYX-AM",<br>можете подключиться к ней, используя QR-код справа | The unit will create a temporary access point "ONYX-AM",<br>you can connect to it using the QR code on the right | El equipo creará un punto de acceso temporal "ONYX-AM",<br>puede conectarse a él usando el código QR de la derecha |
 | 539 | Отсканируйте QR-код или выберите сеть ONYX-AM в списке Wi‑Fi,<br>после обнаружения подключения, QR-код изменится | Scan the QR code or select the ONYX-AM network in the Wi‑Fi list,<br>once a connection is detected the QR code will change | Escanee el código QR o seleccione la red ONYX-AM en la lista de Wi‑Fi,<br>cuando se detecte la conexión, el código QR cambiará |
 | 540 | Соединение установлено! Отсканируйте QR-код или откройте адрес вручную в любом браузере | Connection established! Scan the QR code or open the address manually in any browser | ¡Conexión establecida! Escanee el código QR o abra la dirección manualmente en cualquier navegador |
 | 541 | Адрес загрузки | Upload address | Dirección de carga |
@@ -613,7 +613,7 @@
 | 543 |  · пароль:  |  · password:  |  · contraseña:  |
 | 544 | Серийный номер:  | Serial number:  | Número de serie:  |
 | 545 |  ·  |  ·  |  ·  |
-| 546 | Тип аппарата:  | Unit type:  | Tipo de equipo:  |
+| 546 | Тип генератора:  | Unit type:  | Tipo de equipo:  |
 | 547 |  · Wi‑Fi:  |  · Wi‑Fi:  |  · Wi‑Fi:  |
 | 548 | вкл | on | activado |
 | 549 | выкл | off | desactivado |

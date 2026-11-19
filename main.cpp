@@ -13,6 +13,7 @@
 #include "BackEnd/systemmonitor.h"
 #include "BackEnd/gpiomonitor.h"
 #include "BackEnd/TouchUsbMonitor.h"
+#include "BackEnd/devicetype.h"
 #include "BackEnd/keygenerator.h"
 #include "BackEnd/onyxapp.h"
 #include "qqmlcontext.h"
@@ -749,10 +750,10 @@ int main(int argc, char *argv[])
     m_linkStm = new LinkStm();
     // Откуда грузиться stm
     m_linkStm->setBoot(static_cast<LinkStm::BootChoice>(boot.toInt()));
-    // До старта потока UART: ONYX-M не опрашивает аргоновый модуль (в том числе 0x20 0xE0).
+    // До старта потока UART: ONYX Pro (бывш. ONYX-M) не опрашивает аргоновый модуль (в т.ч. 0x20 0xE0).
     const QString deviceType = m_savedJson->readString(
-                QStringLiteral("deviceType"), QStringLiteral("ONYX-AM")).trimmed().toUpper();
-    if (deviceType == QStringLiteral("ONYX-M"))
+                QStringLiteral("deviceType"), DeviceType::defaultType());
+    if (DeviceType::isOnyxM(deviceType))
         m_linkStm->setPollArgonModule(false);
 
     QObject::connect(m_linkStm, &LinkStm::sigFirmwareVersionsChanged,

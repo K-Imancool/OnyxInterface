@@ -18,7 +18,9 @@ Rectangle {
         var match = modeName.match(/([0-3])\s*$/)
         return match ? parseInt(match[1]) : 2
     }
-    readonly property bool usePulseAnimation: true
+    // Анимация: для включения раскомментировать true и закомментировать false
+    readonly property bool usePulseAnimation: false
+    // readonly property bool usePulseAnimation: true
     readonly property bool isSingleShot: modeLevel === 0
     readonly property int cycleCount: isSingleShot ? 1 : (modeLevel + 1)
     readonly property int cutPulseMs: {

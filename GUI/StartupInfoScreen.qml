@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import "DeviceType.js" as DeviceType
 
 Item {
     id: startupInfo
@@ -11,7 +12,7 @@ Item {
     property color fotekOrange: "#faa731"
     readonly property string deviceTypeText: {
         var value = String(savedJson.readString("deviceType", "")).trim()
-        return value === "" ? qsTr("Не указан") : value
+        return value === "" ? qsTr("Не указан") : DeviceType.displayName(value)
     }
     readonly property string serialNumberText: {
         var value = String(savedJson.readString("serialNumber", "")).trim()
@@ -101,7 +102,7 @@ Item {
 
             Label {
                 Layout.fillWidth: true
-                text: qsTr("Информация об аппарате")
+                text: qsTr("Информация о генераторе")
                 color: startupInfo.fotekBlue
                 font.pixelSize: 34
                 font.bold: true
@@ -147,7 +148,7 @@ Item {
 
                                 Label {
                                     width: parent.width
-                                    text: qsTr("Тип аппарата")
+                                    text: qsTr("Тип генератора")
                                     color: "#616161"
                                     font.pixelSize: startupInfo.fieldLabelSize
                                     font.bold: true

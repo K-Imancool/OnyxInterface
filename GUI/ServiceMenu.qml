@@ -111,7 +111,7 @@ ServiceFrame {
             style: "btn-primary lg"
             Layout.preferredWidth: serviceMenuRoot.menuButtonWidth
             Layout.preferredHeight: serviceMenuRoot.menuButtonHeight
-            text: qsTr("Об аппарате")
+            text: qsTr("О генераторе")
             onPressed: serviceMenuRoot.aboutButtonPressed()
         }
 

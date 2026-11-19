@@ -1,5 +1,6 @@
 #include "progloader.h"
 #include "BackEnd/dblocale.h"
+#include "BackEnd/devicetype.h"
 #include "BackEnd/recomprogloader.h"
 #include "BackEnd/userprogloader.h"
 #include "BackEnd/jsonstorage.h"
@@ -1555,8 +1556,8 @@ bool ProgLoader::deviceHasArgon() const
 	}
 
 	const QString deviceType = m_jsonStorage->readString(QStringLiteral("deviceType"),
-	                                                     QStringLiteral("ONYX-AM")).trimmed().toUpper();
-	return deviceType != QStringLiteral("ONYX-M");
+	                                                     DeviceType::defaultType());
+	return !DeviceType::isOnyxM(deviceType);
 }
 
 void ProgLoader::setArgonDisabledByFault(bool disabled)

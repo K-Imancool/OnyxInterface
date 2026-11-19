@@ -94,24 +94,24 @@ Item {
     }
 
     // Временная кнопка отладки тачскрина — убрать после проверки. TEST
-    DialogActionButton {
-        id: debugTouchTestButton
-        z: 50
-        width: 168
-        height: 72
-        text: qsTr("ТАЧ")
-        primary: true
-        primaryEnabledColor: "#FF1744"
-        cornerRadius: 16
-        labelPixelSize: 32
-        enabled: !settingsScreen.touchScreenTestVisible
-        onPressed: settingsScreen.touchScreenTestVisible = true
-        anchors {
-            left: parent.left
-            top: parent.top
-            margins: 12
-        }
-    }
+//    DialogActionButton {
+//        id: debugTouchTestButton
+//        z: 50
+//        width: 168
+//        height: 72
+//        text: qsTr("ТАЧ")
+//        primary: true
+//        primaryEnabledColor: "#FF1744"
+//        cornerRadius: 16
+//        labelPixelSize: 32
+//        enabled: !settingsScreen.touchScreenTestVisible
+//        onPressed: settingsScreen.touchScreenTestVisible = true
+//        anchors {
+//            left: parent.left
+//            top: parent.top
+//            margins: 12
+//        }
+//    }
 
     Item {
         id: headerArea

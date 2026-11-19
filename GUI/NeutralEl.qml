@@ -315,7 +315,6 @@ Rectangle {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
                 rightMargin: 10
-                leftMargin: 20
             }
         }
         MassSelectionBut {

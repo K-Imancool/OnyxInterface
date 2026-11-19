@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
+import Ui 1.0
 
 Rectangle {
     id: recProgs
@@ -734,12 +735,14 @@ Rectangle {
 
     Dialog {
         id: addScopeDialog
+        property bool keyboardChromeHeld: false
         modal: true
         parent: Overlay.overlay
-        width: Math.min(recProgs.width * 0.92, 980)
-        height: 360
-        x: parent ? (parent.width - width) / 2 : 0
-        y: 80
+        padding: 0
+        width: parent ? parent.width : 1280
+        height: parent ? parent.height : 800
+        x: 0
+        y: 0
         title: qsTr("НОВАЯ ПАПКА")
         Overlay.modal: Rectangle {
             color: "#70000000"
@@ -751,16 +754,31 @@ Rectangle {
             Qt.inputMethod.show()
         }
 
-        function submit() {
-            var newName = newScopeEdit.text.trim()
+        function holdKeyboardChrome() {
+            if (keyboardChromeHeld)
+                return
+            KeyboardCoordinator.acquire(KeyboardCoordinator.actionBarHeight)
+            keyboardChromeHeld = true
+        }
+
+        function releaseKeyboardChrome() {
             newScopeEdit.focus = false
             Qt.inputMethod.hide()
+            if (!keyboardChromeHeld)
+                return
+            KeyboardCoordinator.release()
+            keyboardChromeHeld = false
+        }
+
+        function submit() {
+            var newName = newScopeEdit.text.trim()
             if (newName.length > 0)
                 recomHandle.addScopeRequest(newName)
             close()
         }
 
         onOpened: {
+            holdKeyboardChrome()
             newScopeEdit.text = ""
             Qt.callLater(function() {
                 newScopeEdit.forceActiveFocus()
@@ -781,8 +799,12 @@ Rectangle {
             color: "white"
 
             ColumnLayout {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 anchors.margins: 18
+                anchors.bottomMargin: KeyboardCoordinator.keyboardGap(addScopeDialog.height) + 8
                 spacing: 16
 
                 Label {
@@ -827,51 +849,42 @@ Rectangle {
                         }
                     }
                 }
+
+                Item { Layout.fillHeight: true }
             }
         }
 
         footer: Rectangle {
-            color: "transparent"
-            implicitHeight: 120
+            color: "white"
+            implicitHeight: KeyboardCoordinator.actionBarHeight
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 24
-                anchors.rightMargin: 24
-                anchors.topMargin: 16
-                anchors.bottomMargin: 16
-                spacing: 18
+            DialogActionButton {
+                anchors.left: parent.left
+                anchors.leftMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ОТМЕНА")
+                labelPixelSize: 30
+                onPressed: addScopeDialog.reject()
+            }
 
-                DialogActionButton {
-                    Layout.preferredWidth: 220
-                    Layout.fillHeight: true
-                    text: qsTr("ОТМЕНА")
-                    labelPixelSize: 34
-                    onPressed: {
-                        newScopeEdit.focus = false
-                        Qt.inputMethod.hide()
-                        addScopeDialog.reject()
-                    }
-                }
-
-                Item { Layout.fillWidth: true }
-
-                DialogActionButton {
-                    Layout.preferredWidth: 220
-                    Layout.fillHeight: true
-                    text: qsTr("ПРИНЯТЬ")
-                    primary: true
-                    labelPixelSize: 34
-                    enabled: newScopeEdit.text.trim().length > 0
-                    onPressed: addScopeDialog.submit()
-                }
+            DialogActionButton {
+                anchors.right: parent.right
+                anchors.rightMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ПРИНЯТЬ")
+                primary: true
+                labelPixelSize: 30
+                enabled: newScopeEdit.text.trim().length > 0
+                onPressed: addScopeDialog.submit()
             }
         }
 
-        onRejected: {
-            newScopeEdit.focus = false
-            Qt.inputMethod.hide()
-        }
+        onRejected: close()
+        onClosed: releaseKeyboardChrome()
     }
 
     Connections {

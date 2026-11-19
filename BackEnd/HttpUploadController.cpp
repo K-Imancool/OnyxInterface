@@ -1,4 +1,5 @@
 #include "HttpUploadController.h"
+#include "devicetype.h"
 #include "jsonstorage.h"
 #include "linkstm.h"
 #include "apppaths.h"
@@ -1924,7 +1925,7 @@ void HttpUploadController::fillDeviceIdentityHtml(QString *serialHtml, QString *
     }
     const QString t = m_json->readString(QStringLiteral("deviceType"), QString()).trimmed();
     if (!t.isEmpty()) {
-        *typeHtml = t.toHtmlEscaped();
+        *typeHtml = DeviceType::displayName(t).toHtmlEscaped();
     }
 }
 
@@ -1942,9 +1943,9 @@ QString HttpUploadController::uiLanguage() const
 QString HttpUploadController::deviceTypeFileTag() const
 {
     const QString type = m_json
-            ? m_json->readString(QStringLiteral("deviceType"), QStringLiteral("ONYX-AM")).trimmed().toUpper()
-            : QStringLiteral("ONYX-AM");
-    return type == QLatin1String("ONYX-M") ? QStringLiteral("m") : QStringLiteral("am");
+            ? m_json->readString(QStringLiteral("deviceType"), DeviceType::defaultType())
+            : DeviceType::defaultType();
+    return DeviceType::fileTag(type);
 }
 
 QString HttpUploadController::pageText(const char *key) const
@@ -1978,15 +1979,15 @@ QString HttpUploadController::pageText(const char *key) const
         {"log.notice", {"<strong>Внимание:</strong> при повторном запуске передачи обновите страницу.",
                         "<strong>Attention:</strong> if you restart the transfer, refresh this page.",
                         "<strong>Atención:</strong> si vuelve a iniciar la transferencia, actualice la página."}},
-        {"log.hint", {"Нажмите кнопку, чтобы скачать архив журнала событий аппарата (лог-файл) на это устройство.",
-                      "Tap the button to download the device event log archive (log file) to this device.",
-                      "Pulse el botón para descargar el archivo del registro de eventos del aparato (archivo log) en este dispositivo."}},
+        {"log.hint", {"Нажмите кнопку, чтобы скачать архив журнала событий генератора (лог-файл) на это устройство.",
+                      "Tap the button to download the unit event log archive (log file) to this device.",
+                      "Pulse el botón para descargar el archivo del registro de eventos del equipo (archivo log) en este dispositivo."}},
         {"log.browser", {"Браузер может предупредить, что файл скачивается небезопасно — это из‑за локальной сети без HTTPS, не ошибка. Файл обычно всё равно появляется в «Загрузках».",
                          "The browser may warn that the file is not downloaded securely — this is due to the local network without HTTPS, not an error. The file usually still appears in Downloads.",
                          "El navegador puede avisar de que el archivo no se descarga de forma segura: se debe a la red local sin HTTPS, no es un error. El archivo suele aparecer igualmente en Descargas."}},
         {"log.button", {"Скачать лог-файл", "Download log file", "Descargar archivo de registro"}},
         {"common.serial", {"Серийный номер", "Serial number", "Número de serie"}},
-        {"common.type", {"Тип аппарата", "Device type", "Tipo de aparato"}},
+        {"common.type", {"Тип генератора", "Unit type", "Tipo de equipo"}},
         {"units.mb", {"МБ", "MB", "MB"}},
         {"units.kb", {"КБ", "KB", "KB"}},
         {"log.js.transferring", {"Передача архива…", "Transferring archive…", "Transfiriendo archivo…"}},
@@ -2021,15 +2022,15 @@ QString HttpUploadController::pageText(const char *key) const
                              "The programs file has been saved on this device.\nThe ONYX-SERVICE access point has been turned off.",
                              "El archivo de programas se ha guardado en este dispositivo.\nEl punto de acceso ONYX-SERVICE se ha desconectado."}},
         {"userprog.ul.title", {"Загрузка программ пользователя", "Upload user programs", "Carga de programas de usuario"}},
-        {"userprog.ul.hint", {"Выберите файл программ пользователя (например, xxx_onyx-m.db), ранее скачанный с аппарата ONYX. По умолчанию он загружается в папку \"Загрузки\", можно использовать поиск по слову \"onyx\".",
+        {"userprog.ul.hint", {"Выберите файл программ пользователя (например, xxx_onyx-m.db), ранее скачанный с генератора ONYX. По умолчанию он загружается в папку \"Загрузки\", можно использовать поиск по слову \"onyx\".",
                               "Select a user programs file (for example, xxx_onyx-m.db) previously downloaded from an ONYX unit. By default it is saved in Downloads; you can search for \"onyx\".",
-                              "Seleccione un archivo de programas de usuario (por ejemplo, xxx_onyx-m.db) descargado previamente de un aparato ONYX. Por defecto se guarda en Descargas; puede buscar \"onyx\"."}},
+                              "Seleccione un archivo de programas de usuario (por ejemplo, xxx_onyx-m.db) descargado previamente de un equipo ONYX. Por defecto se guarda en Descargas; puede buscar \"onyx\"."}},
         {"userprog.ul.badName", {"Выберите файл программ с расширением .db или .sqlite",
                                  "Select a programs file with a .db or .sqlite extension",
                                  "Seleccione un archivo de programas con extensión .db o .sqlite"}},
-        {"userprog.ul.success", {"Программы успешно загружены на аппарат",
-                                 "Programs were imported to the device",
-                                 "Los programas se importaron al aparato"}},
+        {"userprog.ul.success", {"Программы успешно загружены на генератор",
+                                 "Programs were imported to the unit",
+                                 "Los programas se importaron al equipo"}},
         {"http.title.error", {"Ошибка", "Error", "Error"}},
         {"http.title.notFound", {"Не найдено", "Not found", "No encontrado"}},
         {"http.title.forbidden", {"Доступ запрещён", "Access denied", "Acceso denegado"}},

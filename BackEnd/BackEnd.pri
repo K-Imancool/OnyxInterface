@@ -27,6 +27,7 @@ HEADERS += \
     $$PWD/jsonstorage.h \
     $$PWD/McFirmwareVersionsBridge.h \
     $$PWD/gstreamervideoplayer.h \
+    $$PWD/devicetype.h \
     $$PWD/keygenerator.h \
     $$PWD/linkstm.h \
     $$PWD/loggingcategories.h \

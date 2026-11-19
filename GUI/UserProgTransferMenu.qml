@@ -108,7 +108,7 @@ Item {
                     id: hintText
                     anchors.centerIn: parent
                     width: parent.width - 32
-                    text: qsTr("При необходимости перенести Ваши пользовательские программы с одного аппарата ONYX-M/ONYX-AM на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон")
+                    text: qsTr("При необходимости перенести Ваши пользовательские программы с одного генератора ONYX Pro/ONYX-A Pro на другой, используйте устройство с возможностью подключения к сети WiFi, например, смартфон")
                     color: "black"
                     font.pixelSize: 28
                     horizontalAlignment: Text.AlignHCenter
@@ -126,7 +126,7 @@ Item {
             MenuActionButton {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                text: qsTr("СКАЧАТЬ\nС АППАРАТА\nНА УСТРОЙСТВО")
+                text: qsTr("СКАЧАТЬ\nС ГЕНЕРАТОРА\nНА УСТРОЙСТВО")
                 iconSource: transferMenuRoot.iconsBasePath + "iconExport.png"
                 iconSize: transferMenuRoot.menuActionIconSize
                 iconCenter: false
@@ -141,7 +141,7 @@ Item {
             MenuActionButton {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                text: qsTr("ЗАГРУЗИТЬ\nС УСТРОЙСТВА\nНА АППАРАТ")
+                text: qsTr("ЗАГРУЗИТЬ\nС УСТРОЙСТВА\nНА ГЕНЕРАТОР")
                 iconSource: transferMenuRoot.iconsBasePath + "iconImport.png"
                 iconSize: transferMenuRoot.menuActionIconSize
                 iconCenter: false

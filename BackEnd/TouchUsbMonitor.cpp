@@ -49,8 +49,6 @@ constexpr int kPortProbeTries = 20;
 // Пауза после старта UI: на исправной плате 222a успевает перечислиться.
 // Если мыши всё ещё нет — тот же сброс порта, что после активации.
 constexpr int kStartupCheckDelayMs = 3000;
-// TEST: сколько квадрат попыток виден после появления. Удалить после теста.
-constexpr int kTestRecoverHideMs = 4000;
 // После появления WINSTARTP Mouse usbhid часто шлёт ложный press.
 constexpr qint64 kPostRecoverMuteMs = 500;
 // Живой свайп в логе — не больше ~55 px и ~9 px по Y за кадр.
@@ -309,8 +307,12 @@ QString touchInputPresentDetail()
     if (text.contains("PIC16F1459")) {
         return QStringLiteral("PIC16F1459 present");
     }
+    // ILITEK 222a:0001: имя зависит от прошивки тача.
     if (text.contains("WINSTARTP Mouse")) {
         return QStringLiteral("WINSTARTP Mouse present");
+    }
+    if (text.contains("W.R.Inc. HID-Mouse")) {
+        return QStringLiteral("W.R.Inc. HID-Mouse present");
     }
     return {};
 }
@@ -330,7 +332,6 @@ TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
     , m_stitchTimer(new QTimer(this))
     , m_confirmTimer(new QTimer(this))
     , m_attnTimer(new QTimer(this))
-    , m_testRecoverHideTimer(new QTimer(this))
 {
     m_stepTimer->setSingleShot(true);
     connect(m_stepTimer, &QTimer::timeout, this, &TouchUsbMonitor::onPortStep);
@@ -351,10 +352,6 @@ TouchUsbMonitor::TouchUsbMonitor(DeviceLogManager *deviceLog, QObject *parent)
 
     m_attnTimer->setSingleShot(true);
     connect(m_attnTimer, &QTimer::timeout, this, &TouchUsbMonitor::onAttentionHoldTimeout);
-
-    // TEST: удалить после теста вместе с квадратом в main.qml.
-    m_testRecoverHideTimer->setSingleShot(true);
-    connect(m_testRecoverHideTimer, &QTimer::timeout, this, &TouchUsbMonitor::hideTestRecoverBadge);
 
     if (QCoreApplication *app = QCoreApplication::instance()) {
         app->installEventFilter(this);
@@ -3104,7 +3101,8 @@ void TouchUsbMonitor::onLiveTouchEvidence()
 
 bool TouchUsbMonitor::touchInputPresent()
 {
-    // ILITEK: Qt берёт координаты с "WINSTARTP Mouse" (if01), digitizer часто молчит.
+    // ILITEK: Qt берёт координаты с Mouse-узла (if01): "WINSTARTP Mouse"
+    // или "W.R.Inc. HID-Mouse" — имя зависит от прошивки; digitizer часто молчит.
     // PIC16F1459: один узел "PIC16F1459_HID HID M-Touch", отдельной мыши нет.
     return !touchInputPresentDetail().isEmpty();
 }
@@ -3138,36 +3136,6 @@ void TouchUsbMonitor::setRecovering(bool on)
     }
     m_recovering = on;
     emit recoveringChanged();
-}
-
-// TEST: удалить после теста вместе с квадратом в main.qml.
-void TouchUsbMonitor::setTestRecoverAttempts(int count)
-{
-    if (m_testRecoverAttempts == count) {
-        return;
-    }
-    m_testRecoverAttempts = count;
-    emit testRecoverAttemptsChanged();
-}
-
-// TEST: любая потеря входа (WINSTARTP Mouse, PIC16F1459 и прочие). Удалить после теста.
-void TouchUsbMonitor::noteTestTouchLoss()
-{
-    if (!m_testRecoverVisible) {
-        m_testRecoverVisible = true;
-        emit testRecoverVisibleChanged();
-    }
-    m_testRecoverHideTimer->start(kTestRecoverHideMs);
-}
-
-// TEST: удалить после теста.
-void TouchUsbMonitor::hideTestRecoverBadge()
-{
-    if (!m_testRecoverVisible) {
-        return;
-    }
-    m_testRecoverVisible = false;
-    emit testRecoverVisibleChanged();
 }
 
 void TouchUsbMonitor::raiseScreenFault()
@@ -3296,9 +3264,6 @@ void TouchUsbMonitor::beginMouseCheck(const QString &missingDetail)
 
     qWarning().noquote() << "TouchUsbMonitor: touch input missing,"
                          << missingDetail << ", port reset";
-    // TEST: квадрат в углу. Удалить после теста.
-    setTestRecoverAttempts(0);
-    noteTestTouchLoss();
     writeTouchTrace(QStringLiteral("RECOVER start %1").arg(missingDetail));
     clearContactState();
     setRecovering(true);
@@ -3333,8 +3298,6 @@ void TouchUsbMonitor::kickPortCycle()
 
     m_activeDisablePath = path;
     qWarning().noquote() << "TouchUsbMonitor: port off cycle" << (m_cycle + 1) << path;
-    // TEST: цифра в квадрате = номер этого сброса порта. Удалить после теста.
-    setTestRecoverAttempts(m_cycle + 1);
     if (!writePortDisable(path, true)) {
         ++m_cycle;
         m_portPhase = 0;

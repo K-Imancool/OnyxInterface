@@ -1,5 +1,6 @@
 #include "DeviceLogManager.h"
 
+#include "devicetype.h"
 #include "jsonstorage.h"
 #include "socketmodel.h"
 #include "apppaths.h"
@@ -519,14 +520,9 @@ void DeviceLogManager::appendBootEvent(const QString &deviceType,
                                        qint64 runtimeMs,
                                        qint64 activationMs)
 {
-    QString deviceCode = deviceType;
-    if (deviceCode.startsWith(QStringLiteral("ONYX-"))) {
-        deviceCode.remove(0, 5);
-    }
-
     appendCompactEvent({
         QStringLiteral("B"),
-        deviceCode,
+        DeviceType::compactLogCode(deviceType),
         serialNumber,
         formatCompactTotalDuration(runtimeMs),
         QStringLiteral("A%1").arg(formatCompactTotalDuration(activationMs))
@@ -641,9 +637,9 @@ QString DeviceLogManager::expandedLogLine(const QString &line, const QDate &date
             activation.replace(QLatin1Char('h'), QStringLiteral(" ч "));
             activation.replace(QLatin1Char('m'), QStringLiteral(" мин"));
 
-            return QStringLiteral("%1 [BOOT] Включение аппарата; тип=ONYX-%2; серийный номер=%3; общая наработка=%4; общее время активации=%5")
+            return QStringLiteral("%1 [BOOT] Включение генератора; тип=%2; серийный номер=%3; общая наработка=%4; общее время активации=%5")
                     .arg(timestamp)
-                    .arg(parts.at(2))
+                    .arg(DeviceType::displayNameFromCompact(parts.at(2)))
                     .arg(parts.at(3))
                     .arg(runtime)
                     .arg(activation);
@@ -657,9 +653,9 @@ QString DeviceLogManager::expandedLogLine(const QString &line, const QDate &date
             return line;
         }
 
-        return QStringLiteral("%1 [BOOT] Включение аппарата; тип=%2; серийный номер=%3; общая наработка=%4; общее время активации=%5")
+        return QStringLiteral("%1 [BOOT] Включение генератора; тип=%2; серийный номер=%3; общая наработка=%4; общее время активации=%5")
                 .arg(timestamp)
-                .arg(decodeLogValue(parts.at(2)))
+                .arg(DeviceType::displayNameFromCompact(decodeLogValue(parts.at(2))))
                 .arg(decodeLogValue(parts.at(3)))
                 .arg(formatTotalDuration(runtimeMs))
                 .arg(formatTotalDuration(activationMs));

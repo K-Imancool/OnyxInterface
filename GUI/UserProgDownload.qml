@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
+import Ui 1.0
+import "DeviceType.js" as DeviceType
 
 Item {
     id: root
@@ -131,7 +133,10 @@ Item {
     }
 
     readonly property string deviceSerialDisplay: savedJsonFieldOrDash("serialNumber")
-    readonly property string deviceTypeDisplay: savedJsonFieldOrDash("deviceType")
+    readonly property string deviceTypeDisplay: {
+        var raw = savedJsonFieldOrDash("deviceType")
+        return raw === "—" ? raw : DeviceType.displayName(raw)
+    }
     property color fotekBlue: "#264093"
     property color fotekOrange: "#faa731"
     readonly property int screenMargin: 34
@@ -572,7 +577,7 @@ Item {
                             wrapMode: Text.Wrap
                             font.pixelSize: root.fontCaption
                             text: qsTr("Серийный номер: ") + root.deviceSerialDisplay
-                                  + qsTr(" · ") + qsTr("Тип аппарата: ") + root.deviceTypeDisplay
+                                  + qsTr(" · ") + qsTr("Тип генератора: ") + root.deviceTypeDisplay
                                   + qsTr(" · Wi‑Fi: ") + (wifiProbe.wifiState ? qsTr("вкл") : qsTr("выкл"))
                         }
 
@@ -712,34 +717,42 @@ Item {
 
     Dialog {
         id: exportFileNameDialog
+        property bool keyboardChromeHeld: false
         modal: true
         parent: Overlay.overlay
-        width: Math.min(root.width * 0.92, 980)
-        readonly property int overlayHeight: parent ? parent.height : root.height
-        readonly property int keyboardReserve: {
-            if (!Qt.inputMethod.visible)
-                return 0
-            var r = Qt.inputMethod.keyboardRectangle
-            if (r.height > 0)
-                return Math.max(0, overlayHeight - r.y)
-            return Math.round(overlayHeight * 0.42)
-        }
-        height: Math.max(360, Math.min(560, overlayHeight - keyboardReserve - 32))
-        x: parent ? (parent.width - width) / 2 : 0
-        y: 16
+        padding: 0
+        width: parent ? parent.width : root.width
+        height: parent ? parent.height : root.height
+        x: 0
+        y: 0
         title: qsTr("Имя файла для сохранения")
         Overlay.modal: Rectangle {
             color: "#70000000"
         }
 
-        function submit() {
+        function holdKeyboardChrome() {
+            if (keyboardChromeHeld)
+                return
+            KeyboardCoordinator.acquire(KeyboardCoordinator.actionBarHeight)
+            keyboardChromeHeld = true
+        }
+
+        function releaseKeyboardChrome() {
             exportNameInput.focus = false
             Qt.inputMethod.hide()
+            if (!keyboardChromeHeld)
+                return
+            KeyboardCoordinator.release()
+            keyboardChromeHeld = false
+        }
+
+        function submit() {
             root.beginDownloadWithFileName(root.exportFileNamePreview(exportNameInput.text))
             close()
         }
 
         onOpened: {
+            holdKeyboardChrome()
             exportNameInput.text = ""
             Qt.callLater(function() {
                 exportNameInput.forceActiveFocus()
@@ -757,21 +770,25 @@ Item {
         }
 
         contentItem: Rectangle {
-            color: "transparent"
+            color: UiPalette.background
 
             ColumnLayout {
-                anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
                 anchors.leftMargin: 28
                 anchors.rightMargin: 28
                 anchors.topMargin: 22
-                anchors.bottomMargin: 18
+                anchors.bottomMargin: KeyboardCoordinator.keyboardGap(exportFileNameDialog.height) + 8
                 spacing: 20
 
                 Label {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
                     font.pixelSize: root.fontBody
-                    text: qsTr("Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип аппарата.")
+                    color: UiPalette.text
+                    text: qsTr("Введите имя файла. Пробелы и недопустимые символы будут заменены на «_», в конце добавляется тип генератора.")
                 }
 
                 TextField {
@@ -796,55 +813,38 @@ Item {
                     text: qsTr("Файл: ") + root.exportFileNamePreview(exportNameInput.text)
                 }
 
-//                Label {
-//                    Layout.fillWidth: true
-//                    wrapMode: Text.WordWrap
-//                    font.pixelSize: root.fontSmall
-//                    color: "#5A6478"
-//                    text: typeof httpUpload !== "undefined" && httpUpload
-//                          ? qsTr("Суффикс: ") + httpUpload.buildUserProgExportFileName("")
-//                          : ""
-//                }
-
                 Item { Layout.fillHeight: true }
             }
         }
 
         footer: Rectangle {
-            color: "transparent"
-            implicitHeight: 132
+            color: UiPalette.background
+            implicitHeight: KeyboardCoordinator.actionBarHeight
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 24
-                anchors.rightMargin: 24
-                anchors.topMargin: 16
-                anchors.bottomMargin: 16
-                spacing: 18
+            DialogActionButton {
+                anchors.left: parent.left
+                anchors.leftMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ОТМЕНА")
+                labelPixelSize: 30
+                onPressed: exportFileNameDialog.close()
+            }
 
-                DialogActionButton {
-                    Layout.preferredWidth: 220
-                    Layout.fillHeight: true
-                    text: qsTr("ОТМЕНА")
-                    labelPixelSize: 34
-                    onPressed: {
-                        exportNameInput.focus = false
-                        Qt.inputMethod.hide()
-                        exportFileNameDialog.close()
-                    }
-                }
-
-                Item { Layout.fillWidth: true }
-
-                DialogActionButton {
-                    Layout.preferredWidth: 220
-                    Layout.fillHeight: true
-                    text: qsTr("ПРИНЯТЬ")
-                    labelPixelSize: 34
-                    primary: true
-                    onPressed: exportFileNameDialog.submit()
-                }
+            DialogActionButton {
+                anchors.right: parent.right
+                anchors.rightMargin: KeyboardCoordinator.screenMargin
+                anchors.verticalCenter: parent.verticalCenter
+                width: KeyboardCoordinator.actionButtonWidth
+                height: KeyboardCoordinator.actionButtonHeight
+                text: qsTr("ПРИНЯТЬ")
+                labelPixelSize: 30
+                primary: true
+                onPressed: exportFileNameDialog.submit()
             }
         }
+
+        onClosed: releaseKeyboardChrome()
     }
 }

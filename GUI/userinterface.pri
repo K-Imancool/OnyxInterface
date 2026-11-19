@@ -27,6 +27,7 @@ DISTFILES += \
     $$PWD/ModePowerRect.qml \
     $$PWD/NeutralButton.qml \
     $$PWD/NeutralEl.qml \
+    $$PWD/DeviceType.js \
     $$PWD/SerialNumberSettings.qml \
     $$PWD/ServiceMenu.qml \
     $$PWD/ServiceFrame.qml \
@@ -56,7 +57,8 @@ DISTFILES += \
     $$PWD/VideoPlayer.qml \
     $$PWD/WorkScreen.qml \
     $$PWD/Ui/qmldir \
-    $$PWD/Ui/UiPalette.qml
+    $$PWD/Ui/UiPalette.qml \
+    $$PWD/Ui/KeyboardCoordinator.qml
 
 HEADERS +=
 

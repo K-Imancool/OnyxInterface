@@ -1,4 +1,5 @@
 #include "keygenerator.h"
+#include "devicetype.h"
 #include <QByteArray>
 #include <QDebug>
 
@@ -90,10 +91,9 @@ bool KeyGenerator::validateKey(int serialNumber, const QString &key)
 
 QString KeyGenerator::normalizeDeviceType(const QString &deviceType) const
 {
-    const QString normalized = deviceType.trimmed().toUpper();
-    return normalized == QStringLiteral("ONYX-M")
-            ? QStringLiteral("ONYX-M")
-            : QStringLiteral("ONYX-AM");
+    // Канон для хеша ключа — старые ID, чтобы ONYX Pro / ONYX-A Pro
+    // и ONYX-M / ONYX-AM давали один и тот же unlock-ключ.
+    return DeviceType::canonicalId(deviceType);
 }
 
 QString KeyGenerator::normalizeFeatureCode(const QString &featureCode) const

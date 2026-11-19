@@ -21,4 +21,6 @@
 //inline constexpr const char *kOnyxAppVersion = "1.18"; // 06.11.26 с изменённой цветовой гаммой
 //inline constexpr const char *kOnyxAppVersion = "1.19"; // 09.11.26 WINSTARTP Mouse не остаётся глухим после ожидания отпускания
 //inline constexpr const char *kOnyxAppVersion = "1.20"; // 09.11.26 фильтрация тача выключена, порт и призраки в проверке остаются
-inline constexpr const char *kOnyxAppVersion = "1.21"; // 17.11.26 Изменены уровни звука, коррекция по цветам
+//inline constexpr const char *kOnyxAppVersion = "1.21"; // 17.11.26 Изменены уровни звука, коррекция по цветам
+//inline constexpr const char *kOnyxAppVersion = "1.22"; // 19.11.26 E9: принять W.R.Inc. HID-Mouse как валидный вход тача
+inline constexpr const char *kOnyxAppVersion = "1.23"; // 19.11.26 удалён тестовый квадрат попыток восстановления тача

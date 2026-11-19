@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import BackEnd 1.0
+import Ui 1.0
 
 Rectangle {
 	id: itemList
@@ -508,6 +509,7 @@ Rectangle {
 		id: nameDialog
 		property int editingIndex
 		property string initialName: ""
+		property bool keyboardChromeHeld: false
 
 		function ensureKeyboard() {
 			if (!edit.activeFocus)
@@ -515,10 +517,24 @@ Rectangle {
 			Qt.inputMethod.show()
 		}
 
-		function submitRename() {
-			var newName = edit.text.trim()
+		function holdKeyboardChrome() {
+			if (keyboardChromeHeld)
+				return
+			KeyboardCoordinator.acquire(KeyboardCoordinator.actionBarHeight)
+			keyboardChromeHeld = true
+		}
+
+		function releaseKeyboardChrome() {
 			edit.focus = false
 			Qt.inputMethod.hide()
+			if (!keyboardChromeHeld)
+				return
+			KeyboardCoordinator.release()
+			keyboardChromeHeld = false
+		}
+
+		function submitRename() {
+			var newName = edit.text.trim()
 			if (newName.length > 0 && editingIndex >= 0) {
 				editItemName(editingIndex, newName)
 			}
@@ -526,25 +542,24 @@ Rectangle {
 		}
 		function requestDelete() {
 			var idx = editingIndex
-			edit.focus = false
-			Qt.inputMethod.hide()
 			close()
 			if (idx >= 0)
 				Qt.callLater(function() { deleteItem(idx) })
 		}
-		width: Math.min(parent ? parent.width * 0.92 : 980, 980)
-		height: 360
+		width: parent ? parent.width : 1280
+		height: parent ? parent.height : 800
 		parent: Overlay.overlay
 		modal: true
-		x: parent ? (parent.width - width) / 2 : 0
-		// Всегда у верхнего края: кнопки остаются над виртуальной клавиатурой
-        y: 80
+		padding: 0
+		x: 0
+		y: 0
 		title: qsTr("Редактирование")
 		Overlay.modal: Rectangle {
 			color: "#70000000"
 		}
 
 		onOpened: {
+			holdKeyboardChrome()
 			edit.text = initialName
 			Qt.callLater(function() {
 				edit.forceActiveFocus()
@@ -569,8 +584,12 @@ Rectangle {
 			color: "white"
 
 			ColumnLayout {
-				anchors.fill: parent
+				anchors.left: parent.left
+				anchors.right: parent.right
+				anchors.top: parent.top
+				anchors.bottom: parent.bottom
 				anchors.margins: 18
+				anchors.bottomMargin: KeyboardCoordinator.keyboardGap(nameDialog.height) + 8
 				spacing: 16
 
 				Label {
@@ -616,62 +635,56 @@ Rectangle {
 						}
 					}
 				}
+
+				Item { Layout.fillHeight: true }
 			}
 		}
 		footer: Rectangle {
-			color: "transparent"
-			implicitHeight: 120
+			color: "white"
+			implicitHeight: KeyboardCoordinator.actionBarHeight
 
-			RowLayout {
-				anchors.fill: parent
-				anchors.leftMargin: 24
-				anchors.rightMargin: 24
-				anchors.topMargin: 16
-				anchors.bottomMargin: 16
-				spacing: 18
+			DialogActionButton {
+				anchors.left: parent.left
+				anchors.leftMargin: KeyboardCoordinator.screenMargin
+				anchors.verticalCenter: parent.verticalCenter
+				width: KeyboardCoordinator.actionButtonWidth
+				height: KeyboardCoordinator.actionButtonHeight
+				text: qsTr("ОТМЕНА")
+				labelPixelSize: 30
+				onPressed: nameDialog.reject()
+			}
 
-				DialogActionButton {
-					Layout.preferredWidth: 220
-					Layout.fillHeight: true
-					text: qsTr("ОТМЕНА")
-					labelPixelSize: 34
-					onPressed: nameDialog.reject()
-				}
+			DialogActionButton {
+				anchors.horizontalCenter: parent.horizontalCenter
+				anchors.verticalCenter: parent.verticalCenter
+				width: KeyboardCoordinator.actionButtonWidth
+				height: KeyboardCoordinator.actionButtonHeight
+				text: qsTr("УДАЛИТЬ")
+				labelPixelSize: 30
+				onPressed: nameDialog.requestDelete()
+			}
 
-				Item { Layout.fillWidth: true }
-
-				DialogActionButton {
-					Layout.preferredWidth: 220
-					Layout.fillHeight: true
-					text: qsTr("УДАЛИТЬ")
-					labelPixelSize: 34
-					onPressed: nameDialog.requestDelete()
-				}
-
-				Item { Layout.fillWidth: true }
-
-				DialogActionButton {
-					Layout.preferredWidth: 220
-					Layout.fillHeight: true
-					text: qsTr("ПРИНЯТЬ")
-					primary: true
-					labelPixelSize: 34
-					enabled: edit.text.trim().length > 0
-					onPressed: nameDialog.submitRename()
-				}
+			DialogActionButton {
+				anchors.right: parent.right
+				anchors.rightMargin: KeyboardCoordinator.screenMargin
+				anchors.verticalCenter: parent.verticalCenter
+				width: KeyboardCoordinator.actionButtonWidth
+				height: KeyboardCoordinator.actionButtonHeight
+				text: qsTr("ПРИНЯТЬ")
+				primary: true
+				labelPixelSize: 30
+				enabled: edit.text.trim().length > 0
+				onPressed: nameDialog.submitRename()
 			}
 		}
 		onAccepted: {
 			nameDialog.submitRename()
 		}
 		onRejected: {
-			edit.focus = false
-			Qt.inputMethod.hide()
 			close()
 		}
 		onClosed: {
-			edit.focus = false
-			Qt.inputMethod.hide()
+			releaseKeyboardChrome()
 			initialName = ""
 			editingIndex = -1
 			edit.text = ""
