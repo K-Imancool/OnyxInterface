@@ -246,13 +246,33 @@ Window {
         persistCurrentProgramInfo()
     }
 
+    function openWorkProgItemList(recommended) {
+        var props = {
+            "recommended": recommended,
+            "editable": !recommended,
+            "initialScopeId": currentScopeId,
+            "initialProgId": currentProgId,
+            "initialScopeName": currentScopeName
+        }
+        var item = work.menuLoad.loader.item
+        if (work.menuLoad.loaderSourceBaseName() === "ProgItemList.qml"
+                && item && item.recommended === recommended) {
+            item.initialScopeId = currentScopeId
+            item.initialProgId = currentProgId
+            item.initialScopeName = currentScopeName
+            item.restoreSelection()
+        } else {
+            work.menuLoad.navigateToWithProperties("qrc:/ProgItemList.qml", props)
+        }
+        work.leftDrawer.open()
+    }
+
     function openProgramListFromStatus() {
         if (currentProgramIsRecom) {
             if (startupFlowVisible) {
                 showStartupScreen("recommendedList")
             } else if (workReady) {
-                work.menuLoad.loader.setSource("qrc:/ProgItemList.qml", {"recommended": true})
-                work.leftDrawer.open()
+                openWorkProgItemList(true)
             }
             return
         }
@@ -260,9 +280,7 @@ Window {
             if (startupFlowVisible) {
                 showStartupScreen("userProgramList")
             } else if (workReady) {
-                work.menuLoad.loader.setSource("qrc:/ProgItemList.qml",
-                                          {"recommended": false, "editable": true})
-                work.leftDrawer.open()
+                openWorkProgItemList(false)
             }
             return
         }

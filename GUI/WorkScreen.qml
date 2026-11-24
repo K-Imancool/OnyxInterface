@@ -595,6 +595,13 @@ Item {
         function onOpenNeutralDrawer() {
             neutralDrawer.open()
         }
+        function onMenuCalled() {
+            if (host.hasUnsavedChanges) {
+                unsavedExitDialog.open()
+                return
+            }
+            openWorkMenu()
+        }
     }
 
     Item {
@@ -785,18 +792,11 @@ Item {
 
     Connections {
         target: statusDummy
-        function onDrawerCalled() {
-            if (host.hasUnsavedChanges) {
-                unsavedExitDialog.open()
-                return
-            }
-            openWorkMenu()
+        function onBackCalled() {
+            host.openProgramListFromStatus()
         }
         function onSaveCalled() {
             saveProgDialog.open()
-        }
-        function onProgramTitlePressed() {
-            host.openProgramListFromStatus()
         }
     }
     Connections {
@@ -989,6 +989,8 @@ Item {
    
    // Клавиатура только когда нужна — иначе InputPanel перехватывает тач.
    // В Overlay выше модальных диалогов; bottomReserve — полоса ОТМЕНА/ПРИНЯТЬ.
+   // active также при bottomReserve>0: InputPanel создаётся до первого show()
+   // (иначе при первом входе в диалог пароля панель не успевает появиться).
    Loader {
       id: keyboardLoader
       parent: Overlay.overlay ? Overlay.overlay : workRoot
@@ -997,10 +999,19 @@ Item {
       anchors.right: parent ? parent.right : undefined
       anchors.bottom: parent ? parent.bottom : undefined
       z: 10001
-      active: Qt.inputMethod.visible
+      active: Qt.inputMethod.visible || KeyboardCoordinator.bottomReserve > 0
       sourceComponent: keyboardPanelComponent
 
       readonly property int panelHostHeight: parent ? parent.height : host.height
+
+      onLoaded: {
+         // Диалог мог открыться раньше Loader — держим панель поверх popup-стека.
+         z = 10001
+         if (Overlay.overlay && parent !== Overlay.overlay)
+            parent = Overlay.overlay
+         if (item && Qt.inputMethod.visible)
+            Qt.callLater(function() { Qt.inputMethod.show() })
+      }
    }
 
    Component {
@@ -1008,6 +1019,9 @@ Item {
 
       CuteKeyboardUi.InputPanel {
          id: inputPanel
+         // Пока IME скрыт (preload под bottomReserve) — не перехватывать тач.
+         visible: active
+         enabled: active
          y: active
             ? (keyboardLoader.panelHostHeight - height - KeyboardCoordinator.bottomReserve)
             : keyboardLoader.panelHostHeight

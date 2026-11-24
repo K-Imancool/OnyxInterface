@@ -72,6 +72,7 @@ LinkStm::LinkStm(QObject *parent)
     m_enableActivation(true),
     m_neutralElDivided(true),
     m_argonFlowRate(0),
+    m_activCylinderFirst(true),
     m_comState(IDLE),
     m_debugUart(false),
     m_uartRate(50)
@@ -1137,7 +1138,7 @@ LinkStm::ActiveSocket LinkStm::determineSocket(const PedalKnobPressed &pedalKnob
         for (int i = 0; i < 4; i++) {
             if (m_socketList[i].pedal == 1) {
                 socket.id = i;
-                socket.isCut = true;  // Single педаль - резание
+                socket.isCut = false;  // Single педаль - резание
                 break;
             }
         }

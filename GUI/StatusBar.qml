@@ -4,15 +4,14 @@ import Ui 1.0
 
 Rectangle {
     id: statusRoot
-    signal drawerCalled()
+    signal backCalled()
     signal saveCalled()
-    signal programTitlePressed()
     property alias text: mainText.text
     property alias versionText: appVersionText.text
     property bool saveHighlighted: false
     property int saveButtonWidth: 100
     readonly property int sideSpacing: 12
-    readonly property int leftOccupiedWidth: drawerButton.width + sideSpacing
+    readonly property int leftOccupiedWidth: backButton.width + sideSpacing
     readonly property int rightOccupiedWidth: saveButton.width
                                             + (appVersionText.visible ? appVersionText.width + sideSpacing : 0)
                                             + sideSpacing
@@ -28,22 +27,44 @@ Rectangle {
     }
 
     Button {
-        id: drawerButton
+        id: backButton
         flat: true
         height: Math.round(parent.height * 1.30)
         width: height
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         scale: 1.12
-        contentItem: Text {
-            text: "☰"
-            font.pixelSize: Math.round(drawerButton.height * 0.45)
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            color: UiPalette.text
+        contentItem: Item {
+            Canvas {
+                id: backArrowCanvas
+                anchors.centerIn: parent
+                width: Math.round(parent.width * 0.48)
+                height: Math.round(parent.height * 0.42)
+                onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.reset()
+                    var w = width
+                    var h = height
+                    var thickness = Math.max(6, Math.round(h * 0.28))
+                    ctx.fillStyle = UiPalette.text
+                    ctx.beginPath()
+                    ctx.moveTo(w * 0.08, h * 0.5)
+                    ctx.lineTo(w * 0.58, h * 0.08)
+                    ctx.lineTo(w * 0.58, h * 0.5 - thickness * 0.5)
+                    ctx.lineTo(w * 0.98, h * 0.5 - thickness * 0.5)
+                    ctx.lineTo(w * 0.98, h * 0.5 + thickness * 0.5)
+                    ctx.lineTo(w * 0.58, h * 0.5 + thickness * 0.5)
+                    ctx.lineTo(w * 0.58, h * 0.92)
+                    ctx.closePath()
+                    ctx.fill()
+                }
+                Component.onCompleted: requestPaint()
+                onWidthChanged: requestPaint()
+                onHeightChanged: requestPaint()
+            }
         }
         background: Item {}
-        onClicked: statusRoot.drawerCalled()
+        onClicked: statusRoot.backCalled()
     }
     Flickable {
         id: titleViewport
@@ -124,7 +145,7 @@ Rectangle {
     }
     MouseArea {
         anchors.fill: titleViewport
-        onClicked: statusRoot.programTitlePressed()
+        onClicked: statusRoot.backCalled()
     }
     TextMetrics {
         id: mainTextLargeMetrics

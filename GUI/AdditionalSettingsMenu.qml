@@ -373,6 +373,7 @@ Item {
         }
 
         function releaseKeyboardChrome() {
+            keyboardShowTimer.stop()
             servicePasswordInput.focus = false
             Qt.inputMethod.hide()
             if (!keyboardChromeHeld)
@@ -393,22 +394,42 @@ Item {
             servicePasswordDialog.passwordError = qsTr("Неверный пароль")
         }
 
+        // После открытия Dialog фокус/IME иногда не успевают с первого callLater.
+        property bool awaitingKeyboardShow: false
+        Timer {
+            id: keyboardShowTimer
+            interval: 40
+            repeat: false
+            onTriggered: {
+                servicePasswordDialog.ensureKeyboard()
+                servicePasswordDialog.awaitingKeyboardShow = false
+            }
+        }
+
         onOpened: {
             holdKeyboardChrome()
             servicePasswordInput.text = ""
             servicePasswordDialog.passwordError = ""
+            awaitingKeyboardShow = true
             Qt.callLater(function() {
-                servicePasswordInput.forceActiveFocus()
-                Qt.inputMethod.show()
+                servicePasswordDialog.ensureKeyboard()
             })
+            keyboardShowTimer.restart()
         }
 
         Connections {
             target: Qt.inputMethod
             enabled: servicePasswordDialog.visible
             function onVisibleChanged() {
+                if (Qt.inputMethod.visible) {
+                    servicePasswordDialog.awaitingKeyboardShow = false
+                    keyboardShowTimer.stop()
+                    return
+                }
                 // После Hide снимаем фокус, чтобы следующий тап снова открыл клавиатуру.
-                if (!Qt.inputMethod.visible && servicePasswordInput.activeFocus)
+                // Во время первого показа не сбрасываем фокус (preload InputPanel).
+                if (servicePasswordInput.activeFocus
+                        && !servicePasswordDialog.awaitingKeyboardShow)
                     servicePasswordInput.focus = false
             }
         }

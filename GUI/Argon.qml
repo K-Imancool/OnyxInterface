@@ -22,8 +22,8 @@ Rectangle {
     property bool compactOnLightBackground: false  // PeripheryPanel: белая карточка, тёмные подписи
     property bool activCylinderFirst: true // Активный баллон 1 (или 2)
 
-    readonly property color fotekBlue: UiPalette.accent
-    readonly property color fotekOrange: UiPalette.cut
+    readonly property color fotekBlue: "#264093"
+    readonly property color fotekOrange: "#faa731"
     readonly property color compactLabelColor: compactOnLightBackground ? UiPalette.text : UiPalette.darkInk
     readonly property int displayedArgonRate: (isActivation || isBlowing) ? realFlowRate : flowRate
     readonly property bool showRealFlow: isActivation || isBlowing
@@ -240,7 +240,6 @@ Rectangle {
             target: firstCylinder
             function onCylClicked() {
                 if (cylinder1Connected && !activCylinderFirst) {
-                    activCylinderFirst = true;
                     console.log("Argon.qml: first cylinder selected");
                     activCylinderToggled(true);
                 }
@@ -444,7 +443,6 @@ Rectangle {
             target: secondCylinder
             function onCylClicked() {
                 if (cylinder2Connected && activCylinderFirst) {
-                    activCylinderFirst = false;
 //                    console.log("Argon.qml: second cylinder selected");
                     activCylinderToggled(false);
                 }

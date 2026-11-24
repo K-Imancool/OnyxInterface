@@ -1444,6 +1444,13 @@ O
     </message>
 </context>
 <context>
+    <name>PeripheryPanel</name>
+    <message>
+        <source>МЕНЮ</source>
+        <translation>MENÚ</translation>
+    </message>
+</context>
+<context>
     <name>PowerRect</name>
     <message>
         <source>рез-%1 коаг-%2</source>

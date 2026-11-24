@@ -9,48 +9,85 @@ Rectangle {
     id: peripheryPanelRoot
     signal openArgonDrawer()
     signal openNeutralDrawer()
+    signal menuCalled()
 
     property bool argonAvailable: true
 
-    color: UiPalette.caseBase
+    // Геометрия как у PedalContainer / SocketContainerV2: аргон = БИ1+БИ2, НЭ = МОНО1+МОНО2.
+    readonly property int layoutMargins: 5
+    readonly property int columnSpacing: 10
+    readonly property int socketSpacing: 10
+    readonly property int progPageHeight: (typeof theModel !== "undefined" && theModel && theModel.endoProgramView) ? 0 : 50
+    readonly property int socketCount: (typeof theModel !== "undefined" && theModel) ? theModel.rowCount() : 4
+    readonly property int socketTopOffset: (typeof theModel !== "undefined" && theModel && theModel.endoProgramView)
+            ? layoutMargins
+            : (layoutMargins + progPageHeight + columnSpacing)
 
-    NeutralEl {
-        id: neutralView
-        height: 280
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
-        neutralConnected: periphHandle.neutralElConnected
-        neutralDivided: periphHandle.neutralElDivided
-        neutralSize: periphHandle.neutralSize
-        showControls: false
+    readonly property real uniformSocketHeight: {
+        var count = Math.max(1, socketCount)
+        var layoutInnerHeight = height - layoutMargins
+        var containerHeight = layoutInnerHeight - columnSpacing - progPageHeight
+        return (containerHeight - count * socketSpacing) / count
     }
 
+    function socketTop(socketId) {
+        return socketTopOffset + socketId * (uniformSocketHeight + socketSpacing)
+    }
+
+    function socketBottom(socketId) {
+        return socketTop(socketId) + uniformSocketHeight
+    }
+
+    // БИ1..БИ2
+    readonly property real biBandTop: socketTop(0)
+    readonly property real biBandBottom: socketBottom(1)
+    readonly property real biBandHeight: Math.max(0, biBandBottom - biBandTop)
+    // МОНО1..МОНО2
+    readonly property real monoBandTop: socketTop(2)
+    readonly property real monoBandBottom: socketBottom(3)
+    readonly property real monoBandHeight: Math.max(0, monoBandBottom - monoBandTop)
+
+    readonly property int menuButtonHeight: Math.round(biBandTop)
+
+    color: UiPalette.caseBase
+
     Rectangle {
-        id: futurePanel
+        id: menuButton
         anchors {
             left: parent.left
             right: parent.right
-            top: peripheryPanelRoot.argonAvailable ? argonCard.bottom : parent.top
-            bottom: neutralView.top
+            top: parent.top
         }
+        height: peripheryPanelRoot.menuButtonHeight
         color: UiPalette.background
         radius: 10
         border.color: UiPalette.caseSteel
         border.width: 2
+
+        Text {
+            anchors.fill: parent
+            anchors.margins: 4
+            text: qsTr("МЕНЮ")
+            font.pixelSize: Math.round(Math.min(width / 3.2, Math.max(18, height * 0.45)))
+            font.bold: true
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            color: UiPalette.text
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: peripheryPanelRoot.menuCalled()
+        }
     }
 
     Rectangle {
         id: argonCard
         visible: peripheryPanelRoot.argonAvailable
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-        height: visible ? argonView.compactContentHeight : 0
+        x: 0
+        y: Math.round(peripheryPanelRoot.biBandTop)
+        width: parent.width
+        height: Math.round(peripheryPanelRoot.biBandHeight)
         color: UiPalette.background
         radius: 10
         border.color: UiPalette.caseSteel
@@ -59,7 +96,8 @@ Rectangle {
         Argon {
             id: argonView
             anchors {
-                top: parent.top
+                horizontalCenter: parent.horizontalCenter
+                verticalCenter: parent.verticalCenter
                 left: parent.left
                 right: parent.right
             }
@@ -83,6 +121,55 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: argonPlaceholder
+        visible: !peripheryPanelRoot.argonAvailable
+        x: 0
+        y: Math.round(peripheryPanelRoot.biBandTop)
+        width: parent.width
+        height: Math.round(peripheryPanelRoot.biBandHeight)
+        color: UiPalette.background
+        radius: 10
+        border.color: UiPalette.caseSteel
+        border.width: 2
+    }
+
+    // Как разделитель между педалями в PedalContainer.
+    Rectangle {
+        width: parent.width
+        height: 2
+        color: UiPalette.caseSteel
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        y: Math.round(peripheryPanelRoot.monoBandTop) - 5
+        z: 5
+    }
+
+    Item {
+        id: neutralSlot
+        x: 0
+        y: Math.round(peripheryPanelRoot.monoBandTop)
+        width: parent.width
+        height: Math.round(peripheryPanelRoot.monoBandHeight)
+
+        NeutralEl {
+            id: neutralView
+            anchors.fill: parent
+            neutralConnected: periphHandle.neutralElConnected
+            neutralDivided: periphHandle.neutralElDivided
+            neutralSize: periphHandle.neutralSize
+            showControls: false
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            z: 10
+            onClicked: peripheryPanelRoot.openNeutralDrawer()
+        }
+    }
+
     Connections {
         target: argonView
         function onFlowRateUpdated(newRate) {
@@ -95,11 +182,5 @@ Rectangle {
             console.log("PeripheryPanel.qml: onActivCylinderToggled", first)
             periphHandle.activCylinderFirst = first
         }
-    }
-
-    MouseArea {
-        anchors.fill: neutralView
-        z: 10
-        onClicked: peripheryPanelRoot.openNeutralDrawer()
     }
 }

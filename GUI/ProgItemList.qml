@@ -20,6 +20,12 @@ Rectangle {
     required property bool recommended
     property bool editable: false
     property bool userSelectedScope: false
+    // При возврате с WorkScreen — раскрыть область/папку текущей программы.
+    property int initialScopeId: -1
+    property int initialProgId: -1
+    property string initialScopeName: ""
+    property bool pendingApplyInitial: false
+    property bool pendingHighlightProgram: false
     property int pendingDeleteIndex: -1
     property bool pendingDeleteIsScope: false
     property string pendingDeleteName: ""
@@ -79,6 +85,93 @@ Rectangle {
         progList.innerModel = progsModel
     }
 
+    function findScopeIndexById(scopeId) {
+        if (scopeId < 0)
+            return -1
+        for (var i = 0; i < scopeModel.count; ++i) {
+            if (Number(scopeModel.get(i).itemId) === Number(scopeId))
+                return i
+        }
+        return -1
+    }
+
+    function findScopeIndexByName(scopeName) {
+        if (!scopeName || String(scopeName).length === 0)
+            return -1
+        var wanted = String(scopeName)
+        for (var i = 0; i < scopeModel.count; ++i) {
+            if (String(scopeModel.get(i).itemName) === wanted)
+                return i
+        }
+        return -1
+    }
+
+    function resolveInitialScopeIndex() {
+        var idx = findScopeIndexById(initialScopeId)
+        if (idx >= 0)
+            return idx
+        return findScopeIndexByName(initialScopeName)
+    }
+
+    function highlightInitialProgram() {
+        if (initialProgId < 0) {
+            pendingHighlightProgram = false
+            return
+        }
+
+        var wantedId = Number(initialProgId)
+        for (var i = 0; i < progsModel.count; ++i) {
+            if (Number(progsModel.get(i).itemId) === wantedId) {
+                progList.curIndex = i
+                if (recommended && recomHandle.hasSubPrograms(i))
+                    showSubProgramsPanel(i)
+                else
+                    closeSubProgramsPanel()
+                pendingHighlightProgram = false
+                return
+            }
+
+            if (recommended && recomHandle.hasSubPrograms(i)) {
+                var subs = recomHandle.subProgramsAt(i)
+                for (var j = 0; j < subs.length; ++j) {
+                    if (Number(subs[j].id) === wantedId) {
+                        showSubProgramsPanel(i)
+                        subProgList.curIndex = j
+                        pendingHighlightProgram = false
+                        return
+                    }
+                }
+            }
+        }
+    }
+
+    // Вызывать после updateScopes/setScopeList: иначе C++ setScopeIdx перебьёт выбор.
+    function applyInitialScopeSelection() {
+        if (!pendingApplyInitial)
+            return
+
+        var restoredIndex = resolveInitialScopeIndex()
+        if (restoredIndex < 0) {
+            if (scopeModel.count > 0)
+                pendingApplyInitial = false
+            return
+        }
+
+        pendingApplyInitial = false
+        userSelectedScope = true
+        scopeList.curIndex = restoredIndex
+        pendingHighlightProgram = initialProgId >= 0
+        recomHandle.scopeIdx = restoredIndex
+        updateModel()
+        if (pendingHighlightProgram)
+            highlightInitialProgram()
+    }
+
+    function restoreSelection() {
+        pendingApplyInitial = initialScopeId >= 0 || String(initialScopeName).length > 0
+        Qt.callLater(applyInitialScopeSelection)
+    }
+
     function init() {
         var previousScopeId = -1
         if (userSelectedScope && scopeList.curIndex >= 0 && scopeList.curIndex < scopeModel.count)
@@ -106,15 +199,7 @@ Rectangle {
             return
         }
 
-        var restoredIndex = -1
-        if (previousScopeId >= 0) {
-            for (var j = 0; j < scopeModel.count; ++j) {
-                if (scopeModel.get(j).itemId === previousScopeId) {
-                    restoredIndex = j
-                    break
-                }
-            }
-        }
+        var restoredIndex = previousScopeId >= 0 ? findScopeIndexById(previousScopeId) : -1
 
         if (restoredIndex >= 0) {
             userSelectedScope = true
@@ -228,9 +313,12 @@ Rectangle {
         recomHandle.isRecomProgs = recommended
         // QML не вызывает setter, если значение уже такое — тогда init() не придёт
         // через onScopeNameListChanged, и экран останется пустым после импорта.
+        pendingApplyInitial = initialScopeId >= 0 || String(initialScopeName).length > 0
         recomHandle.updateScopes(recommended)
         init()
         updateModel()
+        // После setScopeList → setScopeIdx, иначе выбор области с WorkScreen перебьётся.
+        Qt.callLater(applyInitialScopeSelection)
     }
 
     Connections {
@@ -238,6 +326,8 @@ Rectangle {
         function onScopeNameListChanged() {
             init()
             updateModel()
+            if (recProgs.pendingApplyInitial)
+                Qt.callLater(applyInitialScopeSelection)
         }
         function onScopeIdxChanged() {
             if (!recProgs.userSelectedScope)
@@ -247,6 +337,8 @@ Rectangle {
         }
         function onProgNameListChanged() {
             updateModel()
+            if (recProgs.pendingHighlightProgram)
+                recProgs.highlightInitialProgram()
         }
     }
 

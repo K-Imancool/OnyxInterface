@@ -1444,6 +1444,13 @@ REDUCE the power to a safe level?</translation>
     </message>
 </context>
 <context>
+    <name>PeripheryPanel</name>
+    <message>
+        <source>МЕНЮ</source>
+        <translation>MENU</translation>
+    </message>
+</context>
+<context>
     <name>PowerRect</name>
     <message>
         <source>рез-%1 коаг-%2</source>

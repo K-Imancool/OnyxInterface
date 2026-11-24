@@ -427,7 +427,8 @@ void ControlCenter::setLinkStm(LinkStm* linkStm)
 		// Инициализируем текущие значения состояния в LinkStm
 		m_linkStm->setEnableActivation(m_periphery->enableActivation());
 		m_linkStm->setNeutralElDivided(m_periphery->neutralElDivided());
-        m_linkStm->setArgonFlowRate(m_periphery->argonFlowRate());
+		m_linkStm->setArgonFlowRate(m_periphery->argonFlowRate());
+		m_linkStm->setActivCylinderFirst(m_periphery->activCylinderFirst());
 
 		// Подключаем сигнал обновления данных сокетов
 		// чуть громоздко но без лишних сигналов, полностью нативно

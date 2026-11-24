@@ -27,7 +27,7 @@ Rectangle {
         height: bodyHeight
         radius: width / 2
         color: cylConnected
-               ? (cylSelected ? UiPalette.success : Qt.lighter(UiPalette.success, 1.45))
+               ? (cylSelected ? Qt.lighter(UiPalette.success, 1.45) : UiPalette.success)
                : UiPalette.surface
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
