@@ -375,6 +375,14 @@ Onyx::SocketState SOCKET::getInfo() const
     res.cutModeId = cutModeId();
     res.coagModeId = coagModeId();
     res.pedal = pedal();
+    {
+        const CSurgModePtr cutMode = curCutMode();
+        res.cutIsArgon = !cutMode.isNull() && cutMode->isArgon();
+    }
+    {
+        const CSurgModePtr coagMode = curCoagMode();
+        res.coagIsArgon = !coagMode.isNull() && coagMode->isArgon();
+    }
     return res;
 }
 

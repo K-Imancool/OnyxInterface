@@ -22,6 +22,8 @@ struct SocketState {
 	quint16 coagModeId = 0;
 	quint8 pedal = 0;
 	quint8 autoMode = 0;
+	bool cutIsArgon = false;
+	bool coagIsArgon = false;
 };
 
 struct InstrInfo {

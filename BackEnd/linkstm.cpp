@@ -544,9 +544,11 @@ void LinkStm::sendCommand()
             }
 
             if (activeSocket.id < 4) {
+                bool modeNeedsArgon = false;
                 if (activeSocket.isCut) {
                     mode = m_socketList[activeSocket.id].cutModeNum;
                     power = m_socketList[activeSocket.id].cutModePower;
+                    modeNeedsArgon = m_socketList[activeSocket.id].cutIsArgon;
                     if (isEndoCutModeId(m_socketList[activeSocket.id].cutModeId)) {
                         power = packEndoActivationPower(m_socketList[activeSocket.id].cutModeId, power);
                     }
@@ -554,6 +556,7 @@ void LinkStm::sendCommand()
                 else {
                     mode = m_socketList[activeSocket.id].coagModeNum;
                     power = m_socketList[activeSocket.id].coagModePower;
+                    modeNeedsArgon = m_socketList[activeSocket.id].coagIsArgon;
 
                     const bool sprayM1M2Active = (m_socketList[2].autoMode == kAutoModeSprayM1M2);
                     const PedalKnobPressed knob = m_unitState.pedalKnob;
@@ -561,11 +564,17 @@ void LinkStm::sendCommand()
                             && (knob == PRESS_MONO1_B || knob == PRESS_MONO2_B)) {
                         mode = m_socketList[2].coagModeNum;
                         power = m_socketList[2].coagModePower;
+                        modeNeedsArgon = m_socketList[2].coagIsArgon;
                     }
                 }
                 const bool modeAllowed = mode != 0 && mode != ESHF::NO_MODE;
+                const bool anyArgonCylinder = m_unitState.argonCylinder1
+                        || m_unitState.argonCylinder2;
 //                if (m_socketList[activeSocket.id].)
-                if (m_enableActivation && modeAllowed && (power > 0) && (power <= 400)) {
+                if (modeNeedsArgon && !anyArgonCylinder) {
+                    // Не стартуем HF: нет баллонов для аргон-режима — как GenStopNoArgon с МК
+                    emit sigStopActivation(GenStopNoArgon);
+                } else if (m_enableActivation && modeAllowed && (power > 0) && (power <= 400)) {
                         activeSocket.autoMode = m_socketList[activeSocket.id].autoMode > 0 ? true : false;
                         QElapsedTimer m_elapsedTimer;
                         m_elapsedTimer.start();
@@ -1010,6 +1019,7 @@ void LinkStm::readRxCommand()
         
         if (m_rxCommand.data.size() >= 2) {
             unitState.argonRealRate = static_cast<quint8>(m_rxCommand.data.at(1)) & 0x7F; // Реальный расход от 0,0 до 8,0 (0-80)
+            if (unitState.argonRealRate > 80) unitState.argonRealRate = 80;
         }
         forceUnitStateEmit = true;
         break;

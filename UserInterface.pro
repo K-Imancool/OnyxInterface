@@ -57,5 +57,8 @@ QT_QPA_ENABLE_TERMINAL_KEYBOARD = 0
 target.path = /usr/share/qtpr
 INSTALLS += target
 
+# Компиляция QML файлов сразу при билде
+CONFIG += qtquickcompiler
+
 DISTFILES += \
     main.qml
