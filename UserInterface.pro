@@ -58,7 +58,7 @@ target.path = /usr/share/qtpr
 INSTALLS += target
 
 # Компиляция QML файлов сразу при билде
-CONFIG += qtquickcompiler
+#CONFIG += qtquickcompiler
 
 DISTFILES += \
     main.qml

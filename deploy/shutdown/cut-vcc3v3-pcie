@@ -1,25 +1,18 @@
 #!/bin/sh
-# Снять 3.3 В M.2 и погасить LED.
-#   sudo /usr/local/sbin/cut-vcc3v3-pcie     — авария GPIO (halt из RAM)
-#   systemd system-shutdown halt|poweroff    — только рельс
-emergency=0
-if [ -z "${1:-}" ]; then
-  emergency=1
-  set -- poweroff
-fi
-case "$1" in
+# Хук systemd-shutdown: погасить LED и снять 3.3 В M.2.
+#   /usr/lib/systemd/system-shutdown/cut-vcc3v3-pcie -> этот файл
+# systemd вызывает его с аргументом halt|poweroff в самом конце выключения,
+# когда ФС уже размонтированы или переведены в ro.
+#
+# Без аргумента (старый аварийный вызов из UI) — ничего не делаем: корень
+# лежит на NVMe, снимать его под смонтированной на запись ФС нельзя.
+#
+# После удаления PCI-устройства диск недоступен, поэтому ниже только
+# встроенные команды sh (echo, read, [ ]) — ни одной программы с диска.
+case "${1:-}" in
   poweroff|halt) ;;
   *) exit 0 ;;
 esac
-
-ram=/run/onyx-off
-if [ "$emergency" = 1 ]; then
-  mkdir -p "$ram"
-  cp /sbin/halt "$ram/halt" 2>/dev/null || cp /bin/halt "$ram/halt" 2>/dev/null || true
-  chmod 700 "$ram/halt" 2>/dev/null || true
-  # Пока NVMe жив: дать systemd снять сервисы и LED (~2 с на ионисторах).
-  sleep 2
-fi
 
 for t in /sys/class/leds/*/trigger; do
   echo none > "$t" 2>/dev/null || true
@@ -33,18 +26,18 @@ for d in /sys/bus/pci/devices/*/remove; do
   echo 1 > "$d" 2>/dev/null || true
 done
 
+# Путь через симлинк driver: readlink с диска уже не запустить.
 dev=/sys/bus/platform/devices/3c0000000.pcie
-if [ -e "$dev/driver" ]; then
-  drv=$(readlink -f "$dev/driver")
-  echo 3c0000000.pcie > "$drv/unbind" 2>/dev/null || true
+if [ -e "$dev/driver/unbind" ]; then
+  echo 3c0000000.pcie > "$dev/driver/unbind" 2>/dev/null || true
 fi
 
 for r in /sys/class/regulator/regulator.*; do
   [ -r "$r/name" ] || continue
-  [ "$(cat "$r/name" 2>/dev/null)" = "vcc3v3_pcie_p" ] || continue
+  name=
+  read -r name < "$r/name" 2>/dev/null || true
+  [ "$name" = "vcc3v3_pcie_p" ] || continue
   echo 0 > "$r/enable" 2>/dev/null || true
 done
 
-if [ "$emergency" = 1 ] && [ -x "$ram/halt" ]; then
-  exec "$ram/halt" -f
-fi
+exit 0

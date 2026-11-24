@@ -25,4 +25,5 @@
 //inline constexpr const char *kOnyxAppVersion = "1.22"; // 19.11.26 E9: принять W.R.Inc. HID-Mouse как валидный вход тача
 //inline constexpr const char *kOnyxAppVersion = "1.23"; // 19.11.26 удалён тестовый квадрат попыток восстановления тача
 //inline constexpr const char *kOnyxAppVersion = "1.24"; // 20.11.26 перекомпоновка левой боковой панели, добавлена стрелка "НАЗАД" в основном интерфейсе
-inline constexpr const char *kOnyxAppVersion = "1.25"; // 24.11.26 исправление цветов баллонов и одноклавишной педали
+//inline constexpr const char *kOnyxAppVersion = "1.25"; // 24.11.26 исправление цветов баллонов и одноклавишной педали
+inline constexpr const char *kOnyxAppVersion = "1.26"; // 24.11.26 загрузка при нештатном выключении (нужно обновить скрипт в shutdown)

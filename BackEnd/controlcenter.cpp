@@ -675,6 +675,9 @@ void ControlCenter::onEmergencyPowerLoss()
 {
     // Дисплей к этому моменту уже без сигнала — powerOffConfirmationRequested
     // и UART-подтверждение не показываем. Только журнал и systemctl poweroff.
+    // Рельс NVMe здесь не трогаем: корень на NVMe, снимать его можно только
+    // после перевода ФС в ro. Это делает хук systemd-shutdown
+    // (/usr/lib/systemd/system-shutdown/cut-vcc3v3-pcie) в самом конце poweroff.
     if (m_shutdownStarted) {
         return;
     }
@@ -693,7 +696,6 @@ void ControlCenter::onEmergencyPowerLoss()
     ::sync();
 #endif
     shutdownSystem();
-    cutNvmePcieRail();
 }
 
 void ControlCenter::resetSystemFromUi()
@@ -736,32 +738,6 @@ void ControlCenter::resetSystem()
     }
 
     logPowerOff(DeviceLogManager::RebootFailed);
-}
-
-bool ControlCenter::cutNvmePcieRail()
-{
-    QProcess proc;
-    proc.start(QStringLiteral("sudo"), {
-        QStringLiteral("-n"),
-        QStringLiteral("/usr/local/sbin/cut-vcc3v3-pcie")
-    });
-    if (!proc.waitForStarted(400)) {
-        qWarning("cut-vcc3v3-pcie: sudo не запустился");
-        return false;
-    }
-    // halt -f из /run: процесс может не вернуться.
-    if (!proc.waitForFinished(12000)) {
-        qInfo("cut-vcc3v3-pcie: нет возврата (halt)");
-        return true;
-    }
-    if (proc.exitCode() != 0) {
-        qWarning("cut-vcc3v3-pcie: exit %d %s",
-                 proc.exitCode(),
-                 qPrintable(QString::fromUtf8(proc.readAllStandardError())));
-        return false;
-    }
-    qInfo("cut-vcc3v3-pcie: vcc3v3_pcie_p снят");
-    return true;
 }
 
 void ControlCenter::shutdownSystem()

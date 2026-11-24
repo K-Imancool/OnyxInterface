@@ -167,8 +167,6 @@ private:
 	void makeHandleConnections();
 	void initSocketsForPeriphery();
 	void logPowerOff(quint8 reasonCode);
-	/// GPIO: после poweroff пауза в хелпере, затем снять vcc3v3_pcie_p и halt из RAM.
-	bool cutNvmePcieRail();
 
 	void initSockets();
 	void prepareConnectios();
