@@ -35,9 +35,10 @@ Rectangle {
         spacing: 10
         Rectangle {
             id: progPage
-            height: theModel.endoProgramView ? 0 : 50
+            height: 50
+//            height: theModel.endoProgramView ? 0 : 50
             Layout.fillWidth: true
-            visible: !theModel.endoProgramView
+//            visible: !theModel.endoProgramView
             color: "transparent"
             RowLayout {
                 anchors.fill: parent
@@ -50,7 +51,7 @@ Rectangle {
                     delegate: Rectangle {
                         height: parent.height
                         width: 60
-                        color: index === theModel.subProgIdx ? UiPalette.caseBase : UiPalette.surface
+                        color: index === theModel.subProgIdx ? UiPalette.surface : UiPalette.caseBase
                         border.color: UiPalette.border
                         border.width: 1
                         radius: 6
@@ -60,7 +61,7 @@ Rectangle {
                             horizontalAlignment: Qt.AlignHCenter
                             verticalAlignment: Qt.AlignVCenter
                             anchors.fill: parent
-                            color: index === theModel.subProgIdx ? UiPalette.darkInk : UiPalette.text
+                            color: index === theModel.subProgIdx ? UiPalette.text : UiPalette.darkInk
                             font.pixelSize: 34
                             font.bold: true
                         }
@@ -74,7 +75,7 @@ Rectangle {
                     id: progAddSign
                     height: parent.height
                     width: 60
-                    color: UiPalette.surface
+                    color: UiPalette.caseBase
                     border.color: UiPalette.border
                     border.width: 1
                     radius: 6
@@ -85,7 +86,7 @@ Rectangle {
                         horizontalAlignment: Qt.AlignHCenter
                         verticalAlignment: Qt.AlignVCenter
                         anchors.fill: parent
-                        color: UiPalette.text
+                        color: UiPalette.darkInk
                         font.pixelSize: 36
                         font.bold: true
                     }
@@ -105,7 +106,7 @@ Rectangle {
                     id: progDeleteSign
                     height: parent.height
                     width: 250
-                    color: UiPalette.surface
+                    color: UiPalette.caseBase
                     border.color: UiPalette.border
                     border.width: 1
                     radius: 6
@@ -116,7 +117,7 @@ Rectangle {
                         horizontalAlignment: Qt.AlignHCenter
                         verticalAlignment: Qt.AlignVCenter
                         anchors.fill: parent
-                        color: UiPalette.text
+                        color: UiPalette.darkInk
                         font.pixelSize: 30
                         font.bold: true
                     }

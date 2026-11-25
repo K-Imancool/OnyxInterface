@@ -16,15 +16,17 @@ Rectangle {
     /** Как в SocketContainerV2: spacing между progPage и SocketRepeater */
     readonly property int columnSpacing: 10
     /** Высота progPage в не-эндо (эндо — 0, блок скрыт) */
-    readonly property int progPageHeight: (innerModel && innerModel.endoProgramView) ? 0 : 50
+    readonly property int progPageHeight: 50
+//    readonly property int progPageHeight: (innerModel && innerModel.endoProgramView) ? 0 : 50
     /**
      * Верх первой строки сокетов (как у ColumnLayout в SocketContainerV2).
      * В эндо progPage с visible: false не участвует в разметке — между колонкой и сокетами
      * нет spacing 10 px, только верхний margin 5.
      */
-    readonly property int socketTopOffset: (innerModel && innerModel.endoProgramView)
-            ? layoutMargins
-            : (layoutMargins + progPageHeight + columnSpacing)
+    readonly property int socketTopOffset: (layoutMargins + progPageHeight + columnSpacing)
+//    readonly property int socketTopOffset: (innerModel && innerModel.endoProgramView)
+//                                           ? layoutMargins
+//                                           : (layoutMargins + progPageHeight + columnSpacing)
     readonly property int socketSpacing: 10
     color: UiPalette.caseBase
     clip: true

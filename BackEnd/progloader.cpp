@@ -507,6 +507,11 @@ void ProgLoader::slotSaveCurrentState()
 	}
 
 	m_userDbReaderPtr->commit();
+
+	if (!m_jsonStorage.isNull()) {
+		m_jsonStorage->saveInt(QStringLiteral("lastEndoProgramView"),
+		                       m_socketModelPtr->endoProgramView() ? 1 : 0);
+	}
 }
 
 void ProgLoader::defaultSocketInit(bool clear)
@@ -697,9 +702,13 @@ bool ProgLoader::programmLoadSocketInit(int progId, bool clear)
 	if (progListVariant.size() == 0) {
 		return false;
 	}
-    const bool isEndoProgram = (!progInfo.isEmpty() && progInfo.first().size() > 2)
+    bool isEndoProgram = (!progInfo.isEmpty() && progInfo.first().size() > 2)
             ? progInfo.first().at(2).toBool()
             : false;
+    // Для «последних установок» Endo в Progs id=1000 нет — флаг в JsonStorage.
+    if (progId == 1000 && !m_jsonStorage.isNull()) {
+        isEndoProgram = m_jsonStorage->readInt(QStringLiteral("lastEndoProgramView"), 0) != 0;
+    }
 
     if (!clear
         && !m_socketModelPtr.isNull()

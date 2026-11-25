@@ -17,11 +17,13 @@ Rectangle {
     readonly property int layoutMargins: 5
     readonly property int columnSpacing: 10
     readonly property int socketSpacing: 10
-    readonly property int progPageHeight: (typeof theModel !== "undefined" && theModel && theModel.endoProgramView) ? 0 : 50
+    readonly property int progPageHeight: 50
+//    readonly property int progPageHeight: (typeof theModel !== "undefined" && theModel && theModel.endoProgramView) ? 0 : 50
     readonly property int socketCount: (typeof theModel !== "undefined" && theModel) ? theModel.rowCount() : 4
-    readonly property int socketTopOffset: (typeof theModel !== "undefined" && theModel && theModel.endoProgramView)
-            ? layoutMargins
-            : (layoutMargins + progPageHeight + columnSpacing)
+    readonly property int socketTopOffset: (layoutMargins + progPageHeight + columnSpacing)
+//    readonly property int socketTopOffset: (typeof theModel !== "undefined" && theModel && theModel.endoProgramView)
+//                                           ? layoutMargins
+//                                           : (layoutMargins + progPageHeight + columnSpacing)
 
     readonly property real uniformSocketHeight: {
         var count = Math.max(1, socketCount)
@@ -96,10 +98,9 @@ Rectangle {
         Argon {
             id: argonView
             anchors {
-                horizontalCenter: parent.horizontalCenter
-                verticalCenter: parent.verticalCenter
                 left: parent.left
                 right: parent.right
+                verticalCenter: parent.verticalCenter
             }
             height: compactContentHeight
             showControls: false
